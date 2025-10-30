@@ -1,0 +1,15 @@
+@import "tailwindcss";
+*{
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+/* Ẩn scrollbar toàn bộ website */
+* {
+  scrollbar-width: none;        /* Firefox */
+  -ms-overflow-style: none;     /* IE và Edge cũ */
+}
+
+*::-webkit-scrollbar {
+  display: none;                /* Chrome, Safari, Edge (mới) */
+}
