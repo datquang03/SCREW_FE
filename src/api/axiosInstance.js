@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const apiUrl = 'https://your-api-domain.com/api'; // Đổi thành URL backend của bạn
+const apiUrl = 'https://studioforrent-fa25se219-be.onrender.com'; // Đổi thành URL backend của bạn
 
 const axiosInstance = axios.create({
   baseURL: apiUrl,

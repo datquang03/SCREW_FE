@@ -1,11 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance'; // Sử dụng axiosInstance thay vì axios
 
 export const login = createAsyncThunk(
   'auth/login',
   async (credentials, { rejectWithValue }) => {
     try {
-      const response = await axios.post('/api/auth/login', credentials);
+      const response = await axiosInstance.post('/api/auth/login', credentials);
       return response.data;
     } catch (err) {
       return rejectWithValue(err.response.data);
@@ -17,7 +17,8 @@ export const register = createAsyncThunk(
   'auth/register',
   async (data, { rejectWithValue }) => {
     try {
-      const response = await axios.post('/api/auth/register', data);
+      // data là object gồm username, email, password, fullName, phone
+      const response = await axiosInstance.post('/api/auth/register/customer', data);
       return response.data;
     } catch (err) {
       return rejectWithValue(err.response.data);

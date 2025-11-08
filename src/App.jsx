@@ -7,10 +7,10 @@ import AboutUsPage from "./pages/AboutUs/AboutUsPage";
 import EquipmentPage from "./pages/Equipment/EquipmentPage";
 import ContactPage from "./pages/Contact/ContactPage";
 import LoginPage from "./pages/Authentication/Login/LoginPage";
-import RegisterPage from "./pages/Authentication/Register/RegisterPage";
 import StudioPage from "./pages/Studio/StudioPage";
 import ScrollToTop from "./components/ScrollToTop";
 import ForgotPasswordPage from "./pages/Authentication/Forgot/ForgotPassword";
+import RegisterPage from "./pages/Authentication/Register/RegisterPage";
 
 const pageVariants = {
   initial: { opacity: 0, x: 100 },
