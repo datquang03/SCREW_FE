@@ -1,236 +1,336 @@
-import React, { useEffect, useRef, useState } from "react";
-import { gsap } from "gsap";
+import React, { useState, useEffect, useRef } from "react";
 import { NavLink, Link } from "react-router-dom";
-import { FaSearch } from "react-icons/fa";
+import { Button } from "antd";
+import { SearchOutlined, MenuOutlined, CloseOutlined } from "@ant-design/icons";
+import { motion, AnimatePresence } from "framer-motion";
 import SPlusLogo from "../../assets/S+Logo.png";
+import { NAV_LINKS } from "../../constants/navigation";
+import { useScrollEffect } from "../../hooks/useScrollEffect";
 
 const Navbar = () => {
-  const navRef = useRef(null);
-  const navLinksRef = useRef(null);
-  const centerContainerRef = useRef(null);
-  const searchFormRef = useRef(null);
-  const searchInputRef = useRef(null);
-  const rightActionsRef = useRef(null);
-  const indicatorRef = useRef(null);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const scrolled = useScrollEffect(20);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const headerRef = useRef(null);
 
   useEffect(() => {
-    gsap.fromTo(
-      navRef.current,
-      { y: -60, opacity: 0 },
-      { y: 0, opacity: 1, duration: 1, ease: "power3.out" }
-    );
+    // Ensure header stays fixed on scroll
+    const header = headerRef.current;
+    if (header) {
+      // Force fixed position immediately
+      header.style.setProperty('position', 'fixed', 'important');
+      header.style.setProperty('top', '0', 'important');
+      header.style.setProperty('left', '0', 'important');
+      header.style.setProperty('right', '0', 'important');
+      header.style.setProperty('transform', 'translateY(0)', 'important');
+      header.style.setProperty('z-index', '100', 'important');
+
+      const observer = new MutationObserver(() => {
+        if (header.style.position !== 'fixed') {
+          header.style.setProperty('position', 'fixed', 'important');
+        }
+        if (header.style.top !== '0px' && header.style.top !== '0') {
+          header.style.setProperty('top', '0', 'important');
+        }
+        // Remove any transform that might cause movement
+        const currentTransform = header.style.transform || '';
+        if (currentTransform && !currentTransform.includes('translateY(0)') && currentTransform !== 'none') {
+          header.style.setProperty('transform', 'translateY(0)', 'important');
+        }
+      });
+
+      observer.observe(header, {
+        attributes: true,
+        attributeFilter: ['style', 'class']
+      });
+
+      // Also listen to scroll events to ensure it stays fixed
+      const handleScroll = () => {
+        if (header) {
+          // Force remove any transform that Framer Motion might add
+          const computedStyle = window.getComputedStyle(header);
+          const transform = computedStyle.transform;
+          
+          header.style.setProperty('position', 'fixed', 'important');
+          header.style.setProperty('top', '0', 'important');
+          header.style.setProperty('left', '0', 'important');
+          header.style.setProperty('right', '0', 'important');
+          header.style.setProperty('transform', 'translateY(0) !important', 'important');
+          header.style.setProperty('z-index', '100', 'important');
+          
+          // If Framer Motion added a transform, remove it
+          if (transform && transform !== 'none' && !transform.includes('translateY(0)')) {
+            header.style.setProperty('transform', 'translateY(0) !important', 'important');
+          }
+        }
+      };
+
+      window.addEventListener('scroll', handleScroll, { passive: true });
+      window.addEventListener('resize', handleScroll, { passive: true });
+
+      return () => {
+        observer.disconnect();
+        window.removeEventListener('scroll', handleScroll);
+      };
+    }
   }, []);
 
-  useEffect(() => {
-    if (!searchFormRef.current || !navLinksRef.current || !rightActionsRef.current)
-      return;
-  
-    if (isSearchOpen) {
-      // Thu nhỏ nhẹ toàn bộ cụm nav để vẫn giữ hàng ngang
-      gsap.to(navLinksRef.current, {
-        duration: 0.35,
-        ease: "power2.out",
-        scale: 0.92,
-        opacity: 0.75,
-        transformOrigin: "center center",
-      });
-  
-      gsap.to(rightActionsRef.current, {
-        duration: 0.35,
-        ease: "power2.out",
-        opacity: 0.8,
-        scale: 0.95,
-      });
-  
-      gsap.fromTo(
-        searchFormRef.current,
-        { width: 0, opacity: 0 },
-        {
-          width: window.innerWidth < 768 ? 320 : 560,
-          opacity: 1,
-          duration: 0.45,
-          ease: "power3.out",
-          onComplete: () =>
-            searchInputRef.current && searchInputRef.current.focus(),
-        }
-      );
-    } else {
-      // Khôi phục lại kích thước nav
-      gsap.to(navLinksRef.current, {
-        duration: 0.35,
-        ease: "power2.inOut",
-        scale: 1,
-        opacity: 1,
-        clearProps: "transform",
-      });
-      gsap.to(searchFormRef.current, {
-        width: 0,
-        opacity: 0,
-        duration: 0.35,
-        ease: "power2.inOut",
-      });
-      gsap.to(rightActionsRef.current, {
-        duration: 0.35,
-        ease: "power2.inOut",
-        opacity: 1,
-        scale: 1,
-      });
-    }
-  }, [isSearchOpen]);
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen((prev) => !prev);
+  };
 
-  // Active indicator animation between nav items (no scroll jump)
-  useEffect(() => {
-    if (!navLinksRef.current || !indicatorRef.current) return;
-    const active = navLinksRef.current.querySelector('a.active');
-    const parentRect = (centerContainerRef.current || indicatorRef.current.parentElement).getBoundingClientRect();
-    if (active) {
-      const rect = active.getBoundingClientRect();
-      const x = rect.left - parentRect.left;
-      const w = rect.width;
-      gsap.to(indicatorRef.current, {
-        x,
-        width: w,
-        opacity: 1,
-        duration: 0.6,
-        ease: 'power2.out',
-      });
-    }
-  });
-  
-  const handleSearchToggle = () => setIsSearchOpen((prev) => !prev);
-
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    setIsSearchOpen(false);
-    setSearchQuery("");
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
   };
 
   return (
-    <nav
-      ref={navRef}
-      className="w-full h-[90px] flex items-center justify-center overflow-x-clip bg-[#0b1220] bg-opacity-95 py-6 md:py-7 shadow-[0_10px_30px_rgba(0,0,0,0.35)] border-b border-slate-800/80 backdrop-blur-md"
+    <motion.header
+      ref={headerRef}
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      layout={false}
+      style={{ 
+        position: 'fixed', 
+        top: 0, 
+        left: 0, 
+        right: 0, 
+        zIndex: 100,
+        width: '100%',
+        transform: 'translateY(0) !important',
+        willChange: 'auto'
+      }}
+      onAnimationComplete={() => {
+        // Force fixed position after animation completes and disable any further transforms
+        if (headerRef.current) {
+          headerRef.current.style.setProperty('position', 'fixed', 'important');
+          headerRef.current.style.setProperty('top', '0', 'important');
+          headerRef.current.style.setProperty('left', '0', 'important');
+          headerRef.current.style.setProperty('right', '0', 'important');
+          headerRef.current.style.setProperty('transform', 'translateY(0) !important', 'important');
+          headerRef.current.style.setProperty('z-index', '100', 'important');
+          // Disable Framer Motion transforms
+          headerRef.current.setAttribute('data-fixed', 'true');
+        }
+      }}
+      className={`w-full transition-all duration-300 pointer-events-auto ${
+        scrolled
+          ? "bg-white/80 backdrop-blur-xl shadow-lg shadow-black/5"
+          : "bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900"
+      }`}
     >
-      <div className="w-full px-10 md:px-16 lg:px-20 flex items-center justify-between gap-6 md:gap-10">
-        {/* Logo */}
-        <Link
-          to="/"
-          className="md:ml-12 flex items-center justify-start cursor-pointer"
+      <div className="container mx-auto flex items-center justify-between px-2 md:px-4 lg:px-6 py-1.5 md:py-2 relative z-[101] max-w-full">
+        {/* Logo with 3D effect */}
+        <motion.div
+          whileHover={{ scale: 1.05, rotateY: 5 }}
+          whileTap={{ scale: 0.95 }}
+          className="flex-shrink-0 relative z-10"
         >
-          <div className="w-[150px] h-[80px] rounded-xl overflow-hidden flex items-center justify-center bg-[#0a0f1c] shadow-[0_0_12px_rgba(0,0,0,0.4)] ml-4">
-            <img
-              src={SPlusLogo}
-              alt="S+ Studio Logo"
-              className="w-full h-full object-cover object-center scale-[1.0] p-[2px]"
-              loading="eager"
-              decoding="async"
-            />
-          </div>
-        </Link>
-
-         {/* Nav Links + Search */}
-         <div ref={centerContainerRef} className="relative flex-1 flex items-center justify-center gap-4 md:gap-8 overflow-hidden">
-          <ul
-            ref={navLinksRef}
-             className="relative z-10 hidden md:flex items-center gap-8 lg:gap-12 text-[18px] font-semibold text-slate-200 whitespace-nowrap"
-          >
-            {[
-              { path: "/", label: "Trang chủ" },
-              { path: "/studio", label: "Studio" },
-              { path: "/equipment", label: "Dụng cụ" },
-              { path: "/about", label: "Về chúng tôi" },
-              { path: "/contact", label: "Liên hệ" },
-            ].map(({ path, label }) => (
-              <NavLink
-                key={path}
-                to={path}
-                className={({ isActive }) =>
-                  `skew-x-6 inline-flex items-center justify-center rounded-xl border-2 border-transparent transition-all duration-200 cursor-pointer
-                    ${
-                      isActive
-                        ? "active text-[#FBBF24] border-slate-700/70"
-                        : "hover:bg-slate-800/50 hover:text-[#FBBF24] hover:border-slate-600/60 hover:shadow-[0_6px_18px_rgba(2,6,23,0.35)]"
-                    }`
-                }
-                style={{
-                  height: "60px",
-                  paddingLeft: "52px",
-                  paddingRight: "52px",
-                }}
-              >
-                <span className="-skew-x-6 inline-flex items-center text-[20px]">
-                  {label}
-                </span>
-              </NavLink>
-             ))}
-          </ul>
-           {/* Active indicator */}
-           <span
-             ref={indicatorRef}
-             style={{ transform: 'translateX(0)', width: 0, opacity: 0 }}
-             className="pointer-events-none hidden md:block absolute z-0 top-1/2 -translate-y-1/2 left-0 h-[48px] rounded-xl border border-slate-600/40 bg-slate-800/50 shadow-[0_10px_26px_rgba(2,6,23,0.35)]"
-           />
-
-          {/* Search Form */}
-          <form
-            ref={searchFormRef}
-            onSubmit={handleSearchSubmit}
-            className="hidden md:flex items-center overflow-hidden rounded-full border-2 border-slate-700/60 bg-slate-900/70 backdrop-blur px-4 ring-1 ring-transparent focus-within:ring-[#FBBF24]/30 shadow-[0_6px_20px_rgba(2,6,23,0.35)]"
-            style={{ width: 0, opacity: 0 }}
-          >
-            <span className="ml-1.5 mr-2 inline-flex items-center justify-center w-10 h-10 text-slate-300">
-              <span className="relative inline-block w-4 h-4 border-2 border-current rounded-full" />
-          </span>
-            <input
-              ref={searchInputRef}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Tìm kiếm..."
-              className="bg-transparent outline-none text-slate-200 placeholder-slate-400 text-[15px] py-3.5 w-full"
-            />
-          </form>
-        </div>
-
-        {/* Right Actions */}
-        <div
-          ref={rightActionsRef}
-          className="flex items-center gap-4 md:gap-6 pr-8 md:pr-12 lg:pr-16"
-        >
-          {/* Search Button */}
-          <button
-            onClick={handleSearchToggle}
-            className={`skew-x-6 hidden md:inline-flex items-center justify-center rounded-2xl border-2 text-slate-200 cursor-pointer
-              bg-slate-900/70 hover:bg-slate-800/60 hover:text-[#FBBF24] hover:border-slate-600 transition-all duration-200
-              ${
-                isSearchOpen
-                  ? "bg-slate-800/70 text-[#FBBF24] border-slate-700/70 shadow-[0_8px_24px_rgba(2,6,23,0.35)]"
-                  : "shadow-[0_6px_18px_rgba(2,6,23,0.25)]"
-              }`}
-            style={{ height: "60px", width: "60px" }}
-            aria-label="Tìm kiếm"
-            title="Tìm kiếm"
-          >
-            <FaSearch className="-skew-x-6 w-5 h-5" />
-          </button>
-
-          {/* Register Button */}
-          <Link
-            to="/register"
-            className="skew-x-6 inline-flex items-center justify-center rounded-2xl font-semibold
-              border-2 text-black cursor-pointer
-              bg-gradient-to-r from-[#FBBF24] to-[#ffd666] hover:brightness-105 transition-all duration-200 shadow-[0_14px_34px_rgba(251,191,36,0.45)] mr-6 md:mr-10"
-            style={{
-              height: "60px",
-              paddingLeft: "38px",
-              paddingRight: "38px",
-            }}
-          >
-            <span className="-skew-x-6 inline-block text-[15px]">Đăng ký</span>
+          <Link to="/" className="flex items-center gap-1 md:gap-2 group">
+            <motion.div
+              whileHover={{ rotate: [0, -10, 10, -10, 0] }}
+              transition={{ duration: 0.5 }}
+              className="relative z-10"
+            >
+              <img
+                src={SPlusLogo}
+                alt="S+ Studio Logo"
+                className="h-10 md:h-14 w-auto object-contain drop-shadow-lg"
+                style={{ maxHeight: '56px' }}
+              />
+            </motion.div>
+            <span
+              className={`text-xs md:text-sm font-bold transition-colors whitespace-nowrap relative z-10 ${
+                scrolled ? "text-gray-900" : "text-white"
+              } group-hover:text-yellow-400`}
+            >
+              S+ Studio
+            </span>
           </Link>
+        </motion.div>
+
+        {/* Desktop Navigation Links */}
+        <nav className="hidden lg:flex items-center min-w-0 flex-1 justify-center mx-1 md:mx-2 relative z-20">
+          <ul className="flex items-center gap-1">
+            {NAV_LINKS.map(({ path, label, key: linkKey }, index) => (
+              <motion.li
+                key={linkKey}
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="relative"
+              >
+                <NavLink
+                  to={path}
+                  className={({ isActive }) =>
+                    `relative block px-1.5 md:px-2 py-1.5 rounded-lg text-xs font-medium transition-all duration-300 whitespace-nowrap group cursor-pointer ${
+                      isActive
+                        ? scrolled
+                          ? "text-gray-900 bg-yellow-400/20"
+                          : "text-white bg-white/20"
+                        : scrolled
+                        ? "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
+                        : "text-gray-300 hover:text-white hover:bg-white/10"
+                    }`
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      {isActive && (
+                        <motion.div
+                          layoutId="activeTab"
+                          className="absolute inset-0 bg-gradient-to-r from-yellow-400/30 to-yellow-500/30 rounded-lg backdrop-blur-sm pointer-events-none"
+                          style={{ zIndex: -1 }}
+                          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                        />
+                      )}
+                      <span className="relative" style={{ zIndex: 10 }}>{label}</span>
+                    </>
+                  )}
+                </NavLink>
+              </motion.li>
+            ))}
+          </ul>
+        </nav>
+
+        {/* Right Actions - Push to right */}
+        <div className="flex-shrink-0 flex items-center gap-1 md:gap-2 ml-auto">
+          <div className="hidden xl:flex items-center gap-2">
+            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+              <Button
+                type="text"
+                shape="circle"
+                size="small"
+                icon={<SearchOutlined />}
+                className={scrolled ? "text-gray-700" : "text-white"}
+              />
+            </motion.div>
+          </div>
+          <div className="hidden md:flex items-center">
+            <motion.div
+              whileHover={{ scale: 1.05, y: -2 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Button
+                type="primary"
+                size="small"
+                href="/register"
+                className="bg-gradient-to-r from-yellow-400 to-yellow-500 border-none shadow-lg shadow-yellow-500/30 hover:shadow-yellow-500/50 font-semibold text-xs px-2 md:px-3"
+              >
+                Đăng ký
+              </Button>
+            </motion.div>
+          </div>
+
+          {/* Mobile/Tablet Menu Button */}
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={toggleMobileMenu}
+            className={`lg:hidden p-2 rounded-lg ${
+              scrolled ? "text-gray-700" : "text-white"
+            }`}
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? <CloseOutlined /> : <MenuOutlined />}
+          </motion.button>
         </div>
       </div>
-    </nav>
+
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <>
+            {/* Backdrop - covers entire screen */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={closeMobileMenu}
+              className="fixed inset-0 bg-black/60 backdrop-blur-md z-[99] lg:hidden"
+              style={{ 
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: 99
+              }}
+            />
+            {/* Mobile Menu */}
+            <motion.div
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed top-0 left-0 h-full w-64 bg-white shadow-2xl lg:hidden overflow-y-auto"
+              style={{ 
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                height: '100vh',
+                width: '256px',
+                zIndex: 102,
+                backgroundColor: 'white',
+                isolation: 'isolate',
+                boxShadow: '4px 0 20px rgba(0,0,0,0.3)'
+              }}
+            >
+              <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-white relative z-10">
+                <span className="text-lg font-bold text-gray-900">Menu</span>
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={closeMobileMenu}
+                  className="p-2 rounded-lg text-gray-700 hover:bg-gray-100"
+                  aria-label="Close menu"
+                >
+                  <CloseOutlined />
+                </motion.button>
+              </div>
+              <nav className="p-4 bg-white relative z-10">
+                <ul className="flex flex-col gap-2">
+                  {NAV_LINKS.map(({ path, label, key: linkKey }, index) => (
+                    <motion.li
+                      key={linkKey}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <NavLink
+                        to={path}
+                        onClick={closeMobileMenu}
+                        className={({ isActive }) =>
+                          `block px-4 py-3 rounded-lg text-base font-medium transition-all cursor-pointer relative z-10 ${
+                            isActive
+                              ? "bg-yellow-400/20 text-gray-900"
+                              : "text-gray-700 hover:bg-gray-100"
+                          }`
+                        }
+                      >
+                        {label}
+                      </NavLink>
+                    </motion.li>
+                  ))}
+                  <motion.li
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: NAV_LINKS.length * 0.1 }}
+                    className="mt-2"
+                  >
+                    <Button
+                      type="primary"
+                      block
+                      href="/register"
+                      className="bg-gradient-to-r from-yellow-400 to-yellow-500 border-none"
+                    >
+                      Đăng ký
+                    </Button>
+                  </motion.li>
+                </ul>
+              </nav>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </motion.header>
   );
 };
 

@@ -5,10 +5,8 @@ const ScrollToTop = () => {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth", 
-    });
+    // Scroll to top instantly to prevent jumping
+    window.scrollTo(0, 0);
   }, [pathname]);
 
   return null;
