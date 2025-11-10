@@ -13,10 +13,11 @@ const IntroSection = () => {
 
   return (
     <div className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-black overflow-hidden min-h-[70vh] flex items-center -mt-16 md:-mt-20 isolate">
-      {/* Animated background elements */}
+      {/* Animated background elements - Simplified */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Subtle animated gradient orbs only */}
         <motion.div
-          className="absolute top-20 left-10 w-72 h-72 bg-yellow-400/5 rounded-full blur-3xl"
+          className="absolute top-20 left-10 w-72 h-72 bg-yellow-400/3 rounded-full blur-3xl opacity-40"
           animate={{
             x: [0, 100, 0],
             y: [0, 50, 0],
@@ -29,7 +30,7 @@ const IntroSection = () => {
           }}
         />
         <motion.div
-          className="absolute bottom-20 right-10 w-96 h-96 bg-yellow-500/5 rounded-full blur-3xl"
+          className="absolute bottom-20 right-10 w-96 h-96 bg-yellow-500/3 rounded-full blur-3xl opacity-40"
           animate={{
             x: [0, -100, 0],
             y: [0, -50, 0],
@@ -42,11 +43,32 @@ const IntroSection = () => {
           }}
         />
       </div>
+      
+      {/* Hero Image Section - Hidden on mobile to avoid ugly placeholders */}
+      <div className="absolute right-0 top-0 bottom-0 w-1/2 md:w-2/5 lg:w-1/3 opacity-0 md:opacity-20 lg:opacity-30 pointer-events-none hidden lg:block">
+        <div className="relative h-full w-full">
+          <div className="absolute inset-0 bg-gradient-to-l from-yellow-400/20 to-transparent" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-full h-full bg-gradient-to-br from-gray-800/30 via-gray-800/20 to-transparent rounded-l-3xl border-l border-yellow-400/20 flex items-center justify-center">
+              {/* Subtle pattern instead of text */}
+              <div className="absolute inset-0 opacity-10" style={{
+                backgroundImage: 'radial-gradient(circle, rgba(234,179,8,0.3) 1px, transparent 1px)',
+                backgroundSize: '40px 40px'
+              }} />
+            </div>
+          </div>
+        </div>
+      </div>
 
       <motion.div
         style={{ y, opacity }}
         className="relative container mx-auto px-4 md:px-6 lg:px-16 py-12 md:py-16 lg:py-24 text-center z-10 pt-16 md:pt-20"
       >
+        {/* Decorative corner elements - Hidden on mobile */}
+        <div className="hidden md:block absolute top-10 left-10 w-20 h-20 border-t-2 border-l-2 border-yellow-400/20 opacity-30" />
+        <div className="hidden md:block absolute top-10 right-10 w-20 h-20 border-t-2 border-r-2 border-yellow-400/20 opacity-30" />
+        <div className="hidden md:block absolute bottom-10 left-10 w-20 h-20 border-b-2 border-l-2 border-yellow-400/20 opacity-30" />
+        <div className="hidden md:block absolute bottom-10 right-10 w-20 h-20 border-b-2 border-r-2 border-yellow-400/20 opacity-30" />
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
@@ -61,32 +83,26 @@ const IntroSection = () => {
           >
             <Title
               level={1}
-              className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white mb-6"
+              className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-white mb-6"
               style={{
                 textShadow: "0 10px 40px rgba(0,0,0,0.5), 0 0 20px rgba(234,179,8,0.3)",
                 transformStyle: "preserve-3d",
               }}
             >
               <motion.span
-                whileHover={{ scale: 1.1, rotateY: 5 }}
+                whileHover={{ scale: 1.05, rotateY: 5 }}
                 className="inline-block"
               >
-                S
+                S+
               </motion.span>{" "}
               <motion.span
-                whileHover={{ scale: 1.1, rotateY: -5 }}
+                whileHover={{ scale: 1.05, rotateY: -5 }}
                 className="inline-block text-yellow-400"
                 style={{
-                  textShadow: "0 0 30px rgba(234,179,8,0.8), 0 0 60px rgba(234,179,8,0.4)",
+                  textShadow: "0 0 20px rgba(234,179,8,0.6), 0 0 40px rgba(234,179,8,0.3)",
                 }}
               >
-                CỘNG
-              </motion.span>{" "}
-              <motion.span
-                whileHover={{ scale: 1.1, rotateY: 5 }}
-                className="inline-block"
-              >
-                STUDIO
+                Studio
               </motion.span>
           </Title>
           </motion.div>
@@ -96,11 +112,16 @@ const IntroSection = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.5 }}
           >
-            <Paragraph className="text-lg md:text-xl text-gray-300 mt-6 max-w-3xl mx-auto leading-relaxed">
-              Cho thuê studio chuyên nghiệp với đầy đủ thiết bị ánh sáng, máy ảnh và set design.
+            <Paragraph className="text-lg md:text-xl mt-6 max-w-3xl mx-auto leading-relaxed">
+              <span className="text-yellow-400 font-bold text-xl md:text-2xl drop-shadow-[0_0_10px_rgba(234,179,8,0.5)]">S+ Studio</span>{" "}
+              <span className="text-white font-semibold drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]">- Dịch vụ cho thuê studio chuyên nghiệp hàng đầu tại TP.HCM</span>
               <br />
-              <span className="text-yellow-400 font-semibold">
-                Phục vụ quay phim, chụp ảnh, livestream và sản xuất nội dung
+              <span className="text-white font-semibold text-base md:text-lg drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]">
+                Cho thuê studio với đầy đủ thiết bị: <span className="text-yellow-300">máy ảnh</span>, <span className="text-blue-300">ánh sáng LED</span>, <span className="text-green-300">phòng xanh</span>, <span className="text-purple-300">hệ thống âm thanh</span>
+              </span>
+              <br />
+              <span className="text-gray-200 font-medium drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)]">
+                Phục vụ: <span className="text-yellow-300">Quay phim</span> • <span className="text-blue-300">Chụp ảnh sản phẩm</span> • <span className="text-green-300">Livestream</span> • <span className="text-purple-300">Sản xuất nội dung</span> • <span className="text-pink-300">Chụp ảnh cưới</span>
               </span>
           </Paragraph>
           </motion.div>
@@ -123,7 +144,7 @@ const IntroSection = () => {
                 icon={<ArrowRightOutlined />}
                 iconPosition="end"
             >
-              Khám phá Studio
+              Xem Studio có sẵn
             </Button>
             </motion.div>
             <motion.div
@@ -154,12 +175,14 @@ const IntroSection = () => {
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 1 + index * 0.2 }}
-                whileHover={{ scale: 1.1, rotateY: 5, z: 50 }}
-                className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-6 shadow-2xl"
+                whileHover={{ scale: 1.1, rotateY: 5, z: 50, y: -10 }}
+                className="bg-gradient-to-br from-white/20 via-white/10 to-white/5 backdrop-blur-xl border-2 border-yellow-400/30 rounded-2xl p-6 shadow-[0_20px_60px_rgba(234,179,8,0.3)] hover:shadow-[0_30px_80px_rgba(234,179,8,0.5)] transition-all duration-300"
                 style={{ transformStyle: "preserve-3d" }}
               >
-                <div className="text-4xl font-bold text-yellow-400 mb-2">{stat.number}</div>
-                <div className="text-gray-300 text-sm">{stat.label}</div>
+                <div className="text-5xl font-extrabold bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-400 bg-clip-text text-transparent mb-2 drop-shadow-[0_0_20px_rgba(234,179,8,0.5)]">
+                  {stat.number}
+          </div>
+                <div className="text-white font-semibold text-sm drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]">{stat.label}</div>
               </motion.div>
             ))}
           </motion.div>

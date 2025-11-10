@@ -34,15 +34,25 @@ const Section = forwardRef(({
               </motion.span>
             )}
             {title && (
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4" style={{
-                color: className.includes('bg-gray-900') || className.includes('from-gray-900') ? 'white' : '#111827'
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold mb-4 drop-shadow-lg" style={{
+                color: className.includes('bg-gray-900') || className.includes('from-gray-900') 
+                  ? 'white' 
+                  : '#111827',
+                textShadow: className.includes('bg-gray-900') || className.includes('from-gray-900')
+                  ? '0 4px 20px rgba(0,0,0,0.3)'
+                  : '0 2px 10px rgba(0,0,0,0.1)'
               }}>
                 {title}
               </h2>
             )}
             {subtitle && (
-              <p className="text-lg max-w-2xl mx-auto" style={{
-                color: className.includes('bg-gray-900') || className.includes('from-gray-900') ? '#d1d5db' : '#4b5563'
+              <p className="text-lg md:text-xl max-w-2xl mx-auto font-semibold" style={{
+                color: className.includes('bg-gray-900') || className.includes('from-gray-900') 
+                  ? '#f3f4f6' 
+                  : '#374151',
+                textShadow: className.includes('bg-gray-900') || className.includes('from-gray-900')
+                  ? '0 2px 8px rgba(0,0,0,0.2)'
+                  : '0 1px 4px rgba(0,0,0,0.1)'
               }}>
                 {subtitle}
               </p>
@@ -58,4 +68,3 @@ const Section = forwardRef(({
 Section.displayName = 'Section';
 
 export default Section;
-

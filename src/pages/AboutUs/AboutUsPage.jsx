@@ -10,19 +10,19 @@ const { Title, Paragraph } = Typography;
 const teamMembers = [
   {
     name: "Trần Văn A",
-    role: "Founder & CEO",
+    role: "Quản lý Studio",
     avatar: "https://i.pravatar.cc/150?u=a042581f4e29026701d",
     color: "from-yellow-400 to-yellow-500",
   },
   {
     name: "Nguyễn Thị B",
-    role: "Head of Photography",
+    role: "Kỹ thuật viên",
     avatar: "https://i.pravatar.cc/150?u=a042581f4e29026702d",
     color: "from-blue-400 to-blue-500",
   },
   {
     name: "Lê Văn C",
-    role: "Set Designer",
+    role: "Tư vấn & Hỗ trợ",
     avatar: "https://i.pravatar.cc/150?u=a042581f4e29026703d",
     color: "from-purple-400 to-purple-500",
   },
@@ -31,20 +31,20 @@ const teamMembers = [
 const values = [
   {
     icon: <TrophyOutlined />,
-    title: "Chất lượng",
-    description: "Cam kết mang đến dịch vụ và thiết bị tốt nhất",
+    title: "Chất lượng studio",
+    description: "Studio được vệ sinh sạch sẽ, thiết bị được bảo trì định kỳ, đảm bảo hoạt động tốt nhất",
     color: "from-yellow-400 to-yellow-500",
   },
   {
     icon: <TeamOutlined />,
-    title: "Đồng hành",
-    description: "Luôn đồng hành và hỗ trợ khách hàng trong mọi dự án",
+    title: "Hỗ trợ chuyên nghiệp",
+    description: "Đội ngũ kỹ thuật viên sẵn sàng hỗ trợ setup, vận hành thiết bị và xử lý mọi vấn đề",
     color: "from-blue-400 to-blue-500",
   },
   {
     icon: <RocketOutlined />,
-    title: "Đổi mới",
-    description: "Không ngừng cập nhật công nghệ và xu hướng mới",
+    title: "Thiết bị hiện đại",
+    description: "Thường xuyên cập nhật thiết bị mới nhất, đáp ứng mọi nhu cầu sản xuất nội dung",
     color: "from-purple-400 to-purple-500",
   },
 ];
@@ -82,6 +82,43 @@ const AboutUsPage = () => {
               ease: "easeInOut",
             }}
           />
+          
+          {/* Decorative elements */}
+          <motion.div
+            className="absolute top-1/3 right-1/4 w-20 h-20 border-2 border-yellow-400/20 rounded-lg rotate-45"
+            animate={{ rotate: [45, 405] }}
+            transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+          />
+          <motion.div
+            className="absolute bottom-1/3 left-1/4 w-16 h-16 border-2 border-blue-400/20 rounded-full"
+            animate={{ scale: [1, 1.3, 1] }}
+            transition={{ duration: 20, repeat: Infinity }}
+          />
+          
+          {/* Grid pattern */}
+          <div className="absolute inset-0 opacity-5" style={{
+            backgroundImage: 'linear-gradient(rgba(234, 179, 8, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(234, 179, 8, 0.1) 1px, transparent 1px)',
+            backgroundSize: '60px 60px'
+          }} />
+        </div>
+        
+        {/* Decorative image placeholders */}
+        <div className="absolute left-0 top-1/3 w-48 h-64 opacity-10 pointer-events-none hidden lg:block">
+          <div className="relative h-full w-full bg-gradient-to-br from-yellow-400/20 to-gray-800/50 rounded-r-3xl border-r-2 border-yellow-400/30 flex items-center justify-center">
+            <div className="text-center p-4">
+              <div className="text-4xl mb-2">🏢</div>
+              <p className="text-gray-700 text-xs">Thêm hình ảnh</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="absolute right-0 bottom-1/4 w-48 h-64 opacity-10 pointer-events-none hidden lg:block">
+          <div className="relative h-full w-full bg-gradient-to-br from-blue-400/20 to-gray-800/50 rounded-l-3xl border-l-2 border-blue-400/30 flex items-center justify-center">
+            <div className="text-center p-4">
+              <div className="text-4xl mb-2">👥</div>
+              <p className="text-gray-700 text-xs">Thêm hình ảnh</p>
+            </div>
+          </div>
         </div>
 
         <div className="container mx-auto py-20 md:py-32 px-6 relative z-10" ref={ref}>
@@ -98,7 +135,7 @@ const AboutUsPage = () => {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="inline-block px-4 py-2 bg-yellow-400/20 text-yellow-600 rounded-full text-sm font-semibold mb-4"
             >
-              Về chúng tôi
+              Về S+ Studio
             </motion.span>
             <Title
               level={1}
@@ -109,13 +146,14 @@ const AboutUsPage = () => {
             >
               Về{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600">
-                S Cộng Studio
+                S+ Studio
               </span>
             </Title>
             <Paragraph className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              S Cộng Studio được thành lập với sứ mệnh cung cấp một không gian sáng tạo chuyên
-              nghiệp, nơi các nhiếp ảnh gia, nhà làm phim và các nhà sáng tạo nội dung có thể biến
-              những ý tưởng táo bạo nhất của mình thành hiện thực.
+              <strong>S+ Studio</strong> là dịch vụ cho thuê studio chuyên nghiệp tại TP.HCM, 
+              chuyên cung cấp không gian và thiết bị cho các dự án quay phim, chụp ảnh, livestream 
+              và sản xuất nội dung. Với 4 studio đa dạng từ 100m² đến 300m², đầy đủ thiết bị hiện đại, 
+              chúng tôi cam kết mang đến trải nghiệm tốt nhất cho mọi khách hàng.
             </Paragraph>
           </motion.div>
 
@@ -128,16 +166,18 @@ const AboutUsPage = () => {
                 transition={{ duration: 0.8, delay: 0.3 }}
               >
                 <Title level={2} className="text-3xl md:text-4xl font-bold mb-6 text-gray-900">
-                  Sứ mệnh của chúng tôi
+                  Sứ mệnh của S+ Studio
                 </Title>
                 <Paragraph className="text-lg text-gray-600 leading-relaxed mb-6">
-                  Chúng tôi tin rằng không gian làm việc chuyên nghiệp là nền tảng cho sự sáng tạo
-                  không giới hạn. Vì vậy, chúng tôi cam kết mang đến những studio được trang bị
-                  tốt nhất, cùng với sự hỗ trợ tận tâm từ đội ngũ chuyên gia.
+                  Chúng tôi tin rằng mọi dự án sáng tạo đều xứng đáng có một không gian chuyên nghiệp 
+                  và thiết bị chất lượng. S+ Studio ra đời với mong muốn giúp các nhiếp ảnh gia, 
+                  nhà làm phim, content creator và doanh nghiệp dễ dàng tiếp cận studio chuyên nghiệp 
+                  với mức giá hợp lý.
                 </Paragraph>
                 <Paragraph className="text-lg text-gray-600 leading-relaxed">
-                  Mỗi dự án của bạn đều được chúng tôi coi trọng và đầu tư tâm huyết, từ khâu tư
-                  vấn đến thực hiện, đảm bảo mang lại kết quả vượt ngoài mong đợi.
+                  Chúng tôi không chỉ cho thuê studio, mà còn đồng hành cùng bạn trong suốt quá trình 
+                  sản xuất. Từ tư vấn setup, hỗ trợ kỹ thuật đến hậu cần, đội ngũ của chúng tôi luôn 
+                  sẵn sàng để đảm bảo dự án của bạn thành công.
                 </Paragraph>
               </motion.div>
             </Col>
@@ -171,7 +211,7 @@ const AboutUsPage = () => {
                 Giá trị cốt lõi
               </Title>
               <Paragraph className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Những giá trị mà chúng tôi luôn hướng tới và cam kết thực hiện
+                Những cam kết của S+ Studio đối với khách hàng
               </Paragraph>
             </div>
             <Row gutter={[24, 24]}>
@@ -216,7 +256,7 @@ const AboutUsPage = () => {
                 Gặp gỡ đội ngũ
               </Title>
               <Paragraph className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Những con người tài năng và tận tâm đứng sau S Cộng Studio
+                Đội ngũ chuyên nghiệp và tận tâm của S+ Studio
               </Paragraph>
             </div>
             <Row gutter={[32, 32]} justify="center">

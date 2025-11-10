@@ -16,9 +16,9 @@ const WhyChooseUsSection = () => {
     <Section
       ref={ref}
       className="relative bg-gradient-to-b from-gray-50 via-white to-gray-50 py-12 md:py-16 px-4 md:px-6 lg:px-16 overflow-hidden"
-      badge="Tại sao chọn chúng tôi?"
-      title="Tại sao chọn S Cộng?"
-      subtitle="Chúng tôi mang đến một giải pháp toàn diện cho sản phẩm của bạn với cam kết chất lượng và dịch vụ xuất sắc."
+      badge="Tại sao chọn S+ Studio?"
+      title="Lý do khách hàng tin tưởng"
+      subtitle="Dịch vụ cho thuê studio chuyên nghiệp với thiết bị hiện đại, không gian đa dạng và hỗ trợ tận tâm."
     >
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -46,6 +46,26 @@ const WhyChooseUsSection = () => {
             ease: "easeInOut",
           }}
         />
+        
+        {/* Decorative lines */}
+        <div className="absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-transparent via-yellow-400/20 to-transparent" />
+        <div className="absolute top-0 right-1/4 w-px h-full bg-gradient-to-b from-transparent via-blue-400/20 to-transparent" />
+        
+        {/* Geometric shapes */}
+        <motion.div
+          className="absolute top-20 right-20 w-16 h-16 border-2 border-yellow-400/20 rounded-full"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+        />
+        <motion.div
+          className="absolute bottom-20 left-20 w-12 h-12 border-2 border-blue-400/20 rotate-45"
+          animate={{ rotate: [45, 405] }}
+          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+        />
+      </div>
+      
+      {/* Center decorative image placeholder - Hidden */}
+      <div className="hidden">
       </div>
 
       <div className="relative z-10">
@@ -68,10 +88,10 @@ const WhyChooseUsSection = () => {
                       iconSize={32}
                     />
                   </div>
-                  <Title level={4} className="text-xl font-bold text-gray-900 mb-3">
+                  <Title level={4} className="text-xl font-extrabold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent mb-3">
                     {feature.title}
                   </Title>
-                  <Paragraph className="text-gray-600 leading-relaxed">
+                  <Paragraph className="text-gray-700 leading-relaxed font-medium">
                     {feature.description}
                   </Paragraph>
                 </div>

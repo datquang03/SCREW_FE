@@ -1,6 +1,6 @@
 export const STATS = [
-  { number: "100+", label: "Dự án thành công" },
-  { number: "50+", label: "Khách hàng hài lòng" },
-  { number: "24/7", label: "Hỗ trợ tận tâm" },
+  { number: "4", label: "Studio đa dạng" },
+  { number: "500+", label: "Khách hàng tin tưởng" },
+  { number: "24/7", label: "Hỗ trợ đặt lịch" },
 ];
 

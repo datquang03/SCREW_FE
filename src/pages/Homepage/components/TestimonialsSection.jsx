@@ -19,8 +19,8 @@ const TestimonialsSection = () => {
       ref={ref}
       className="relative bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 py-12 md:py-16 px-4 md:px-6 lg:px-16 overflow-hidden"
       badge="Phản hồi từ khách hàng"
-      title="Khách hàng nói gì"
-      subtitle="Những chia sẻ chân thành từ khách hàng đã tin tưởng và sử dụng dịch vụ của chúng tôi"
+      title="Khách hàng nói gì về S+ Studio"
+      subtitle="Những chia sẻ từ các khách hàng đã thuê studio tại S+ Studio"
       containerClass="container mx-auto relative z-10"
     >
       {/* Animated background */}
@@ -51,7 +51,7 @@ const TestimonialsSection = () => {
             ease: "easeInOut",
           }}
         />
-      </div>
+        </div>
 
       <div className="relative z-10">
 
@@ -136,7 +136,7 @@ const TestimonialsSection = () => {
                   <Paragraph className="text-gray-400 text-sm">
                     {testimonial.title}
                   </Paragraph>
-                </div>
+              </div>
               </motion.div>
             </SwiperSlide>
           ))}

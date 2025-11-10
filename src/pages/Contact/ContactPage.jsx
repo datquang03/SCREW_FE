@@ -25,19 +25,19 @@ const ContactPage = () => {
     {
       icon: FiMail,
       title: "Email",
-      content: "contact@scongstudio.com",
+      content: "contact@splusstudio.com",
       color: "from-yellow-400 to-yellow-500",
     },
     {
       icon: FiPhone,
-      title: "Điện thoại",
+      title: "Hotline",
       content: "(+84) 123 456 789",
       color: "from-blue-400 to-blue-500",
     },
     {
       icon: FiMapPin,
-      title: "Địa chỉ",
-      content: "123 Đường ABC, Quận 4, TP. Hồ Chí Minh",
+      title: "Địa chỉ Studio",
+      content: "Quận 4, TP. Hồ Chí Minh",
       color: "from-purple-400 to-purple-500",
     },
   ];
@@ -71,7 +71,24 @@ const ContactPage = () => {
               ease: "easeInOut",
             }}
           />
+
+          {/* Decorative geometric shapes */}
+          <div className="absolute top-1/4 right-1/4 w-24 h-24 border-2 border-yellow-400/20 rounded-lg rotate-45 opacity-30" />
+          <div className="absolute bottom-1/4 left-1/4 w-32 h-32 border-2 border-blue-400/20 rounded-full opacity-30" />
+
+          {/* Pattern overlay */}
+          <div
+            className="absolute inset-0 opacity-5"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle at 2px 2px, rgba(234, 179, 8, 0.3) 1px, transparent 0)",
+              backgroundSize: "40px 40px",
+            }}
+          />
         </div>
+
+        {/* Decorative image placeholder - Hidden to avoid ugly display */}
+        <div className="hidden"></div>
 
         <div
           className="container mx-auto py-20 md:py-32 px-6 relative z-10"
@@ -90,7 +107,7 @@ const ContactPage = () => {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="inline-block px-4 py-2 bg-yellow-400/20 text-yellow-600 rounded-full text-sm font-semibold mb-4"
             >
-              Liên hệ với chúng tôi
+              Đặt lịch thuê Studio
             </motion.span>
             <Title
               level={1}
@@ -99,14 +116,15 @@ const ContactPage = () => {
                 textShadow: "0 4px 20px rgba(0,0,0,0.1)",
               }}
             >
-              Hãy bắt đầu{" "}
+              Liên hệ{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600">
-                cuộc trò chuyện
+                S+ Studio
               </span>
             </Title>
-            <Paragraph className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Gửi tin nhắn cho chúng tôi và chúng tôi sẽ liên hệ lại sớm nhất có
-              thể. Chúng tôi luôn sẵn sàng hỗ trợ bạn!
+            <Paragraph className="text-lg md:text-xl text-gray-700 max-w-2xl mx-auto font-semibold drop-shadow-sm">
+              Đặt lịch thuê studio, tư vấn về thiết bị hoặc bất kỳ câu hỏi nào
+              về dịch vụ. Chúng tôi sẽ phản hồi trong vòng{" "}
+              <span className="text-yellow-600 font-bold">2 giờ làm việc</span>.
             </Paragraph>
           </motion.div>
 
@@ -120,7 +138,7 @@ const ContactPage = () => {
               >
                 <Title
                   level={3}
-                  className="text-2xl font-bold mb-8 text-gray-900"
+                  className="text-2xl md:text-3xl font-extrabold mb-8 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent"
                 >
                   Thông tin liên hệ
                 </Title>
@@ -136,7 +154,7 @@ const ContactPage = () => {
                         whileHover={{ scale: 1.05, x: 10 }}
                       >
                         <Card
-                          className="rounded-2xl border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-white"
+                          className="rounded-2xl border-0 shadow-[0_10px_40px_rgba(0,0,0,0.1)] hover:shadow-[0_20px_60px_rgba(234,179,8,0.3)] transition-all duration-300 bg-gradient-to-br from-white to-gray-50"
                           style={{ transformStyle: "preserve-3d" }}
                         >
                           <div className="flex items-start gap-4">
@@ -150,11 +168,11 @@ const ContactPage = () => {
                             <div className="flex-1">
                               <Title
                                 level={5}
-                                className="mb-2 text-gray-900 font-semibold"
+                                className="mb-2 text-gray-900 font-extrabold text-lg"
                               >
                                 {info.title}
                               </Title>
-                              <Paragraph className="text-gray-600 mb-0">
+                              <Paragraph className="text-gray-700 mb-0 font-semibold text-base">
                                 {info.content}
                               </Paragraph>
                             </div>
