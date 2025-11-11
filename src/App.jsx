@@ -88,6 +88,7 @@ const AppContent = () => {
             </Route>
 
             {/* STAFF DASHBOARD */}
+            {/*
             <Route
               path="/dashboard/staff/*"
               element={
@@ -100,8 +101,10 @@ const AppContent = () => {
               <Route path="order" element={<StaffOrderPage />} />
               <Route path="profile" element={<StaffProfilePage />} />
             </Route>
+            */}
 
             {/* ADMIN DASHBOARD */}
+            {/*         
             <Route
               path="/dashboard/admin/*"
               element={
@@ -113,6 +116,7 @@ const AppContent = () => {
               <Route index element={<AdminDashboardPage />} />
               <Route path="users" element={<AdminUserPage />} />
             </Route>
+            */}
           </Routes>
         </motion.div>
       </AnimatePresence>

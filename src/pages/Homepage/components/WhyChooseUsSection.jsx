@@ -90,11 +90,11 @@ const WhyChooseUsSection = () => {
                   </div>
                   <Title level={4} className="text-xl font-extrabold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent mb-3">
                     {feature.title}
-                  </Title>
+          </Title>
                   <Paragraph className="text-gray-700 leading-relaxed font-medium">
                     {feature.description}
-                  </Paragraph>
-                </div>
+          </Paragraph>
+        </div>
               </AnimatedCard>
             );
           })}
