@@ -90,9 +90,9 @@ const AppContent = () => {
             <Route
               path="/dashboard/customer/*"
               element={
-                // <ProtectedRouteForAll>
-                <DashboardLayout sidebar={UserSidebar} />
-                // </ProtectedRouteForAll>
+                <ProtectedRouteForAll>
+                  <DashboardLayout sidebar={UserSidebar} />
+                </ProtectedRouteForAll>
               }
             >
               <Route index element={<UserDashboardPage />} />
