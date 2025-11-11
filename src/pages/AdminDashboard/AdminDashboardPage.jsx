@@ -5,16 +5,33 @@ import DataTable from "../../components/dashboard/DataTable";
 import MiniLineChart from "../../components/dashboard/MiniLineChart";
 import MiniBarChart from "../../components/dashboard/MiniBarChart";
 import DonutChart from "../../components/dashboard/DonutChart";
-import { UserOutlined, TeamOutlined, DollarCircleOutlined, BarChartOutlined } from "@ant-design/icons";
+import {
+  UserOutlined,
+  TeamOutlined,
+  DollarCircleOutlined,
+  BarChartOutlined,
+} from "@ant-design/icons";
 
 const AdminDashboardPage = () => {
   const usersColumns = [
     { title: "User", dataIndex: "name" },
     { title: "Email", dataIndex: "email" },
     { title: "Vai trò", dataIndex: "role" },
-    { title: "Trạng thái", dataIndex: "status", render: (v) => (
-      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${v === "Active" ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}`}>{v}</span>
-    ) },
+    {
+      title: "Trạng thái",
+      dataIndex: "status",
+      render: (v) => (
+        <span
+          className={`px-2 py-1 rounded-full text-xs font-semibold ${
+            v === "Active"
+              ? "bg-emerald-100 text-emerald-700"
+              : "bg-red-100 text-red-700"
+          }`}
+        >
+          {v}
+        </span>
+      ),
+    },
   ];
 
   const usersData = [
@@ -48,10 +65,30 @@ const AdminDashboardPage = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
-        <KPIStat title="Tổng User" value="1.240" icon={<UserOutlined />} gradient="from-indigo-400 to-violet-500" />
-        <KPIStat title="Nhân sự" value="26" icon={<TeamOutlined />} gradient="from-sky-400 to-cyan-500" />
-        <KPIStat title="Doanh thu (tháng)" value="118.0tr" icon={<DollarCircleOutlined />} gradient="from-emerald-400 to-teal-500" />
-        <KPIStat title="Tỉ lệ tăng trưởng" value="+12%" icon={<BarChartOutlined />} gradient="from-rose-400 to-pink-500" />
+        <KPIStat
+          title="Tổng User"
+          value="1.240"
+          icon={<UserOutlined />}
+          gradient="from-indigo-400 to-violet-500"
+        />
+        <KPIStat
+          title="Nhân sự"
+          value="26"
+          icon={<TeamOutlined />}
+          gradient="from-sky-400 to-cyan-500"
+        />
+        <KPIStat
+          title="Doanh thu (tháng)"
+          value="118.0tr"
+          icon={<DollarCircleOutlined />}
+          gradient="from-emerald-400 to-teal-500"
+        />
+        <KPIStat
+          title="Tỉ lệ tăng trưởng"
+          value="+12%"
+          icon={<BarChartOutlined />}
+          gradient="from-rose-400 to-pink-500"
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -66,16 +103,33 @@ const AdminDashboardPage = () => {
           <h3 className="font-bold text-gray-800 mb-3">Kênh đặt chỗ</h3>
           <DonutChart value={64} color="#10b981" label="Website / Tất cả" />
           <div className="mt-4 text-sm text-gray-700 space-y-1">
-            <div className="flex justify-between"><span>Website</span><span className="font-semibold">64%</span></div>
-            <div className="flex justify-between"><span>Facebook</span><span className="font-semibold">22%</span></div>
-            <div className="flex justify-between"><span>Hotline</span><span className="font-semibold">14%</span></div>
+            <div className="flex justify-between">
+              <span>Website</span>
+              <span className="font-semibold">64%</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Facebook</span>
+              <span className="font-semibold">22%</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Hotline</span>
+              <span className="font-semibold">14%</span>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <DataTable title="Người dùng gần đây" columns={usersColumns} data={usersData} />
-        <DataTable title="Tổng hợp doanh thu" columns={revenueColumns} data={revenueData} />
+        <DataTable
+          title="Người dùng gần đây"
+          columns={usersColumns}
+          data={usersData}
+        />
+        <DataTable
+          title="Tổng hợp doanh thu"
+          columns={revenueColumns}
+          data={revenueData}
+        />
       </div>
     </div>
   );
