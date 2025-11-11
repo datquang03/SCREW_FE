@@ -27,7 +27,7 @@ const DashboardNavbar = () => {
   }, []);
 
   return (
-    <header className="w-full fixed top-0 left-0 z-50 bg-white/90 backdrop-blur-md shadow-sm border-b border-gray-200">
+    <header className="w-full md:w-[calc(100%-16rem)] fixed top-0 md:left-64 left-0 z-40 bg-white/90 backdrop-blur-md shadow-sm border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 flex items-center justify-between">
         {/* LOGO */}
         <div onClick={() => navigate("/dashboard/staff")} className="flex items-center gap-2 cursor-pointer">

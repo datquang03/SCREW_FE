@@ -16,13 +16,25 @@ import VerifyEmailPage from "./pages/Authentication/Verify/Email";
 import DashboardLayout from "./components/layout/DashboardLayout";
 import StaffSidebar from "./pages/StaffDashboard/StaffSidebar";
 import AdminSidebar from "./pages/AdminDashboard/AdminSidebar";
+import UserSidebar from "./pages/UserDashboard/UserSidebar";
 import UserDashboardPage from "./pages/UserDashboard/UserDashboardPage";
+import UserBookingsPage from "./pages/UserDashboard/UserBookingsPage";
+import UserStudiosPage from "./pages/UserDashboard/UserStudiosPage";
+import UserHistoryPage from "./pages/UserDashboard/UserHistoryPage";
+import UserProfilePage from "./pages/UserDashboard/UserProfilePage";
 import StaffDashboardPage from "./pages/StaffDashboard/StaffDashboardPage";
 import StaffOrderPage from "./pages/StaffDashboard/StaffOrderPage";
+import StaffSchedulePage from "./pages/StaffDashboard/StaffSchedulePage";
+import StaffStudiosPage from "./pages/StaffDashboard/StaffStudiosPage";
+import StaffEquipmentPage from "./pages/StaffDashboard/StaffEquipmentPage";
 import StaffProfilePage from "./pages/StaffDashboard/StaffProfilePage";
 import AdminDashboardPage from "./pages/AdminDashboard/AdminDashboardPage";
 import AdminUserPage from "./pages/AdminDashboard/AdminUserPage";
-import UserProfilePage from "./pages/Profile/UserProfilePage";
+import AdminStaffPage from "./pages/AdminDashboard/AdminStaffPage";
+import AdminStudiosPage from "./pages/AdminDashboard/AdminStudiosPage";
+import AdminRevenuePage from "./pages/AdminDashboard/AdminRevenuePage";
+import AdminReportsPage from "./pages/AdminDashboard/AdminReportsPage";
+import AdminSettingsPage from "./pages/AdminDashboard/AdminSettingsPage";
 import ScrollToTop from "./components/ScrollToTop";
 
 // === IMPORT PROTECTED ROUTES ===
@@ -74,16 +86,19 @@ const AppContent = () => {
             <Route path="/verify-email" element={<VerifyEmailPage />} />
             <Route path="/studio" element={<StudioPage />} />
 
-            {/* USER DASHBOARD */}
+            {/* CUSTOMER DASHBOARD */}
             <Route
-              path="/dashboard/*"
+              path="/dashboard/customer/*"
               element={
-                <ProtectedRouteForAll>
-                  <DashboardLayout />
-                </ProtectedRouteForAll>
+                // <ProtectedRouteForAll>
+                <DashboardLayout sidebar={UserSidebar} />
+                // </ProtectedRouteForAll>
               }
             >
               <Route index element={<UserDashboardPage />} />
+              <Route path="bookings" element={<UserBookingsPage />} />
+              <Route path="studios" element={<UserStudiosPage />} />
+              <Route path="history" element={<UserHistoryPage />} />
               <Route path="profile" element={<UserProfilePage />} />
             </Route>
 
@@ -98,6 +113,9 @@ const AppContent = () => {
             >
               <Route index element={<StaffDashboardPage />} />
               <Route path="order" element={<StaffOrderPage />} />
+              <Route path="schedule" element={<StaffSchedulePage />} />
+              <Route path="studios" element={<StaffStudiosPage />} />
+              <Route path="equipment" element={<StaffEquipmentPage />} />
               <Route path="profile" element={<StaffProfilePage />} />
             </Route>
 
@@ -112,6 +130,11 @@ const AppContent = () => {
             >
               <Route index element={<AdminDashboardPage />} />
               <Route path="users" element={<AdminUserPage />} />
+              <Route path="staff" element={<AdminStaffPage />} />
+              <Route path="studios" element={<AdminStudiosPage />} />
+              <Route path="revenue" element={<AdminRevenuePage />} />
+              <Route path="reports" element={<AdminReportsPage />} />
+              <Route path="settings" element={<AdminSettingsPage />} />
             </Route>
           </Routes>
         </motion.div>
