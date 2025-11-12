@@ -52,7 +52,7 @@ const LoginPage = () => {
       const result = await dispatch(login(data)).unwrap();
       setToast({ type: 'success', message: result.message || 'Đăng nhập thành công!' });
       reset();
-      setTimeout(() => navigate('/dashboard', { replace: true }), 1500);
+      setTimeout(() => navigate('/', { replace: true }), 1500);
     } catch (err) {
       setToast({ type: 'error', message: err.message || 'Đăng nhập thất bại' });
     }
@@ -133,7 +133,7 @@ const LoginPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className={`mt-6 w-full py-4 rounded-2xl font-bold text-white flex items-center justify-center gap-3 shadow-lg transition-all duration-300
+              className={`mt-6 w-full py-4 rounded-2xl font-bold text-white flex items-center justify-center gap-3 shadow-lg transition-all duration-300 cursor-pointer
                 ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 active:scale-95'}`}
             >
               {loading ? (

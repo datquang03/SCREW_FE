@@ -153,7 +153,17 @@ const Navbar = () => {
                         <button
                           onClick={() => {
                             setDropdownOpen(false);
-                            navigate("/dashboard");
+                            // Kiểm tra role và navigate tương ứng
+                            const role = user.role; // Giả sử user.role tồn tại
+                            let dashboardPath = "/dashboard"; // Mặc định
+                            if (role === "customer") {
+                              dashboardPath = "/dashboard/customer";
+                            } else if (role === "staff") {
+                              dashboardPath = "/dashboard/staff";
+                            } else if (role === "admin") {
+                              dashboardPath = "/dashboard/admin";
+                            }
+                            navigate(dashboardPath);
                           }}
                           className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
                         >
@@ -169,17 +179,6 @@ const Navbar = () => {
                           className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         >
                           <UserOutlined /> Hồ sơ
-                        </button>
-                      </li>
-                      <li>
-                        <button
-                          onClick={() => {
-                            setDropdownOpen(false);
-                            navigate("/settings");
-                          }}
-                          className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        >
-                          <SettingOutlined /> Cài đặt
                         </button>
                       </li>
                       <li>
