@@ -52,9 +52,16 @@ const StaffSidebar = () => {
     },
   ];
 
-  const selectedKeys = menuItems
-    .filter((item) => location.pathname.startsWith(item.path))
-    .map((item) => item.key);
+  const matchedItem = menuItems
+    .filter((item) => {
+      if (location.pathname === item.path) {
+        return true;
+      }
+      return location.pathname.startsWith(`${item.path}/`);
+    })
+    .sort((a, b) => b.path.length - a.path.length)[0];
+
+  const selectedKeys = matchedItem ? [matchedItem.key] : [menuItems[0].key];
 
   return (
     <div className="h-[calc(100vh-4rem)] bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-white flex flex-col shadow-2xl overflow-y-auto">
