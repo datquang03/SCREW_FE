@@ -148,6 +148,20 @@ export const changePassword = createAsyncThunk(
     }
   }
 );
+// === THUNKS (THÊM MỚI) ===
+export const registerStaff = createAsyncThunk(
+  "auth/registerStaff",
+  async (data, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.post("/auth/register/staff", data);
+      return response.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Đăng ký nhân viên thất bại" }
+      );
+    }
+  }
+);
 
 // === SLICE ===
 const authSlice = createSlice({
@@ -267,6 +281,22 @@ const authSlice = createSlice({
           state.token = null;
           clearStorage();
         }
+      })
+      // === REGISTER STAFF ===
+      .addCase(registerStaff.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(registerStaff.fulfilled, (state, action) => {
+        state.loading = false;
+        const email = action.meta.arg.email;
+        state.user = { ...action.payload.user, email, verified: false };
+        saveToStorage(state.user, null);
+        localStorage.setItem("pendingEmail", email);
+      })
+      .addCase(registerStaff.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });
