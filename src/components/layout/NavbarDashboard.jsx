@@ -1,16 +1,47 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { LogoutOutlined, SettingOutlined, UserOutlined } from "@ant-design/icons";
-import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useLocation } from "react-router-dom";
+import {
+  FiLogOut,
+  FiSettings,
+  FiUser,
+  FiChevronDown,
+  FiMenu,
+} from "react-icons/fi";
 import { logout } from "../../features/auth/authSlice";
 import SPlusLogo from "../../assets/S+Logo.png";
 
-const DashboardNavbar = () => {
+const THEMES = {
+  customer: {
+    bg: "bg-gradient-to-r from-amber-50 via-white to-white",
+    accent: "text-amber-600",
+    pill: "bg-amber-100 text-amber-700",
+  },
+  staff: {
+    bg: "bg-gradient-to-r from-emerald-50 via-white to-white",
+    accent: "text-emerald-600",
+    pill: "bg-emerald-100 text-emerald-700",
+  },
+  admin: {
+    bg: "bg-gradient-to-r from-indigo-50 via-white to-white",
+    accent: "text-indigo-600",
+    pill: "bg-indigo-100 text-indigo-700",
+  },
+  default: {
+    bg: "bg-white",
+    accent: "text-gray-900",
+    pill: "bg-gray-100 text-gray-700",
+  },
+};
+
+const DashboardNavbar = ({ variant = "default" }) => {
+  const theme = THEMES[variant] || THEMES.default;
+  const { user } = useSelector((state) => state.auth);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { user } = useSelector((state) => state.auth);
+  const location = useLocation();
 
   const handleLogout = () => {
     dispatch(logout());
@@ -19,75 +50,112 @@ const DashboardNavbar = () => {
   };
 
   useEffect(() => {
-    const closeDropdown = (e) => {
-      if (!e.target.closest(".avatar-dropdown")) setDropdownOpen(false);
+    const close = (e) => {
+      if (!e.target.closest(".dashboard-avatar")) setDropdownOpen(false);
     };
-    document.addEventListener("mousedown", closeDropdown);
-    return () => document.removeEventListener("mousedown", closeDropdown);
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
   }, []);
 
+  const getDashboardPath = () => {
+    if (user?.role === "admin") return "/dashboard/admin";
+    if (user?.role === "staff") return "/dashboard/staff";
+    return "/dashboard/customer";
+  };
+
   return (
-    <header className="w-full md:w-[calc(100%-16rem)] fixed top-0 md:left-64 left-0 z-40 bg-white/90 backdrop-blur-md shadow-sm border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 flex items-center justify-between">
-        {/* LOGO */}
-        <div onClick={() => navigate("/dashboard/staff")} className="flex items-center gap-2 cursor-pointer">
+    <header
+      className={`fixed top-0 left-0 lg:left-64 xl:left-72 right-0 z-30 border-b border-white/40 shadow backdrop-blur-xl ${theme.bg}`}
+    >
+      <div className="flex items-center justify-between px-4 sm:px-6 lg:px-10 py-3">
+        <button onClick={() => navigate(getDashboardPath())} className="group">
           <motion.img
             src={SPlusLogo}
-            alt="S+ Logo"
-            className="h-9 w-auto object-contain"
-            whileHover={{ rotate: [0, -10, 10, -10, 0] }}
+            alt="S+ logo"
+            className="h-20 md:h-24 w-auto object-contain drop-shadow-xl"
+            whileHover={{ rotate: [-4, 4, -2, 0], scale: 1.05 }}
             transition={{ duration: 0.5 }}
           />
-          <span className="text-gray-800 font-semibold text-base">S+ Dashboard</span>
-        </div>
+        </button>
 
-        {/* USER DROPDOWN */}
-        <div className="relative avatar-dropdown">
-          <motion.button
-            onClick={() => setDropdownOpen(!dropdownOpen)}
-            whileHover={{ scale: 1.05 }}
-            className="flex items-center gap-2 p-1 rounded-full bg-gray-100 hover:bg-gray-200"
-          >
-            <img
-              src={user?.avatar || "https://png.pngtree.com/png-clipart/20191120/original/pngtree-outline-user-icon-png-image_5045523.jpg"}
-              alt="User Avatar"
-              className="w-9 h-9 rounded-full object-cover border border-gray-300"
-            />
-          </motion.button>
+        <div className="flex items-center gap-3">
+          <div className="relative dashboard-avatar">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              onClick={() => setDropdownOpen((prev) => !prev)}
+              className="flex items-center gap-2 rounded-full pl-1 pr-3 py-1.5 bg-white shadow-lg border border-gray-100"
+            >
+              <img
+                src={
+                  user?.avatar ||
+                  "https://png.pngtree.com/png-clipart/20191120/original/pngtree-outline-user-icon-png-image_5045523.jpg"
+                }
+                alt="avatar"
+                className="w-10 h-10 rounded-full object-cover border border-white shadow"
+              />
+              <span className="hidden sm:block text-sm font-semibold text-gray-800">
+                {user?.fullName || user?.username || "User"}
+              </span>
+              <FiChevronDown className="text-gray-400" />
+            </motion.button>
 
-          <AnimatePresence>
-            {dropdownOpen && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="absolute right-0 mt-3 w-48 bg-white rounded-lg shadow-lg border border-gray-100 z-[110]"
-              >
-                <div className="p-3 border-b border-gray-100">
-                  <p className="text-sm font-medium text-gray-900">{user?.fullName || user?.username}</p>
-                  <p className="text-xs text-gray-500 truncate">{user?.email}</p>
-                </div>
-                <ul className="py-1">
-                  <li>
-                    <button onClick={() => { setDropdownOpen(false); navigate("/dashboard/staff/profile"); }} className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                      <UserOutlined /> Hồ sơ
+            <AnimatePresence>
+              {dropdownOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50"
+                >
+                  <div className="p-4 bg-gray-50">
+                    <p className="text-sm font-semibold text-gray-900">
+                      {user?.fullName || user?.username}
+                    </p>
+                    <p className="text-xs text-gray-500 truncate">
+                      {user?.email}
+                    </p>
+                  </div>
+
+                  <nav className="flex flex-col py-1">
+                    <button
+                      onClick={() => {
+                        setDropdownOpen(false);
+                        navigate(getDashboardPath());
+                      }}
+                      className="px-4 py-3 flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      <FiMenu /> Tới dashboard
                     </button>
-                  </li>
-                  <li>
-                    <button onClick={() => { setDropdownOpen(false); navigate("/dashboard/staff/settings"); }} className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                      <SettingOutlined /> Cài đặt
+                    <button
+                      onClick={() => {
+                        setDropdownOpen(false);
+                        navigate(`${getDashboardPath()}/profile`);
+                      }}
+                      className="px-4 py-3 flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      <FiUser /> Hồ sơ
                     </button>
-                  </li>
-                  <li className="border-t border-gray-200">
-                    <button onClick={handleLogout} className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50">
-                      <LogoutOutlined /> Đăng xuất
+                    <button
+                      onClick={() => {
+                        setDropdownOpen(false);
+                        navigate(`${getDashboardPath()}/settings`);
+                      }}
+                      className="px-4 py-3 flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      <FiSettings /> Cài đặt
                     </button>
-                  </li>
-                </ul>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                    <button
+                      onClick={handleLogout}
+                      className="px-4 py-3 flex items-center gap-2 text-sm text-red-600 hover:bg-red-50 border-t border-gray-100"
+                    >
+                      <FiLogOut /> Đăng xuất
+                    </button>
+                  </nav>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
     </header>

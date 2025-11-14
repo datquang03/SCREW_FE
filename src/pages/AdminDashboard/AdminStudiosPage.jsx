@@ -1,10 +1,13 @@
 import React from "react";
 import { Card, Typography, Table, Tag, Progress, Button } from "antd";
-import { VideoCameraAddOutlined } from "@ant-design/icons";
+import { FiVideo } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
 const { Title, Text } = Typography;
 
 const AdminStudiosPage = () => {
+  const navigate = useNavigate();
+
   const columns = [
     { title: "Studio", dataIndex: "name" },
     { title: "Loại hình", dataIndex: "type" },
@@ -63,39 +66,55 @@ const AdminStudiosPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <Title level={2} className="mb-2">
-            Hiệu suất studio
-          </Title>
-          <Text className="text-gray-600">
-            Theo dõi tình trạng, hiệu suất và doanh thu từng không gian
-          </Text>
+      <div className="relative overflow-hidden rounded-2xl p-6 md:p-8 bg-gradient-to-br from-cyan-100 via-blue-50 to-white shadow-lg border border-cyan-200/50">
+        <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-cyan-300/30 blur-2xl" />
+        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <Title level={2} className="mb-3 text-gray-900">
+              Hiệu suất studio
+            </Title>
+            <Text className="text-base text-gray-700 font-medium">
+              Theo dõi tình trạng, hiệu suất và doanh thu từng không gian
+            </Text>
+          </div>
+          <Button 
+            type="primary" 
+            size="large" 
+            icon={<FiVideo />} 
+            className="font-semibold shadow-lg"
+            onClick={() => navigate("/dashboard/staff/studios")}
+          >
+            Thêm studio mới
+          </Button>
         </div>
-        <Button type="primary" icon={<VideoCameraAddOutlined />}>
-          Thêm studio mới
-        </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <Title level={4}>Tổng số studio</Title>
-          <div className="text-3xl font-bold">4</div>
-          <Text type="secondary">3 hoạt động, 1 bảo trì</Text>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <Card className="shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+          <Title level={4} className="text-gray-700 mb-3">Tổng số studio</Title>
+          <div className="text-4xl font-extrabold text-gray-900 mb-2">4</div>
+          <Text className="text-sm text-gray-600 font-medium">3 hoạt động, 1 bảo trì</Text>
         </Card>
-        <Card>
-          <Title level={4}>Tỷ lệ lấp đầy</Title>
-          <Progress percent={74} strokeColor="#f59e0b" />
-          <Text type="secondary">+6% so với tháng trước</Text>
+        <Card className="shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+          <Title level={4} className="text-gray-700 mb-3">Tỷ lệ lấp đầy</Title>
+          <Progress percent={74} strokeColor="#f59e0b" className="mb-2" />
+          <Text className="text-sm text-gray-600 font-medium">+6% so với tháng trước</Text>
         </Card>
-        <Card>
-          <Title level={4}>Đánh giá</Title>
-          <div className="text-3xl font-bold text-purple-500">4.85/5</div>
-          <Text type="secondary">Dựa trên 320 review</Text>
+        <Card className="shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+          <Title level={4} className="text-gray-700 mb-3">Đánh giá</Title>
+          <div className="text-4xl font-extrabold text-purple-600 mb-2">4.85/5</div>
+          <Text className="text-sm text-gray-600 font-medium">Dựa trên 320 review</Text>
         </Card>
       </div>
 
-      <Table columns={columns} dataSource={data} pagination={{ pageSize: 8 }} />
+      <Card className="shadow-lg border border-gray-100">
+        <Table 
+          columns={columns} 
+          dataSource={data} 
+          pagination={{ pageSize: 8 }} 
+          className="rounded-lg"
+        />
+      </Card>
     </div>
   );
 };

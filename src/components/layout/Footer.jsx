@@ -1,44 +1,114 @@
 import React from "react";
-import { Row, Col, Typography } from "antd";
-import { FacebookOutlined, InstagramOutlined, YoutubeOutlined } from "@ant-design/icons";
+import { Typography } from "antd";
+import { FiFacebook, FiInstagram, FiYoutube, FiMapPin, FiPhone, FiMail } from "react-icons/fi";
 
-const { Title, Link, Text } = Typography;
+const { Title, Text, Link } = Typography;
 
-const Footer = () => {
-  return (
-    <footer className="relative bg-gray-800 text-white py-8 md:py-12 px-4 md:px-6 z-10">
-      <div className="container mx-auto">
-        <Row gutter={[24, 24]}>
-          <Col xs={24} sm={12} md={8}>
-            <Title level={4} className="text-white mb-2">S+ Studio</Title>
-            <Text className="text-gray-400 text-sm">
-              Không gian sáng tạo chuyên nghiệp tại TP.HCM.
-            </Text>
-          </Col>
-          <Col xs={24} sm={12} md={8}>
-            <Title level={5} className="text-white mb-2">Liên kết</Title>
-            <ul className="space-y-1">
-              <li><Link href="/" className="text-gray-400 hover:text-white text-sm">Trang chủ</Link></li>
-              <li><Link href="/studio" className="text-gray-400 hover:text-white text-sm">Studio</Link></li>
-              <li><Link href="/about" className="text-gray-400 hover:text-white text-sm">Về chúng tôi</Link></li>
-              <li><Link href="/contact" className="text-gray-400 hover:text-white text-sm">Liên hệ</Link></li>
-            </ul>
-          </Col>
-          <Col xs={24} sm={24} md={8}>
-            <Title level={5} className="text-white mb-2">Theo dõi chúng tôi</Title>
-            <div className="flex space-x-3">
-              <Link href="#" className="text-gray-400 hover:text-white text-xl transition-colors"><FacebookOutlined /></Link>
-              <Link href="#" className="text-gray-400 hover:text-white text-xl transition-colors"><InstagramOutlined /></Link>
-              <Link href="#" className="text-gray-400 hover:text-white text-xl transition-colors"><YoutubeOutlined /></Link>
-            </div>
-          </Col>
-        </Row>
-        <div className="border-t border-gray-700/50 mt-6 pt-4 text-center">
-          <Text className="text-gray-500 text-xs md:text-sm">© {new Date().getFullYear()} S+ Studio. All Rights Reserved.</Text>
+const footerLinks = [
+  { label: "Trang chủ", href: "/" },
+  { label: "Studio", href: "/studio" },
+  { label: "Về chúng tôi", href: "/about" },
+  { label: "Liên hệ", href: "/contact" },
+];
+
+const social = [
+  { icon: <FiFacebook />, href: "#" },
+  { icon: <FiInstagram />, href: "#" },
+  { icon: <FiYoutube />, href: "#" },
+];
+
+const Footer = () => (
+  <footer className="relative bg-gradient-to-b from-gray-950 via-gray-900 to-black pt-16 pb-10 px-6 lg:px-12 overflow-hidden">
+    <div className="absolute inset-0 opacity-30 pointer-events-none">
+      <div className="absolute w-64 h-64 rounded-full bg-amber-400 blur-[120px] -top-10 -left-10" />
+      <div className="absolute w-72 h-72 rounded-full bg-indigo-500 blur-[140px] bottom-0 right-0" />
+    </div>
+
+    <div className="relative grid gap-10 lg:grid-cols-3 max-w-6xl mx-auto">
+      <div>
+        <Title
+          level={3}
+          className="text-blue-400 mb-3 font-bold"
+          style={{ color: "#60a5fa" }}
+        >
+          S+ Studio
+        </Title>
+        <Text
+          className="text-blue-300 text-sm leading-relaxed block font-medium"
+          style={{ color: "#93c5fd" }}
+        >
+          Không gian sáng tạo chuyên nghiệp tại TP.HCM. Chúng tôi đồng hành cùng các nhãn hàng và nhà sáng tạo trong mọi dự án hình ảnh.
+        </Text>
+        <div className="mt-5 flex gap-3">
+          {social.map((item, index) => (
+            <Link
+              key={index}
+              href={item.href}
+              className="w-11 h-11 rounded-full bg-white/10 border border-blue-400/30 flex items-center justify-center text-lg text-blue-300 hover:text-blue-400 hover:border-blue-400 hover:bg-white/10 transition-all duration-300"
+            >
+              {item.icon}
+            </Link>
+          ))}
         </div>
       </div>
-    </footer>
-  );
-};
+
+      <div>
+        <Title
+          level={5}
+          className="text-blue-400 mb-4 font-semibold"
+          style={{ color: "#60a5fa" }}
+        >
+          Liên kết nhanh
+        </Title>
+        <ul className="space-y-2">
+          {footerLinks.map((link) => (
+            <li key={link.label}>
+              <Link
+                href={link.href}
+                className="text-blue-300 hover:text-blue-400 transition-colors text-sm font-medium"
+                style={{ color: "#93c5fd" }}
+              >
+                {link.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div>
+        <Title
+          level={5}
+          className="text-blue-400 mb-4 font-semibold"
+          style={{ color: "#60a5fa" }}
+        >
+          Liên hệ
+        </Title>
+        <div
+          className="space-y-3 text-blue-300 text-sm font-medium"
+          style={{ color: "#93c5fd" }}
+        >
+          <p className="flex items-center gap-2">
+            <FiMapPin className="text-blue-400" /> 123 Nguyễn Trãi, Q.5, TP.HCM
+          </p>
+          <p className="flex items-center gap-2">
+            <FiPhone className="text-blue-400" /> 0902 888 999
+          </p>
+          <p className="flex items-center gap-2">
+            <FiMail className="text-blue-400" /> booking@splusstudio.vn
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div className="relative border-t border-blue-400/20 mt-12 pt-5 text-center">
+      <Text
+        className="text-blue-300 text-xs md:text-sm font-medium"
+        style={{ color: "#93c5fd" }}
+      >
+        © {new Date().getFullYear()} S+ Studio. All rights reserved.
+      </Text>
+    </div>
+  </footer>
+);
 
 export default Footer;

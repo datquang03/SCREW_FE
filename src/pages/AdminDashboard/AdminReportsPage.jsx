@@ -1,6 +1,6 @@
 import React from "react";
 import { Card, Typography, Timeline, Button, Tag } from "antd";
-import { DownloadOutlined, FileTextOutlined } from "@ant-design/icons";
+import { FiDownload, FiFileText } from "react-icons/fi";
 
 const { Title, Text } = Typography;
 
@@ -25,22 +25,25 @@ const AdminReportsPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <Title level={2} className="mb-2">
-            Báo cáo & phân tích
-          </Title>
-          <Text className="text-gray-600">
-            Tổng hợp dữ liệu vận hành, khách hàng và marketing
-          </Text>
+      <div className="relative overflow-hidden rounded-2xl p-6 md:p-8 bg-gradient-to-br from-slate-100 via-white to-white shadow-lg border border-slate-200/50">
+        <div className="absolute -top-10 -right-12 w-48 h-48 rounded-full bg-slate-300/30 blur-3xl" />
+        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <Title level={2} className="mb-2 text-gray-900">
+              Báo cáo & phân tích
+            </Title>
+            <Text className="text-base text-gray-700 font-medium">
+              Tổng hợp dữ liệu vận hành, khách hàng và marketing
+            </Text>
+          </div>
+          <Button type="primary" icon={<FiDownload />} size="large" className="font-semibold shadow-lg">
+            Xuất báo cáo tổng
+          </Button>
         </div>
-        <Button type="primary" icon={<DownloadOutlined />}>
-          Xuất báo cáo tổng
-        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card title="Báo cáo gần đây">
+        <Card title="Báo cáo gần đây" className="shadow-lg border border-gray-100 rounded-2xl">
           <Timeline
             items={[
               {
@@ -59,7 +62,7 @@ const AdminReportsPage = () => {
             ]}
           />
         </Card>
-        <Card title="Báo cáo nổi bật">
+        <Card title="Báo cáo nổi bật" className="shadow-lg border border-gray-100 rounded-2xl">
           <div className="space-y-4">
             {reports.map((report, idx) => (
               <div
@@ -68,7 +71,7 @@ const AdminReportsPage = () => {
               >
                 <div>
                   <div className="flex items-center gap-2">
-                    <FileTextOutlined className="text-indigo-500" />
+                    <FiFileText className="text-indigo-500" />
                     <Text strong>{report.title}</Text>
                   </div>
                   <p className="text-sm text-gray-500 mt-1">

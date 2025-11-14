@@ -1,6 +1,10 @@
 import React from "react";
 import { Card, Typography, Tag, Button } from "antd";
-import { CalendarOutlined, ClockCircleOutlined, CheckCircleOutlined } from "@ant-design/icons";
+import {
+  FiCalendar,
+  FiClock,
+  FiCheckCircle,
+} from "react-icons/fi";
 import DataTable from "../../components/dashboard/DataTable";
 
 const { Title, Text } = Typography;
@@ -78,30 +82,33 @@ const UserBookingsPage = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <Title level={2} className="mb-2">
-          Đơn của tôi
-        </Title>
-        <Text className="text-gray-600">
-          Quản lý và theo dõi tất cả các đơn đặt studio của bạn
-        </Text>
+      <div className="relative overflow-hidden rounded-2xl p-6 md:p-8 bg-gradient-to-br from-blue-100 via-indigo-50 to-white shadow-lg border border-blue-200/50">
+        <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-blue-300/30 blur-2xl" />
+        <div className="relative z-10">
+          <Title level={2} className="mb-3 text-gray-900">
+            Đơn của tôi
+          </Title>
+          <Text className="text-base text-gray-700 font-medium">
+            Quản lý và theo dõi tất cả các đơn đặt studio của bạn
+          </Text>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <Card className="text-center">
-          <CalendarOutlined className="text-3xl text-blue-500 mb-2" />
-          <div className="text-2xl font-bold">12</div>
-          <div className="text-gray-600">Tổng đơn</div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
+        <Card className="text-center shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+          <FiCalendar className="text-4xl text-blue-500 mb-3" />
+          <div className="text-3xl font-extrabold text-gray-900 mb-1">12</div>
+          <div className="text-sm font-medium text-gray-600">Tổng đơn</div>
         </Card>
-        <Card className="text-center">
-          <ClockCircleOutlined className="text-3xl text-orange-500 mb-2" />
-          <div className="text-2xl font-bold">3</div>
-          <div className="text-gray-600">Đang xử lý</div>
+        <Card className="text-center shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+          <FiClock className="text-4xl text-orange-500 mb-3" />
+          <div className="text-3xl font-extrabold text-gray-900 mb-1">3</div>
+          <div className="text-sm font-medium text-gray-600">Đang xử lý</div>
         </Card>
-        <Card className="text-center">
-          <CheckCircleOutlined className="text-3xl text-green-500 mb-2" />
-          <div className="text-2xl font-bold">9</div>
-          <div className="text-gray-600">Hoàn tất</div>
+        <Card className="text-center shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+          <FiCheckCircle className="text-4xl text-green-500 mb-3" />
+          <div className="text-3xl font-extrabold text-gray-900 mb-1">9</div>
+          <div className="text-sm font-medium text-gray-600">Hoàn tất</div>
         </Card>
       </div>
 

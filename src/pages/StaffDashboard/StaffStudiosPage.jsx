@@ -12,11 +12,7 @@ import {
   Select,
   Spin,
 } from "antd";
-import {
-  VideoCameraOutlined,
-  EditOutlined,
-  DeleteOutlined,
-} from "@ant-design/icons";
+import { FiVideo, FiEdit, FiTrash2 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import {
   createStudio,
@@ -266,13 +262,13 @@ const StaffStudiosPage = () => {
             className="flex items-center gap-1 px-3 py-1 bg-green-500 text-white rounded hover:bg-green-400 hover:scale-105 transition-all cursor-pointer"
             onClick={() => handleEditStudio(record._id)}
           >
-            <EditOutlined /> Sửa
+            <FiEdit /> Sửa
           </button>
           <button
             className="flex items-center gap-1 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-400 hover:scale-105 transition-all cursor-pointer"
             onClick={() => handleDeleteStudio(record._id, record.name)}
           >
-            <DeleteOutlined /> Xóa
+            <FiTrash2 /> Xóa
           </button>
         </div>
       ),
@@ -282,25 +278,28 @@ const StaffStudiosPage = () => {
   return (
     <div className="space-y-6 max-w-[1400px] mx-auto px-4 md:px-6 overflow-hidden">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <Title level={2} className="mb-1">
-            Quản lý Studio
-          </Title>
-          <Text className="text-gray-600">
-            Quản lý thông tin và trạng thái các studio
-          </Text>
+      <div className="relative overflow-hidden rounded-2xl p-6 md:p-8 bg-gradient-to-br from-violet-100 via-purple-50 to-white shadow-lg border border-violet-200/50">
+        <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full bg-purple-300/30 blur-3xl" />
+        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <Title level={2} className="mb-2 text-gray-900">
+              Quản lý Studio
+            </Title>
+            <Text className="text-base text-gray-700 font-medium">
+              Quản lý thông tin và trạng thái các studio
+            </Text>
+          </div>
+          <button
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded shadow-lg hover:shadow-xl hover:scale-105 transition-all cursor-pointer font-semibold"
+            onClick={() => setIsCreateModalOpen(true)}
+          >
+            <FiVideo /> Thêm Studio
+          </button>
         </div>
-        <button
-          className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-400 hover:scale-105 transition-all cursor-pointer"
-          onClick={() => setIsCreateModalOpen(true)}
-        >
-          <VideoCameraOutlined /> Thêm Studio
-        </button>
       </div>
 
       {/* Table (responsive scroll) */}
-      <Card className="overflow-x-auto rounded-lg shadow-sm">
+      <Card className="overflow-x-auto rounded-2xl shadow-lg border border-gray-100">
         <div className="min-w-[800px]">
           <Table
             columns={studiosColumns.map((col) => ({

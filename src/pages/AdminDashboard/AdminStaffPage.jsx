@@ -5,28 +5,27 @@ import {
   Spin,
   Input,
   Select,
-  Space,
   Tag,
   Modal,
   Avatar,
-  Row,
-  Col,
   Dropdown,
   Button,
   Form,
 } from "antd";
 import {
-  UserOutlined,
-  EyeOutlined,
-  UnlockOutlined,
-  LockOutlined,
-  MailOutlined,
-  PhoneOutlined,
-  CrownOutlined,
-  CheckCircleOutlined,
-  ClockCircleOutlined,
-  MoreOutlined,
-} from "@ant-design/icons";
+  FiUser,
+  FiEye,
+  FiUnlock,
+  FiLock,
+  FiMail,
+  FiPhone,
+  FiAward,
+  FiCheckCircle,
+  FiClock,
+  FiMoreHorizontal,
+  FiPlus,
+  FiSearch,
+} from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import {
   getAllStaffs,
@@ -245,19 +244,19 @@ const AdminStaffPage = () => {
           {
             key: "view",
             label: "Xem chi tiết",
-            icon: <EyeOutlined />,
+            icon: <FiEye />,
             onClick: () => handleView(record),
           },
           {
             key: "toggle",
             label: record?.isActive ? "Khóa" : "Mở khóa",
-            icon: record?.isActive ? <LockOutlined /> : <UnlockOutlined />,
+            icon: record?.isActive ? <FiLock /> : <FiUnlock />,
             onClick: () => handleToggleActive(record),
           },
         ];
         return (
           <Dropdown menu={{ items }} trigger={["click"]}>
-            <Button icon={<MoreOutlined />} />
+            <Button icon={<FiMoreHorizontal />} />
           </Dropdown>
         );
       },
@@ -265,16 +264,7 @@ const AdminStaffPage = () => {
   ];
 
   return (
-    <div
-      ref={containerRef}
-      style={{
-        padding: 16,
-        display: "flex",
-        flexDirection: "column",
-        gap: 24,
-      }}
-    >
-      {/* Toast */}
+    <div ref={containerRef} className="flex flex-col gap-6 px-4 py-6 lg:px-8">
       {toast && (
         <ToastNotification
           type={toast.type}
@@ -283,75 +273,81 @@ const AdminStaffPage = () => {
         />
       )}
 
-      {/* Header */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          gap: 12,
-          flexWrap: "wrap",
-        }}
-      >
-        <div>
-          <Title level={2} style={{ marginBottom: 6 }}>
-            Quản lý nhân viên
-          </Title>
-          <Text type="secondary">Xem và quản lý thông tin nhân viên</Text>
-        </div>
-
-        <div style={{ display: "flex", gap: 8 }}>
-          <Button type="primary" onClick={() => setAddModalVisible(true)}>
+      <div className="relative overflow-hidden rounded-2xl border border-indigo-200/50 bg-gradient-to-br from-indigo-100 via-white to-white px-6 py-8 shadow-lg">
+        <div className="absolute -top-10 -right-12 h-48 w-48 rounded-full bg-indigo-200 blur-3xl" />
+        <div className="relative z-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <Title level={2} className="mb-1 text-gray-900">
+              Quản lý nhân viên
+            </Title>
+            <Text className="text-base text-gray-600">
+              Theo dõi nhân sự, phân ca và trạng thái hoạt động
+            </Text>
+          </div>
+          <Button
+            type="primary"
+            icon={<FiPlus />}
+            size="large"
+            className="rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 font-semibold shadow-lg"
+            onClick={() => setAddModalVisible(true)}
+          >
             Thêm nhân viên
           </Button>
         </div>
       </div>
 
-      {/* Stats (small cards) */}
-      <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-        <Card style={{ flex: 1, minWidth: 180 }}>
-          <Title level={5}>Tổng nhân viên</Title>
-          <div style={{ fontSize: 22, fontWeight: 700 }}>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <Card className="rounded-2xl border border-white/50 bg-white shadow-lg">
+          <p className="text-sm uppercase tracking-wide text-gray-500">
+            Tổng nhân viên
+          </p>
+          <p className="text-4xl font-extrabold text-gray-900">
             {total?.toLocaleString() || safeStaffs.length}
-          </div>
-          <Text type="secondary">Tổng bản ghi</Text>
+          </p>
+          <Text className="text-xs text-gray-500">Tổng bản ghi hiện có</Text>
         </Card>
-
-        <Card style={{ flex: 1, minWidth: 180 }}>
-          <Title level={5}>Nhân viên đang hoạt động</Title>
-          <div style={{ fontSize: 22, fontWeight: 700, color: "#52c41a" }}>
+        <Card className="rounded-2xl border border-white/50 bg-white shadow-lg">
+          <p className="text-sm uppercase tracking-wide text-gray-500">
+            Đang hoạt động
+          </p>
+          <p className="text-4xl font-extrabold text-emerald-600">
+            {safeStaffs.filter((s) => s.isActive).length}
+          </p>
+          <Text className="text-xs text-gray-500">
+            Tương đương{" "}
             {total
-              ? Math.round(
+              ? `${Math.round(
                   (safeStaffs.filter((s) => s.isActive).length / total) * 100
-                ) + "%"
-              : (safeStaffs.filter((s) => s.isActive).length || 0) + " người"}
-          </div>
-          <Text type="secondary">Tỷ lệ hoạt động</Text>
+                )}%`
+              : "—"}
+          </Text>
+        </Card>
+        <Card className="rounded-2xl border border-white/50 bg-white shadow-lg">
+          <p className="text-sm uppercase tracking-wide text-gray-500">
+            Tài khoản bị khóa
+          </p>
+          <p className="text-4xl font-extrabold text-rose-500">
+            {safeStaffs.filter((s) => !s.isActive).length}
+          </p>
+          <Text className="text-xs text-gray-500">
+            Cần xem xét kích hoạt lại
+          </Text>
         </Card>
       </div>
 
-      {/* Filters */}
-      <div
-        style={{
-          display: "flex",
-          gap: 8,
-          flexWrap: "wrap",
-          alignItems: "center",
-        }}
-      >
-        <Space.Compact style={{ width: 300 }}>
-          <Input
-            placeholder="Tìm tên, email, SĐT..."
-            allowClear
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </Space.Compact>
-
+      <div className="flex flex-wrap items-center gap-3">
+        <Input
+          placeholder="Tìm tên, email, SĐT..."
+          allowClear
+          prefix={<FiSearch className="text-gray-400" />}
+          className="w-full rounded-2xl border border-gray-200 bg-white/70 shadow-inner sm:w-80"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
         <Select
           placeholder="Vị trí"
           allowClear
-          style={{ width: 160 }}
+          className="w-full rounded-2xl sm:w-56"
           value={position || undefined}
           onChange={(v) => setPosition(v || "")}
         >
@@ -359,11 +355,10 @@ const AdminStaffPage = () => {
           <Option value="staff">Staff</Option>
           <Option value="admin">Admin</Option>
         </Select>
-
         <Select
           placeholder="Trạng thái"
           allowClear
-          style={{ width: 160 }}
+          className="w-full rounded-2xl sm:w-56"
           value={isActive || undefined}
           onChange={(v) => setIsActive(v ?? "")}
         >
@@ -372,24 +367,25 @@ const AdminStaffPage = () => {
         </Select>
       </div>
 
-      {/* Table */}
       {loading ? (
-        <div style={{ display: "flex", justifyContent: "center", padding: 40 }}>
+        <div className="flex justify-center py-16">
           <Spin size="large" />
         </div>
       ) : (
-        <DataTable
-          title="Danh sách nhân viên"
-          columns={columns}
-          data={safeStaffs}
-          pagination={{
-            current: page,
-            pageSize: limit,
-            total,
-            showSizeChanger: false,
-          }}
-          onChange={handleTableChange}
-        />
+        <Card className="rounded-3xl border border-white/60 bg-white shadow-lg">
+          <DataTable
+            title="Danh sách nhân viên"
+            columns={columns}
+            data={safeStaffs}
+            pagination={{
+              current: page,
+              pageSize: limit,
+              total,
+              showSizeChanger: false,
+            }}
+            onChange={handleTableChange}
+          />
+        </Card>
       )}
 
       {/* ADD STAFF MODAL */}
@@ -461,147 +457,107 @@ const AdminStaffPage = () => {
         maskClosable
       >
         {/* detailRef used for GSAP animation */}
-        <div
-          ref={detailRef}
-          style={{ display: "flex", flexDirection: "column", gap: 20 }}
-        >
+        <div ref={detailRef} className="flex flex-col gap-5">
           {currentStaff ? (
             <>
               {/* header: avatar, name */}
-              <div style={{ textAlign: "center" }}>
+              <div className="text-center">
                 <Avatar
                   size={110}
                   src={currentStaff.avatar || undefined}
-                  style={{
-                    cursor: "pointer",
-                    boxShadow: "0 6px 18px rgba(0,0,0,0.12)",
-                  }}
+                  className="mx-auto cursor-pointer shadow-lg"
                   onClick={() => setPreviewImageOpen(true)}
                 >
-                  {!currentStaff.avatar && <UserOutlined />}
+                  {!currentStaff.avatar && <FiUser />}
                 </Avatar>
 
-                <Title level={4} style={{ marginTop: 12 }}>
-                  <span style={{ fontWeight: 800 }}>
-                    {currentStaff.fullName ?? "—"}
-                  </span>
+                <Title level={4} className="mt-3 font-bold">
+                  {currentStaff.fullName ?? "—"}
                 </Title>
-                <Text type="secondary" style={{ fontSize: 13 }}>
+                <Text className="text-sm text-gray-500">
                   {currentStaff.username ?? "—"}
                 </Text>
               </div>
 
               {/* info grid */}
-              <Row gutter={[16, 16]}>
-                <Col xs={24} sm={12}>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {[
+                  {
+                    label: "Email",
+                    value: currentStaff.email ?? "—",
+                    icon: <FiMail />,
+                  },
+                  {
+                    label: "Số điện thoại",
+                    value: currentStaff.phone ?? "—",
+                    icon: <FiPhone />,
+                  },
+                  {
+                    label: "Vị trí",
+                    value:
+                      currentStaff.profile?.position ||
+                      currentStaff.position ||
+                      "—",
+                    icon: <FiAward />,
+                  },
+                  {
+                    label: "Trạng thái",
+                    value: currentStaff.isActive ? "Hoạt động" : "Bị khóa",
+                    icon: <FiCheckCircle />,
+                    tag: currentStaff.isActive ? "green" : "red",
+                  },
+                  {
+                    label: "Ngày tạo",
+                    value: currentStaff.createdAt
+                      ? new Date(currentStaff.createdAt).toLocaleDateString(
+                          "vi-VN"
+                        )
+                      : "—",
+                    icon: <FiClock />,
+                  },
+                  {
+                    label: "Ngày cập nhật",
+                    value: currentStaff.updatedAt
+                      ? new Date(currentStaff.updatedAt).toLocaleDateString(
+                          "vi-VN"
+                        )
+                      : "—",
+                    icon: <FiClock />,
+                  },
+                ].map((info) => (
                   <div
-                    style={{
-                      padding: 12,
-                      borderRadius: 10,
-                      background: "#fafafa",
-                    }}
+                    key={info.label}
+                    className="flex items-start gap-3 rounded-xl border border-gray-100 bg-gray-50/70 p-4"
                   >
-                    <Text strong>Email</Text>
-                    <div>{currentStaff.email ?? "—"}</div>
-                  </div>
-                </Col>
-
-                <Col xs={24} sm={12}>
-                  <div
-                    style={{
-                      padding: 12,
-                      borderRadius: 10,
-                      background: "#fafafa",
-                    }}
-                  >
-                    <Text strong>Số điện thoại</Text>
-                    <div>{currentStaff.phone ?? "—"}</div>
-                  </div>
-                </Col>
-
-                <Col xs={24} sm={12}>
-                  <div
-                    style={{
-                      padding: 12,
-                      borderRadius: 10,
-                      background: "#fafafa",
-                    }}
-                  >
-                    <Text strong>Vị trí</Text>
-                    <div style={{ textTransform: "capitalize" }}>
-                      {currentStaff.profile?.position ??
-                        currentStaff.position ??
-                        "—"}
-                    </div>
-                  </div>
-                </Col>
-
-                <Col xs={24} sm={12}>
-                  <div
-                    style={{
-                      padding: 12,
-                      borderRadius: 10,
-                      background: "#fafafa",
-                    }}
-                  >
-                    <Text strong>Trạng thái</Text>
-                    <div style={{ marginTop: 6 }}>
-                      <Tag color={currentStaff.isActive ? "green" : "red"}>
-                        {currentStaff.isActive ? "Hoạt động" : "Bị khóa"}
-                      </Tag>
-                    </div>
-                  </div>
-                </Col>
-
-                <Col xs={24} sm={12}>
-                  <div
-                    style={{
-                      padding: 12,
-                      borderRadius: 10,
-                      background: "#fafafa",
-                    }}
-                  >
-                    <Text strong>Ngày tạo</Text>
+                    <span className="text-lg text-indigo-500">{info.icon}</span>
                     <div>
-                      {currentStaff.createdAt
-                        ? new Date(currentStaff.createdAt).toLocaleDateString(
-                            "vi-VN"
-                          )
-                        : "—"}
+                      <Text strong className="text-gray-700">
+                        {info.label}
+                      </Text>
+                      <div className="mt-1">
+                        {info.tag ? (
+                          <Tag color={info.tag}>{info.value}</Tag>
+                        ) : (
+                          <Text className="font-medium text-gray-900">
+                            {info.value}
+                          </Text>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </Col>
-
-                <Col xs={24} sm={12}>
-                  <div
-                    style={{
-                      padding: 12,
-                      borderRadius: 10,
-                      background: "#fafafa",
-                    }}
-                  >
-                    <Text strong>Ngày cập nhật</Text>
-                    <div>
-                      {currentStaff.updatedAt
-                        ? new Date(currentStaff.updatedAt).toLocaleDateString(
-                            "vi-VN"
-                          )
-                        : "—"}
-                    </div>
-                  </div>
-                </Col>
-              </Row>
+                ))}
+              </div>
 
               {/* actions */}
-              <div style={{ display: "flex", gap: 12, marginTop: 8 }}>
-                <Button style={{ flex: 1 }} onClick={handleCloseDetail}>
+              <div className="mt-2 flex gap-3">
+                <Button className="flex-1" onClick={handleCloseDetail}>
                   Đóng
                 </Button>
 
                 {currentStaff.isActive ? (
                   <Button
                     danger
-                    style={{ flex: 1 }}
+                    className="flex-1"
                     onClick={() => handleToggleActive(currentStaff)}
                   >
                     Khóa tài khoản
@@ -609,7 +565,7 @@ const AdminStaffPage = () => {
                 ) : (
                   <Button
                     type="primary"
-                    style={{ flex: 1 }}
+                    className="flex-1"
                     onClick={() => handleToggleActive(currentStaff)}
                   >
                     Mở khóa tài khoản
@@ -618,9 +574,7 @@ const AdminStaffPage = () => {
               </div>
             </>
           ) : (
-            <div
-              style={{ display: "flex", justifyContent: "center", padding: 40 }}
-            >
+            <div className="flex justify-center py-10">
               <Spin />
             </div>
           )}
@@ -639,10 +593,10 @@ const AdminStaffPage = () => {
           <img
             src={currentStaff.avatar}
             alt={currentStaff?.fullName || "avatar"}
-            style={{ width: "100%", borderRadius: 10, objectFit: "cover" }}
+            className="h-full w-full rounded-xl object-cover"
           />
         ) : (
-          <div style={{ padding: 40, textAlign: "center" }}>
+          <div className="py-10 text-center">
             <Text>Không có hình ảnh</Text>
           </div>
         )}

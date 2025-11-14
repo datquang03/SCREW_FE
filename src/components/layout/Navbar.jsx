@@ -74,17 +74,17 @@ const Navbar = () => {
   const toggleMobileMenu = () => setMobileMenuOpen((prev) => !prev);
   const closeMobileMenu = () => setMobileMenuOpen(false);
 
+  const headerClass = scrolled
+    ? "fixed top-0 left-0 w-full bg-white/95 border-b border-white/60 shadow-xl backdrop-blur-xl"
+    : "absolute top-0 left-0 w-full bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900";
+
   return (
     <motion.header
       ref={headerRef}
       initial={{ y: -80 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className={`fixed top-0 left-0 w-full z-[100] transition-all duration-300 ${
-        scrolled
-          ? "bg-white/90 backdrop-blur-md shadow-md"
-          : "bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900"
-      }`}
+      className={`${headerClass} z-[100] transition-all duration-300`}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-6 py-3">
         {/* ===== LOGO ===== */}
@@ -148,7 +148,7 @@ const Navbar = () => {
                   transition={{ type: "spring", stiffness: 400, damping: 20 }}
                   className="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-lg hover:shadow-xl transition-shadow duration-300"
                 >
-                  <SearchOutlined className="text-lg text-gray-900" />
+                  <FiSearch className="text-lg text-gray-900" />
                 </motion.button>
               ) : (
                 <motion.div
@@ -166,7 +166,7 @@ const Navbar = () => {
                   style={{ transformOrigin: "100% 50%" }}
                 >
                   <motion.div className="flex items-center gap-2 rounded-full px-4 py-2.5 bg-white shadow-xl shadow-gray-900/20 border border-gray-100">
-                    <SearchOutlined className="text-base text-amber-500" />
+                    <FiSearch className="text-base text-amber-500" />
                     <input
                       ref={searchInputRef}
                       type="text"
@@ -181,7 +181,7 @@ const Navbar = () => {
                       transition={{ type: "spring", stiffness: 400 }}
                       className="text-gray-400 hover:text-gray-700 transition-colors"
                     >
-                      <CloseOutlined />
+                      <FiX />
                     </motion.button>
                   </motion.div>
                 </motion.div>
@@ -342,9 +342,9 @@ const Navbar = () => {
               transition={{ duration: 0.3, ease: "easeInOut" }}
             >
               {mobileMenuOpen ? (
-                <CloseOutlined className="text-lg" />
+                <FiX className="text-lg" />
               ) : (
-                <MenuOutlined className="text-lg" />
+                <FiMenu className="text-lg" />
               )}
             </motion.div>
           </motion.button>
@@ -375,7 +375,7 @@ const Navbar = () => {
                 </span>
                 <Button
                   type="text"
-                  icon={<CloseOutlined />}
+                  icon={<FiX />}
                   onClick={closeMobileMenu}
                   className="text-gray-700"
                 />

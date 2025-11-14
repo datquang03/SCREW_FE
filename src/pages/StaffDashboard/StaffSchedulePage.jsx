@@ -1,6 +1,6 @@
 import React from "react";
 import { Card, Typography, Tag, Calendar, Badge } from "antd";
-import { ClockCircleOutlined } from "@ant-design/icons";
+import { FiClock } from "react-icons/fi";
 
 const { Title, Text } = Typography;
 
@@ -29,21 +29,20 @@ const StaffSchedulePage = () => {
     return listData || [];
   };
 
-  const dateCellRender = (value) => {
-    const listData = getListData(value);
-    return (
-      <ul className="events">
-        {listData.map((item) => (
-          <li key={item.content}>
-            <Badge
-              status={item.type}
-              text={item.content}
-              className="text-xs"
-            />
-          </li>
-        ))}
-      </ul>
-    );
+  const cellRender = (current, info) => {
+    if (info.type === "date") {
+      const listData = getListData(current);
+      return (
+        <ul className="events">
+          {listData.map((item) => (
+            <li key={item.content}>
+              <Badge status={item.type} text={item.content} className="text-xs" />
+            </li>
+          ))}
+        </ul>
+      );
+    }
+    return info.originNode;
   };
 
   const todaySchedule = [
@@ -54,24 +53,27 @@ const StaffSchedulePage = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <Title level={2} className="mb-2">
-          Lịch làm việc
-        </Title>
-        <Text className="text-gray-600">
-          Quản lý và theo dõi lịch làm việc của bạn
-        </Text>
+      <div className="relative overflow-hidden rounded-2xl p-6 md:p-8 bg-gradient-to-br from-emerald-100 via-teal-50 to-white shadow-lg border border-emerald-200/50">
+        <div className="absolute -top-10 -left-10 w-40 h-40 rounded-full bg-emerald-300/30 blur-2xl" />
+        <div className="relative z-10">
+          <Title level={2} className="mb-3 text-gray-900">
+            Lịch làm việc
+          </Title>
+          <Text className="text-base text-gray-700 font-medium">
+            Quản lý và theo dõi lịch làm việc của bạn
+          </Text>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2">
-          <Title level={4} className="mb-4">
+        <Card className="lg:col-span-2 shadow-lg border border-gray-100 rounded-2xl">
+          <Title level={4} className="mb-4 text-gray-900">
             Lịch tháng
           </Title>
-          <Calendar dateCellRender={dateCellRender} />
+          <Calendar cellRender={cellRender} />
         </Card>
-        <Card>
-          <Title level={4} className="mb-4">
+        <Card className="shadow-lg border border-gray-100 rounded-2xl">
+          <Title level={4} className="mb-4 text-gray-900">
             Hôm nay
           </Title>
           <div className="space-y-3">
@@ -81,7 +83,7 @@ const StaffSchedulePage = () => {
                 className="p-3 bg-gray-50 rounded-lg border border-gray-200"
               >
                 <div className="flex justify-between items-start mb-2">
-                  <ClockCircleOutlined className="text-blue-500" />
+                  <FiClock className="text-blue-500" />
                   <Tag
                     color={
                       item.status === "Đang diễn ra"

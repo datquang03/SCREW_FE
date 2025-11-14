@@ -1,69 +1,38 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { NavLink, useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { Menu } from "antd";
 import {
-  HomeOutlined,
-  UserOutlined,
-  VideoCameraOutlined,
-  BarChartOutlined,
-  TeamOutlined,
-  SettingOutlined,
-  DollarCircleOutlined,
-} from "@ant-design/icons";
+  FiHome,
+  FiUsers,
+  FiVideo,
+  FiSettings,
+  FiTrendingUp,
+  FiBriefcase,
+  FiBarChart2,
+} from "react-icons/fi";
 
 const AdminSidebar = () => {
   const location = useLocation();
+  const { user } = useSelector((state) => state.auth);
+  const roleText = user?.role === "admin" ? "Quản trị viên" : "Quản lý";
 
-  const menuItems = [
-    {
-      key: "dashboard",
-      icon: <HomeOutlined />,
-      label: "Bảng điều khiển",
-      path: "/dashboard/admin",
-    },
-    {
-      key: "users",
-      icon: <UserOutlined />,
-      label: "Người dùng",
-      path: "/dashboard/admin/users",
-    },
-    {
-      key: "staff",
-      icon: <TeamOutlined />,
-      label: "Nhân sự",
-      path: "/dashboard/admin/staff",
-    },
-    {
-      key: "studios",
-      icon: <VideoCameraOutlined />,
-      label: "Studio",
-      path: "/dashboard/admin/studios",
-    },
-    {
-      key: "revenue",
-      icon: <DollarCircleOutlined />,
-      label: "Doanh thu",
-      path: "/dashboard/admin/revenue",
-    },
-    {
-      key: "reports",
-      icon: <BarChartOutlined />,
-      label: "Báo cáo",
-      path: "/dashboard/admin/reports",
-    },
-    {
-      key: "settings",
-      icon: <SettingOutlined />,
-      label: "Cài đặt",
-      path: "/dashboard/admin/settings",
-    },
-  ];
+  const menuItems = useMemo(
+    () => [
+      { key: "dashboard", icon: <FiHome />, label: "Bảng điều khiển", path: "/dashboard/admin" },
+      { key: "users", icon: <FiUsers />, label: "Người dùng", path: "/dashboard/admin/users" },
+      { key: "staff", icon: <FiBriefcase />, label: "Nhân sự", path: "/dashboard/admin/staff" },
+      { key: "studios", icon: <FiVideo />, label: "Studio", path: "/dashboard/admin/studios" },
+      { key: "revenue", icon: <FiTrendingUp />, label: "Doanh thu", path: "/dashboard/admin/revenue" },
+      { key: "reports", icon: <FiBarChart2 />, label: "Báo cáo", path: "/dashboard/admin/reports" },
+      { key: "settings", icon: <FiSettings />, label: "Cài đặt", path: "/dashboard/admin/settings" },
+    ],
+    []
+  );
 
   const matchedItem = menuItems
     .filter((item) => {
-      if (location.pathname === item.path) {
-        return true;
-      }
+      if (location.pathname === item.path) return true;
       return location.pathname.startsWith(`${item.path}/`);
     })
     .sort((a, b) => b.path.length - a.path.length)[0];
@@ -71,21 +40,27 @@ const AdminSidebar = () => {
   const selectedKeys = matchedItem ? [matchedItem.key] : [menuItems[0].key];
 
   return (
-    <div className="h-[calc(100vh-4rem)] bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-white flex flex-col shadow-2xl overflow-y-auto">
-      {/* Header */}
-      <div className="p-6 border-b border-gray-700/50">
+    <div className="flex h-full w-full flex-col bg-gradient-to-b from-gray-950 via-gray-900 to-black text-white">
+      <div className="px-5 pb-8 pt-10 border-b border-white/10">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
-            <span className="text-xl font-bold text-white">S+</span>
+          <div className="rounded-2xl bg-gradient-to-tr from-purple-500 to-pink-500 px-4 py-3 shadow-lg shadow-purple-500/30">
+            <span className="text-2xl font-black text-white">S+</span>
           </div>
           <div>
-            <h2 className="text-lg font-bold text-white">S+ Studio</h2>
-            <p className="text-xs text-gray-400">Quản trị viên</p>
+            <p className="text-base uppercase tracking-[0.3em] text-white/60">
+              Admin
+            </p>
+            <p className="text-lg font-semibold text-white">{roleText}</p>
           </div>
         </div>
       </div>
 
-      {/* Menu */}
+      <div className="px-5 py-4">
+        <span className="inline-flex w-full items-center justify-center rounded-2xl border border-white/15 bg-white/5 px-4 py-2 text-xs font-bold uppercase tracking-widest text-purple-200">
+          {roleText}
+        </span>
+      </div>
+
       <Menu
         theme="dark"
         mode="inline"
@@ -97,28 +72,24 @@ const AdminSidebar = () => {
             <NavLink
               to={item.path}
               className={({ isActive }) =>
-                isActive
-                  ? "text-purple-400 font-semibold"
-                  : "text-gray-300 hover:text-white"
+                [
+                  "flex items-center justify-between w-full text-sm",
+                  isActive
+                    ? "text-purple-300 font-semibold"
+                    : "text-white/70 hover:text-white",
+                ].join(" ")
               }
             >
               {item.label}
             </NavLink>
           ),
         }))}
-        className="flex-1 bg-transparent border-0 pt-4"
-        style={{ backgroundColor: "transparent" }}
+        className="flex-1 bg-transparent border-0 px-4 [&_.ant-menu-item]:rounded-2xl [&_.ant-menu-item]:py-2"
+        inlineIndent={16}
       />
-
-      {/* Footer */}
-      <div className="p-4 border-t border-gray-700/50">
-        <div className="text-xs text-gray-400 text-center">
-          <p>© 2025 S+ Studio</p>
-          <p className="mt-1">Cho thuê studio chuyên nghiệp</p>
-        </div>
-      </div>
     </div>
   );
 };
 
 export default AdminSidebar;
+

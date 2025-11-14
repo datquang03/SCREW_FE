@@ -11,13 +11,7 @@ import {
   Avatar,
   Spin,
 } from "antd";
-import {
-  UserOutlined,
-  EditOutlined,
-  SaveOutlined,
-  PhoneOutlined,
-  MailOutlined,
-} from "@ant-design/icons";
+import { FiUser, FiEdit, FiSave, FiPhone, FiMail } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { getCurrentUser } from "../../features/auth/authSlice";
 
@@ -57,23 +51,26 @@ const StaffProfilePage = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <Title level={2} className="mb-2">
-          Hồ sơ nhân viên
-        </Title>
-        <Text className="text-gray-600">
-          Thông tin cá nhân và lịch sử công việc tại S+ Studio
-        </Text>
+      <div className="relative overflow-hidden rounded-2xl p-6 md:p-8 bg-gradient-to-br from-indigo-100 via-slate-50 to-white shadow-lg border border-indigo-200/50">
+        <div className="absolute -top-10 -right-10 w-44 h-44 rounded-full bg-indigo-300/30 blur-3xl" />
+        <div className="relative z-10">
+          <Title level={2} className="mb-2 text-gray-900">
+            Hồ sơ nhân viên
+          </Title>
+          <Text className="text-base text-gray-700 font-medium">
+            Thông tin cá nhân và lịch sử công việc tại S+ Studio
+          </Text>
+        </div>
       </div>
 
       <Row gutter={24}>
         {/* LEFT COLUMN */}
         <Col xs={24} md={8}>
-          <Card className="text-center">
+          <Card className="text-center shadow-lg border border-gray-100 rounded-2xl">
             <Avatar
               size={120}
               src={user.avatar}
-              icon={<UserOutlined />}
+              icon={<FiUser />}
               className="mb-4"
             />
             <Title level={4} className="mb-1">
@@ -112,10 +109,11 @@ const StaffProfilePage = () => {
         <Col xs={24} md={16}>
           <Card
             title="Thông tin liên hệ"
+            className="shadow-lg border border-gray-100 rounded-2xl"
             extra={
               <Button
                 type={editing ? "default" : "primary"}
-                icon={editing ? <SaveOutlined /> : <EditOutlined />}
+                icon={editing ? <FiSave /> : <FiEdit />}
                 onClick={() => {
                   if (editing) {
                     form.submit();
@@ -131,7 +129,7 @@ const StaffProfilePage = () => {
             <Form layout="vertical" form={form}>
               <Form.Item label="Họ và tên" name="fullName">
                 <Input
-                  prefix={<UserOutlined />}
+                  prefix={<FiUser />}
                   disabled={!editing}
                   className="rounded-lg"
                 />
@@ -139,7 +137,7 @@ const StaffProfilePage = () => {
 
               <Form.Item label="Email" name="email">
                 <Input
-                  prefix={<MailOutlined />}
+                  prefix={<FiMail />}
                   disabled={!editing}
                   className="rounded-lg"
                 />
@@ -147,7 +145,7 @@ const StaffProfilePage = () => {
 
               <Form.Item label="Số điện thoại" name="phone">
                 <Input
-                  prefix={<PhoneOutlined />}
+                  prefix={<FiPhone />}
                   disabled={!editing}
                   className="rounded-lg"
                 />
@@ -163,7 +161,10 @@ const StaffProfilePage = () => {
             </Form>
           </Card>
 
-          <Card title="Thông tin tài khoản" className="mt-6">
+          <Card
+            title="Thông tin tài khoản"
+            className="mt-6 shadow-lg border border-gray-100 rounded-2xl"
+          >
             <div className="space-y-3">
               <div className="flex justify-between">
                 <Text>Tên đăng nhập</Text>

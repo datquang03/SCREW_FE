@@ -12,9 +12,9 @@ const DataTable = ({ columns = [], data = [], title }) => {
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
-              {columns.map((c) => (
+              {columns.map((c, columnIndex) => (
                 <th
-                  key={c.key || c.dataIndex}
+                  key={c.key || c.dataIndex || columnIndex}
                   className="py-3 px-4 text-left font-semibold text-gray-600"
                 >
                   {c.title}
@@ -32,11 +32,14 @@ const DataTable = ({ columns = [], data = [], title }) => {
             )}
             {data.map((row, idx) => (
               <tr
-                key={row.id || idx}
+                key={row.id || row.key || idx}
                 className={idx % 2 === 0 ? "bg-white" : "bg-gray-50/60"}
               >
-                {columns.map((c) => (
-                  <td key={c.key || c.dataIndex} className="py-3 px-4 text-gray-700">
+                {columns.map((c, columnIndex) => (
+                  <td
+                    key={`${c.key || c.dataIndex || columnIndex}-cell`}
+                    className="py-3 px-4 text-gray-700"
+                  >
                     {c.render ? c.render(row[c.dataIndex], row) : row[c.dataIndex]}
                   </td>
                 ))}

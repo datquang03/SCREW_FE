@@ -15,15 +15,15 @@ import {
   Modal,
 } from "antd";
 import {
-  UserOutlined,
-  MailOutlined,
-  PhoneOutlined,
-  EditOutlined,
-  SaveOutlined,
-  LockOutlined,
-  DeleteOutlined,
-  LinkOutlined,
-} from "@ant-design/icons";
+  FiUser,
+  FiMail,
+  FiPhone,
+  FiEdit,
+  FiSave,
+  FiLock,
+  FiTrash2,
+  FiLink,
+} from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom"; // Thêm để redirect
 
@@ -166,30 +166,29 @@ const UserProfilePage = () => {
         />
       )}
 
-      <div>
-        <Title level={2} className="font-semibold mb-1">
-          Hồ sơ của tôi
-        </Title>
-        <Text className="text-gray-600">Quản lý thông tin cá nhân của bạn</Text>
+      <div className="relative overflow-hidden rounded-2xl p-6 md:p-8 bg-gradient-to-br from-sky-100 via-blue-50 to-white shadow-lg border border-blue-200/50">
+        <div className="absolute -top-12 -left-8 w-48 h-48 rounded-full bg-sky-200/40 blur-3xl" />
+        <div className="absolute -bottom-16 -right-10 w-60 h-60 rounded-full bg-blue-300/30 blur-3xl" />
+        <div className="relative z-10">
+          <Title level={2} className="font-semibold mb-2 text-gray-900">
+            Hồ sơ của tôi
+          </Title>
+          <Text className="text-base text-gray-700 font-medium">
+            Quản lý thông tin cá nhân và bảo mật tài khoản của bạn
+          </Text>
+        </div>
       </div>
 
       <Row gutter={24}>
         {/* LEFT CARD */}
         <Col xs={24} md={8}>
-          <Card
-            className="text-center rounded-xl p-4 shadow-xl glass-card"
-            style={{
-              backdropFilter: "blur(16px)",
-              background: "rgba(255, 255, 255, 0.2)",
-              border: "1px solid rgba(255,255,255,0.3)",
-            }}
-          >
+          <Card className="text-center rounded-2xl p-5 shadow-lg border border-gray-100 bg-white">
             <Upload {...uploadProps}>
               <div className="relative inline-block cursor-pointer group">
                 <Avatar
                   size={130}
                   src={avatarPreview}
-                  icon={<UserOutlined />}
+                  icon={<FiUser />}
                   className="mb-4 border-4 border-white shadow-md"
                   style={{ borderRadius: "999px", transition: "0.25s" }}
                 />
@@ -200,7 +199,7 @@ const UserProfilePage = () => {
             <div className="mt-3">
               <Input
                 placeholder="Dán link ảnh avatar..."
-                prefix={<LinkOutlined />}
+                prefix={<FiLink />}
                 value={avatarURL}
                 onChange={(e) => {
                   setAvatarURL(e.target.value);
@@ -218,7 +217,7 @@ const UserProfilePage = () => {
               {customer.role}
             </Text>
 
-            <Divider />
+            <Divider className="my-5" />
 
             <div className="space-y-3 text-left px-2">
               <div>
@@ -239,11 +238,11 @@ const UserProfilePage = () => {
               </div>
             </div>
 
-            <Divider />
+            <Divider className="my-5" />
 
             <Button
               danger
-              icon={<DeleteOutlined />}
+              icon={<FiTrash2 />}
               className="w-full py-2 rounded-lg shadow-md hover:opacity-90 transition-all"
               onClick={handleDeleteAccount}
             >
@@ -255,17 +254,12 @@ const UserProfilePage = () => {
         {/* RIGHT CARD */}
         <Col xs={24} md={16}>
           <Card
-            title={<span className="font-semibold text-lg">Thông tin cá nhân</span>}
-            className="shadow-xl rounded-xl glass-card"
-            style={{
-              backdropFilter: "blur(14px)",
-              background: "rgba(255, 255, 255, 0.25)",
-              border: "1px solid rgba(255,255,255,0.3)",
-            }}
+            title={<span className="font-semibold text-lg text-gray-900">Thông tin cá nhân</span>}
+            className="shadow-lg rounded-2xl border border-gray-100 bg-white"
             extra={
               <Button
                 type={editing ? "default" : "primary"}
-                icon={editing ? <SaveOutlined /> : <EditOutlined />}
+                icon={editing ? <FiSave /> : <FiEdit />}
                 onClick={() => (editing ? form.submit() : setEditing(true))}
                 className="hover:scale-105 transition-all"
               >
@@ -279,7 +273,7 @@ const UserProfilePage = () => {
                 name="fullName"
                 rules={[{ required: true, message: "Vui lòng nhập họ và tên" }]}
               >
-                <Input prefix={<UserOutlined />} disabled={!editing} />
+                <Input prefix={<FiUser />} disabled={!editing} />
               </Form.Item>
 
               <Form.Item
@@ -290,7 +284,7 @@ const UserProfilePage = () => {
                   { type: "email", message: "Email không hợp lệ" },
                 ]}
               >
-                <Input prefix={<MailOutlined />} disabled={!editing} />
+                <Input prefix={<FiMail />} disabled={!editing} />
               </Form.Item>
 
               <Form.Item
@@ -298,20 +292,15 @@ const UserProfilePage = () => {
                 name="phone"
                 rules={[{ required: true, message: "Vui lòng nhập số điện thoại" }]}
               >
-                <Input prefix={<PhoneOutlined />} disabled={!editing} />
+                <Input prefix={<FiPhone />} disabled={!editing} />
               </Form.Item>
             </Form>
           </Card>
 
           {/* SECURITY */}
           <Card
-            title={<span className="font-semibold text-lg">Bảo mật</span>}
-            className="mt-6 shadow-xl rounded-xl glass-card"
-            style={{
-              backdropFilter: "blur(14px)",
-              background: "rgba(255, 255, 255, 0.25)",
-              border: "1px solid rgba(255,255,255,0.3)",
-            }}
+            title={<span className="font-semibold text-lg text-gray-900">Bảo mật</span>}
+            className="mt-6 shadow-lg rounded-2xl border border-gray-100 bg-white"
           >
             <div className="flex justify-between items-center">
               <div>
@@ -321,7 +310,7 @@ const UserProfilePage = () => {
                 </div>
               </div>
               <Button
-                icon={<LockOutlined />}
+                icon={<FiLock />}
                 type="primary"
                 className="hover:scale-105 transition-all"
                 onClick={() => setIsPasswordModal(true)}
@@ -355,7 +344,7 @@ const UserProfilePage = () => {
             name="oldPassword"
             rules={[{ required: true, message: "Vui lòng nhập mật khẩu cũ" }]}
           >
-            <Input.Password prefix={<LockOutlined />} />
+            <Input.Password prefix={<FiLock />} />
           </Form.Item>
 
           <Form.Item
@@ -366,7 +355,7 @@ const UserProfilePage = () => {
               { min: 6, message: "Mật khẩu phải ít nhất 6 ký tự" },
             ]}
           >
-            <Input.Password prefix={<LockOutlined />} />
+            <Input.Password prefix={<FiLock />} />
           </Form.Item>
         </Form>
       </Modal>

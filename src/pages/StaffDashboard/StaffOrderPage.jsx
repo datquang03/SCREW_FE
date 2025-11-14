@@ -1,10 +1,10 @@
 import React from "react";
 import { Card, Typography, Tag, Button } from "antd";
 import {
-  ClockCircleOutlined,
-  CheckCircleOutlined,
-  ExclamationCircleOutlined,
-} from "@ant-design/icons";
+  FiClock,
+  FiCheckCircle,
+  FiAlertTriangle,
+} from "react-icons/fi";
 import DataTable from "../../components/dashboard/DataTable";
 
 const { Title, Text } = Typography;
@@ -82,43 +82,54 @@ const StaffOrderPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="relative overflow-hidden rounded-2xl p-6 md:p-8 bg-gradient-to-br from-blue-100 via-cyan-50 to-white shadow-lg border border-blue-200/50">
+        <div className="absolute -top-10 -left-10 w-40 h-40 rounded-full bg-blue-300/30 blur-2xl" />
+        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <Title level={2} className="mb-2">
+            <Title level={2} className="mb-3 text-gray-900">
             Quản lý đơn đặt
           </Title>
-          <Text className="text-gray-600">
+            <Text className="text-base text-gray-700 font-medium">
             Theo dõi tiến độ setup và hỗ trợ khách hàng tại studio
           </Text>
+          </div>
+          <Button type="primary" size="large" className="font-semibold shadow-lg">
+            Tạo đơn nội bộ
+          </Button>
         </div>
-        <Button type="primary">Tạo đơn nội bộ</Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <div className="flex items-center gap-3">
-            <ClockCircleOutlined className="text-3xl text-orange-500" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <Card className="shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-orange-100 rounded-xl">
+            <FiClock className="text-3xl text-orange-500" />
+            </div>
             <div>
-              <Text className="text-sm text-gray-500">Đang setup</Text>
-              <div className="text-2xl font-bold">2 đơn</div>
+              <Text className="text-sm font-medium text-gray-600 block mb-1">Đang setup</Text>
+              <div className="text-3xl font-extrabold text-gray-900">2 đơn</div>
             </div>
           </div>
         </Card>
-        <Card>
-          <div className="flex items-center gap-3">
-            <CheckCircleOutlined className="text-3xl text-green-500" />
+        <Card className="shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-green-100 rounded-xl">
+            <FiCheckCircle className="text-3xl text-green-500" />
+            </div>
             <div>
-              <Text className="text-sm text-gray-500">Hoàn tất hôm nay</Text>
-              <div className="text-2xl font-bold">5 đơn</div>
+              <Text className="text-sm font-medium text-gray-600 block mb-1">Hoàn tất hôm nay</Text>
+              <div className="text-3xl font-extrabold text-gray-900">5 đơn</div>
             </div>
           </div>
         </Card>
-        <Card>
-          <div className="flex items-center gap-3">
-            <ExclamationCircleOutlined className="text-3xl text-red-500" />
+        <Card className="shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-red-100 rounded-xl">
+            <FiAlertTriangle className="text-3xl text-red-500" />
+            </div>
     <div>
-              <Text className="text-sm text-gray-500">Cần lưu ý</Text>
-              <div className="text-2xl font-bold">1 đơn</div>
+              <Text className="text-sm font-medium text-gray-600 block mb-1">Cần lưu ý</Text>
+              <div className="text-3xl font-extrabold text-gray-900">1 đơn</div>
             </div>
           </div>
         </Card>
