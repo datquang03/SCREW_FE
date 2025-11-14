@@ -1,5 +1,6 @@
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { Menu } from "antd";
 import {
   HomeOutlined,
@@ -10,8 +11,19 @@ import {
   HistoryOutlined,
 } from "@ant-design/icons";
 
+const getRoleText = (role) => {
+  const roleMap = {
+    customer: "Người dùng",
+    staff: "Nhân viên",
+    admin: "Quản trị viên",
+  };
+  return roleMap[role] || "Người dùng";
+};
+
 const UserSidebar = () => {
   const location = useLocation();
+  const { user } = useSelector((state) => state.auth);
+  const roleText = getRoleText(user?.role);
 
   const menuItems = [
     {
@@ -58,17 +70,26 @@ const UserSidebar = () => {
   const selectedKeys = matchedItem ? [matchedItem.key] : [menuItems[0].key];
 
   return (
-    <div className="h-[calc(100vh-4rem)] bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-white flex flex-col shadow-2xl overflow-y-auto">
+    <div className="h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-white flex flex-col shadow-2xl overflow-y-auto">
       {/* Header */}
-      <div className="p-6 border-b border-gray-700/50">
+      <div className="p-6 border-b border-gray-700/50 pt-8">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center shadow-lg shadow-yellow-500/30">
             <span className="text-xl font-bold text-gray-900">S+</span>
           </div>
           <div>
             <h2 className="text-lg font-bold text-white">S+ Studio</h2>
-            <p className="text-xs text-gray-400">Người dùng</p>
+            <p className="text-sm font-medium text-yellow-400 mt-0.5">{roleText}</p>
           </div>
+        </div>
+      </div>
+
+      {/* Role Badge - Above Menu */}
+      <div className="px-6 pt-4 pb-2">
+        <div className="flex items-center justify-center">
+          <span className="px-3 py-1.5 text-xs font-extrabold tracking-wide uppercase bg-gradient-to-r from-yellow-400 via-amber-400 to-amber-500 text-gray-900 rounded-lg shadow-xl shadow-yellow-500/60 border border-yellow-300/40 backdrop-blur-sm transform transition-all duration-200 hover:scale-105 whitespace-nowrap">
+            {roleText}
+          </span>
         </div>
       </div>
 
@@ -93,8 +114,9 @@ const UserSidebar = () => {
             </NavLink>
           ),
         }))}
-        className="flex-1 bg-transparent border-0 pt-4"
+        className="flex-1 bg-transparent border-0 pt-2"
         style={{ backgroundColor: "transparent" }}
+        inlineIndent={16}
       />
 
       {/* Footer */}

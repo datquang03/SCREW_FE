@@ -75,38 +75,43 @@ const AdminStaffPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <Title level={2} className="mb-2">
-            Quản lý nhân sự
-          </Title>
-          <Text className="text-gray-600">
-            Phân ca, theo dõi nhiệm vụ và hiệu suất nhân viên
-          </Text>
+      <div className="relative overflow-hidden rounded-2xl p-6 md:p-8 bg-gradient-to-br from-pink-100 via-rose-50 to-white shadow-lg border border-pink-200/50">
+        <div className="absolute -top-10 -right-10 w-44 h-44 rounded-full bg-pink-300/30 blur-3xl" />
+        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <Title level={2} className="mb-2 text-gray-900">
+              Quản lý nhân sự
+            </Title>
+            <Text className="text-base text-gray-700 font-medium">
+              Phân ca, theo dõi nhiệm vụ và hiệu suất nhân viên
+            </Text>
+          </div>
+          <Button type="primary" icon={<UserAddOutlined />} size="large" className="font-semibold shadow-lg">
+            Thêm nhân viên
+          </Button>
         </div>
-        <Button type="primary" icon={<UserAddOutlined />}>
-          Thêm nhân viên
-        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
+        <Card className="shadow-lg border border-gray-100 rounded-2xl">
           <Title level={4}>Tổng nhân sự</Title>
           <div className="text-3xl font-bold">26</div>
           <Text type="secondary">+3 trong tháng này</Text>
         </Card>
-        <Card>
+        <Card className="shadow-lg border border-gray-100 rounded-2xl">
           <Title level={4}>Đang trực</Title>
           <div className="text-3xl font-bold text-green-500">12</div>
           <Text type="secondary">Ca sáng & chiều</Text>
         </Card>
-        <Card>
+        <Card className="shadow-lg border border-gray-100 rounded-2xl">
           <Title level={4}>Đào tạo</Title>
           <Text>2 khóa đào tạo sắp diễn ra (Lighting & Camera)</Text>
         </Card>
       </div>
 
-      <Table columns={columns} dataSource={data} pagination={{ pageSize: 8 }} />
+      <Card className="shadow-lg border border-gray-100 rounded-2xl">
+        <Table columns={columns} dataSource={data} pagination={{ pageSize: 8 }} />
+      </Card>
     </div>
   );
 };

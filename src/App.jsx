@@ -94,9 +94,9 @@ const AppContent = () => {
             <Route
               path="/dashboard/customer/*"
               element={
-                <ProtectedRouteForCustomer>
-                  <DashboardLayout sidebar={UserSidebar} />
-                </ProtectedRouteForCustomer>
+                //<ProtectedRouteForCustomer>
+                <DashboardLayout sidebar={UserSidebar} />
+                //</ProtectedRouteForCustomer>
               }
             >
               <Route index element={<UserDashboardPage />} />
@@ -110,9 +110,9 @@ const AppContent = () => {
             <Route
               path="/dashboard/staff/*"
               element={
-                <ProtectedRouteForStaff>
-                  <DashboardLayout sidebar={StaffSidebar} />
-                </ProtectedRouteForStaff>
+                //<ProtectedRouteForStaff>
+                <DashboardLayout sidebar={StaffSidebar} />
+                //</ProtectedRouteForStaff>
               }
             >
               <Route index element={<StaffDashboardPage />} />
@@ -127,9 +127,9 @@ const AppContent = () => {
             <Route
               path="/dashboard/admin/*"
               element={
-                <ProtectedRouteForAdmin>
-                  <DashboardLayout sidebar={AdminSidebar} />
-                </ProtectedRouteForAdmin>
+                //<ProtectedRouteForAdmin>
+                <DashboardLayout sidebar={AdminSidebar} />
+                //</ProtectedRouteForAdmin>
               }
             >
               <Route index element={<AdminDashboardPage />} />

@@ -38,13 +38,16 @@ const UserStudiosPage = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <Title level={2} className="mb-2">
-          Studio yêu thích
-        </Title>
-        <Text className="text-gray-600">
-          Danh sách các studio bạn đã đánh dấu yêu thích
-        </Text>
+      <div className="relative overflow-hidden rounded-2xl p-6 md:p-8 bg-gradient-to-br from-pink-100 via-rose-50 to-white shadow-lg border border-pink-200/50">
+        <div className="absolute -top-10 -left-10 w-40 h-40 rounded-full bg-pink-300/30 blur-2xl" />
+        <div className="relative z-10">
+          <Title level={2} className="mb-3 text-gray-900">
+            Studio yêu thích
+          </Title>
+          <Text className="text-base text-gray-700 font-medium">
+            Danh sách các studio bạn đã đánh dấu yêu thích
+          </Text>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -56,17 +59,18 @@ const UserStudiosPage = () => {
           >
             <Card
               hoverable
-              className="rounded-xl overflow-hidden"
+              className="rounded-2xl overflow-hidden shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-300"
               cover={
-                <div className="h-48 bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
-                  <VideoCameraOutlined className="text-6xl text-white/30" />
+                <div className="h-48 bg-gradient-to-br from-gray-800 via-gray-700 to-gray-900 flex items-center justify-center relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                  <VideoCameraOutlined className="text-6xl text-white/30 relative z-10" />
                 </div>
               }
               actions={[
-                <Button type="primary" key="book">
+                <Button type="primary" key="book" className="font-semibold">
                   Đặt ngay
                 </Button>,
-                <HeartFilled className="text-red-500 text-xl" key="favorite" />,
+                <HeartFilled className="text-red-500 text-xl hover:text-red-600 transition-colors" key="favorite" />,
               ]}
             >
               <div className="space-y-3">

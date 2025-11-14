@@ -31,18 +31,21 @@ const StaffProfilePage = () => {
 
   return (
     <div className="space-y-6">
-    <div>
-        <Title level={2} className="mb-2">
-          Hồ sơ nhân viên
-        </Title>
-        <Text className="text-gray-600">
-          Thông tin cá nhân và lịch sử công việc tại S+ Studio
-        </Text>
+      <div className="relative overflow-hidden rounded-2xl p-6 md:p-8 bg-gradient-to-br from-indigo-100 via-slate-50 to-white shadow-lg border border-indigo-200/50">
+        <div className="absolute -top-10 -right-10 w-44 h-44 rounded-full bg-indigo-300/30 blur-3xl" />
+        <div className="relative z-10">
+          <Title level={2} className="mb-2 text-gray-900">
+            Hồ sơ nhân viên
+          </Title>
+          <Text className="text-base text-gray-700 font-medium">
+            Thông tin cá nhân và lịch sử công việc tại S+ Studio
+          </Text>
+        </div>
       </div>
 
       <Row gutter={24}>
         <Col xs={24} md={8}>
-          <Card className="text-center">
+          <Card className="text-center shadow-lg border border-gray-100 rounded-2xl">
             <Avatar size={120} icon={<UserOutlined />} className="mb-4" />
             <Title level={4} className="mb-1">
               Lê Minh Quân
@@ -64,7 +67,7 @@ const StaffProfilePage = () => {
             </div>
           </Card>
 
-          <Card title="Lịch sử công việc" className="mt-4">
+          <Card title="Lịch sử công việc" className="mt-4 shadow-lg border border-gray-100 rounded-2xl">
             <Timeline
               items={[
                 {
@@ -145,7 +148,7 @@ const StaffProfilePage = () => {
             </Form>
           </Card>
 
-          <Card title="Kỹ năng" className="mt-6">
+          <Card title="Kỹ năng" className="mt-6 shadow-lg border border-gray-100 rounded-2xl">
             <div className="flex flex-wrap gap-2">
               <Tag color="gold">Ánh sáng</Tag>
               <Tag color="cyan">Set decor</Tag>

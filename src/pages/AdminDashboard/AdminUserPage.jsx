@@ -123,29 +123,32 @@ const AdminUserPage = () => {
   return (
     <div className="space-y-6">
       {/* HEADER */}
-      <div className="flex justify-between items-center">
-        <div>
-          <Title level={2} className="mb-2">
-            Quản lý khách hàng
-          </Title>
-          <Text className="text-gray-600">
-            Xem, quản lý và chăm sóc khách thuê tại S+ Studio
-          </Text>
+      <div className="relative overflow-hidden rounded-2xl p-6 md:p-8 bg-gradient-to-br from-indigo-100 via-blue-50 to-white shadow-lg border border-indigo-200/50">
+        <div className="absolute -top-10 -right-12 w-48 h-48 rounded-full bg-indigo-300/30 blur-3xl" />
+        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <Title level={2} className="mb-2 text-gray-900">
+              Quản lý khách hàng
+            </Title>
+            <Text className="text-base text-gray-700 font-medium">
+              Xem, quản lý và chăm sóc khách thuê tại S+ Studio
+            </Text>
+          </div>
+          <Button type="primary" icon={<UserAddOutlined />} size="large" className="font-semibold shadow-lg">
+            Thêm khách hàng
+          </Button>
         </div>
-        <Button type="primary" icon={<UserAddOutlined />}>
-          Thêm khách hàng
-        </Button>
       </div>
 
       {/* STATS */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
+        <Card className="shadow-lg border border-gray-100 rounded-2xl">
           <Title level={4}>Tổng khách hàng</Title>
           <div className="text-3xl font-bold">
             {totalCustomers.toLocaleString()}
           </div>
         </Card>
-        <Card>
+        <Card className="shadow-lg border border-gray-100 rounded-2xl">
           <Title level={4}>Khách hàng hoạt động</Title>
           <div className="flex items-center gap-2 text-green-500 text-xl font-semibold">
             <CheckCircleOutlined />
@@ -157,7 +160,7 @@ const AdminUserPage = () => {
             </span>
           </div>
         </Card>
-        <Card>
+        <Card className="shadow-lg border border-gray-100 rounded-2xl">
           <Title level={4}>Khách hàng VIP</Title>
           <div className="text-3xl font-bold">{vipCustomers}</div>
         </Card>

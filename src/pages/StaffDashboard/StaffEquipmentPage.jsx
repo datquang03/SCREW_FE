@@ -246,30 +246,33 @@ const StaffEquipmentPage = () => {
   return (
     <div className="space-y-6 p-1">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <Title level={2} className="mb-1">
-            Quản lý thiết bị
-          </Title>
-          <Text className="text-gray-600">
-            Theo dõi tình trạng và lịch bảo trì thiết bị
-          </Text>
+      <div className="relative overflow-hidden rounded-2xl p-6 md:p-8 bg-gradient-to-br from-blue-100 via-indigo-50 to-white shadow-lg border border-blue-200/50">
+        <div className="absolute -top-10 -left-10 w-40 h-40 rounded-full bg-blue-300/30 blur-2xl" />
+        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <Title level={2} className="mb-2 text-gray-900">
+              Quản lý thiết bị
+            </Title>
+            <Text className="text-base text-gray-700 font-medium">
+              Theo dõi tình trạng và lịch bảo trì thiết bị
+            </Text>
+          </div>
+          <Button
+            type="primary"
+            icon={<ToolOutlined />}
+            size="large"
+            className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg font-semibold"
+            onClick={() => setIsCreateModalOpen(true)}
+          >
+            Thêm thiết bị
+          </Button>
         </div>
-        <Button
-          type="primary"
-          icon={<ToolOutlined />}
-          size="large"
-          className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-md"
-          onClick={() => setIsCreateModalOpen(true)}
-        >
-          Thêm thiết bị
-        </Button>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Tổng thiết bị */}
-        <Card className="shadow-sm hover:shadow transition-shadow">
+        <Card className="shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 rounded-2xl">
           <Title level={4} className="text-gray-700">
             Tổng thiết bị
           </Title>
@@ -280,7 +283,7 @@ const StaffEquipmentPage = () => {
         </Card>
 
         {/* Thiết bị đang sử dụng */}
-        <Card className="shadow-sm hover:shadow transition-shadow">
+        <Card className="shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 rounded-2xl">
           <Title level={4} className="text-gray-700">
             Thiết bị đang sử dụng
           </Title>
@@ -301,7 +304,7 @@ const StaffEquipmentPage = () => {
         </Card>
 
         {/* Thiết bị đang bảo trì */}
-        <Card className="shadow-sm hover:shadow transition-shadow">
+        <Card className="shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 rounded-2xl">
           <Title level={4} className="text-gray-700">
             Thiết bị đang bảo trì
           </Title>
@@ -315,7 +318,7 @@ const StaffEquipmentPage = () => {
       </div>
 
       {/* Table */}
-      <Card className="shadow-sm">
+      <Card className="shadow-lg border border-gray-100 rounded-2xl">
         <Table
           columns={columns}
           dataSource={equipments.map((e) => ({ key: e._id, ...e }))}

@@ -166,24 +166,23 @@ const UserProfilePage = () => {
         />
       )}
 
-      <div>
-        <Title level={2} className="font-semibold mb-1">
-          Hồ sơ của tôi
-        </Title>
-        <Text className="text-gray-600">Quản lý thông tin cá nhân của bạn</Text>
+      <div className="relative overflow-hidden rounded-2xl p-6 md:p-8 bg-gradient-to-br from-sky-100 via-blue-50 to-white shadow-lg border border-blue-200/50">
+        <div className="absolute -top-12 -left-8 w-48 h-48 rounded-full bg-sky-200/40 blur-3xl" />
+        <div className="absolute -bottom-16 -right-10 w-60 h-60 rounded-full bg-blue-300/30 blur-3xl" />
+        <div className="relative z-10">
+          <Title level={2} className="font-semibold mb-2 text-gray-900">
+            Hồ sơ của tôi
+          </Title>
+          <Text className="text-base text-gray-700 font-medium">
+            Quản lý thông tin cá nhân và bảo mật tài khoản của bạn
+          </Text>
+        </div>
       </div>
 
       <Row gutter={24}>
         {/* LEFT CARD */}
         <Col xs={24} md={8}>
-          <Card
-            className="text-center rounded-xl p-4 shadow-xl glass-card"
-            style={{
-              backdropFilter: "blur(16px)",
-              background: "rgba(255, 255, 255, 0.2)",
-              border: "1px solid rgba(255,255,255,0.3)",
-            }}
-          >
+          <Card className="text-center rounded-2xl p-5 shadow-lg border border-gray-100 bg-white">
             <Upload {...uploadProps}>
               <div className="relative inline-block cursor-pointer group">
                 <Avatar
@@ -218,7 +217,7 @@ const UserProfilePage = () => {
               {customer.role}
             </Text>
 
-            <Divider />
+            <Divider className="my-5" />
 
             <div className="space-y-3 text-left px-2">
               <div>
@@ -239,7 +238,7 @@ const UserProfilePage = () => {
               </div>
             </div>
 
-            <Divider />
+            <Divider className="my-5" />
 
             <Button
               danger
@@ -255,13 +254,8 @@ const UserProfilePage = () => {
         {/* RIGHT CARD */}
         <Col xs={24} md={16}>
           <Card
-            title={<span className="font-semibold text-lg">Thông tin cá nhân</span>}
-            className="shadow-xl rounded-xl glass-card"
-            style={{
-              backdropFilter: "blur(14px)",
-              background: "rgba(255, 255, 255, 0.25)",
-              border: "1px solid rgba(255,255,255,0.3)",
-            }}
+            title={<span className="font-semibold text-lg text-gray-900">Thông tin cá nhân</span>}
+            className="shadow-lg rounded-2xl border border-gray-100 bg-white"
             extra={
               <Button
                 type={editing ? "default" : "primary"}
@@ -305,13 +299,8 @@ const UserProfilePage = () => {
 
           {/* SECURITY */}
           <Card
-            title={<span className="font-semibold text-lg">Bảo mật</span>}
-            className="mt-6 shadow-xl rounded-xl glass-card"
-            style={{
-              backdropFilter: "blur(14px)",
-              background: "rgba(255, 255, 255, 0.25)",
-              border: "1px solid rgba(255,255,255,0.3)",
-            }}
+            title={<span className="font-semibold text-lg text-gray-900">Bảo mật</span>}
+            className="mt-6 shadow-lg rounded-2xl border border-gray-100 bg-white"
           >
             <div className="flex justify-between items-center">
               <div>
