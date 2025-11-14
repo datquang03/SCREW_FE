@@ -21,7 +21,10 @@ const Navbar = () => {
   const scrolled = useScrollEffect(20);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const headerRef = useRef(null);
+  const searchContainerRef = useRef(null);
+  const searchInputRef = useRef(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
@@ -43,6 +46,38 @@ const Navbar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [dropdownOpen]);
 
+  useEffect(() => {
+    if (searchOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [searchOpen]);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (
+        searchOpen &&
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(e.target)
+      ) {
+        setSearchOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [searchOpen]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setSearchOpen(false);
+      }
+    };
+    if (searchOpen) {
+      document.addEventListener("keydown", handleKeyDown);
+    }
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [searchOpen]);
+
   const toggleMobileMenu = () => setMobileMenuOpen((prev) => !prev);
   const closeMobileMenu = () => setMobileMenuOpen(false);
 
@@ -58,27 +93,24 @@ const Navbar = () => {
           : "bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900"
       }`}
     >
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-6 py-2">
+      <div className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-6 py-3">
         {/* ===== LOGO ===== */}
-        <Link to="/" className="flex items-center gap-2 group">
+        <Link to="/" className="flex items-center group">
           <motion.img
             src={SPlusLogo}
             alt="S+ Studio Logo"
-            className="h-10 md:h-12 w-auto object-contain drop-shadow-lg"
-            whileHover={{ rotate: [0, -10, 10, -10, 0] }}
-            transition={{ duration: 0.5 }}
+            className="h-20 md:h-24 w-auto object-contain drop-shadow-[0_20px_45px_rgba(248,197,89,0.5)]"
+            style={{
+              imageRendering: "crisp-edges",
+              minWidth: "80px",
+            }}
+            whileHover={{ rotate: [0, -10, 10, -10, 0], scale: 1.05 }}
+            transition={{ duration: 0.45 }}
           />
-          <span
-            className={`text-sm md:text-base font-bold transition-colors ${
-              scrolled ? "text-gray-900" : "text-white"
-            } group-hover:text-yellow-400`}
-          >
-            S+ Studio
-          </span>
         </Link>
 
         {/* ===== DESKTOP NAV ===== */}
-        <nav className="hidden lg:flex items-center gap-2">
+        <nav className="hidden lg:flex items-center gap-1">
           {NAV_LINKS.map(({ path, label, key: linkKey }, i) => (
             <motion.div
               key={linkKey}
@@ -89,7 +121,7 @@ const Navbar = () => {
               <NavLink
                 to={path}
                 className={({ isActive }) =>
-                  `px-3 py-2 rounded-md text-sm font-medium transition-all duration-300 ${
+                  `px-4 py-2 rounded-md text-base font-semibold transition-all duration-300 ${
                     isActive
                       ? scrolled
                         ? "text-yellow-600 bg-yellow-100"
@@ -107,13 +139,100 @@ const Navbar = () => {
         </nav>
 
         {/* ===== RIGHT ACTIONS ===== */}
-        <div className="flex items-center gap-2">
-          <Button
-            type="text"
-            shape="circle"
-            icon={<SearchOutlined />}
-            className={scrolled ? "text-gray-700" : "text-white"}
-          />
+        <div className="flex items-center gap-3">
+          <div
+            ref={searchContainerRef}
+            className="relative flex items-center"
+          >
+            <AnimatePresence mode="wait">
+              {!searchOpen ? (
+                <motion.button
+                  key="search-button"
+                  type="button"
+                  onClick={() => setSearchOpen(true)}
+                  initial={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  whileHover={{ 
+                    scale: 1.1,
+                    boxShadow: "0 8px 20px rgba(0,0,0,0.15)"
+                  }}
+                  whileTap={{ scale: 0.92 }}
+                  transition={{ 
+                    type: "spring", 
+                    stiffness: 400, 
+                    damping: 20 
+                  }}
+                  className="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-lg hover:shadow-xl transition-shadow duration-300"
+                >
+                  <SearchOutlined className="text-lg text-gray-900" />
+                </motion.button>
+              ) : (
+                <motion.div
+                  key="search-bar"
+                  initial={{ 
+                    scaleX: 0, 
+                    opacity: 0,
+                    x: -20
+                  }}
+                  animate={{ 
+                    scaleX: 1, 
+                    opacity: 1,
+                    x: 0
+                  }}
+                  exit={{ 
+                    scaleX: 0, 
+                    opacity: 0,
+                    x: -20
+                  }}
+                  transition={{ 
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 25,
+                    duration: 0.3
+                  }}
+                  className="origin-right w-64"
+                  style={{ transformOrigin: "100% 50%" }}
+                >
+                  <motion.div
+                    initial={{ borderRadius: "9999px" }}
+                    animate={{ borderRadius: "9999px" }}
+                    className="flex items-center gap-2 rounded-full px-4 py-2.5 bg-white shadow-xl shadow-gray-900/20 border border-gray-100"
+                  >
+                    <motion.div
+                      initial={{ rotate: -90, opacity: 0 }}
+                      animate={{ rotate: 0, opacity: 1 }}
+                      transition={{ delay: 0.1, type: "spring", stiffness: 300 }}
+                    >
+                      <SearchOutlined className="text-base text-amber-500" />
+                    </motion.div>
+                    <motion.div
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.15 }}
+                      className="flex-1"
+                    >
+                      <input
+                        ref={searchInputRef}
+                        type="text"
+                        placeholder="Tìm kiếm studio..."
+                        className="w-full bg-transparent text-sm outline-none placeholder-gray-400 text-gray-900"
+                      />
+                    </motion.div>
+                    <motion.button
+                      type="button"
+                      onClick={() => setSearchOpen(false)}
+                      whileHover={{ scale: 1.15, rotate: 90 }}
+                      whileTap={{ scale: 0.9 }}
+                      transition={{ type: "spring", stiffness: 400 }}
+                      className="text-gray-400 hover:text-gray-700 transition-colors"
+                    >
+                      <CloseOutlined />
+                    </motion.button>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* Nếu đã đăng nhập */}
           {user ? (
@@ -129,7 +248,7 @@ const Navbar = () => {
                     "https://png.pngtree.com/png-clipart/20191120/original/pngtree-outline-user-icon-png-image_5045523.jpg"
                   }
                   alt="User Avatar"
-                  className="w-8 h-8 rounded-full object-cover border border-gray-300 cursor-pointer"
+                  className="w-12 h-12 rounded-full object-cover border-2 border-white/60 shadow-lg cursor-pointer"
                 />
               </motion.button>
 
@@ -283,7 +402,7 @@ const Navbar = () => {
                         to={path}
                         onClick={closeMobileMenu}
                         className={({ isActive }) =>
-                          `block px-4 py-3 rounded-lg text-sm font-medium ${
+                          `block px-4 py-3 rounded-lg text-base font-semibold ${
                             isActive
                               ? "bg-yellow-100 text-yellow-700"
                               : "text-gray-700 hover:bg-gray-100"

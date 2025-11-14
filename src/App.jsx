@@ -10,6 +10,7 @@ import ContactPage from "./pages/Contact/ContactPage";
 import LoginPage from "./pages/Authentication/Login/LoginPage";
 import RegisterPage from "./pages/Authentication/Register/RegisterPage";
 import StudioPage from "./pages/Studio/StudioPage";
+import StudioBookingPage from "./pages/Booking/StudioBookingPage";
 import ForgotPasswordPage from "./pages/Authentication/Forgot/ForgotPassword";
 import VerifyEmailPage from "./pages/Authentication/Verify/Email";
 
@@ -87,14 +88,15 @@ const AppContent = () => {
             <Route path="/verify-email" element={<VerifyEmailPage />} />
             <Route path="/studio" element={<StudioPage />} />
             <Route path="/studio/:id" element={<StudioDetailPage />} />
+            <Route path="/booking" element={<StudioBookingPage />} />
 
             {/* CUSTOMER DASHBOARD */}
             <Route
               path="/dashboard/customer/*"
               element={
-                // <ProtectedRouteForAll>
+                <ProtectedRouteForAll>
                   <DashboardLayout sidebar={UserSidebar} />
-                // {/* </ProtectedRouteForAll> */}
+                </ProtectedRouteForAll>
               }
             >
               <Route index element={<UserDashboardPage />} />
