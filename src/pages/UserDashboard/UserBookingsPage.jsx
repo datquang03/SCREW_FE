@@ -1,6 +1,10 @@
 import React from "react";
 import { Card, Typography, Tag, Button } from "antd";
-import { CalendarOutlined, ClockCircleOutlined, CheckCircleOutlined } from "@ant-design/icons";
+import {
+  FiCalendar,
+  FiClock,
+  FiCheckCircle,
+} from "react-icons/fi";
 import DataTable from "../../components/dashboard/DataTable";
 
 const { Title, Text } = Typography;
@@ -92,17 +96,17 @@ const UserBookingsPage = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
         <Card className="text-center shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          <CalendarOutlined className="text-4xl text-blue-500 mb-3" />
+          <FiCalendar className="text-4xl text-blue-500 mb-3" />
           <div className="text-3xl font-extrabold text-gray-900 mb-1">12</div>
           <div className="text-sm font-medium text-gray-600">Tổng đơn</div>
         </Card>
         <Card className="text-center shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          <ClockCircleOutlined className="text-4xl text-orange-500 mb-3" />
+          <FiClock className="text-4xl text-orange-500 mb-3" />
           <div className="text-3xl font-extrabold text-gray-900 mb-1">3</div>
           <div className="text-sm font-medium text-gray-600">Đang xử lý</div>
         </Card>
         <Card className="text-center shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          <CheckCircleOutlined className="text-4xl text-green-500 mb-3" />
+          <FiCheckCircle className="text-4xl text-green-500 mb-3" />
           <div className="text-3xl font-extrabold text-gray-900 mb-1">9</div>
           <div className="text-sm font-medium text-gray-600">Hoàn tất</div>
         </Card>

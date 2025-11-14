@@ -1,7 +1,7 @@
 import React from "react";
 import DataTable from "../../components/dashboard/DataTable";
 import KPIStat from "../../components/dashboard/KPIStat";
-import { ScheduleOutlined, ToolOutlined, ContactsOutlined } from "@ant-design/icons";
+import { FiCalendar, FiTool, FiUsers } from "react-icons/fi";
 
 const StaffDashboardPage = () => {
   const todayColumns = [
@@ -46,9 +46,9 @@ const StaffDashboardPage = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <KPIStat title="Đơn hôm nay" value="3" icon={<ScheduleOutlined />} gradient="from-emerald-400 to-teal-500" />
-        <KPIStat title="Thiết bị cần chuẩn bị" value="5" icon={<ToolOutlined />} gradient="from-indigo-400 to-violet-500" />
-        <KPIStat title="Khách đang phục vụ" value="3" icon={<ContactsOutlined />} gradient="from-yellow-400 to-amber-500" />
+        <KPIStat title="Đơn hôm nay" value="3" icon={<FiCalendar />} gradient="from-emerald-400 to-teal-500" />
+        <KPIStat title="Thiết bị cần chuẩn bị" value="5" icon={<FiTool />} gradient="from-indigo-400 to-violet-500" />
+        <KPIStat title="Khách đang phục vụ" value="3" icon={<FiUsers />} gradient="from-yellow-400 to-amber-500" />
         </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

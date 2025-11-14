@@ -1,6 +1,6 @@
 import React from "react";
 import { Card, Typography, Switch, Form, Input, Button, Select } from "antd";
-import { SaveOutlined } from "@ant-design/icons";
+import { FiSave } from "react-icons/fi";
 
 const { Title, Text } = Typography;
 
@@ -52,7 +52,7 @@ const AdminSettingsPage = () => {
                 ]}
               />
             </Form.Item>
-            <Button type="primary" icon={<SaveOutlined />}>
+            <Button type="primary" icon={<FiSave />}>
               Lưu cài đặt
             </Button>
           </Form>

@@ -15,15 +15,15 @@ import {
   Modal,
 } from "antd";
 import {
-  UserOutlined,
-  MailOutlined,
-  PhoneOutlined,
-  EditOutlined,
-  SaveOutlined,
-  LockOutlined,
-  DeleteOutlined,
-  LinkOutlined,
-} from "@ant-design/icons";
+  FiUser,
+  FiMail,
+  FiPhone,
+  FiEdit,
+  FiSave,
+  FiLock,
+  FiTrash2,
+  FiLink,
+} from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom"; // Thêm để redirect
 
@@ -188,7 +188,7 @@ const UserProfilePage = () => {
                 <Avatar
                   size={130}
                   src={avatarPreview}
-                  icon={<UserOutlined />}
+                  icon={<FiUser />}
                   className="mb-4 border-4 border-white shadow-md"
                   style={{ borderRadius: "999px", transition: "0.25s" }}
                 />
@@ -199,7 +199,7 @@ const UserProfilePage = () => {
             <div className="mt-3">
               <Input
                 placeholder="Dán link ảnh avatar..."
-                prefix={<LinkOutlined />}
+                prefix={<FiLink />}
                 value={avatarURL}
                 onChange={(e) => {
                   setAvatarURL(e.target.value);
@@ -242,7 +242,7 @@ const UserProfilePage = () => {
 
             <Button
               danger
-              icon={<DeleteOutlined />}
+              icon={<FiTrash2 />}
               className="w-full py-2 rounded-lg shadow-md hover:opacity-90 transition-all"
               onClick={handleDeleteAccount}
             >
@@ -259,7 +259,7 @@ const UserProfilePage = () => {
             extra={
               <Button
                 type={editing ? "default" : "primary"}
-                icon={editing ? <SaveOutlined /> : <EditOutlined />}
+                icon={editing ? <FiSave /> : <FiEdit />}
                 onClick={() => (editing ? form.submit() : setEditing(true))}
                 className="hover:scale-105 transition-all"
               >
@@ -273,7 +273,7 @@ const UserProfilePage = () => {
                 name="fullName"
                 rules={[{ required: true, message: "Vui lòng nhập họ và tên" }]}
               >
-                <Input prefix={<UserOutlined />} disabled={!editing} />
+                <Input prefix={<FiUser />} disabled={!editing} />
               </Form.Item>
 
               <Form.Item
@@ -284,7 +284,7 @@ const UserProfilePage = () => {
                   { type: "email", message: "Email không hợp lệ" },
                 ]}
               >
-                <Input prefix={<MailOutlined />} disabled={!editing} />
+                <Input prefix={<FiMail />} disabled={!editing} />
               </Form.Item>
 
               <Form.Item
@@ -292,7 +292,7 @@ const UserProfilePage = () => {
                 name="phone"
                 rules={[{ required: true, message: "Vui lòng nhập số điện thoại" }]}
               >
-                <Input prefix={<PhoneOutlined />} disabled={!editing} />
+                <Input prefix={<FiPhone />} disabled={!editing} />
               </Form.Item>
             </Form>
           </Card>
@@ -310,7 +310,7 @@ const UserProfilePage = () => {
                 </div>
               </div>
               <Button
-                icon={<LockOutlined />}
+                icon={<FiLock />}
                 type="primary"
                 className="hover:scale-105 transition-all"
                 onClick={() => setIsPasswordModal(true)}
@@ -344,7 +344,7 @@ const UserProfilePage = () => {
             name="oldPassword"
             rules={[{ required: true, message: "Vui lòng nhập mật khẩu cũ" }]}
           >
-            <Input.Password prefix={<LockOutlined />} />
+            <Input.Password prefix={<FiLock />} />
           </Form.Item>
 
           <Form.Item
@@ -355,7 +355,7 @@ const UserProfilePage = () => {
               { min: 6, message: "Mật khẩu phải ít nhất 6 ký tự" },
             ]}
           >
-            <Input.Password prefix={<LockOutlined />} />
+            <Input.Password prefix={<FiLock />} />
           </Form.Item>
         </Form>
       </Modal>

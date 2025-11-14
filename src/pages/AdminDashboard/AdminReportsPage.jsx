@@ -1,6 +1,6 @@
 import React from "react";
 import { Card, Typography, Timeline, Button, Tag } from "antd";
-import { DownloadOutlined, FileTextOutlined } from "@ant-design/icons";
+import { FiDownload, FiFileText } from "react-icons/fi";
 
 const { Title, Text } = Typography;
 
@@ -36,7 +36,7 @@ const AdminReportsPage = () => {
               Tổng hợp dữ liệu vận hành, khách hàng và marketing
             </Text>
           </div>
-          <Button type="primary" icon={<DownloadOutlined />} size="large" className="font-semibold shadow-lg">
+          <Button type="primary" icon={<FiDownload />} size="large" className="font-semibold shadow-lg">
             Xuất báo cáo tổng
           </Button>
         </div>
@@ -71,7 +71,7 @@ const AdminReportsPage = () => {
               >
                 <div>
                   <div className="flex items-center gap-2">
-                    <FileTextOutlined className="text-indigo-500" />
+                    <FiFileText className="text-indigo-500" />
                     <Text strong>{report.title}</Text>
                   </div>
                   <p className="text-sm text-gray-500 mt-1">

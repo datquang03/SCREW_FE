@@ -1,10 +1,10 @@
 import React from "react";
 import { Card, Typography, Row, Col, Statistic, Table, Tag } from "antd";
 import {
-  ArrowUpOutlined,
-  ArrowDownOutlined,
-  DollarCircleOutlined,
-} from "@ant-design/icons";
+  FiArrowUp,
+  FiArrowDown,
+  FiDollarSign,
+} from "react-icons/fi";
 import MiniLineChart from "../../components/dashboard/MiniLineChart";
 import MiniBarChart from "../../components/dashboard/MiniBarChart";
 import DonutChart from "../../components/dashboard/DonutChart";
@@ -85,10 +85,10 @@ const AdminRevenuePage = () => {
               suffix="triệu"
               precision={1}
               valueStyle={{ color: "#16a34a" }}
-              prefix={<DollarCircleOutlined />}
+              prefix={<FiDollarSign />}
             />
             <div className="text-sm text-green-600 mt-2 flex items-center gap-1">
-              <ArrowUpOutlined />
+              <FiArrowUp />
               +12.4% so với tháng trước
             </div>
           </Card>
@@ -116,7 +116,7 @@ const AdminRevenuePage = () => {
               valueStyle={{ color: "#dc2626" }}
             />
             <div className="text-sm text-red-500 mt-2 flex items-center gap-1">
-              <ArrowDownOutlined />
+              <FiArrowDown />
               -1.1% so với tháng trước
             </div>
           </Card>

@@ -6,11 +6,11 @@ import MiniLineChart from "../../components/dashboard/MiniLineChart";
 import MiniBarChart from "../../components/dashboard/MiniBarChart";
 import DonutChart from "../../components/dashboard/DonutChart";
 import {
-  UserOutlined,
-  TeamOutlined,
-  DollarCircleOutlined,
-  BarChartOutlined,
-} from "@ant-design/icons";
+  FiUser,
+  FiUsers,
+  FiDollarSign,
+  FiBarChart2,
+} from "react-icons/fi";
 
 const AdminDashboardPage = () => {
   const usersColumns = [
@@ -70,25 +70,25 @@ const AdminDashboardPage = () => {
         <KPIStat
           title="Tổng User"
           value="1.240"
-          icon={<UserOutlined />}
+          icon={<FiUser />}
           gradient="from-indigo-400 to-violet-500"
         />
         <KPIStat
           title="Nhân sự"
           value="26"
-          icon={<TeamOutlined />}
+          icon={<FiUsers />}
           gradient="from-sky-400 to-cyan-500"
         />
         <KPIStat
           title="Doanh thu (tháng)"
           value="118.0tr"
-          icon={<DollarCircleOutlined />}
+          icon={<FiDollarSign />}
           gradient="from-emerald-400 to-teal-500"
         />
         <KPIStat
           title="Tỉ lệ tăng trưởng"
           value="+12%"
-          icon={<BarChartOutlined />}
+          icon={<FiBarChart2 />}
           gradient="from-rose-400 to-pink-500"
         />
       </div>

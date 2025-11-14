@@ -1,68 +1,59 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Menu } from "antd";
-import {
-  HomeOutlined,
-  ShoppingCartOutlined,
-  CalendarOutlined,
-  UserOutlined,
-  VideoCameraOutlined,
-  HistoryOutlined,
-} from "@ant-design/icons";
+import { FiHome, FiCalendar, FiVideo, FiClock, FiUser } from "react-icons/fi";
 
-const getRoleText = (role) => {
-  const roleMap = {
-    customer: "Người dùng",
-    staff: "Nhân viên",
-    admin: "Quản trị viên",
-  };
-  return roleMap[role] || "Người dùng";
+const roleTextMap = {
+  customer: "Người dùng",
+  staff: "Nhân viên",
+  admin: "Quản trị viên",
 };
 
-const UserSidebar = () => {
+const UserSidebar = ({ variant = "customer" }) => {
   const location = useLocation();
   const { user } = useSelector((state) => state.auth);
-  const roleText = getRoleText(user?.role);
+  const roleText = roleTextMap[user?.role] || "Người dùng";
 
-  const menuItems = [
-    {
-      key: "dashboard",
-      icon: <HomeOutlined />,
-      label: "Bảng điều khiển",
-      path: "/dashboard/customer",
-    },
-    {
-      key: "bookings",
-      icon: <CalendarOutlined />,
-      label: "Đơn của tôi",
-      path: "/dashboard/customer/bookings",
-    },
-    {
-      key: "studios",
-      icon: <VideoCameraOutlined />,
-      label: "Studio yêu thích",
-      path: "/dashboard/customer/studios",
-    },
-    {
-      key: "history",
-      icon: <HistoryOutlined />,
-      label: "Lịch sử thuê",
-      path: "/dashboard/customer/history",
-    },
-    {
-      key: "profile",
-      icon: <UserOutlined />,
-      label: "Hồ sơ",
-      path: "/dashboard/customer/profile",
-    },
-  ];
+  const menuItems = useMemo(
+    () => [
+      {
+        key: "dashboard",
+        icon: <FiHome />,
+        label: "Bảng điều khiển",
+        path: "/dashboard/customer",
+      },
+      {
+        key: "bookings",
+        icon: <FiCalendar />,
+        label: "Đơn của tôi",
+        path: "/dashboard/customer/bookings",
+      },
+      {
+        key: "studios",
+        icon: <FiVideo />,
+        label: "Studio yêu thích",
+        path: "/dashboard/customer/studios",
+      },
+      {
+        key: "history",
+        icon: <FiClock />,
+        label: "Lịch sử thuê",
+        path: "/dashboard/customer/history",
+      },
+      {
+        key: "profile",
+        icon: <FiUser />,
+        label: "Hồ sơ",
+        path: "/dashboard/customer/profile",
+      },
+    ],
+    []
+  );
 
   const matchedItem = menuItems
     .filter((item) => {
-      if (location.pathname === item.path) {
-        return true;
-      }
+      if (location.pathname === item.path) return true;
       return location.pathname.startsWith(`${item.path}/`);
     })
     .sort((a, b) => b.path.length - a.path.length)[0];
@@ -70,30 +61,27 @@ const UserSidebar = () => {
   const selectedKeys = matchedItem ? [matchedItem.key] : [menuItems[0].key];
 
   return (
-    <div className="h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-white flex flex-col shadow-2xl overflow-y-auto">
-      {/* Header */}
-      <div className="p-6 border-b border-gray-700/50 pt-8">
+    <div className="flex h-full w-full flex-col bg-gradient-to-b from-gray-950 via-gray-900 to-black text-white">
+      <div className="px-5 pb-8 pt-10 border-b border-white/10">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center shadow-lg shadow-yellow-500/30">
-            <span className="text-xl font-bold text-gray-900">S+</span>
+          <div className="rounded-2xl bg-gradient-to-tr from-amber-400 to-yellow-500 px-4 py-3 shadow-lg shadow-amber-500/30">
+            <span className="text-2xl font-black text-gray-900">S+</span>
           </div>
           <div>
-            <h2 className="text-lg font-bold text-white">S+ Studio</h2>
-            <p className="text-sm font-medium text-yellow-400 mt-0.5">{roleText}</p>
+            <p className="text-base uppercase tracking-[0.4em] text-white/60">
+              S+ Studio
+            </p>
+            <p className="text-lg font-semibold text-white">{roleText}</p>
           </div>
         </div>
       </div>
 
-      {/* Role Badge - Above Menu */}
-      <div className="px-6 pt-4 pb-2">
-        <div className="flex items-center justify-center">
-          <span className="px-3 py-1.5 text-xs font-extrabold tracking-wide uppercase bg-gradient-to-r from-yellow-400 via-amber-400 to-amber-500 text-gray-900 rounded-lg shadow-xl shadow-yellow-500/60 border border-yellow-300/40 backdrop-blur-sm transform transition-all duration-200 hover:scale-105 whitespace-nowrap">
-            {roleText}
-          </span>
-        </div>
+      <div className="px-5 py-4">
+        <span className="inline-flex w-full items-center justify-center rounded-2xl bg-white/5 px-4 py-2 text-xs font-bold uppercase tracking-widest text-amber-200 border border-white/10">
+          {roleText}
+        </span>
       </div>
 
-      {/* Menu */}
       <Menu
         theme="dark"
         mode="inline"
@@ -105,30 +93,24 @@ const UserSidebar = () => {
             <NavLink
               to={item.path}
               className={({ isActive }) =>
-                isActive
-                  ? "text-yellow-400 font-semibold"
-                  : "text-gray-300 hover:text-white"
+                [
+                  "flex items-center justify-between w-full",
+                  isActive
+                    ? "text-amber-300 font-semibold"
+                    : "text-white/70 hover:text-white",
+                ].join(" ")
               }
             >
               {item.label}
             </NavLink>
           ),
         }))}
-        className="flex-1 bg-transparent border-0 pt-2"
+        className="flex-1 bg-transparent border-0 px-4 [&_.ant-menu-item]:rounded-2xl [&_.ant-menu-item]:py-2"
         style={{ backgroundColor: "transparent" }}
         inlineIndent={16}
       />
-
-      {/* Footer */}
-      <div className="p-4 border-t border-gray-700/50">
-        <div className="text-xs text-gray-400 text-center">
-          <p>© 2025 S+ Studio</p>
-          <p className="mt-1">Cho thuê studio chuyên nghiệp</p>
-        </div>
-      </div>
     </div>
   );
 };
 
 export default UserSidebar;
-

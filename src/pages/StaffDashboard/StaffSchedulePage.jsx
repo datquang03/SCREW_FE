@@ -1,6 +1,6 @@
 import React from "react";
 import { Card, Typography, Tag, Calendar, Badge } from "antd";
-import { ClockCircleOutlined } from "@ant-design/icons";
+import { FiClock } from "react-icons/fi";
 
 const { Title, Text } = Typography;
 
@@ -29,21 +29,20 @@ const StaffSchedulePage = () => {
     return listData || [];
   };
 
-  const dateCellRender = (value) => {
-    const listData = getListData(value);
-    return (
-      <ul className="events">
-        {listData.map((item) => (
-          <li key={item.content}>
-            <Badge
-              status={item.type}
-              text={item.content}
-              className="text-xs"
-            />
-          </li>
-        ))}
-      </ul>
-    );
+  const cellRender = (current, info) => {
+    if (info.type === "date") {
+      const listData = getListData(current);
+      return (
+        <ul className="events">
+          {listData.map((item) => (
+            <li key={item.content}>
+              <Badge status={item.type} text={item.content} className="text-xs" />
+            </li>
+          ))}
+        </ul>
+      );
+    }
+    return info.originNode;
   };
 
   const todaySchedule = [
@@ -71,7 +70,7 @@ const StaffSchedulePage = () => {
           <Title level={4} className="mb-4 text-gray-900">
             Lịch tháng
           </Title>
-          <Calendar dateCellRender={dateCellRender} />
+          <Calendar cellRender={cellRender} />
         </Card>
         <Card className="shadow-lg border border-gray-100 rounded-2xl">
           <Title level={4} className="mb-4 text-gray-900">
@@ -84,7 +83,7 @@ const StaffSchedulePage = () => {
                 className="p-3 bg-gray-50 rounded-lg border border-gray-200"
               >
                 <div className="flex justify-between items-start mb-2">
-                  <ClockCircleOutlined className="text-blue-500" />
+                  <FiClock className="text-blue-500" />
                   <Tag
                     color={
                       item.status === "Đang diễn ra"

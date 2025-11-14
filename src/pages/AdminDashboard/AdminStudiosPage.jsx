@@ -1,6 +1,6 @@
 import React from "react";
 import { Card, Typography, Table, Tag, Progress, Button } from "antd";
-import { VideoCameraAddOutlined } from "@ant-design/icons";
+import { FiVideo } from "react-icons/fi";
 
 const { Title, Text } = Typography;
 
@@ -74,7 +74,7 @@ const AdminStudiosPage = () => {
               Theo dõi tình trạng, hiệu suất và doanh thu từng không gian
             </Text>
           </div>
-          <Button type="primary" size="large" icon={<VideoCameraAddOutlined />} className="font-semibold shadow-lg">
+          <Button type="primary" size="large" icon={<FiVideo />} className="font-semibold shadow-lg">
             Thêm studio mới
           </Button>
         </div>

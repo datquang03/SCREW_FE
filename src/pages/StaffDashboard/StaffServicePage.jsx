@@ -7,8 +7,6 @@ import {
   Input,
   Select,
   Modal,
-  Row,
-  Col,
   Dropdown,
   Button,
   Table,
@@ -16,19 +14,19 @@ import {
   InputNumber,
 } from "antd";
 import {
-  ScissorOutlined,
-  EyeOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  SearchOutlined,
-  PlusOutlined,
-  MoreOutlined,
-  DollarOutlined,
-  FileTextOutlined,
-  TagOutlined,
-  SortAscendingOutlined,
-  SortDescendingOutlined,
-} from "@ant-design/icons";
+  FiScissors,
+  FiEye,
+  FiEdit,
+  FiTrash2,
+  FiSearch,
+  FiPlus,
+  FiMoreHorizontal,
+  FiDollarSign,
+  FiFileText,
+  FiTag,
+  FiArrowUp,
+  FiArrowDown,
+} from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import {
   getAllServices,
@@ -255,19 +253,19 @@ const StaffServicePage = () => {
           {
             key: "view",
             label: "Xem chi tiết",
-            icon: <EyeOutlined />,
+        icon: <FiEye />,
             onClick: () => handleView(record._id),
           },
           {
             key: "edit",
             label: "Chỉnh sửa",
-            icon: <EditOutlined />,
+        icon: <FiEdit />,
             onClick: () => handleEdit(record._id),
           },
           {
             key: "delete",
             label: "Xóa",
-            icon: <DeleteOutlined />,
+        icon: <FiTrash2 />,
             danger: true,
             onClick: () => handleDelete(record._id, record.name),
           },
@@ -275,7 +273,7 @@ const StaffServicePage = () => {
         return (
           <Dropdown menu={{ items }} trigger={["click"]}>
             <Button
-              icon={<MoreOutlined />}
+              icon={<FiMoreHorizontal />}
               className="hover:bg-gray-100 rounded-full"
             />
           </Dropdown>
@@ -290,38 +288,35 @@ const StaffServicePage = () => {
         {
           label: "Tên dịch vụ",
           value: currentService.name,
-          icon: <TagOutlined />,
+          icon: <FiTag />,
         },
         {
           label: "Giá mỗi lần",
           value: `${currentService.pricePerUse.toLocaleString("vi-VN")}₫`,
-          icon: <DollarOutlined />,
+          icon: <FiDollarSign />,
         },
         {
           label: "Mô tả",
           value: currentService.description || "Không có",
-          icon: <FileTextOutlined />,
+          icon: <FiFileText />,
           fullWidth: true,
         },
         {
           label: "ID",
           value: currentService._id,
-          icon: <TagOutlined />,
+          icon: <FiTag />,
           code: true,
         },
         {
           label: "Ngày tạo",
           value: new Date(currentService.createdAt).toLocaleString("vi-VN"),
-          icon: <TagOutlined />,
+          icon: <FiTag />,
         },
       ]
     : [];
 
   return (
-    <div
-      style={{ padding: 16, display: "flex", flexDirection: "column", gap: 24 }}
-    >
-      {/* Toast */}
+    <div className="flex flex-col gap-6 px-4 py-6 lg:px-8">
       {toast && (
         <ToastNotification
           type={toast.type}
@@ -330,71 +325,69 @@ const StaffServicePage = () => {
         />
       )}
 
-      {/* HEADER */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <div>
-          <Title level={2} style={{ marginBottom: 8 }}>
-            Quản lý dịch vụ
-          </Title>
-          <Text style={{ color: "#666" }}>
-            Thiết lập và theo dõi các dịch vụ tại S+ Studio
-          </Text>
+      <div className="relative overflow-hidden rounded-2xl border border-rose-200/60 bg-gradient-to-br from-rose-100 via-white to-white px-6 py-8 shadow-lg">
+        <div className="absolute -top-12 -right-12 h-48 w-48 rounded-full bg-rose-200 blur-3xl" />
+        <div className="relative z-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <Title level={2} className="mb-1 text-gray-900">
+              Quản lý dịch vụ
+            </Title>
+            <Text className="text-base text-gray-600">
+              Theo dõi dịch vụ, giá bán và trạng thái hoạt động
+            </Text>
+          </div>
+          <Button
+            type="primary"
+            icon={<FiPlus />}
+            size="large"
+            className="rounded-2xl bg-gradient-to-r from-rose-500 to-purple-600 font-semibold shadow-lg"
+            onClick={() => setAddModalVisible(true)}
+          >
+            Thêm dịch vụ
+          </Button>
         </div>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          size="large"
-          className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 font-medium rounded-xl shadow-md"
-          onClick={() => setAddModalVisible(true)}
-        >
-          Thêm dịch vụ
-        </Button>
       </div>
 
-      {/* STATS */}
-      <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-        <Card
-          style={{
-            flex: 1,
-            minWidth: 200,
-            borderRadius: 12,
-            boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-          }}
-        >
-          <Title level={4} style={{ color: "#555" }}>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Card className="rounded-2xl border border-white/50 bg-white shadow-lg">
+          <p className="text-sm uppercase tracking-wide text-gray-500">
             Tổng dịch vụ
-          </Title>
-          <div
-            style={{ fontSize: "2.5rem", fontWeight: "bold", color: "#722ed1" }}
-          >
-            {total}
-          </div>
-          <Text type="secondary" style={{ fontSize: 13 }}>
-            Đang được cung cấp
-          </Text>
+          </p>
+          <p className="text-4xl font-extrabold text-purple-600">{total}</p>
+          <Text className="text-xs text-gray-500">Đang có trên hệ thống</Text>
+        </Card>
+        <Card className="rounded-2xl border border-white/50 bg-white shadow-lg">
+          <p className="text-sm uppercase tracking-wide text-gray-500">
+            Giá cao nhất
+          </p>
+          <p className="text-3xl font-bold text-gray-900">
+            {services.length
+              ? `${Math.max(...services.map((s) => s.pricePerUse)).toLocaleString(
+                  "vi-VN"
+                )}₫`
+              : "—"}
+          </p>
+        </Card>
+        <Card className="rounded-2xl border border-white/50 bg-white shadow-lg">
+          <p className="text-sm uppercase tracking-wide text-gray-500">
+            Giá thấp nhất
+          </p>
+          <p className="text-3xl font-bold text-gray-900">
+            {services.length
+              ? `${Math.min(...services.map((s) => s.pricePerUse)).toLocaleString(
+                  "vi-VN"
+                )}₫`
+              : "—"}
+          </p>
         </Card>
       </div>
 
-      {/* 1 FILTER DUY NHẤT - CLIENT-SIDE */}
-      <div
-        style={{
-          display: "flex",
-          gap: 12,
-          flexWrap: "wrap",
-          alignItems: "center",
-        }}
-      >
+      <div className="flex flex-wrap items-center gap-3">
         <Input
           placeholder="Tìm tên dịch vụ..."
-          prefix={<SearchOutlined className="text-gray-400" />}
+          prefix={<FiSearch className="text-gray-400" />}
           allowClear
-          style={{ width: 300 }}
+          className="w-full rounded-2xl border border-gray-200 bg-white/70 shadow-inner sm:w-80"
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
@@ -405,7 +398,7 @@ const StaffServicePage = () => {
         <Select
           placeholder="Sắp xếp"
           allowClear
-          style={{ width: 220 }}
+          className="w-full rounded-2xl sm:w-64"
           value={sortOption || undefined}
           onChange={(val) => {
             setSortOption(val ?? "");
@@ -413,35 +406,34 @@ const StaffServicePage = () => {
           }}
         >
           <Option value="name-asc">
-            <SortAscendingOutlined /> Tên: A to Z
+            <div className="flex items-center gap-2">
+              <FiArrowUp /> Tên: A → Z
+            </div>
           </Option>
           <Option value="name-desc">
-            <SortDescendingOutlined /> Tên: Z to A
+            <div className="flex items-center gap-2">
+              <FiArrowDown /> Tên: Z → A
+            </div>
           </Option>
           <Option value="price-asc">
-            <DollarOutlined /> Giá: Tăng dần
+            <div className="flex items-center gap-2">
+              <FiDollarSign /> Giá: Tăng dần
+            </div>
           </Option>
           <Option value="price-desc">
-            <DollarOutlined /> Giá: Giảm dần
+            <div className="flex items-center gap-2">
+              <FiDollarSign /> Giá: Giảm dần
+            </div>
           </Option>
         </Select>
       </div>
 
-      {/* TABLE */}
       {loading ? (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            padding: "40px 0",
-          }}
-        >
+        <div className="flex justify-center py-16">
           <Spin size="large" />
         </div>
       ) : (
-        <Card
-          style={{ borderRadius: 12, boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}
-        >
+        <Card className="rounded-3xl border border-white/60 bg-white shadow-lg">
           <Table
             columns={columns}
             dataSource={paginatedServices.map((s) => ({ key: s._id, ...s }))}
@@ -480,100 +472,45 @@ const StaffServicePage = () => {
         getContainer={false}
       >
         {currentService && (
-          <div
-            className="service-modal-content"
-            style={{ display: "flex", flexDirection: "column", gap: 24 }}
-          >
-            <div style={{ textAlign: "center" }}>
-              <div
-                style={{
-                  width: 80,
-                  height: 80,
-                  background: "linear-gradient(135deg, #722ed1, #d3adf7)",
-                  borderRadius: "50%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  margin: "0 auto 16px",
-                  boxShadow: "0 8px 20px rgba(114, 46, 209, 0.3)",
-                }}
-              >
-                <ScissorOutlined style={{ fontSize: 36, color: "white" }} />
+          <div className="service-modal-content flex flex-col gap-6">
+            <div className="text-center">
+              <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 text-white shadow-xl">
+                <FiScissors className="text-3xl" />
               </div>
-              <Title level={3} style={{ margin: 0, color: "#333" }}>
+              <Title level={3} className="m-0 text-gray-900">
                 {currentService.name}
               </Title>
               <Text type="secondary">ID: {currentService._id}</Text>
             </div>
 
-            <Row gutter={[16, 16]}>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {infoItems.map((info, idx) => (
-                <Col span={info.fullWidth ? 24 : 12} key={idx}>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "flex-start",
-                      gap: 12,
-                      padding: 16,
-                      borderRadius: 12,
-                      background: "#f8f9ff",
-                      transition: "all 0.3s ease",
-                      border: "1px solid #e6e8ff",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = "translateY(-3px)";
-                      e.currentTarget.style.boxShadow =
-                        "0 8px 20px rgba(0,0,0,0.1)";
-                      e.currentTarget.style.background = "#f0f5ff";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = "translateY(0)";
-                      e.currentTarget.style.boxShadow = "none";
-                      e.currentTarget.style.background = "#f8f9ff";
-                    }}
-                  >
-                    <span
-                      style={{ fontSize: 20, color: "#722ed1", marginTop: 2 }}
-                    >
-                      {info.icon}
-                    </span>
-                    <div style={{ flex: 1 }}>
-                      <Text
-                        strong
-                        style={{
-                          display: "block",
-                          marginBottom: 4,
-                          color: "#555",
-                        }}
-                      >
-                        {info.label}
+                <div
+                  key={idx}
+                  className={`flex items-start gap-3 rounded-2xl border border-indigo-100 bg-indigo-50/70 p-4 transition-all duration-200 hover:-translate-y-1 hover:bg-white ${
+                    info.fullWidth ? "sm:col-span-2" : ""
+                  }`}
+                >
+                  <span className="text-xl text-indigo-500">{info.icon}</span>
+                  <div className="flex-1">
+                    <Text strong className="mb-1 block text-gray-700">
+                      {info.label}
+                    </Text>
+                    {info.code ? (
+                      <Text className="rounded-md bg-gray-100 px-2 py-1 font-mono text-xs">
+                        {info.value}
                       </Text>
-                      {info.code ? (
-                        <Text
-                          style={{
-                            fontFamily: "monospace",
-                            background: "#eee",
-                            padding: "2px 6px",
-                            borderRadius: 4,
-                            fontSize: 12,
-                          }}
-                        >
-                          {info.value}
-                        </Text>
-                      ) : (
-                        <Text style={{ color: "#333", whiteSpace: "pre-wrap" }}>
-                          {info.value}
-                        </Text>
-                      )}
-                    </div>
+                    ) : (
+                      <Text className="text-gray-900">
+                        {info.value || "—"}
+                      </Text>
+                    )}
                   </div>
-                </Col>
+                </div>
               ))}
-            </Row>
+            </div>
 
-            <div
-              style={{ display: "flex", justifyContent: "flex-end", gap: 12 }}
-            >
+            <div className="flex justify-end gap-3">
               <Button onClick={() => setDetailModalVisible(false)} size="large">
                 Đóng
               </Button>
@@ -586,7 +523,7 @@ const StaffServicePage = () => {
       <Modal
         title={
           <Title level={4} className="mb-0 flex items-center gap-2">
-            <EditOutlined className="text-green-600" />
+            <FiEdit className="text-green-600" />
             Chỉnh sửa dịch vụ
           </Title>
         }
@@ -610,46 +547,33 @@ const StaffServicePage = () => {
       >
         <div className="edit-modal-content">
           <Form form={editForm} layout="vertical" className="mt-4">
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item
-                  name="name"
-                  label="Tên dịch vụ"
-                  rules={[{ required: true, message: "Vui lòng nhập tên" }]}
-                >
-                  <Input size="large" placeholder="Tên dịch vụ" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  name="pricePerUse"
-                  label="Giá mỗi lần (VND)"
-                  rules={[{ required: true, message: "Vui lòng nhập giá" }]}
-                >
-                  <InputNumber
-                    min={0}
-                    step={10000}
-                    className="w-full"
-                    size="large"
-                    formatter={(v) =>
-                      `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                    }
-                    parser={(v) => v.replace(/\$\s?|(,*)/g, "")}
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <Form.Item
+                name="name"
+                label="Tên dịch vụ"
+                rules={[{ required: true, message: "Vui lòng nhập tên" }]}
+              >
+                <Input size="large" placeholder="Tên dịch vụ" />
+              </Form.Item>
+              <Form.Item
+                name="pricePerUse"
+                label="Giá mỗi lần (VND)"
+                rules={[{ required: true, message: "Vui lòng nhập giá" }]}
+              >
+                <InputNumber
+                  min={0}
+                  step={10000}
+                  className="w-full"
+                  size="large"
+                  formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                  parser={(v) => v.replace(/\$\s?|(,*)/g, "")}
+                />
+              </Form.Item>
+            </div>
             <Form.Item name="description" label="Mô tả">
               <TextArea rows={4} placeholder="Mô tả chi tiết..." size="large" />
             </Form.Item>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: 12,
-                marginTop: 24,
-              }}
-            >
+            <div className="mt-6 flex justify-end gap-3">
               <Button
                 size="large"
                 onClick={() => {
@@ -676,7 +600,7 @@ const StaffServicePage = () => {
       <Modal
         title={
           <Title level={4} className="mb-0 flex items-center gap-2">
-            <PlusOutlined className="text-purple-600" />
+            <FiPlus className="text-purple-600" />
             Thêm dịch vụ mới
           </Title>
         }
@@ -700,38 +624,32 @@ const StaffServicePage = () => {
       >
         <div className="add-modal-content">
           <Form form={addForm} layout="vertical" className="mt-4">
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item
-                  name="name"
-                  label="Tên dịch vụ"
-                  rules={[
-                    { required: true, message: "Vui lòng nhập tên dịch vụ" },
-                  ]}
-                >
-                  <Input size="large" placeholder="Ví dụ: Cắt tóc nam" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  name="pricePerUse"
-                  label="Giá mỗi lần (VND)"
-                  rules={[{ required: true, message: "Vui lòng nhập giá" }]}
-                >
-                  <InputNumber
-                    min={0}
-                    step={10000}
-                    className="w-full"
-                    size="large"
-                    placeholder="100000"
-                    formatter={(v) =>
-                      `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                    }
-                    parser={(v) => v.replace(/\$\s?|(,*)/g, "")}
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <Form.Item
+                name="name"
+                label="Tên dịch vụ"
+                rules={[
+                  { required: true, message: "Vui lòng nhập tên dịch vụ" },
+                ]}
+              >
+                <Input size="large" placeholder="Ví dụ: Cắt tóc nam" />
+              </Form.Item>
+              <Form.Item
+                name="pricePerUse"
+                label="Giá mỗi lần (VND)"
+                rules={[{ required: true, message: "Vui lòng nhập giá" }]}
+              >
+                <InputNumber
+                  min={0}
+                  step={10000}
+                  className="w-full"
+                  size="large"
+                  placeholder="100000"
+                  formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                  parser={(v) => v.replace(/\$\s?|(,*)/g, "")}
+                />
+              </Form.Item>
+            </div>
             <Form.Item
               name="description"
               label="Mô tả dịch vụ"
@@ -743,14 +661,7 @@ const StaffServicePage = () => {
                 size="large"
               />
             </Form.Item>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: 12,
-                marginTop: 24,
-              }}
-            >
+            <div className="mt-6 flex justify-end gap-3">
               <Button
                 size="large"
                 onClick={() => {

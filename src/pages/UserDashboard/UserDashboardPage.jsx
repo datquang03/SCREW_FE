@@ -1,10 +1,10 @@
 import React from "react";
 import {
-  HomeOutlined,
-  CalendarOutlined,
-  DollarCircleOutlined,
-  VideoCameraOutlined,
-} from "@ant-design/icons";
+  FiHome,
+  FiCalendar,
+  FiDollarSign,
+  FiVideo,
+} from "react-icons/fi";
 import KPIStat from "../../components/dashboard/KPIStat";
 import DataTable from "../../components/dashboard/DataTable";
 import MiniLineChart from "../../components/dashboard/MiniLineChart";
@@ -84,28 +84,28 @@ const UserDashboardPage = () => {
           title="Đơn đã đặt"
           value="12"
           diffText="+2 so với tháng trước"
-          icon={<HomeOutlined />}
+          icon={<FiHome />}
           gradient="from-yellow-400 to-amber-500"
         />
         <KPIStat
           title="Sắp tới"
           value="3"
           diffText="Trong 7 ngày tới"
-          icon={<CalendarOutlined />}
+          icon={<FiCalendar />}
           gradient="from-rose-400 to-pink-500"
         />
         <KPIStat
           title="Tổng chi"
           value="12.700.000đ"
           diffText="Năm 2025"
-          icon={<DollarCircleOutlined />}
+          icon={<FiDollarSign />}
           gradient="from-emerald-400 to-teal-500"
         />
         <KPIStat
           title="Giờ đã thuê"
           value="86h"
           diffText="Tổng tích lũy"
-          icon={<VideoCameraOutlined />}
+          icon={<FiVideo />}
           gradient="from-indigo-400 to-violet-500"
         />
       </div>

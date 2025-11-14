@@ -7,7 +7,7 @@ const Layout = ({children}) => {
   return (
     <div className="flex flex-col min-h-screen relative overflow-visible">
       <NavbarWrapper />
-      <main className="flex-grow pt-16 md:pt-20 relative z-0 overflow-visible">
+      <main className="flex-grow pt-24 md:pt-28 relative z-0 overflow-visible">
           {children || <Outlet />}
       </main>
       <Footer />

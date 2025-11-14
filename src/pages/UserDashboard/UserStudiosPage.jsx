@@ -1,6 +1,7 @@
 import React from "react";
 import { Card, Typography, Button, Rate, Tag } from "antd";
-import { VideoCameraOutlined, HeartOutlined, HeartFilled } from "@ant-design/icons";
+import { FiVideo } from "react-icons/fi";
+import { BsHeartFill } from "react-icons/bs";
 import { motion } from "framer-motion";
 
 const { Title, Text, Paragraph } = Typography;
@@ -63,14 +64,14 @@ const UserStudiosPage = () => {
               cover={
                 <div className="h-48 bg-gradient-to-br from-gray-800 via-gray-700 to-gray-900 flex items-center justify-center relative overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-                  <VideoCameraOutlined className="text-6xl text-white/30 relative z-10" />
+                  <FiVideo className="text-6xl text-white/30 relative z-10" />
                 </div>
               }
               actions={[
                 <Button type="primary" key="book" className="font-semibold">
                   Đặt ngay
                 </Button>,
-                <HeartFilled className="text-red-500 text-xl hover:text-red-600 transition-colors" key="favorite" />,
+                <BsHeartFill className="text-red-500 text-xl hover:text-red-600 transition-colors" key="favorite" />,
               ]}
             >
               <div className="space-y-3">

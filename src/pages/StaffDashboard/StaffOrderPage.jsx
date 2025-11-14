@@ -1,10 +1,10 @@
 import React from "react";
 import { Card, Typography, Tag, Button } from "antd";
 import {
-  ClockCircleOutlined,
-  CheckCircleOutlined,
-  ExclamationCircleOutlined,
-} from "@ant-design/icons";
+  FiClock,
+  FiCheckCircle,
+  FiAlertTriangle,
+} from "react-icons/fi";
 import DataTable from "../../components/dashboard/DataTable";
 
 const { Title, Text } = Typography;
@@ -103,7 +103,7 @@ const StaffOrderPage = () => {
         <Card className="shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-orange-100 rounded-xl">
-            <ClockCircleOutlined className="text-3xl text-orange-500" />
+            <FiClock className="text-3xl text-orange-500" />
             </div>
             <div>
               <Text className="text-sm font-medium text-gray-600 block mb-1">Đang setup</Text>
@@ -114,7 +114,7 @@ const StaffOrderPage = () => {
         <Card className="shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-green-100 rounded-xl">
-            <CheckCircleOutlined className="text-3xl text-green-500" />
+            <FiCheckCircle className="text-3xl text-green-500" />
             </div>
             <div>
               <Text className="text-sm font-medium text-gray-600 block mb-1">Hoàn tất hôm nay</Text>
@@ -125,7 +125,7 @@ const StaffOrderPage = () => {
         <Card className="shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-red-100 rounded-xl">
-            <ExclamationCircleOutlined className="text-3xl text-red-500" />
+            <FiAlertTriangle className="text-3xl text-red-500" />
             </div>
     <div>
               <Text className="text-sm font-medium text-gray-600 block mb-1">Cần lưu ý</Text>

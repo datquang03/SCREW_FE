@@ -1,6 +1,5 @@
 import React from "react";
-import { Card, Typography, Tag, Timeline } from "antd";
-import { CheckCircleOutlined, ClockCircleOutlined } from "@ant-design/icons";
+import { Card, Typography, Tag } from "antd";
 import DataTable from "../../components/dashboard/DataTable";
 
 const { Title, Text } = Typography;

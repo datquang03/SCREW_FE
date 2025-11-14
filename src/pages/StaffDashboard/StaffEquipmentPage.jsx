@@ -15,13 +15,13 @@ import {
   Dropdown,
 } from "antd";
 import {
-  ToolOutlined,
-  ExclamationCircleOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  EyeOutlined,
-  MoreOutlined,
-} from "@ant-design/icons";
+  FiTool,
+  FiAlertCircle,
+  FiEdit,
+  FiTrash2,
+  FiEye,
+  FiMoreVertical,
+} from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import {
   createEquipment,
@@ -214,19 +214,19 @@ const StaffEquipmentPage = () => {
           {
             key: "view",
             label: "Chi tiết",
-            icon: <EyeOutlined />,
+            icon: <FiEye />,
             onClick: () => handleViewDetail(record._id),
           },
           {
             key: "edit",
             label: "Sửa",
-            icon: <EditOutlined />,
+            icon: <FiEdit />,
             onClick: () => handleEdit(record._id),
           },
           {
             key: "delete",
             label: "Xóa",
-            icon: <DeleteOutlined />,
+            icon: <FiTrash2 />,
             danger: true,
             onClick: () => handleDelete(record._id, record.name),
           },
@@ -235,7 +235,7 @@ const StaffEquipmentPage = () => {
         return (
           <Dropdown menu={{ items: menuItems }} trigger={["click"]}>
             <Button
-              icon={<MoreOutlined />}
+              icon={<FiMoreVertical />}
               className="hover:bg-gray-100 rounded-full"
               size="small"
             />
@@ -261,7 +261,7 @@ const StaffEquipmentPage = () => {
           </div>
           <Button
             type="primary"
-            icon={<ToolOutlined />}
+            icon={<FiTool />}
             size="large"
             className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg font-semibold"
             onClick={() => setIsCreateModalOpen(true)}
@@ -288,7 +288,7 @@ const StaffEquipmentPage = () => {
             Thiết bị đang sử dụng
           </Title>
           <div className="flex items-center gap-2 text-orange-600 text-xl font-semibold">
-            <ExclamationCircleOutlined />
+            <FiAlertCircle />
             <span>
               {
                 equipments.filter(
@@ -565,7 +565,7 @@ const StaffEquipmentPage = () => {
       <Modal
         title={
           <Title level={4} className="mb-0 flex items-center gap-2">
-            <ToolOutlined /> Chi tiết thiết bị
+            <FiTool /> Chi tiết thiết bị
           </Title>
         }
         open={isDetailModalOpen}

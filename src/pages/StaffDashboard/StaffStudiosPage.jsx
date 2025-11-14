@@ -12,11 +12,7 @@ import {
   Select,
   Spin,
 } from "antd";
-import {
-  VideoCameraOutlined,
-  EditOutlined,
-  DeleteOutlined,
-} from "@ant-design/icons";
+import { FiVideo, FiEdit, FiTrash2 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import {
   createStudio,
@@ -266,13 +262,13 @@ const StaffStudiosPage = () => {
             className="flex items-center gap-1 px-3 py-1 bg-green-500 text-white rounded hover:bg-green-400 hover:scale-105 transition-all cursor-pointer"
             onClick={() => handleEditStudio(record._id)}
           >
-            <EditOutlined /> Sửa
+            <FiEdit /> Sửa
           </button>
           <button
             className="flex items-center gap-1 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-400 hover:scale-105 transition-all cursor-pointer"
             onClick={() => handleDeleteStudio(record._id, record.name)}
           >
-            <DeleteOutlined /> Xóa
+            <FiTrash2 /> Xóa
           </button>
         </div>
       ),
@@ -297,7 +293,7 @@ const StaffStudiosPage = () => {
             className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded shadow-lg hover:shadow-xl hover:scale-105 transition-all cursor-pointer font-semibold"
             onClick={() => setIsCreateModalOpen(true)}
           >
-            <VideoCameraOutlined /> Thêm Studio
+            <FiVideo /> Thêm Studio
           </button>
         </div>
       </div>
