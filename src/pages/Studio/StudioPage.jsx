@@ -122,7 +122,7 @@ const StudioPage = () => {
                       type="primary"
                       size="large"
                       className="bg-gradient-to-r from-yellow-400 to-yellow-500 border-none shadow-lg"
-                      onClick={() => navigate(`/studios/${studio._id}`)}
+                      onClick={() => navigate(`/studio/${studio._id}`)}
                     >
                       Xem chi tiết
                     </Button>

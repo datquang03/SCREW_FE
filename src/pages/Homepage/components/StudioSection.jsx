@@ -46,9 +46,20 @@ const StudioSection = () => {
                 key={studio._id}
                 initial={{ opacity: 0, y: 100, rotateX: -15 }}
                 animate={isInView ? { opacity: 1, y: 0, rotateX: 0 } : {}}
-                transition={{ duration: 0.6, delay: index * 0.15, type: "spring", stiffness: 100 }}
-                whileHover={{ scale: 1.05, rotateY: 5, z: 50, transition: { duration: 0.3 } }}
+                transition={{
+                  duration: 0.6,
+                  delay: index * 0.15,
+                  type: "spring",
+                  stiffness: 100,
+                }}
+                whileHover={{
+                  scale: 1.05,
+                  rotateY: 5,
+                  z: 50,
+                  transition: { duration: 0.3 },
+                }}
                 style={{ perspective: 1000, transformStyle: "preserve-3d" }}
+                onClick={() => (window.location.href = `/studio/${studio._id}`)}
               >
                 <Card
                   hoverable
@@ -73,8 +84,13 @@ const StudioSection = () => {
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
                       <div className="absolute top-4 right-4">
                         <div className="flex items-center gap-1 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-lg">
-                          <FiStar className="text-yellow-500 fill-yellow-500" size={16} />
-                          <Text strong className="text-sm">{studio.rating || 0}</Text>
+                          <FiStar
+                            className="text-yellow-500 fill-yellow-500"
+                            size={16}
+                          />
+                          <Text strong className="text-sm">
+                            {studio.rating || 0}
+                          </Text>
                         </div>
                       </div>
                     </div>
@@ -114,8 +130,13 @@ const StudioSection = () => {
                           "from-green-400 to-green-500",
                         ];
                         return (
-                          <div key={idx} className="text-xs text-gray-700 font-medium flex items-center gap-2">
-                            <div className={`w-2 h-2 bg-gradient-to-r ${colors[idx]} rounded-full flex-shrink-0 shadow-lg`} />
+                          <div
+                            key={idx}
+                            className="text-xs text-gray-700 font-medium flex items-center gap-2"
+                          >
+                            <div
+                              className={`w-2 h-2 bg-gradient-to-r ${colors[idx]} rounded-full flex-shrink-0 shadow-lg`}
+                            />
                             <span className="line-clamp-1">{feature}</span>
                           </div>
                         );
@@ -123,16 +144,23 @@ const StudioSection = () => {
                     </div>
                     <div className="flex justify-between items-center pt-4 border-t-2 border-gray-200">
                       <div>
-                        <Text className="text-xs text-gray-500 block font-medium">Từ</Text>
+                        <Text className="text-xs text-gray-500 block font-medium">
+                          Từ
+                        </Text>
                         <Text
                           strong
                           className="text-xl text-transparent bg-clip-text bg-gradient-to-r from-yellow-600 via-yellow-500 to-yellow-600 font-extrabold"
                         >
                           {studio.basePricePerHour?.toLocaleString("vi-VN")} VNĐ
                         </Text>
-                        <Text className="text-xs text-gray-500 font-medium">/giờ</Text>
+                        <Text className="text-xs text-gray-500 font-medium">
+                          /giờ
+                        </Text>
                       </div>
-                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                      <motion.div
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                      >
                         <Button
                           type="primary"
                           size="small"

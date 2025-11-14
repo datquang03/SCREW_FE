@@ -15,21 +15,42 @@ export const createEquipment = createAsyncThunk(
       });
       return response.data.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data || { message: "Failed to create equipment" });
+      return rejectWithValue(
+        err.response?.data || { message: "Failed to create equipment" }
+      );
     }
   }
 );
 
 export const getAllEquipments = createAsyncThunk(
   "equipment/getAllEquipments",
-  async ({ page = 1, limit = 10, status = "", search = "" }, { rejectWithValue }) => {
+  async (
+    { page = 1, limit = 10, status = "", search = "" },
+    { rejectWithValue }
+  ) => {
     try {
       const response = await axiosInstance.get(
         `/equipment?page=${page}&limit=${limit}&status=${status}&search=${search}`
       );
       return response.data.data; // { equipment: [...], pagination: { total: 6 } }
     } catch (err) {
-      return rejectWithValue(err.response?.data || { message: "Failed to fetch equipment" });
+      return rejectWithValue(
+        err.response?.data || { message: "Failed to fetch equipment" }
+      );
+    }
+  }
+);
+
+export const getAvailableEquipment = createAsyncThunk(
+  "equipment/getAvailableEquipment",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get("/equipment/available");
+      return response.data.data; // chỉ lấy thiết bị còn sẵn có
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Failed to fetch available equipment" }
+      );
     }
   }
 );
@@ -41,7 +62,9 @@ export const getEquipmentById = createAsyncThunk(
       const response = await axiosInstance.get(`/equipment/${equipmentId}`);
       return response.data.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data || { message: "Failed to fetch equipment" });
+      return rejectWithValue(
+        err.response?.data || { message: "Failed to fetch equipment" }
+      );
     }
   }
 );
@@ -53,12 +76,18 @@ export const updateEquipment = createAsyncThunk(
       const { token } = getState().auth;
       if (!token) throw new Error("No token found");
 
-      const response = await axiosInstance.patch(`/equipment/${equipmentId}`, updateData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axiosInstance.patch(
+        `/equipment/${equipmentId}`,
+        updateData,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       return response.data.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data || { message: "Failed to update equipment" });
+      return rejectWithValue(
+        err.response?.data || { message: "Failed to update equipment" }
+      );
     }
   }
 );
@@ -75,14 +104,16 @@ export const deleteEquipment = createAsyncThunk(
       });
       return equipmentId;
     } catch (err) {
-      return rejectWithValue(err.response?.data || { message: "Failed to delete equipment" });
+      return rejectWithValue(
+        err.response?.data || { message: "Failed to delete equipment" }
+      );
     }
   }
 );
 
 // === INITIAL STATE ===
 const initialState = {
-  equipments: [],      // ← SỬA: equipments (có 's')
+  equipments: [], // ← SỬA: equipments (có 's')
   currentEquipment: null,
   total: 0,
   loading: false,
@@ -90,7 +121,8 @@ const initialState = {
 };
 
 // === SLICE ===
-const equipmentSlice = createSlice({  // ← SỬA: equipmentSlice
+const equipmentSlice = createSlice({
+  // ← SỬA: equipmentSlice
   name: "equipment",
   initialState,
   reducers: {
@@ -127,6 +159,21 @@ const equipmentSlice = createSlice({  // ← SỬA: equipmentSlice
         state.total = action.payload?.pagination?.total || 0;
       })
       .addCase(getAllEquipments.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // GET AVAILABLE
+      .addCase(getAvailableEquipment.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getAvailableEquipment.fulfilled, (state, action) => {
+        state.loading = false;
+        state.equipments = Array.isArray(action.payload) ? action.payload : [];
+        state.total = state.equipments.length;
+      })
+      .addCase(getAvailableEquipment.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
@@ -171,7 +218,9 @@ const equipmentSlice = createSlice({  // ← SỬA: equipmentSlice
       })
       .addCase(deleteEquipment.fulfilled, (state, action) => {
         state.loading = false;
-        state.equipments = state.equipments.filter((e) => e._id !== action.payload);
+        state.equipments = state.equipments.filter(
+          (e) => e._id !== action.payload
+        );
         if (state.currentEquipment?._id === action.payload) {
           state.currentEquipment = null;
         }
