@@ -1,10 +1,13 @@
 import React from "react";
 import { Card, Typography, Table, Tag, Progress, Button } from "antd";
 import { FiVideo } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
 const { Title, Text } = Typography;
 
 const AdminStudiosPage = () => {
+  const navigate = useNavigate();
+
   const columns = [
     { title: "Studio", dataIndex: "name" },
     { title: "Loại hình", dataIndex: "type" },
@@ -74,7 +77,13 @@ const AdminStudiosPage = () => {
               Theo dõi tình trạng, hiệu suất và doanh thu từng không gian
             </Text>
           </div>
-          <Button type="primary" size="large" icon={<FiVideo />} className="font-semibold shadow-lg">
+          <Button 
+            type="primary" 
+            size="large" 
+            icon={<FiVideo />} 
+            className="font-semibold shadow-lg"
+            onClick={() => navigate("/dashboard/staff/studios")}
+          >
             Thêm studio mới
           </Button>
         </div>

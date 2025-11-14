@@ -232,6 +232,15 @@ const AdminUserPage = () => {
             type="primary"
             icon={<FiUsers />}
             className="rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 font-semibold shadow-lg"
+            onClick={() => {
+              Modal.info({
+                title: "Thêm khách hàng",
+                content:
+                  "Khách hàng có thể tự đăng ký tài khoản qua trang đăng ký. Hoặc bạn có thể liên hệ với khách hàng để họ đăng ký.",
+                okText: "Đóng",
+                centered: true,
+              });
+            }}
           >
             Thêm khách hàng
           </Button>
