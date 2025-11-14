@@ -13,9 +13,38 @@ export const createStudio = createAsyncThunk(
       const response = await axiosInstance.post("/studios", studioData, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      return response.data.data; // trả về data trực tiếp
+      return response.data.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data || { message: "Failed to create studio" });
+      return rejectWithValue(
+        err.response?.data || { message: "Failed to create studio" }
+      );
+    }
+  }
+);
+
+// === THUNK: GET ACTIVE STUDIOS ===
+export const getActiveStudios = createAsyncThunk(
+  "studio/getActiveStudios",
+  async (
+    {
+      page = 1,
+      limit = 10,
+      search = "",
+      minPrice = "",
+      maxPrice = "",
+      minCapacity = "",
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await axiosInstance.get(
+        `/studios/active?page=${page}&limit=${limit}&search=${search}&minPrice=${minPrice}&maxPrice=${maxPrice}&minCapacity=${minCapacity}`
+      );
+      return response.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Failed to fetch active studios" }
+      );
     }
   }
 );
@@ -23,14 +52,19 @@ export const createStudio = createAsyncThunk(
 // === THUNK: GET ALL STUDIOS ===
 export const getAllStudios = createAsyncThunk(
   "studio/getAllStudios",
-  async ({ page = 1, limit = 10, status = "", search = "" }, { rejectWithValue }) => {
+  async (
+    { page = 1, limit = 10, status = "", search = "" },
+    { rejectWithValue }
+  ) => {
     try {
       const response = await axiosInstance.get(
         `/studios?page=${page}&limit=${limit}&status=${status}&search=${search}`
       );
-      return response.data.data; // trả về data chứa studios và total
+      return response.data.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data || { message: "Failed to fetch studios" });
+      return rejectWithValue(
+        err.response?.data || { message: "Failed to fetch studios" }
+      );
     }
   }
 );
@@ -43,7 +77,9 @@ export const getStudioById = createAsyncThunk(
       const response = await axiosInstance.get(`/studios/${studioId}`);
       return response.data.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data || { message: "Failed to fetch studio" });
+      return rejectWithValue(
+        err.response?.data || { message: "Failed to fetch studio" }
+      );
     }
   }
 );
@@ -56,12 +92,18 @@ export const updateStudio = createAsyncThunk(
       const { token } = getState().auth;
       if (!token) throw new Error("No token found");
 
-      const response = await axiosInstance.patch(`/studios/${studioId}`, updateData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axiosInstance.patch(
+        `/studios/${studioId}`,
+        updateData,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       return response.data.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data || { message: "Failed to update studio" });
+      return rejectWithValue(
+        err.response?.data || { message: "Failed to update studio" }
+      );
     }
   }
 );
@@ -77,9 +119,76 @@ export const deleteStudio = createAsyncThunk(
       await axiosInstance.delete(`/studios/${studioId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      return studioId; // trả về _id để xóa khỏi state
+      return studioId;
     } catch (err) {
-      return rejectWithValue(err.response?.data || { message: "Failed to delete studio" });
+      return rejectWithValue(
+        err.response?.data || { message: "Failed to delete studio" }
+      );
+    }
+  }
+);
+
+// === THUNK: ACTIVATE STUDIO ===
+export const setActivate = createAsyncThunk(
+  "studio/setActivate",
+  async (studioId, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+      if (!token) throw new Error("No token found");
+
+      const response = await axiosInstance.patch(
+        `/studios/${studioId}/activate`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return response.data.data; // trả về studio đã cập nhật
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Failed to activate studio" }
+      );
+    }
+  }
+);
+
+// === THUNK: DEACTIVATE STUDIO ===
+export const setDeactivate = createAsyncThunk(
+  "studio/setDeactivate",
+  async (studioId, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+      if (!token) throw new Error("No token found");
+
+      const response = await axiosInstance.patch(
+        `/studios/${studioId}/deactivate`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return response.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Failed to deactivate studio" }
+      );
+    }
+  }
+);
+// === THUNK: MAINTENANCE STUDIO ===
+export const setMaintenance = createAsyncThunk(
+  "studio/setMaintenance",
+  async (studioId, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+      if (!token) throw new Error("No token found");
+
+      const response = await axiosInstance.patch(
+        `/studios/${studioId}/maintenance`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return response.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Failed to set maintenance" }
+      );
     }
   }
 );
@@ -125,7 +234,9 @@ const studioSlice = createSlice({
       })
       .addCase(getAllStudios.fulfilled, (state, action) => {
         state.loading = false;
-        state.studios = Array.isArray(action.payload?.studios) ? action.payload.studios : [];
+        state.studios = Array.isArray(action.payload?.studios)
+          ? action.payload.studios
+          : [];
         state.total = action.payload?.total || 0;
       })
       .addCase(getAllStudios.rejected, (state, action) => {
@@ -155,12 +266,12 @@ const studioSlice = createSlice({
       .addCase(updateStudio.fulfilled, (state, action) => {
         state.loading = false;
         const updatedStudio = action.payload;
-        // Cập nhật currentStudio nếu đang xem
         if (state.currentStudio?._id === updatedStudio._id) {
           state.currentStudio = updatedStudio;
         }
-        // Cập nhật trong danh sách studios
-        const index = state.studios.findIndex((s) => s._id === updatedStudio._id);
+        const index = state.studios.findIndex(
+          (s) => s._id === updatedStudio._id
+        );
         if (index !== -1) state.studios[index] = updatedStudio;
       })
       .addCase(updateStudio.rejected, (state, action) => {
@@ -176,9 +287,83 @@ const studioSlice = createSlice({
       .addCase(deleteStudio.fulfilled, (state, action) => {
         state.loading = false;
         state.studios = state.studios.filter((s) => s._id !== action.payload);
-        if (state.currentStudio?._id === action.payload) state.currentStudio = null;
+        if (state.currentStudio?._id === action.payload)
+          state.currentStudio = null;
       })
       .addCase(deleteStudio.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // ACTIVATE
+      .addCase(setActivate.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(setActivate.fulfilled, (state, action) => {
+        state.loading = false;
+        const updated = action.payload;
+        const index = state.studios.findIndex((s) => s._id === updated._id);
+        if (index !== -1) state.studios[index] = updated;
+        if (state.currentStudio?._id === updated._id) {
+          state.currentStudio = updated;
+        }
+      })
+      .addCase(setActivate.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // DEACTIVATE
+      .addCase(setDeactivate.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(setDeactivate.fulfilled, (state, action) => {
+        state.loading = false;
+        const updated = action.payload;
+        const index = state.studios.findIndex((s) => s._id === updated._id);
+        if (index !== -1) state.studios[index] = updated;
+        if (state.currentStudio?._id === updated._id) {
+          state.currentStudio = updated;
+        }
+      })
+      .addCase(setDeactivate.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // MAINTENANCE
+      .addCase(setMaintenance.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(setMaintenance.fulfilled, (state, action) => {
+        state.loading = false;
+        const updated = action.payload;
+        const index = state.studios.findIndex((s) => s._id === updated._id);
+        if (index !== -1) state.studios[index] = updated;
+        if (state.currentStudio?._id === updated._id) {
+          state.currentStudio = updated;
+        }
+      })
+      .addCase(setMaintenance.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // GET ACTIVE STUDIOS
+      .addCase(getActiveStudios.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getActiveStudios.fulfilled, (state, action) => {
+        state.loading = false;
+        state.studios = Array.isArray(action.payload?.studios)
+          ? action.payload.studios
+          : [];
+        state.total = action.payload?.total || 0;
+      })
+      .addCase(getActiveStudios.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

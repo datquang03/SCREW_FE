@@ -26,7 +26,7 @@ const ToastNotification = ({ type = 'success', message, onClose, duration = 4000
   }, [onClose, duration]);
 
   return (
-    <div className="fixed top-6 right-6 z-50">
+    <div className="fixed top-6 right-6 z-100  ">
       <div
         className={`toast flex items-center gap-3 p-4 rounded-2xl shadow-xl border backdrop-blur-xl text-white min-w-80
           ${type === 'success' ? 'bg-green-600/95 border-green-500' : ''}

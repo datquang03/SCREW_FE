@@ -1,12 +1,13 @@
+// src/components/common/AnimatedCard.jsx
 import React from "react";
-import { motion } from "framer-motion";
 import { Card } from "antd";
+import { motion } from "framer-motion";
 
 const AnimatedCard = ({
   children,
   className = "",
-  delay = 0,
   index = 0,
+  delay = 0,
   isInView = true,
   hoverEffect = true,
   ...props
@@ -23,17 +24,16 @@ const AnimatedCard = ({
       }}
       whileHover={
         hoverEffect
-          ? {
-              scale: 1.05,
-              rotateY: 5,
-              z: 50,
-              transition: { duration: 0.3 },
-            }
+          ? { scale: 1.05, rotateY: 5, transition: { duration: 0.3 } }
           : {}
       }
-      style={{ perspective: 1000, transformStyle: "preserve-3d" }}
+      style={{ perspective: 1000, transformStyle: "preserve-3d", width: "100%" }}
     >
-      <Card className={`rounded-2xl border-0 shadow-lg hover:shadow-2xl transition-all duration-300 ${className}`} {...props}>
+      <Card
+        {...props}
+        styles={{ body: { padding: "1rem" } }}
+        className={`rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 ${className}`}
+      >
         {children}
       </Card>
     </motion.div>
@@ -41,4 +41,3 @@ const AnimatedCard = ({
 };
 
 export default AnimatedCard;
-

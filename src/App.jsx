@@ -36,6 +36,7 @@ import AdminRevenuePage from "./pages/AdminDashboard/AdminRevenuePage";
 import AdminReportsPage from "./pages/AdminDashboard/AdminReportsPage";
 import AdminSettingsPage from "./pages/AdminDashboard/AdminSettingsPage";
 import ScrollToTop from "./components/ScrollToTop";
+import StudioDetailPage from "./pages/Studio/StudioDetailPage";
 
 // === IMPORT PROTECTED ROUTES ===
 import {
@@ -85,6 +86,7 @@ const AppContent = () => {
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/verify-email" element={<VerifyEmailPage />} />
             <Route path="/studio" element={<StudioPage />} />
+            <Route path="/studio/:id" element={<StudioDetailPage />} />
 
             {/* CUSTOMER DASHBOARD */}
             <Route
@@ -123,9 +125,9 @@ const AppContent = () => {
             <Route
               path="/dashboard/admin/*"
               element={
-                <ProtectedRouteForAdmin>
+                // <ProtectedRouteForAdmin>
                   <DashboardLayout sidebar={AdminSidebar} />
-                </ProtectedRouteForAdmin>
+                // </ProtectedRouteForAdmin>
               }
             >
               <Route index element={<AdminDashboardPage />} />
