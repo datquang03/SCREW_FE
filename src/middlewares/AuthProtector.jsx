@@ -30,7 +30,7 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
 // === SPECIFIC PROTECTORS ===
 
 // 🧑‍🏫 Dành cho customer
-export const ProtectedRouteForInstructor = ({ children }) => (
+export const ProtectedRouteForCustomer = ({ children }) => (
   <ProtectedRoute allowedRoles={["customer"]}>{children}</ProtectedRoute>
 );
 
@@ -48,7 +48,7 @@ export const ProtectedRouteForAdmin = ({ children }) => (
 );
 
 // ✅ Cho phép cả customer + staff (VD: message page)
-export const ProtectedRouteForStudentAndInstructor = ({ children }) => (
+export const ProtectedRouteForCustomerAndStaff = ({ children }) => (
   <ProtectedRoute allowedRoles={["customer", "staff"]}>{children}</ProtectedRoute>
 );
 

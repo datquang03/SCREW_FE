@@ -1,105 +1,285 @@
-import React, { useState } from "react";
-import { Card, Typography, Form, Input, Button, Upload, Avatar, Divider, Row, Col } from "antd";
-import { UserOutlined, MailOutlined, PhoneOutlined, EditOutlined, SaveOutlined } from "@ant-design/icons";
+// src/pages/User/UserProfilePage.jsx
+import React, { useEffect, useState } from "react";
+import {
+  Card,
+  Typography,
+  Form,
+  Input,
+  Button,
+  Upload,
+  Avatar,
+  Divider,
+  Row,
+  Col,
+  Spin,
+  Modal,
+} from "antd";
+import {
+  UserOutlined,
+  MailOutlined,
+  PhoneOutlined,
+  EditOutlined,
+  SaveOutlined,
+  LockOutlined,
+  DeleteOutlined,
+  LinkOutlined,
+} from "@ant-design/icons";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom"; // Thêm để redirect
+
+import {
+  getMyProfile,
+  updateProfile,
+  deleteMyAccount,
+} from "../../features/customer/customerSlice";
+import { changePassword, logout } from "../../features/auth/authSlice";
+import ToastNotification from "../../components/ToastNotification";
 
 const { Title, Text } = Typography;
 
 const UserProfilePage = () => {
-  const [editing, setEditing] = useState(false);
-  const [form] = Form.useForm();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
+  // === SELECTORS ===
+  const { customer, loading: customerLoading, errorMessage, successMessage } = useSelector(
+    (state) => state.customer
+  );
+  const { loading: authLoading, error: authError } = useSelector((state) => state.auth);
+
+  // === STATE ===
+  const [editing, setEditing] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const [avatarURL, setAvatarURL] = useState("");
+  const [toast, setToast] = useState(null);
+  const [isPasswordModal, setIsPasswordModal] = useState(false);
+
+  const [form] = Form.useForm();
+  const [passwordForm] = Form.useForm();
+
+  // === EFFECTS ===
+  useEffect(() => {
+    dispatch(getMyProfile());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (customer) {
+      form.setFieldsValue({
+        fullName: customer.fullName,
+        email: customer.email,
+        phone: customer.phone,
+      });
+      setAvatarPreview(customer.avatar);
+    }
+  }, [customer, form]);
+
+  // === TOAST: từ customerSlice ===
+  useEffect(() => {
+    if (successMessage) {
+      setToast({ type: "success", message: successMessage });
+    }
+    if (errorMessage) {
+      setToast({ type: "error", message: errorMessage });
+    }
+  }, [successMessage, errorMessage]);
+
+  // === TOAST: từ authSlice (changePassword) ===
+  useEffect(() => {
+    if (authError) {
+      setToast({ type: "error", message: authError.message || "Đổi mật khẩu thất bại" });
+
+      // Nếu backend trả 401 → token hết hạn → logout
+      if (authError.status === 401) {
+        setTimeout(() => {
+          dispatch(logout());
+          navigate("/login", { replace: true });
+        }, 1500); // Cho toast hiện 1.5s
+      }
+    }
+  }, [authError, dispatch, navigate]);
+
+  // === HANDLERS ===
   const uploadProps = {
-    name: "avatar",
-    listType: "picture-circle",
+    beforeUpload: (file) => {
+      const previewURL = URL.createObjectURL(file);
+      setAvatarPreview(previewURL);
+      form.setFieldsValue({ avatar: file });
+      return false;
+    },
     showUploadList: false,
-    beforeUpload: () => false,
   };
 
   const handleSave = (values) => {
-    console.log("Saved:", values);
+    const payload = {
+      ...values,
+      avatarURL: avatarURL || undefined,
+    };
+    dispatch(updateProfile(payload));
     setEditing(false);
   };
 
+  // === ĐỔI MẬT KHẨU - ĐÃ SỬA ===
+  const handleChangePassword = async () => {
+    try {
+      const values = await passwordForm.validateFields();
+      const result = await dispatch(changePassword(values)).unwrap();
+
+      // Thành công
+      setToast({ type: "success", message: result.message || "Đổi mật khẩu thành công!" });
+      setIsPasswordModal(false);
+      passwordForm.resetFields();
+    } catch (err) {
+      // Lỗi đã được xử lý trong useEffect authError
+      // Không cần setToast ở đây
+    }
+  };
+
+  const handleDeleteAccount = () => {
+    Modal.confirm({
+      title: "Bạn có chắc muốn xóa tài khoản?",
+      content: "Tài khoản sẽ bị xoá vĩnh viễn và không thể khôi phục.",
+      okText: "Xóa tài khoản",
+      okType: "danger",
+      cancelText: "Hủy",
+      centered: true,
+      onOk: () => dispatch(deleteMyAccount()),
+    });
+  };
+
+  // === RENDER LOADING ===
+  if (customerLoading || !customer) {
+    return (
+      <div className="flex justify-center py-20">
+        <Spin size="large" />
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fadeIn">
+      {/* TOAST */}
+      {toast && (
+        <ToastNotification
+          type={toast.type}
+          message={toast.message}
+          onClose={() => setToast(null)}
+        />
+      )}
+
       <div>
-        <Title level={2} className="mb-2">
+        <Title level={2} className="font-semibold mb-1">
           Hồ sơ của tôi
         </Title>
-        <Text className="text-gray-600">
-          Quản lý thông tin cá nhân và tài khoản của bạn
-        </Text>
+        <Text className="text-gray-600">Quản lý thông tin cá nhân của bạn</Text>
       </div>
 
       <Row gutter={24}>
+        {/* LEFT CARD */}
         <Col xs={24} md={8}>
-          <Card className="text-center">
+          <Card
+            className="text-center rounded-xl p-4 shadow-xl glass-card"
+            style={{
+              backdropFilter: "blur(16px)",
+              background: "rgba(255, 255, 255, 0.2)",
+              border: "1px solid rgba(255,255,255,0.3)",
+            }}
+          >
             <Upload {...uploadProps}>
-              <Avatar
-                size={120}
-                icon={<UserOutlined />}
-                className="mb-4"
-                src="https://png.pngtree.com/png-clipart/20191120/original/pngtree-outline-user-icon-png-image_5045523.jpg"
-              />
+              <div className="relative inline-block cursor-pointer group">
+                <Avatar
+                  size={130}
+                  src={avatarPreview}
+                  icon={<UserOutlined />}
+                  className="mb-4 border-4 border-white shadow-md"
+                  style={{ borderRadius: "999px", transition: "0.25s" }}
+                />
+                <div className="absolute inset-0 rounded-full bg-black/10 opacity-0 group-hover:opacity-20 transition-all"></div>
+              </div>
             </Upload>
-            <Title level={4} className="mb-1">
-              Nguyễn Văn A
+
+            <div className="mt-3">
+              <Input
+                placeholder="Dán link ảnh avatar..."
+                prefix={<LinkOutlined />}
+                value={avatarURL}
+                onChange={(e) => {
+                  setAvatarURL(e.target.value);
+                  setAvatarPreview(e.target.value);
+                }}
+                disabled={!editing}
+                className="rounded-lg"
+              />
+            </div>
+
+            <Title level={4} className="font-bold mt-3">
+              {customer.fullName}
             </Title>
-            <Text className="text-gray-500">Khách hàng</Text>
+            <Text className="text-gray-500 capitalize text-sm">
+              {customer.role}
+            </Text>
+
             <Divider />
-            <div className="space-y-2 text-left">
+
+            <div className="space-y-3 text-left px-2">
+              <div>
+                <Text className="text-gray-600">Username</Text>
+                <div className="font-medium">{customer.username}</div>
+              </div>
               <div>
                 <Text className="text-gray-600">Thành viên từ</Text>
-                <div className="font-semibold">01/01/2024</div>
+                <div className="font-medium">
+                  {new Date(customer.createdAt).toLocaleDateString("vi-VN")}
+                </div>
               </div>
               <div>
-                <Text className="text-gray-600">Tổng đơn đã đặt</Text>
-                <div className="font-semibold">12 đơn</div>
+                <Text className="text-gray-600">Loyalty Points</Text>
+                <div className="font-medium">
+                  {customer.profile?.loyaltyPoints ?? 0} điểm
+                </div>
               </div>
             </div>
+
+            <Divider />
+
+            <Button
+              danger
+              icon={<DeleteOutlined />}
+              className="w-full py-2 rounded-lg shadow-md hover:opacity-90 transition-all"
+              onClick={handleDeleteAccount}
+            >
+              Xóa tài khoản
+            </Button>
           </Card>
         </Col>
 
+        {/* RIGHT CARD */}
         <Col xs={24} md={16}>
           <Card
-            title="Thông tin cá nhân"
+            title={<span className="font-semibold text-lg">Thông tin cá nhân</span>}
+            className="shadow-xl rounded-xl glass-card"
+            style={{
+              backdropFilter: "blur(14px)",
+              background: "rgba(255, 255, 255, 0.25)",
+              border: "1px solid rgba(255,255,255,0.3)",
+            }}
             extra={
               <Button
                 type={editing ? "default" : "primary"}
                 icon={editing ? <SaveOutlined /> : <EditOutlined />}
-                onClick={() => {
-                  if (editing) {
-                    form.submit();
-                  } else {
-                    setEditing(true);
-                  }
-                }}
+                onClick={() => (editing ? form.submit() : setEditing(true))}
+                className="hover:scale-105 transition-all"
               >
                 {editing ? "Lưu" : "Chỉnh sửa"}
               </Button>
             }
           >
-            <Form
-              form={form}
-              layout="vertical"
-              onFinish={handleSave}
-              initialValues={{
-                fullName: "Nguyễn Văn A",
-                email: "nguyenvana@example.com",
-                phone: "0901234567",
-                address: "123 Đường ABC, Quận 4, TP.HCM",
-              }}
-            >
+            <Form form={form} layout="vertical" onFinish={handleSave}>
               <Form.Item
                 label="Họ và tên"
                 name="fullName"
                 rules={[{ required: true, message: "Vui lòng nhập họ và tên" }]}
               >
-                <Input
-                  prefix={<UserOutlined />}
-                  disabled={!editing}
-                  className="rounded-lg"
-                />
+                <Input prefix={<UserOutlined />} disabled={!editing} />
               </Form.Item>
 
               <Form.Item
@@ -110,11 +290,7 @@ const UserProfilePage = () => {
                   { type: "email", message: "Email không hợp lệ" },
                 ]}
               >
-                <Input
-                  prefix={<MailOutlined />}
-                  disabled={!editing}
-                  className="rounded-lg"
-                />
+                <Input prefix={<MailOutlined />} disabled={!editing} />
               </Form.Item>
 
               <Form.Item
@@ -122,51 +298,80 @@ const UserProfilePage = () => {
                 name="phone"
                 rules={[{ required: true, message: "Vui lòng nhập số điện thoại" }]}
               >
-                <Input
-                  prefix={<PhoneOutlined />}
-                  disabled={!editing}
-                  className="rounded-lg"
-                />
-              </Form.Item>
-
-              <Form.Item label="Địa chỉ" name="address">
-                <Input.TextArea
-                  rows={3}
-                  disabled={!editing}
-                  className="rounded-lg"
-                />
+                <Input prefix={<PhoneOutlined />} disabled={!editing} />
               </Form.Item>
             </Form>
           </Card>
 
-          <Card title="Bảo mật" className="mt-6">
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <div>
-                  <Text strong>Mật khẩu</Text>
-                  <div className="text-gray-500 text-sm">
-                    Đã cập nhật 3 tháng trước
-                  </div>
+          {/* SECURITY */}
+          <Card
+            title={<span className="font-semibold text-lg">Bảo mật</span>}
+            className="mt-6 shadow-xl rounded-xl glass-card"
+            style={{
+              backdropFilter: "blur(14px)",
+              background: "rgba(255, 255, 255, 0.25)",
+              border: "1px solid rgba(255,255,255,0.3)",
+            }}
+          >
+            <div className="flex justify-between items-center">
+              <div>
+                <Text strong>Đổi mật khẩu</Text>
+                <div className="text-gray-500 text-sm">
+                  Giúp bảo vệ tài khoản tốt hơn
                 </div>
-                <Button type="link">Đổi mật khẩu</Button>
               </div>
-              <Divider />
-              <div className="flex justify-between items-center">
-                <div>
-                  <Text strong>Xác thực 2 bước</Text>
-                  <div className="text-gray-500 text-sm">
-                    Bảo vệ tài khoản của bạn
-                  </div>
-                </div>
-                <Button type="link">Bật</Button>
-              </div>
+              <Button
+                icon={<LockOutlined />}
+                type="primary"
+                className="hover:scale-105 transition-all"
+                onClick={() => setIsPasswordModal(true)}
+                disabled={authLoading}
+              >
+                Thay đổi
+              </Button>
             </div>
           </Card>
         </Col>
       </Row>
+
+      {/* PASSWORD MODAL */}
+      <Modal
+        title={<span className="font-semibold text-lg">Thay đổi mật khẩu</span>}
+        open={isPasswordModal}
+        centered
+        okText="Cập nhật"
+        cancelText="Hủy"
+        onCancel={() => {
+          setIsPasswordModal(false);
+          passwordForm.resetFields();
+        }}
+        onOk={handleChangePassword}
+        confirmLoading={authLoading}
+        okButtonProps={{ disabled: authLoading }}
+      >
+        <Form form={passwordForm} layout="vertical">
+          <Form.Item
+            label="Mật khẩu cũ"
+            name="oldPassword"
+            rules={[{ required: true, message: "Vui lòng nhập mật khẩu cũ" }]}
+          >
+            <Input.Password prefix={<LockOutlined />} />
+          </Form.Item>
+
+          <Form.Item
+            label="Mật khẩu mới"
+            name="newPassword"
+            rules={[
+              { required: true, message: "Vui lòng nhập mật khẩu mới" },
+              { min: 6, message: "Mật khẩu phải ít nhất 6 ký tự" },
+            ]}
+          >
+            <Input.Password prefix={<LockOutlined />} />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };
 
 export default UserProfilePage;
-

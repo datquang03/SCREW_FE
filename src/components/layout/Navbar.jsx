@@ -35,7 +35,6 @@ const Navbar = () => {
     navigate("/login", { replace: true });
   };
 
-  // Đóng dropdown khi click ngoài
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownOpen && !e.target.closest(".avatar-dropdown")) {
@@ -140,10 +139,8 @@ const Navbar = () => {
 
         {/* ===== RIGHT ACTIONS ===== */}
         <div className="flex items-center gap-3">
-          <div
-            ref={searchContainerRef}
-            className="relative flex items-center"
-          >
+          {/* SEARCH */}
+          <div ref={searchContainerRef} className="relative flex items-center">
             <AnimatePresence mode="wait">
               {!searchOpen ? (
                 <motion.button
@@ -152,15 +149,15 @@ const Navbar = () => {
                   onClick={() => setSearchOpen(true)}
                   initial={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
-                  whileHover={{ 
+                  whileHover={{
                     scale: 1.1,
-                    boxShadow: "0 8px 20px rgba(0,0,0,0.15)"
+                    boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
                   }}
                   whileTap={{ scale: 0.92 }}
-                  transition={{ 
-                    type: "spring", 
-                    stiffness: 400, 
-                    damping: 20 
+                  transition={{
+                    type: "spring",
+                    stiffness: 400,
+                    damping: 20,
                   }}
                   className="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-lg hover:shadow-xl transition-shadow duration-300"
                 >
@@ -169,26 +166,26 @@ const Navbar = () => {
               ) : (
                 <motion.div
                   key="search-bar"
-                  initial={{ 
-                    scaleX: 0, 
+                  initial={{
+                    scaleX: 0,
                     opacity: 0,
-                    x: -20
+                    x: -20,
                   }}
-                  animate={{ 
-                    scaleX: 1, 
+                  animate={{
+                    scaleX: 1,
                     opacity: 1,
-                    x: 0
+                    x: 0,
                   }}
-                  exit={{ 
-                    scaleX: 0, 
+                  exit={{
+                    scaleX: 0,
                     opacity: 0,
-                    x: -20
+                    x: -20,
                   }}
-                  transition={{ 
+                  transition={{
                     type: "spring",
                     stiffness: 300,
                     damping: 25,
-                    duration: 0.3
+                    duration: 0.3,
                   }}
                   className="origin-right w-64"
                   style={{ transformOrigin: "100% 50%" }}
@@ -198,26 +195,15 @@ const Navbar = () => {
                     animate={{ borderRadius: "9999px" }}
                     className="flex items-center gap-2 rounded-full px-4 py-2.5 bg-white shadow-xl shadow-gray-900/20 border border-gray-100"
                   >
-                    <motion.div
-                      initial={{ rotate: -90, opacity: 0 }}
-                      animate={{ rotate: 0, opacity: 1 }}
-                      transition={{ delay: 0.1, type: "spring", stiffness: 300 }}
-                    >
-                      <SearchOutlined className="text-base text-amber-500" />
-                    </motion.div>
-                    <motion.div
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.15 }}
-                      className="flex-1"
-                    >
-                      <input
-                        ref={searchInputRef}
-                        type="text"
-                        placeholder="Tìm kiếm studio..."
-                        className="w-full bg-transparent text-sm outline-none placeholder-gray-400 text-gray-900"
-                      />
-                    </motion.div>
+                    <SearchOutlined className="text-base text-amber-500" />
+
+                    <input
+                      ref={searchInputRef}
+                      type="text"
+                      placeholder="Tìm kiếm studio..."
+                      className="w-full bg-transparent text-sm outline-none placeholder-gray-400 text-gray-900"
+                    />
+
                     <motion.button
                       type="button"
                       onClick={() => setSearchOpen(false)}
@@ -234,7 +220,7 @@ const Navbar = () => {
             </AnimatePresence>
           </div>
 
-          {/* Nếu đã đăng nhập */}
+          {/* USER / AUTH */}
           {user ? (
             <div className="relative avatar-dropdown cursor-pointer">
               <motion.button
@@ -267,28 +253,27 @@ const Navbar = () => {
                       </p>
                       <p className="text-xs text-gray-500">{user.email}</p>
                     </div>
+
                     <ul className="py-1">
                       <li>
                         <button
                           onClick={() => {
                             setDropdownOpen(false);
-                            // Kiểm tra role và navigate tương ứng
-                            const role = user.role; // Giả sử user.role tồn tại
-                            let dashboardPath = "/dashboard"; // Mặc định
-                            if (role === "customer") {
-                              dashboardPath = "/dashboard/customer";
-                            } else if (role === "staff") {
-                              dashboardPath = "/dashboard/staff";
-                            } else if (role === "admin") {
-                              dashboardPath = "/dashboard/admin";
-                            }
+                            const role = user.role;
+                            let dashboardPath = "/dashboard";
+
+                            if (role === "customer") dashboardPath = "/dashboard/customer";
+                            if (role === "staff") dashboardPath = "/dashboard/staff";
+                            if (role === "admin") dashboardPath = "/dashboard/admin";
+
                             navigate(dashboardPath);
                           }}
                           className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
                         >
-                          <MdOutlineSpaceDashboard  /> Dashboard
+                          <MdOutlineSpaceDashboard /> Dashboard
                         </button>
                       </li>
+
                       <li>
                         <button
                           onClick={() => {
@@ -300,6 +285,7 @@ const Navbar = () => {
                           <UserOutlined /> Hồ sơ
                         </button>
                       </li>
+
                       <li>
                         <button
                           onClick={() => {
@@ -311,6 +297,7 @@ const Navbar = () => {
                           <SettingOutlined /> Cài đặt
                         </button>
                       </li>
+
                       <li className="border-t border-gray-200">
                         <button
                           onClick={handleLogout}
@@ -325,13 +312,24 @@ const Navbar = () => {
               </AnimatePresence>
             </div>
           ) : (
-            <Button
-              type="primary"
-              href="/register"
-              className="bg-gradient-to-r from-yellow-400 to-yellow-500 border-none font-semibold text-xs px-3 shadow-md hover:shadow-yellow-500/40"
-            >
-              Đăng ký
-            </Button>
+            <div className="flex items-center gap-2">
+              {/* Nút đăng nhập */}
+              <Button
+                href="/login"
+                className="border border-yellow-500 text-yellow-500 font-semibold text-xs px-3 rounded-md hover:bg-yellow-50 transition-all"
+              >
+                Đăng nhập
+              </Button>
+
+              {/* Nút đăng ký */}
+              <Button
+                type="primary"
+                href="/register"
+                className="bg-gradient-to-r from-yellow-400 to-yellow-500 border-none font-semibold text-xs px-3 shadow-md hover:shadow-yellow-500/40"
+              >
+                Đăng ký
+              </Button>
+            </div>
           )}
 
           {/* ===== MOBILE MENU BUTTON ===== */}
@@ -340,22 +338,26 @@ const Navbar = () => {
             whileTap={{ scale: 0.95 }}
             onClick={toggleMobileMenu}
             className={`lg:hidden p-3 rounded-full transition-all duration-300 ease-in-out ${
-              scrolled 
-                ? "text-gray-700 bg-gray-100 hover:bg-gray-200" 
+              scrolled
+                ? "text-gray-700 bg-gray-100 hover:bg-gray-200"
                 : "text-white bg-white/10 hover:bg-white/20"
             }`}
           >
             <motion.div
-              animate={{ 
+              animate={{
                 rotate: mobileMenuOpen ? 180 : 0,
-                scale: mobileMenuOpen ? 1.1 : 1
+                scale: mobileMenuOpen ? 1.1 : 1,
               }}
-              transition={{ 
+              transition={{
                 duration: 0.3,
-                ease: "easeInOut"
+                ease: "easeInOut",
               }}
             >
-              {mobileMenuOpen ? <CloseOutlined className="text-lg" /> : <MenuOutlined className="text-lg" />}
+              {mobileMenuOpen ? (
+                <CloseOutlined className="text-lg" />
+              ) : (
+                <MenuOutlined className="text-lg" />
+              )}
             </motion.div>
           </motion.button>
         </div>
@@ -365,7 +367,6 @@ const Navbar = () => {
       <AnimatePresence>
         {mobileMenuOpen && (
           <>
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.6 }}
@@ -374,7 +375,6 @@ const Navbar = () => {
               className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[99]"
             />
 
-            {/* Drawer */}
             <motion.div
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
@@ -416,14 +416,24 @@ const Navbar = () => {
 
                   {!user && (
                     <li className="pt-3">
-                      <Button
-                        type="primary"
-                        block
-                        href="/register"
-                        className="bg-gradient-to-r from-yellow-400 to-yellow-500 border-none"
-                      >
-                        Đăng ký
-                      </Button>
+                      <div className="flex flex-col gap-2">
+                        <Button
+                          href="/login"
+                          className="border border-yellow-500 text-yellow-600 font-semibold"
+                          block
+                        >
+                          Đăng nhập
+                        </Button>
+
+                        <Button
+                          type="primary"
+                          block
+                          href="/register"
+                          className="bg-gradient-to-r from-yellow-400 to-yellow-500 border-none"
+                        >
+                          Đăng ký
+                        </Button>
+                      </div>
                     </li>
                   )}
                 </ul>

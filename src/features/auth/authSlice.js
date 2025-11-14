@@ -124,6 +124,30 @@ export const getCurrentUser = createAsyncThunk(
     }
   }
 );
+// === THUNKS (đã có) ===
+export const changePassword = createAsyncThunk(
+  "auth/changePassword",
+  async ({ oldPassword, newPassword }, { getState, rejectWithValue }) => {
+    try {
+      const { token } = getState().auth;
+      if (!token) throw new Error("Không có token để xác thực");
+
+      const response = await axiosInstance.post(
+        "/auth/change-password",
+        { oldPassword, newPassword },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return response.data; // <-- thành công
+    } catch (err) {
+      // trả về lỗi chi tiết + status
+      const payload = err.response?.data || {
+        message: "Đổi mật khẩu thất bại",
+      };
+      payload.status = err.response?.status;
+      return rejectWithValue(payload);
+    }
+  }
+);
 
 // === SLICE ===
 const authSlice = createSlice({
@@ -221,6 +245,27 @@ const authSlice = createSlice({
         state.error = action.payload;
 
         if (action.payload?.status === 401) {
+        }
+      })
+      // === CHANGE PASSWORD ===
+      .addCase(changePassword.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(changePassword.fulfilled, (state) => {
+        state.loading = false;
+        // có thể lưu message thành công nếu backend trả về
+        // state.success = action.payload.message;
+      })
+      .addCase(changePassword.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload; // { message, status, ... }
+
+        // 401 → token hết hạn → logout tự động
+        if (action.payload?.status === 401) {
+          state.user = null;
+          state.token = null;
+          clearStorage();
         }
       });
   },

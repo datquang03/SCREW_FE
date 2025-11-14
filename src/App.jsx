@@ -41,9 +41,9 @@ import StudioDetailPage from "./pages/Studio/StudioDetailPage";
 
 // === IMPORT PROTECTED ROUTES ===
 import {
-  ProtectedRouteForAdmin,
+  ProtectedRouteForCustomer,
   ProtectedRouteForStaff,
-  ProtectedRouteForAll,
+  ProtectedRouteForAdmin,
 } from "./middlewares/AuthProtector";
 
 const pageVariants = {
@@ -94,9 +94,9 @@ const AppContent = () => {
             <Route
               path="/dashboard/customer/*"
               element={
-                <ProtectedRouteForAll>
+                <ProtectedRouteForCustomer>
                   <DashboardLayout sidebar={UserSidebar} />
-                </ProtectedRouteForAll>
+                </ProtectedRouteForCustomer>
               }
             >
               <Route index element={<UserDashboardPage />} />
@@ -127,9 +127,9 @@ const AppContent = () => {
             <Route
               path="/dashboard/admin/*"
               element={
-                // <ProtectedRouteForAdmin>
+                <ProtectedRouteForAdmin>
                   <DashboardLayout sidebar={AdminSidebar} />
-                // </ProtectedRouteForAdmin>
+                </ProtectedRouteForAdmin>
               }
             >
               <Route index element={<AdminDashboardPage />} />
