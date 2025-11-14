@@ -5,7 +5,6 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import Homepage from "./pages/Homepage/Homepage";
 import AboutUsPage from "./pages/AboutUs/AboutUsPage";
-import EquipmentPage from "./pages/Equipment/EquipmentPage";
 import ContactPage from "./pages/Contact/ContactPage";
 import LoginPage from "./pages/Authentication/Login/LoginPage";
 import RegisterPage from "./pages/Authentication/Register/RegisterPage";
@@ -47,6 +46,10 @@ import {
 } from "./middlewares/AuthProtector";
 import StaffServicePage from "./pages/StaffDashboard/StaffServicePage";
 import StaffPromotionPage from "./pages/StaffDashboard/StaffPromotionPage";
+import StudioReviewsRecord from "./pages/Studio/StudioReviewsRecord";
+import StudioLikedPage from "./pages/Studio/StudioLikedPage";
+import EquipmentListPage from "./pages/Equipment/EquipmentList";
+import EquipmentDetailPage from "./pages/Equipment/EquipmentDetailPage";
 
 const pageVariants = {
   initial: { opacity: 0 },
@@ -82,7 +85,8 @@ const AppContent = () => {
             {/* PUBLIC ROUTES */}
             <Route path="/" element={<Homepage />} />
             <Route path="/about" element={<AboutUsPage />} />
-            <Route path="/equipment" element={<EquipmentPage />} />
+            <Route path="/equipment" element={<EquipmentListPage  />} />
+            <Route path="/equipment/:id" element={<EquipmentDetailPage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
@@ -107,6 +111,23 @@ const AppContent = () => {
               <Route path="history" element={<UserHistoryPage />} />
               <Route path="profile" element={<UserProfilePage />} />
             </Route>
+            {/* CUSTOMER ONLY PAGES */}
+            <Route
+              path="/studio/customer/liked"
+              element={
+                <ProtectedRouteForCustomer>
+                  <StudioLikedPage />
+                </ProtectedRouteForCustomer>
+              }
+            />
+            <Route
+              path="/studio/customer/reviews"
+              element={
+                <ProtectedRouteForCustomer>
+                  <StudioReviewsRecord />
+                </ProtectedRouteForCustomer>
+              }
+            />
 
             {/* STAFF DASHBOARD */}
             <Route
@@ -125,7 +146,6 @@ const AppContent = () => {
               <Route path="profile" element={<StaffProfilePage />} />
               <Route path="service" element={<StaffServicePage />} />
               <Route path="promotion" element={<StaffPromotionPage />} />
-
             </Route>
 
             {/* ADMIN DASHBOARD */}

@@ -1,3 +1,4 @@
+// src/components/navbar/Navbar.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { Button } from "antd";
@@ -5,9 +6,10 @@ import {
   SearchOutlined,
   MenuOutlined,
   CloseOutlined,
-  UserOutlined,
   LogoutOutlined,
   SettingOutlined,
+  HeartOutlined,
+  FileTextOutlined,
 } from "@ant-design/icons";
 import { MdOutlineSpaceDashboard } from "react-icons/md";
 import { motion, AnimatePresence } from "framer-motion";
@@ -22,9 +24,11 @@ const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+
   const headerRef = useRef(null);
   const searchContainerRef = useRef(null);
   const searchInputRef = useRef(null);
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
@@ -35,24 +39,12 @@ const Navbar = () => {
     navigate("/login", { replace: true });
   };
 
+  // Click outside dropdown/search
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownOpen && !e.target.closest(".avatar-dropdown")) {
         setDropdownOpen(false);
       }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [dropdownOpen]);
-
-  useEffect(() => {
-    if (searchOpen && searchInputRef.current) {
-      searchInputRef.current.focus();
-    }
-  }, [searchOpen]);
-
-  useEffect(() => {
-    const handleClickOutside = (e) => {
       if (
         searchOpen &&
         searchContainerRef.current &&
@@ -63,18 +55,20 @@ const Navbar = () => {
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [searchOpen]);
+  }, [dropdownOpen, searchOpen]);
 
+  // Escape key to close search
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === "Escape") {
-        setSearchOpen(false);
-      }
+      if (e.key === "Escape") setSearchOpen(false);
     };
-    if (searchOpen) {
-      document.addEventListener("keydown", handleKeyDown);
-    }
+    if (searchOpen) document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [searchOpen]);
+
+  // Focus input when search opens
+  useEffect(() => {
+    if (searchOpen && searchInputRef.current) searchInputRef.current.focus();
   }, [searchOpen]);
 
   const toggleMobileMenu = () => setMobileMenuOpen((prev) => !prev);
@@ -99,10 +93,7 @@ const Navbar = () => {
             src={SPlusLogo}
             alt="S+ Studio Logo"
             className="h-20 md:h-24 w-auto object-contain drop-shadow-[0_20px_45px_rgba(248,197,89,0.5)]"
-            style={{
-              imageRendering: "crisp-edges",
-              minWidth: "80px",
-            }}
+            style={{ imageRendering: "crisp-edges", minWidth: "80px" }}
             whileHover={{ rotate: [0, -10, 10, -10, 0], scale: 1.05 }}
             transition={{ duration: 0.45 }}
           />
@@ -154,11 +145,7 @@ const Navbar = () => {
                     boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
                   }}
                   whileTap={{ scale: 0.92 }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 400,
-                    damping: 20,
-                  }}
+                  transition={{ type: "spring", stiffness: 400, damping: 20 }}
                   className="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-lg hover:shadow-xl transition-shadow duration-300"
                 >
                   <SearchOutlined className="text-lg text-gray-900" />
@@ -166,21 +153,9 @@ const Navbar = () => {
               ) : (
                 <motion.div
                   key="search-bar"
-                  initial={{
-                    scaleX: 0,
-                    opacity: 0,
-                    x: -20,
-                  }}
-                  animate={{
-                    scaleX: 1,
-                    opacity: 1,
-                    x: 0,
-                  }}
-                  exit={{
-                    scaleX: 0,
-                    opacity: 0,
-                    x: -20,
-                  }}
+                  initial={{ scaleX: 0, opacity: 0, x: -20 }}
+                  animate={{ scaleX: 1, opacity: 1, x: 0 }}
+                  exit={{ scaleX: 0, opacity: 0, x: -20 }}
                   transition={{
                     type: "spring",
                     stiffness: 300,
@@ -190,20 +165,14 @@ const Navbar = () => {
                   className="origin-right w-64"
                   style={{ transformOrigin: "100% 50%" }}
                 >
-                  <motion.div
-                    initial={{ borderRadius: "9999px" }}
-                    animate={{ borderRadius: "9999px" }}
-                    className="flex items-center gap-2 rounded-full px-4 py-2.5 bg-white shadow-xl shadow-gray-900/20 border border-gray-100"
-                  >
+                  <motion.div className="flex items-center gap-2 rounded-full px-4 py-2.5 bg-white shadow-xl shadow-gray-900/20 border border-gray-100">
                     <SearchOutlined className="text-base text-amber-500" />
-
                     <input
                       ref={searchInputRef}
                       type="text"
                       placeholder="Tìm kiếm studio..."
                       className="w-full bg-transparent text-sm outline-none placeholder-gray-400 text-gray-900"
                     />
-
                     <motion.button
                       type="button"
                       onClick={() => setSearchOpen(false)}
@@ -222,106 +191,128 @@ const Navbar = () => {
 
           {/* USER / AUTH */}
           {user ? (
-            <div className="relative avatar-dropdown cursor-pointer">
-              <motion.button
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-                whileHover={{ scale: 1.05 }}
-                className="flex items-center gap-2 p-1 rounded-full bg-white/10 hover:bg-white/20 transition-all"
-              >
-                <img
-                  src={
-                    user.avatar ||
-                    "https://png.pngtree.com/png-clipart/20191120/original/pngtree-outline-user-icon-png-image_5045523.jpg"
-                  }
-                  alt="User Avatar"
-                  className="w-12 h-12 rounded-full object-cover border-2 border-white/60 shadow-lg cursor-pointer"
-                />
-              </motion.button>
+            <div className="flex items-center gap-2">
+              {/* Avatar dropdown */}
+              <div className="relative avatar-dropdown">
+                <motion.button
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  whileHover={{ scale: 1.05 }}
+                  className="flex items-center gap-2 p-1 rounded-full bg-white/10 hover:bg-white/20 transition-all"
+                >
+                  <img
+                    src={
+                      user.avatar ||
+                      "https://png.pngtree.com/png-clipart/20191120/original/pngtree-outline-user-icon-png-image_5045523.jpg"
+                    }
+                    alt="User Avatar"
+                    className="w-12 h-12 rounded-full object-cover border-2 border-white/60 shadow-lg cursor-pointer"
+                  />
+                </motion.button>
 
-              <AnimatePresence>
-                {dropdownOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-[110]"
-                  >
-                    <div className="p-3 border-b border-gray-100">
-                      <p className="text-sm font-medium text-gray-900">
-                        {user.fullName || user.username}
-                      </p>
-                      <p className="text-xs text-gray-500">{user.email}</p>
-                    </div>
+                <AnimatePresence>
+                  {dropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.25 }}
+                      className="absolute right-0 mt-2 w-56 bg-gradient-to-b from-yellow-50 to-yellow-100 rounded-xl shadow-2xl border border-yellow-200 z-[110]"
+                    >
+                      <div className="p-4 border-b border-yellow-200">
+                        <p className="text-sm font-bold text-gray-900">
+                          {user.fullName || user.username}
+                        </p>
+                        <p className="text-xs text-gray-600">{user.email}</p>
+                      </div>
 
-                    <ul className="py-1">
-                      <li>
-                        <button
-                          onClick={() => {
-                            setDropdownOpen(false);
-                            const role = user.role;
-                            let dashboardPath = "/dashboard";
+                      <ul className="py-2">
+                        {/* Dashboard */}
+                        <li>
+                          <button
+                            onClick={() => {
+                              setDropdownOpen(false);
+                              let dashboardPath = "/dashboard";
+                              if (user.role === "customer")
+                                dashboardPath = "/dashboard/customer";
+                              if (user.role === "staff")
+                                dashboardPath = "/dashboard/staff";
+                              if (user.role === "admin")
+                                dashboardPath = "/dashboard/admin";
+                              navigate(dashboardPath);
+                            }}
+                            className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-gray-800 rounded-lg hover:bg-yellow-200 hover:text-yellow-700 transition-all cursor-pointer"
+                          >
+                            <MdOutlineSpaceDashboard className="text-lg" />{" "}
+                            Dashboard
+                          </button>
+                        </li>
 
-                            if (role === "customer") dashboardPath = "/dashboard/customer";
-                            if (role === "staff") dashboardPath = "/dashboard/staff";
-                            if (role === "admin") dashboardPath = "/dashboard/admin";
+                        {/* Customer only */}
+                        {user.role === "customer" && (
+                          <>
+                            <li>
+                              <button
+                                onClick={() => {
+                                  setDropdownOpen(false);
+                                  navigate("/studio/customer/liked");
+                                }}
+                                className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-800 rounded-lg hover:bg-yellow-200 hover:text-yellow-700 transition-all cursor-pointer"
+                              >
+                                <HeartOutlined className="text-lg" /> Studio đã
+                                thích
+                              </button>
+                            </li>
+                            <li>
+                              <button
+                                onClick={() => {
+                                  setDropdownOpen(false);
+                                  navigate("/studio/customer/reviews");
+                                }}
+                                className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-800 rounded-lg hover:bg-yellow-200 hover:text-yellow-700 transition-all cursor-pointer"
+                              >
+                                <FileTextOutlined className="text-lg" /> Reviews
+                                đã thích
+                              </button>
+                            </li>
+                          </>
+                        )}
 
-                            navigate(dashboardPath);
-                          }}
-                          className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
-                        >
-                          <MdOutlineSpaceDashboard /> Dashboard
-                        </button>
-                      </li>
+                        {/* Settings */}
+                        <li>
+                          <button
+                            onClick={() => {
+                              setDropdownOpen(false);
+                              navigate("/settings");
+                            }}
+                            className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-800 rounded-lg hover:bg-yellow-200 hover:text-yellow-700 transition-all"
+                          >
+                            <SettingOutlined className="text-lg" /> Cài đặt
+                          </button>
+                        </li>
 
-                      <li>
-                        <button
-                          onClick={() => {
-                            setDropdownOpen(false);
-                            navigate("/profile");
-                          }}
-                          className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        >
-                          <UserOutlined /> Hồ sơ
-                        </button>
-                      </li>
-
-                      <li>
-                        <button
-                          onClick={() => {
-                            setDropdownOpen(false);
-                            navigate("/settings");
-                          }}
-                          className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        >
-                          <SettingOutlined /> Cài đặt
-                        </button>
-                      </li>
-
-                      <li className="border-t border-gray-200">
-                        <button
-                          onClick={handleLogout}
-                          className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50"
-                        >
-                          <LogoutOutlined /> Đăng xuất
-                        </button>
-                      </li>
-                    </ul>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                        {/* Logout */}
+                        <li className="border-t border-yellow-200">
+                          <button
+                            onClick={handleLogout}
+                            className="flex items-center gap-3 w-full px-4 py-3 text-sm text-red-600 rounded-lg hover:bg-red-100 hover:text-red-700 transition-all cursor-pointer"
+                          >
+                            <LogoutOutlined className="text-lg" /> Đăng xuất
+                          </button>
+                        </li>
+                      </ul>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              {/* Nút đăng nhập */}
               <Button
                 href="/login"
                 className="border border-yellow-500 text-yellow-500 font-semibold text-xs px-3 rounded-md hover:bg-yellow-50 transition-all"
               >
                 Đăng nhập
               </Button>
-
-              {/* Nút đăng ký */}
               <Button
                 type="primary"
                 href="/register"
@@ -348,10 +339,7 @@ const Navbar = () => {
                 rotate: mobileMenuOpen ? 180 : 0,
                 scale: mobileMenuOpen ? 1.1 : 1,
               }}
-              transition={{
-                duration: 0.3,
-                ease: "easeInOut",
-              }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
             >
               {mobileMenuOpen ? (
                 <CloseOutlined className="text-lg" />
@@ -374,7 +362,6 @@ const Navbar = () => {
               onClick={closeMobileMenu}
               className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[99]"
             />
-
             <motion.div
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
@@ -393,7 +380,6 @@ const Navbar = () => {
                   className="text-gray-700"
                 />
               </div>
-
               <nav className="flex-1 overflow-y-auto p-4">
                 <ul className="flex flex-col gap-2">
                   {NAV_LINKS.map(({ path, label, key: linkKey }) => (
@@ -413,27 +399,23 @@ const Navbar = () => {
                       </NavLink>
                     </li>
                   ))}
-
                   {!user && (
-                    <li className="pt-3">
-                      <div className="flex flex-col gap-2">
-                        <Button
-                          href="/login"
-                          className="border border-yellow-500 text-yellow-600 font-semibold"
-                          block
-                        >
-                          Đăng nhập
-                        </Button>
-
-                        <Button
-                          type="primary"
-                          block
-                          href="/register"
-                          className="bg-gradient-to-r from-yellow-400 to-yellow-500 border-none"
-                        >
-                          Đăng ký
-                        </Button>
-                      </div>
+                    <li className="pt-3 flex flex-col gap-2">
+                      <Button
+                        href="/login"
+                        className="border border-yellow-500 text-yellow-600 font-semibold"
+                        block
+                      >
+                        Đăng nhập
+                      </Button>
+                      <Button
+                        type="primary"
+                        block
+                        href="/register"
+                        className="bg-gradient-to-r from-yellow-400 to-yellow-500 border-none"
+                      >
+                        Đăng ký
+                      </Button>
                     </li>
                   )}
                 </ul>
