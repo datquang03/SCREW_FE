@@ -2,24 +2,17 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../../api/axiosInstance";
 
-/* --------------------------------------------------------------
-   1. GET ALL CUSTOMERS  →  /api/admin/customers?page=1&limit=10&search=&isActive=
-   -------------------------------------------------------------- */
+/* ------------------ GET ALL CUSTOMERS ------------------ */
 export const getAllCustomers = createAsyncThunk(
   "admin/customer/getAll",
   async (
-    {
-      page = 1,
-      limit = 10,
-      search = "",
-      isActive = "",   // "" → không lọc, "true" → active, "false" → banned
-    } = {},
+    { page = 1, limit = 10, search = "", isActive = "" } = {},
     { rejectWithValue }
   ) => {
     try {
       const url = `/admin/customers?page=${page}&limit=${limit}&search=${search}&isActive=${isActive}`;
       const response = await axiosInstance.get(url);
-      return response.data.data;               
+      return response.data.data;
     } catch (err) {
       return rejectWithValue(
         err.response?.data || { message: "Lấy danh sách khách hàng thất bại" }
@@ -28,14 +21,14 @@ export const getAllCustomers = createAsyncThunk(
   }
 );
 
-/* --------------------------------------------------------------
-   2. GET CUSTOMER BY ID  →  /api/admin/customers/{{customer_id}}
-   -------------------------------------------------------------- */
+/* ------------------ GET CUSTOMER BY ID ------------------ */
 export const getCustomerById = createAsyncThunk(
   "admin/customer/getById",
   async (customerId, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.get(`/admin/customers/${customerId}`);
+      const response = await axiosInstance.get(
+        `/admin/customers/${customerId}`
+      );
       return response.data;
     } catch (err) {
       return rejectWithValue(
@@ -45,63 +38,51 @@ export const getCustomerById = createAsyncThunk(
   }
 );
 
-/* --------------------------------------------------------------
-   3. BAN CUSTOMER  →  POST /api/admin/customers/{{id}}/ban
-   -------------------------------------------------------------- */
+/* ------------------ BAN CUSTOMER ------------------ */
 export const banCustomer = createAsyncThunk(
   "admin/customer/ban",
   async (customerId, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.post(
+      const response = await axiosInstance.patch(
         `/admin/customers/${customerId}/ban`
       );
       return { customerId, data: response.data };
     } catch (err) {
       return rejectWithValue(
-        err.response?.data || { message: "Cấm khách hàng thất bại" }
+        err.response?.data || { message: "Khóa tài khoản thất bại" }
       );
     }
   }
 );
 
-/* --------------------------------------------------------------
-   4. UNBAN CUSTOMER  →  POST /api/admin/customers/{{id}}/unban
-   -------------------------------------------------------------- */
+/* ------------------ UNBAN CUSTOMER ------------------ */
 export const unbanCustomer = createAsyncThunk(
   "admin/customer/unban",
   async (customerId, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.post(
+      const response = await axiosInstance.patch(
         `/admin/customers/${customerId}/unban`
       );
       return { customerId, data: response.data };
     } catch (err) {
       return rejectWithValue(
-        err.response?.data || { message: "Bỏ cấm thất bại" }
+        err.response?.data || { message: "Mở khóa tài khoản thất bại" }
       );
     }
   }
 );
 
-/* ==============================================================
-   INITIAL STATE
-   ============================================================== */
+/* ------------------ INITIAL STATE ------------------ */
 const initialState = {
   customers: [],
   currentCustomer: null,
-  pagination: {
-    current: 1,
-    pageSize: 10,
-    total: 0,
-  },
+  pagination: { current: 1, pageSize: 10, total: 0 },
   loading: false,
   error: null,
   successMessage: null,
 };
 
-/* ==============================================================
-   SLICE
-   ============================================================== */
+/* ------------------ SLICE ------------------ */
 const adminCustomerSlice = createSlice({
   name: "adminCustomer",
   initialState,
@@ -121,7 +102,7 @@ const adminCustomerSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-    // GET ALL CUSTOMERS
+      // GET ALL
       .addCase(getAllCustomers.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -141,34 +122,35 @@ const adminCustomerSlice = createSlice({
         state.error = action.payload;
       })
 
-      /* -------------------- GET BY ID -------------------- */
+      // GET BY ID
       .addCase(getCustomerById.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(getCustomerById.fulfilled, (state, action) => {
         state.loading = false;
-        state.currentCustomer = action.payload.data || action.payload;
+        state.currentCustomer = { ...(action.payload.data || action.payload) };
       })
       .addCase(getCustomerById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
 
-      /* -------------------- BAN -------------------- */
+      // BAN CUSTOMER
       .addCase(banCustomer.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(banCustomer.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = "Cấm tài khoản thành công";
-
-        const { customerId } = action.meta.arg;
-        const idx = state.customers.findIndex((c) => c._id === customerId);
-        if (idx !== -1) state.customers[idx].isBanned = true;
+        state.successMessage =
+          action.payload.data.message || "Khóa tài khoản thành công";
+        const { customerId } = action.payload;
+        state.customers = state.customers.map((c) =>
+          c._id === customerId ? { ...c, isActive: false } : c
+        );
         if (state.currentCustomer?._id === customerId) {
-          state.currentCustomer.isBanned = true;
+          state.currentCustomer = { ...state.currentCustomer, isActive: false };
         }
       })
       .addCase(banCustomer.rejected, (state, action) => {
@@ -176,20 +158,21 @@ const adminCustomerSlice = createSlice({
         state.error = action.payload;
       })
 
-      /* -------------------- UNBAN -------------------- */
+      // UNBAN CUSTOMER
       .addCase(unbanCustomer.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(unbanCustomer.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = "Bỏ cấm thành công";
-
-        const { customerId } = action.meta.arg;
-        const idx = state.customers.findIndex((c) => c._id === customerId);
-        if (idx !== -1) state.customers[idx].isBanned = false;
+        state.successMessage =
+          action.payload.data.message || "Mở khóa tài khoản thành công";
+        const { customerId } = action.payload;
+        state.customers = state.customers.map((c) =>
+          c._id === customerId ? { ...c, isActive: true } : c
+        );
         if (state.currentCustomer?._id === customerId) {
-          state.currentCustomer.isBanned = false;
+          state.currentCustomer = { ...state.currentCustomer, isActive: true };
         }
       })
       .addCase(unbanCustomer.rejected, (state, action) => {
@@ -205,5 +188,4 @@ export const {
   clearCurrentCustomer,
   resetPagination,
 } = adminCustomerSlice.actions;
-
 export default adminCustomerSlice.reducer;

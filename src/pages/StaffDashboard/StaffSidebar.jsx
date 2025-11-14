@@ -9,6 +9,7 @@ import {
   VideoCameraOutlined,
   ClockCircleOutlined,
 } from "@ant-design/icons";
+import { MdMiscellaneousServices, MdOutlineDiscount } from "react-icons/md";
 
 const StaffSidebar = () => {
   const location = useLocation();
@@ -43,6 +44,18 @@ const StaffSidebar = () => {
       icon: <ClockCircleOutlined />,
       label: "Thiết bị",
       path: "/dashboard/staff/equipment",
+    },
+    {
+      key: "service",
+      icon: <MdMiscellaneousServices />,
+      label: "Dịch vụ",
+      path: "/dashboard/staff/service",
+    },
+    {
+      key: "promotion",
+      icon: <MdOutlineDiscount />,
+      label: "Phiếu giảm giá",
+      path: "/dashboard/staff/promotion",
     },
     {
       key: "profile",

@@ -6,6 +6,7 @@ import equipmentReducer from "../features/equipment/equipmentSlice";
 import customerReducer from "../features/customer/customerSlice";
 import adminCustomerReducer from "../features/admin/admin.customerSlice";
 import adminStaffReducer from "../features/admin/admin.staffSlice";
+import serviceReducer from "../features/service/serviceSlice";
 const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -14,6 +15,7 @@ const store = configureStore({
     customer: customerReducer,
     adminCustomer: adminCustomerReducer,
     adminStaff: adminStaffReducer,
+    service: serviceReducer,
   },
 });
 

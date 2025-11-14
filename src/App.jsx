@@ -45,6 +45,8 @@ import {
   ProtectedRouteForStaff,
   ProtectedRouteForAdmin,
 } from "./middlewares/AuthProtector";
+import StaffServicePage from "./pages/StaffDashboard/StaffServicePage";
+import StaffPromotionPage from "./pages/StaffDashboard/StaffPromotionPage";
 
 const pageVariants = {
   initial: { opacity: 0 },
@@ -121,6 +123,9 @@ const AppContent = () => {
               <Route path="studios" element={<StaffStudiosPage />} />
               <Route path="equipment" element={<StaffEquipmentPage />} />
               <Route path="profile" element={<StaffProfilePage />} />
+              <Route path="service" element={<StaffServicePage />} />
+              <Route path="promotion" element={<StaffPromotionPage />} />
+
             </Route>
 
             {/* ADMIN DASHBOARD */}

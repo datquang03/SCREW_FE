@@ -5,7 +5,6 @@ import {
   Typography,
   Table,
   Tag,
-  Progress,
   Button,
   Modal,
   Form,
@@ -13,13 +12,15 @@ import {
   InputNumber,
   Spin,
   message,
+  Dropdown,
 } from "antd";
 import {
   ToolOutlined,
   ExclamationCircleOutlined,
   EditOutlined,
   DeleteOutlined,
-  EyeOutlined, // Thêm icon Chi tiết
+  EyeOutlined,
+  MoreOutlined,
 } from "@ant-design/icons";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -162,6 +163,7 @@ const StaffEquipmentPage = () => {
     }
   };
 
+  // === CỘT BẢNG (ĐÃ XÓA "HOẠT ĐỘNG") ===
   const columns = [
     {
       title: "Thiết bị",
@@ -186,7 +188,6 @@ const StaffEquipmentPage = () => {
       render: (status) => {
         let color = "gray";
         let text = "Chưa xác định";
-
         if (status === "available") {
           color = "green";
           text = "Sẵn sàng";
@@ -197,7 +198,6 @@ const StaffEquipmentPage = () => {
           color = "red";
           text = "Không hoạt động";
         }
-
         return <Tag color={color}>{text}</Tag>;
       },
     },
@@ -205,41 +205,43 @@ const StaffEquipmentPage = () => {
       title: "Hạn bảo trì",
       render: () => <Tag color="green">15/12/2025</Tag>,
     },
-    {
-      title: "Hoạt động",
-      dataIndex: "usage",
-      render: (u) => <Progress percent={u || 0} size="small" />,
-    },
+    // ĐÃ XÓA CỘT "HOẠT ĐỘNG"
     {
       title: "Thao tác",
-      render: (_, record) => (
-        <div className="flex gap-2">
-          <Button
-            type="link"
-            icon={<EyeOutlined />}
-            className="text-blue-600 hover:text-blue-700"
-            onClick={() => handleViewDetail(record._id)}
-          >
-            Chi tiết
-          </Button>
-          <Button
-            type="link"
-            icon={<EditOutlined />}
-            className="text-green-600 hover:text-green-700"
-            onClick={() => handleEdit(record._id)}
-          >
-            Sửa
-          </Button>
-          <Button
-            type="link"
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => handleDelete(record._id, record.name)}
-          >
-            Xóa
-          </Button>
-        </div>
-      ),
+      key: "action",
+      render: (_, record) => {
+        const menuItems = [
+          {
+            key: "view",
+            label: "Chi tiết",
+            icon: <EyeOutlined />,
+            onClick: () => handleViewDetail(record._id),
+          },
+          {
+            key: "edit",
+            label: "Sửa",
+            icon: <EditOutlined />,
+            onClick: () => handleEdit(record._id),
+          },
+          {
+            key: "delete",
+            label: "Xóa",
+            icon: <DeleteOutlined />,
+            danger: true,
+            onClick: () => handleDelete(record._id, record.name),
+          },
+        ];
+
+        return (
+          <Dropdown menu={{ items: menuItems }} trigger={["click"]}>
+            <Button
+              icon={<MoreOutlined />}
+              className="hover:bg-gray-100 rounded-full"
+              size="small"
+            />
+          </Dropdown>
+        );
+      },
     },
   ];
 
@@ -268,7 +270,6 @@ const StaffEquipmentPage = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Tổng thiết bị */}
         <Card className="shadow-sm hover:shadow transition-shadow">
           <Title level={4} className="text-gray-700">
             Tổng thiết bị
@@ -279,7 +280,6 @@ const StaffEquipmentPage = () => {
           </Text>
         </Card>
 
-        {/* Thiết bị đang sử dụng */}
         <Card className="shadow-sm hover:shadow transition-shadow">
           <Title level={4} className="text-gray-700">
             Thiết bị đang sử dụng
@@ -300,7 +300,6 @@ const StaffEquipmentPage = () => {
           </Text>
         </Card>
 
-        {/* Thiết bị đang bảo trì */}
         <Card className="shadow-sm hover:shadow transition-shadow">
           <Title level={4} className="text-gray-700">
             Thiết bị đang bảo trì
@@ -330,7 +329,8 @@ const StaffEquipmentPage = () => {
         />
       </Card>
 
-      {/* === MODAL THÊM === */}
+      {/* === CÁC MODAL (GIỮ NGUYÊN NHƯ CŨ) === */}
+      {/* MODAL THÊM */}
       <Modal
         title={
           <Title level={4} className="mb-0">
@@ -358,7 +358,6 @@ const StaffEquipmentPage = () => {
             >
               <Input placeholder="VD: Camera Sony A7S III" size="large" />
             </Form.Item>
-
             <Form.Item
               name="pricePerHour"
               label="Giá thuê / giờ (VND)"
@@ -376,7 +375,6 @@ const StaffEquipmentPage = () => {
                 parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
               />
             </Form.Item>
-
             <Form.Item
               name="totalQty"
               label="Số lượng"
@@ -389,7 +387,6 @@ const StaffEquipmentPage = () => {
                 placeholder="5"
               />
             </Form.Item>
-
             <Form.Item
               name="image"
               label="Hình ảnh (URL)"
@@ -402,7 +399,6 @@ const StaffEquipmentPage = () => {
                 onChange={(e) => setPreviewImageCreate(e.target.value)}
               />
             </Form.Item>
-
             {previewImageCreate && (
               <div className="md:col-span-2 flex justify-center -mt-2 mb-4">
                 <div className="relative group">
@@ -420,7 +416,6 @@ const StaffEquipmentPage = () => {
                 </div>
               </div>
             )}
-
             <Form.Item
               name="description"
               label="Mô tả"
@@ -433,7 +428,6 @@ const StaffEquipmentPage = () => {
               />
             </Form.Item>
           </div>
-
           <div className="flex justify-end gap-3 mt-6">
             <Button
               size="large"
@@ -457,7 +451,7 @@ const StaffEquipmentPage = () => {
         </Form>
       </Modal>
 
-      {/* === MODAL SỬA === */}
+      {/* MODAL SỬA */}
       <Modal
         title={
           <Title level={4} className="mb-0">
@@ -489,7 +483,6 @@ const StaffEquipmentPage = () => {
               >
                 <Input size="large" />
               </Form.Item>
-
               <Form.Item
                 name="pricePerHour"
                 label="Giá thuê / giờ (VND)"
@@ -506,7 +499,6 @@ const StaffEquipmentPage = () => {
                   parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
                 />
               </Form.Item>
-
               <Form.Item
                 name="totalQty"
                 label="Số lượng"
@@ -514,7 +506,6 @@ const StaffEquipmentPage = () => {
               >
                 <InputNumber min={1} className="w-full" size="large" />
               </Form.Item>
-
               <Form.Item
                 name="image"
                 label="Hình ảnh (URL)"
@@ -526,7 +517,6 @@ const StaffEquipmentPage = () => {
                   onChange={(e) => setPreviewImageEdit(e.target.value)}
                 />
               </Form.Item>
-
               {previewImageEdit && (
                 <div className="md:col-span-2 flex justify-center -mt-2 mb-4">
                   <img
@@ -536,7 +526,6 @@ const StaffEquipmentPage = () => {
                   />
                 </div>
               )}
-
               <Form.Item
                 name="description"
                 label="Mô tả"
@@ -545,7 +534,6 @@ const StaffEquipmentPage = () => {
                 <TextArea rows={3} size="large" />
               </Form.Item>
             </div>
-
             <div className="flex justify-end gap-3 mt-6">
               <Button
                 size="large"
@@ -570,12 +558,11 @@ const StaffEquipmentPage = () => {
         )}
       </Modal>
 
-      {/* === MODAL CHI TIẾT THIẾT BỊ === */}
+      {/* MODAL CHI TIẾT */}
       <Modal
         title={
           <Title level={4} className="mb-0 flex items-center gap-2">
-            <ToolOutlined />
-            Chi tiết thiết bị
+            <ToolOutlined /> Chi tiết thiết bị
           </Title>
         }
         open={isDetailModalOpen}
@@ -593,7 +580,6 @@ const StaffEquipmentPage = () => {
           </div>
         ) : detailEquipment ? (
           <div className="space-y-6">
-            {/* Hình ảnh + Tên + Trạng thái */}
             <div className="flex flex-col md:flex-row gap-6">
               <div className="flex-shrink-0">
                 <img
@@ -626,7 +612,6 @@ const StaffEquipmentPage = () => {
                     ? "Bảo trì"
                     : "Không hoạt động"}
                 </Tag>
-
                 <div className="grid grid-cols-2 gap-4 mt-4">
                   <Card className="bg-blue-50 border-blue-200">
                     <Text strong className="text-blue-700">
@@ -648,7 +633,6 @@ const StaffEquipmentPage = () => {
               </div>
             </div>
 
-            {/* Số lượng chi tiết */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Card className="text-center bg-emerald-50 border-emerald-200">
                 <Text type="secondary" className="block">
@@ -676,7 +660,6 @@ const StaffEquipmentPage = () => {
               </Card>
             </div>
 
-            {/* Mô tả */}
             {detailEquipment.description && (
               <Card title="Mô tả" className="bg-gray-50">
                 <Text className="text-gray-700 whitespace-pre-wrap">
@@ -685,7 +668,6 @@ const StaffEquipmentPage = () => {
               </Card>
             )}
 
-            {/* Thông tin hệ thống */}
             <Card title="Thông tin hệ thống" className="bg-gray-50 text-sm">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
@@ -705,7 +687,6 @@ const StaffEquipmentPage = () => {
               </div>
             </Card>
 
-            {/* Nút đóng */}
             <div className="flex justify-end">
               <Button size="large" onClick={() => setIsDetailModalOpen(false)}>
                 Đóng

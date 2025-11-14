@@ -4,13 +4,23 @@ import axiosInstance from "../../api/axiosInstance";
 
 // === THUNKS ===
 
-// Lấy danh sách tất cả nhân viên
+// Lấy danh sách tất cả nhân viên với params (pagination + filter)
 export const getAllStaffs = createAsyncThunk(
   "admin/staff/getAll",
-  async (_, { rejectWithValue }) => {
+  async (
+    params = { page: 1, limit: 10, search: "", position: "", isActive: "" },
+    { rejectWithValue }
+  ) => {
     try {
-      const response = await axiosInstance.get("/admin/staffs");
-      return response.data;
+      let { page, limit, search, position, isActive } = params;
+      if (!position || position === "undefined") position = "";
+
+      const response = await axiosInstance.get(
+        `/admin/staff?page=${page}&limit=${limit}&search=${encodeURIComponent(
+          search
+        )}&position=${encodeURIComponent(position)}&isActive=${isActive}`
+      );
+      return response.data.data;
     } catch (err) {
       return rejectWithValue(
         err.response?.data || { message: "Lấy danh sách nhân viên thất bại" }
@@ -24,8 +34,8 @@ export const getStaffById = createAsyncThunk(
   "admin/staff/getById",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.get(`/admin/staffs/${id}`);
-      return response.data;
+      const response = await axiosInstance.get(`/admin/staff/${id}`);
+      return response.data.data;
     } catch (err) {
       return rejectWithValue(
         err.response?.data || { message: "Không tìm thấy nhân viên" }
@@ -34,13 +44,13 @@ export const getStaffById = createAsyncThunk(
   }
 );
 
-// Cập nhật thông tin nhân viên
+// Cập nhật thông tin nhân viên (Admin)
 export const updateStaff = createAsyncThunk(
   "admin/staff/update",
   async ({ id, data }, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.put(`/admin/staffs/${id}`, data);
-      return response.data;
+      const response = await axiosInstance.patch(`/admin/staff/${id}`, data);
+      return response.data.data;
     } catch (err) {
       return rejectWithValue(
         err.response?.data || { message: "Cập nhật nhân viên thất bại" }
@@ -54,7 +64,9 @@ export const deactivateStaff = createAsyncThunk(
   "admin/staff/deactivate",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.post(`/admin/staffs/${id}/deactivate`);
+      const response = await axiosInstance.patch(
+        `/admin/staff/${id}/deactivate`
+      );
       return response.data;
     } catch (err) {
       return rejectWithValue(
@@ -69,8 +81,8 @@ export const activateStaff = createAsyncThunk(
   "admin/staff/activate",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.post(`/admin/staffs/${id}/activate`);
-      return response.data;
+      const response = await axiosInstance.patch(`/admin/staff/${id}/activate`);
+      return response.data.data;
     } catch (err) {
       return rejectWithValue(
         err.response?.data || { message: "Kích hoạt thất bại" }
@@ -78,6 +90,8 @@ export const activateStaff = createAsyncThunk(
     }
   }
 );
+
+
 
 // === SLICE ===
 const adminStaffSlice = createSlice({
@@ -88,6 +102,9 @@ const adminStaffSlice = createSlice({
     loading: false,
     error: null,
     successMessage: null,
+    page: 1,
+    limit: 10,
+    total: 0,
   },
   reducers: {
     clearError: (state) => {
@@ -109,7 +126,10 @@ const adminStaffSlice = createSlice({
       })
       .addCase(getAllStaffs.fulfilled, (state, action) => {
         state.loading = false;
-        state.staffs = action.payload.data || action.payload;
+        state.staffs = action.payload.users || [];
+        state.page = action.payload.page || 1;
+        state.limit = action.meta.arg.limit || 10;
+        state.total = action.payload.total || 0;
       })
       .addCase(getAllStaffs.rejected, (state, action) => {
         state.loading = false;
@@ -123,14 +143,14 @@ const adminStaffSlice = createSlice({
       })
       .addCase(getStaffById.fulfilled, (state, action) => {
         state.loading = false;
-        state.currentStaff = action.payload.data || action.payload;
+        state.currentStaff = action.payload;
       })
       .addCase(getStaffById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
 
-      // === UPDATE STAFF ===
+      // === UPDATE STAFF (Admin) ===
       .addCase(updateStaff.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -139,11 +159,10 @@ const adminStaffSlice = createSlice({
         state.loading = false;
         state.successMessage = "Cập nhật nhân viên thành công";
         const idx = state.staffs.findIndex((s) => s._id === action.meta.arg.id);
-        if (idx !== -1) {
-          state.staffs[idx] = { ...state.staffs[idx], ...action.payload.data };
-        }
+        if (idx !== -1)
+          state.staffs[idx] = { ...state.staffs[idx], ...action.payload };
         if (state.currentStaff?._id === action.meta.arg.id) {
-          state.currentStaff = { ...state.currentStaff, ...action.payload.data };
+          state.currentStaff = { ...state.currentStaff, ...action.payload };
         }
       })
       .addCase(updateStaff.rejected, (state, action) => {
@@ -181,9 +200,14 @@ const adminStaffSlice = createSlice({
       .addCase(activateStaff.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-      });
+      })
+
+      // === UPDATE STAFF PROFILE (Nhân viên tự cập nhật) ===
+     
   },
 });
 
-export const { clearError, clearSuccess, clearCurrentStaff } = adminStaffSlice.actions;
+export const { clearError, clearSuccess, clearCurrentStaff } =
+  adminStaffSlice.actions;
+
 export default adminStaffSlice.reducer;
