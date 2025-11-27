@@ -1,18 +1,37 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import { Typography, Avatar, Rate } from "antd";
-import { Swiper, SwiperSlide } from "swiper/react";
 import { motion, useInView } from "framer-motion";
 import { TESTIMONIALS } from "../../../constants/testimonials";
 import Section from "../../../components/common/Section";
-import "swiper/css";
-import "swiper/css/pagination";
-import { Pagination, Autoplay } from "swiper/modules";
 
 const { Title, Paragraph } = Typography;
 
 const TestimonialsSection = () => {
   const ref = useRef(null);
+  const sliderRef = useRef(null);
   const isInView = useInView(ref, { once: true, amount: 0.2 });
+
+  // Auto-scroll every 3s
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (sliderRef.current) {
+        sliderRef.current.scrollBy({
+          left: 320,
+          behavior: "smooth",
+        });
+      }
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Click button scroll left/right
+  const scrollLeft = () => {
+    sliderRef.current.scrollBy({ left: -320, behavior: "smooth" });
+  };
+
+  const scrollRight = () => {
+    sliderRef.current.scrollBy({ left: 320, behavior: "smooth" });
+  };
 
   return (
     <Section
@@ -51,36 +70,37 @@ const TestimonialsSection = () => {
             ease: "easeInOut",
           }}
         />
-        </div>
+      </div>
 
-      <div className="relative z-10">
+      {/* Slider */}
+      <div className="relative z-10 mt-10">
 
-        <Swiper
-          slidesPerView={1}
-          spaceBetween={30}
-          pagination={{
-            clickable: true,
-            dynamicBullets: true,
-          }}
-          autoplay={{
-            delay: 3000,
-            disableOnInteraction: false,
-          }}
-          breakpoints={{
-            640: {
-              slidesPerView: 2,
-              spaceBetween: 20,
-            },
-            1024: {
-              slidesPerView: 3,
-              spaceBetween: 40,
-            },
-          }}
-          modules={[Pagination, Autoplay]}
-          className="testimonials-swiper"
+        {/* Buttons */}
+        <button
+          onClick={scrollLeft}
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-20 bg-white/20 hover:bg-white/40 p-3 rounded-full backdrop-blur-md transition"
+        >
+          ◀
+        </button>
+
+        <button
+          onClick={scrollRight}
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-20 bg-white/20 hover:bg-white/40 p-3 rounded-full backdrop-blur-md transition"
+        >
+          ▶
+        </button>
+
+        {/* Horizontal slider */}
+        <div
+          ref={sliderRef}
+          className="flex gap-6 overflow-x-auto scrollbar-hide px-12 py-4 snap-x snap-mandatory"
+          style={{ scrollBehavior: "smooth" }}
         >
           {TESTIMONIALS.map((testimonial, index) => (
-            <SwiperSlide key={index}>
+            <div
+              key={index}
+              className="snap-center min-w-[85%] sm:min-w-[45%] lg:min-w-[32%]"
+            >
               <motion.div
                 initial={{ opacity: 0, y: 50, rotateY: -15 }}
                 animate={
@@ -97,13 +117,14 @@ const TestimonialsSection = () => {
                 whileHover={{
                   scale: 1.05,
                   rotateY: 5,
-                  z: 50,
                   transition: { duration: 0.3 },
                 }}
                 style={{ perspective: 1000, transformStyle: "preserve-3d" }}
                 className="h-full"
               >
                 <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-8 text-center h-full shadow-2xl hover:bg-white/15 transition-all duration-300">
+
+                  {/* Quote icon */}
                   <motion.div
                     initial={{ scale: 0, rotate: -180 }}
                     animate={isInView ? { scale: 1, rotate: 0 } : {}}
@@ -114,12 +135,19 @@ const TestimonialsSection = () => {
                       <span className="text-5xl text-yellow-400 font-serif leading-none">"</span>
                     </div>
                   </motion.div>
+
                   <Paragraph className="italic text-gray-200 text-base leading-relaxed mb-6 min-h-[100px]">
                     "{testimonial.quote}"
                   </Paragraph>
+
                   <div className="flex justify-center mb-4">
-                    <Rate disabled defaultValue={testimonial.rating} className="text-yellow-400" />
+                    <Rate
+                      disabled
+                      defaultValue={testimonial.rating}
+                      className="text-yellow-400"
+                    />
                   </div>
+
                   <motion.div
                     whileHover={{ scale: 1.1 }}
                     className="flex justify-center mb-4"
@@ -130,28 +158,21 @@ const TestimonialsSection = () => {
                       className="border-2 border-yellow-400/50 shadow-lg"
                     />
                   </motion.div>
+
                   <Title level={5} className="mt-4 mb-1 font-bold text-white text-lg">
                     {testimonial.name}
                   </Title>
+
                   <Paragraph className="text-gray-400 text-sm">
                     {testimonial.title}
                   </Paragraph>
-              </div>
-              </motion.div>
-            </SwiperSlide>
-          ))}
-        </Swiper>
-      </div>
 
-      <style>{`
-        .testimonials-swiper .swiper-pagination-bullet {
-          background: rgba(255, 255, 255, 0.5);
-          opacity: 1;
-        }
-        .testimonials-swiper .swiper-pagination-bullet-active {
-          background: #fbbf24;
-        }
-      `}</style>
+                </div>
+              </motion.div>
+            </div>
+          ))}
+        </div>
+      </div>
     </Section>
   );
 };

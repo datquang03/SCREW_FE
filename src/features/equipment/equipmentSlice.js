@@ -1,8 +1,12 @@
-// src/features/equipment/equipmentSlice.js  ← ĐÚNG TÊN FILE
+// src/features/equipment/equipmentSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../../api/axiosInstance";
 
-// === THUNKS ===
+/* =====================================================
+   ASYNC THUNKS
+===================================================== */
+
+// CREATE EQUIPMENT
 export const createEquipment = createAsyncThunk(
   "equipment/createEquipment",
   async (equipmentData, { rejectWithValue, getState }) => {
@@ -13,6 +17,7 @@ export const createEquipment = createAsyncThunk(
       const response = await axiosInstance.post("/equipment", equipmentData, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       return response.data.data;
     } catch (err) {
       return rejectWithValue(
@@ -22,6 +27,7 @@ export const createEquipment = createAsyncThunk(
   }
 );
 
+// GET ALL EQUIPMENT
 export const getAllEquipments = createAsyncThunk(
   "equipment/getAllEquipments",
   async (
@@ -32,34 +38,6 @@ export const getAllEquipments = createAsyncThunk(
       const response = await axiosInstance.get(
         `/equipment?page=${page}&limit=${limit}&status=${status}&search=${search}`
       );
-      return response.data.data; // { equipment: [...], pagination: { total: 6 } }
-    } catch (err) {
-      return rejectWithValue(
-        err.response?.data || { message: "Failed to fetch equipment" }
-      );
-    }
-  }
-);
-
-export const getAvailableEquipment = createAsyncThunk(
-  "equipment/getAvailableEquipment",
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await axiosInstance.get("/equipment/available");
-      return response.data.data; // chỉ lấy thiết bị còn sẵn có
-    } catch (err) {
-      return rejectWithValue(
-        err.response?.data || { message: "Failed to fetch available equipment" }
-      );
-    }
-  }
-);
-
-export const getEquipmentById = createAsyncThunk(
-  "equipment/getEquipmentById",
-  async (equipmentId, { rejectWithValue }) => {
-    try {
-      const response = await axiosInstance.get(`/equipment/${equipmentId}`);
       return response.data.data;
     } catch (err) {
       return rejectWithValue(
@@ -69,6 +47,39 @@ export const getEquipmentById = createAsyncThunk(
   }
 );
 
+// GET AVAILABLE EQUIPMENT (FOR RELATED ITEMS)
+export const getAvailableEquipment = createAsyncThunk(
+  "equipment/getAvailableEquipment",
+  async ({ category } = {}, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get("/equipment/available", {
+        params: { category },
+      });
+      return response.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Failed to fetch available equipment" }
+      );
+    }
+  }
+);
+
+// GET SINGLE EQUIPMENT BY ID
+export const getEquipmentById = createAsyncThunk(
+  "equipment/getEquipmentById",
+  async (equipmentId, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get(`/equipment/${equipmentId}`);
+      return response.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Failed to fetch equipment details" }
+      );
+    }
+  }
+);
+
+// UPDATE EQUIPMENT
 export const updateEquipment = createAsyncThunk(
   "equipment/updateEquipment",
   async ({ equipmentId, updateData }, { rejectWithValue, getState }) => {
@@ -79,9 +90,7 @@ export const updateEquipment = createAsyncThunk(
       const response = await axiosInstance.patch(
         `/equipment/${equipmentId}`,
         updateData,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       return response.data.data;
     } catch (err) {
@@ -92,6 +101,7 @@ export const updateEquipment = createAsyncThunk(
   }
 );
 
+// DELETE EQUIPMENT
 export const deleteEquipment = createAsyncThunk(
   "equipment/deleteEquipment",
   async (equipmentId, { rejectWithValue, getState }) => {
@@ -102,6 +112,7 @@ export const deleteEquipment = createAsyncThunk(
       await axiosInstance.delete(`/equipment/${equipmentId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       return equipmentId;
     } catch (err) {
       return rejectWithValue(
@@ -111,23 +122,32 @@ export const deleteEquipment = createAsyncThunk(
   }
 );
 
-// === INITIAL STATE ===
+/* =====================================================
+   INITIAL STATE
+===================================================== */
 const initialState = {
-  equipments: [], // ← SỬA: equipments (có 's')
+  equipments: [],
+  availableEquipments: [],
   currentEquipment: null,
   total: 0,
-  loading: false,
+  loading: false, // general loading
+  loadingCurrent: false, // for single equipment
+  relatedLoading: false, // for related equipments
   error: null,
 };
 
-// === SLICE ===
+/* =====================================================
+   SLICE
+===================================================== */
 const equipmentSlice = createSlice({
-  // ← SỬA: equipmentSlice
   name: "equipment",
   initialState,
   reducers: {
     clearEquipmentError: (state) => {
       state.error = null;
+    },
+    clearCurrentEquipment: (state) => {
+      state.currentEquipment = null;
     },
   },
   extraReducers: (builder) => {
@@ -135,11 +155,10 @@ const equipmentSlice = createSlice({
       // CREATE
       .addCase(createEquipment.pending, (state) => {
         state.loading = true;
-        state.error = null;
       })
       .addCase(createEquipment.fulfilled, (state, action) => {
         state.loading = false;
-        state.equipments.push(action.payload); // ← equipments
+        state.equipments.push(action.payload);
       })
       .addCase(createEquipment.rejected, (state, action) => {
         state.loading = false;
@@ -149,7 +168,6 @@ const equipmentSlice = createSlice({
       // GET ALL
       .addCase(getAllEquipments.pending, (state) => {
         state.loading = true;
-        state.error = null;
       })
       .addCase(getAllEquipments.fulfilled, (state, action) => {
         state.loading = false;
@@ -163,48 +181,44 @@ const equipmentSlice = createSlice({
         state.error = action.payload;
       })
 
-      // GET AVAILABLE
+      // GET AVAILABLE (RELATED)
       .addCase(getAvailableEquipment.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        state.relatedLoading = true;
       })
       .addCase(getAvailableEquipment.fulfilled, (state, action) => {
-        state.loading = false;
-        state.equipments = Array.isArray(action.payload) ? action.payload : [];
-        state.total = state.equipments.length;
+        state.relatedLoading = false;
+        state.availableEquipments = Array.isArray(action.payload)
+          ? action.payload
+          : [];
       })
       .addCase(getAvailableEquipment.rejected, (state, action) => {
-        state.loading = false;
+        state.relatedLoading = false;
         state.error = action.payload;
       })
 
       // GET BY ID
       .addCase(getEquipmentById.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        state.loadingCurrent = true;
       })
       .addCase(getEquipmentById.fulfilled, (state, action) => {
-        state.loading = false;
+        state.loadingCurrent = false;
         state.currentEquipment = action.payload;
       })
       .addCase(getEquipmentById.rejected, (state, action) => {
-        state.loading = false;
+        state.loadingCurrent = false;
         state.error = action.payload;
       })
 
       // UPDATE
       .addCase(updateEquipment.pending, (state) => {
         state.loading = true;
-        state.error = null;
       })
       .addCase(updateEquipment.fulfilled, (state, action) => {
         state.loading = false;
-        const updated = action.payload;
-        const index = state.equipments.findIndex((e) => e._id === updated._id);
-        if (index !== -1) state.equipments[index] = updated;
-        if (state.currentEquipment?._id === updated._id) {
-          state.currentEquipment = updated;
-        }
+        const index = state.equipments.findIndex(
+          (e) => e._id === action.payload._id
+        );
+        if (index !== -1) state.equipments[index] = action.payload;
       })
       .addCase(updateEquipment.rejected, (state, action) => {
         state.loading = false;
@@ -214,16 +228,12 @@ const equipmentSlice = createSlice({
       // DELETE
       .addCase(deleteEquipment.pending, (state) => {
         state.loading = true;
-        state.error = null;
       })
       .addCase(deleteEquipment.fulfilled, (state, action) => {
         state.loading = false;
         state.equipments = state.equipments.filter(
           (e) => e._id !== action.payload
         );
-        if (state.currentEquipment?._id === action.payload) {
-          state.currentEquipment = null;
-        }
       })
       .addCase(deleteEquipment.rejected, (state, action) => {
         state.loading = false;
@@ -232,5 +242,6 @@ const equipmentSlice = createSlice({
   },
 });
 
-export const { clearEquipmentError } = equipmentSlice.actions;
+export const { clearEquipmentError, clearCurrentEquipment } =
+  equipmentSlice.actions;
 export default equipmentSlice.reducer;

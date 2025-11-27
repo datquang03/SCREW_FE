@@ -18,6 +18,7 @@ import { logout } from "../../features/auth/authSlice";
 import SPlusLogo from "../../assets/S+Logo.png";
 import { NAV_LINKS } from "../../constants/navigation";
 import { useScrollEffect } from "../../hooks/useScrollEffect";
+import { FiMenu, FiUser, FiSearch, FiX } from "react-icons/fi";
 
 const Navbar = () => {
   const scrolled = useScrollEffect(20);

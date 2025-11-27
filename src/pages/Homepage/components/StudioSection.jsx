@@ -1,202 +1,235 @@
 // src/pages/Homepage/sections/StudioSection.jsx
-import React, { useRef, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, Typography, Button, Spin } from "antd";
-import { FiStar, FiArrowRight, FiMapPin, FiUsers } from "react-icons/fi";
-import { motion, useInView } from "framer-motion";
+import {
+  FiStar,
+  FiArrowRight,
+  FiMapPin,
+  FiUsers,
+  FiChevronLeft,
+  FiChevronRight,
+} from "react-icons/fi";
+import { motion } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import { getActiveStudios } from "../../../features/studio/studioSlice";
 import Section from "../../../components/common/Section";
 
-const { Title, Text, Paragraph } = Typography;
+const { Title, Text } = Typography;
 
 const StudioSection = () => {
   const dispatch = useDispatch();
   const { studios, loading } = useSelector((state) => state.studio);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isHovering, setIsHovering] = useState(false);
 
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, amount: 0.2 });
+  // Responsive: 1 - 2 - 3 cards
+  const getItemsPerView = () => {
+    if (typeof window === "undefined") return 3;
+    if (window.innerWidth < 640) return 1;
+    if (window.innerWidth < 1024) return 2;
+    return 3;
+  };
+
+  const [itemsPerView, setItemsPerView] = useState(getItemsPerView());
+  const totalSlides = Math.ceil(studios.length / itemsPerView);
 
   useEffect(() => {
-    dispatch(getActiveStudios({ page: 1, limit: 10 }));
+    const handleResize = () => setItemsPerView(getItemsPerView());
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    dispatch(getActiveStudios({ page: 1, limit: 20 }));
   }, [dispatch]);
+
+  // Autoplay
+  useEffect(() => {
+    if (studios.length <= itemsPerView) return;
+    const interval = setInterval(() => {
+      if (!isHovering) setCurrentIndex((prev) => (prev + 1) % totalSlides);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [isHovering, studios.length, itemsPerView, totalSlides]);
+
+  const goPrev = () => setCurrentIndex((prev) => (prev - 1 + totalSlides) % totalSlides);
+  const goNext = () => setCurrentIndex((prev) => (prev + 1) % totalSlides);
+
+  const extendedStudios = studios.length > 0
+    ? [...studios.slice(-itemsPerView), ...studios, ...studios.slice(0, itemsPerView)]
+    : [];
+
+  const offset = itemsPerView;
+  const translateX = -(currentIndex + offset) * (100 / itemsPerView);
+
+  if (loading) {
+    return (
+      <Section title="Studio Nổi Bật">
+        <div className="flex justify-center items-center py-32">
+          <Spin size="large" />
+        </div>
+      </Section>
+    );
+  }
 
   return (
     <Section
-      ref={ref}
-      className="relative bg-gradient-to-b from-white via-gray-50 to-white py-12 md:py-16 px-4 md:px-6 lg:px-16 overflow-hidden"
-      title="Studio cho thuê"
-      subtitle="Các studio đa dạng từ 100m² đến 300m², phù hợp quay phim, chụp ảnh và sản xuất nội dung."
-      containerClass="container mx-auto relative z-10"
+      title="Studio Nổi Bật"
+      subtitle="Không gian được khách hàng yêu thích nhất"
+      className="py-16 md:py-24 bg-gradient-to-b from-white to-gray-50"
     >
-      {/* Background subtle decorations */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-yellow-400/3 rounded-full blur-3xl opacity-30" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-yellow-500/3 rounded-full blur-3xl opacity-30" />
-      </div>
-
-      <div className="relative z-10">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {loading ? (
-            <div className="col-span-full flex justify-center items-center py-16">
-              <Spin size="large" />
-            </div>
-          ) : (
-            studios.map((studio, index) => (
-              <motion.div
-                key={studio._id}
-                initial={{ opacity: 0, y: 100, rotateX: -15 }}
-                animate={isInView ? { opacity: 1, y: 0, rotateX: 0 } : {}}
-                transition={{
-                  duration: 0.6,
-                  delay: index * 0.15,
-                  type: "spring",
-                  stiffness: 100,
-                }}
-                whileHover={{
-                  scale: 1.05,
-                  rotateY: 5,
-                  z: 50,
-                  transition: { duration: 0.3 },
-                }}
-                style={{ perspective: 1000, transformStyle: "preserve-3d" }}
-                onClick={() => (window.location.href = `/studio/${studio._id}`)}
-              >
-                <Card
-                  hoverable
-                  className="rounded-2xl overflow-hidden border-0 shadow-[0_10px_40px_rgba(0,0,0,0.1)] hover:shadow-[0_20px_60px_rgba(234,179,8,0.3)] transition-all duration-300 bg-gradient-to-br from-white to-gray-50"
-                  style={{ transformStyle: "preserve-3d" }}
-                  cover={
-                    <div className="relative h-48 overflow-hidden bg-gradient-to-br from-gray-800 to-gray-900 group">
-                      {studio.images?.[0] ? (
-                        <motion.img
-                          alt={studio.name}
-                          src={studio.images[0]}
-                          className="h-full w-full object-cover"
-                          whileHover={{ scale: 1.1 }}
-                          transition={{ duration: 0.5 }}
-                          onError={(e) => (e.target.style.display = "none")}
-                        />
-                      ) : (
-                        <div className="absolute inset-0 flex items-center justify-center bg-gray-700 text-white/50 text-4xl">
-                          📷
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                      <div className="absolute top-4 right-4">
-                        <div className="flex items-center gap-1 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-lg">
-                          <FiStar
-                            className="text-yellow-500 fill-yellow-500"
-                            size={16}
-                          />
-                          <Text strong className="text-sm">
-                            {studio.rating || 0}
-                          </Text>
-                        </div>
-                      </div>
-                    </div>
-                  }
+      <div className="relative max-w-7xl mx-auto px-4">
+        {/* Carousel - chỉ thấy đúng 3 card */}
+        <div
+          className="relative overflow-hidden rounded-3xl"
+          onMouseEnter={() => setIsHovering(true)}
+          onMouseLeave={() => setIsHovering(false)}
+        >
+          {/* Padding để hover không bị cắt */}
+          <div className="px-8 py-12">
+            <motion.div
+              className="flex"
+              animate={{ x: `${translateX}%` }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            >
+              {extendedStudios.map((studio, index) => (
+                <div
+                  key={`${studio._id}-${index}`}
+                  className="flex-shrink-0 px-4"
+                  style={{ width: `${100 / itemsPerView}%` }}
                 >
-                  <div className="p-4">
-                    <Title
-                      level={4}
-                      className="mb-2 text-lg font-extrabold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent"
+                  {/* CARD NGANG ĐẸP – GỌN – ĐỦ THÔNG TIN */}
+                  <motion.div
+                    whileHover={{ y: -8 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                    className="group cursor-pointer"
+                    onClick={() => (window.location.href = `/studio/${studio._id}`)}
+                  >
+                    <Card
+                      hoverable
+                      className="overflow-hidden rounded-3xl border-0 shadow-lg group-hover:shadow-2xl transition-all duration-500"
+                      bodyStyle={{ padding: 0 }}
                     >
-                      {studio.name}
-                    </Title>
-                    {studio.description && (
-                      <Paragraph className="text-sm text-gray-700 mb-3 line-clamp-2 font-medium">
-                        {studio.description}
-                      </Paragraph>
-                    )}
-                    <div className="flex items-center gap-3 mb-3 text-xs font-semibold">
-                      {studio.area && (
-                        <div className="flex items-center gap-1 text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
-                          <FiMapPin size={12} className="text-blue-500" />
-                          <span>{studio.area} m²</span>
-                        </div>
-                      )}
-                      {studio.capacity && (
-                        <div className="flex items-center gap-1 text-purple-600 bg-purple-50 px-2 py-1 rounded-full">
-                          <FiUsers size={12} className="text-purple-500" />
-                          <span>{studio.capacity}</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="space-y-1.5 mb-4">
-                      {studio.amenities?.slice(0, 3).map((feature, idx) => {
-                        const colors = [
-                          "from-yellow-400 to-yellow-500",
-                          "from-blue-400 to-blue-500",
-                          "from-green-400 to-green-500",
-                        ];
-                        return (
-                          <div
-                            key={idx}
-                            className="text-xs text-gray-700 font-medium flex items-center gap-2"
-                          >
-                            <div
-                              className={`w-2 h-2 bg-gradient-to-r ${colors[idx]} rounded-full flex-shrink-0 shadow-lg`}
+                      <div className="flex flex-col md:flex-row h-full">
+                        {/* Ảnh bên trái */}
+                        <div className="relative w-full md:w-5/12 overflow-hidden">
+                          {studio.images?.[0] ? (
+                            <img
+                              src={studio.images[0]}
+                              alt={studio.name}
+                              className="w-full h-64 md:h-full object-cover group-hover:scale-110 transition-transform duration-700"
                             />
-                            <span className="line-clamp-1">{feature}</span>
+                          ) : (
+                            <div className="w-full h-64 md:h-full bg-gray-200 flex items-center justify-center text-4xl font-bold text-gray-400">
+                              {studio.name}
+                            </div>
+                          )}
+
+                          {/* Rating badge */}
+                          <div className="absolute top-4 left-4 bg-white/95 backdrop-blur px-4 py-2 rounded-full flex items-center gap-2 shadow-lg">
+                            <FiStar className="text-yellow-500" size={20} />
+                            <span className="font-bold text-lg">
+                              {studio.rating?.toFixed(1) || "5.0"}
+                            </span>
                           </div>
-                        );
-                      })}
-                    </div>
-                    <div className="flex justify-between items-center pt-4 border-t-2 border-gray-200">
-                      <div>
-                        <Text className="text-xs text-gray-500 block font-medium">
-                          Từ
-                        </Text>
-                        <Text
-                          strong
-                          className="text-xl text-transparent bg-clip-text bg-gradient-to-r from-yellow-600 via-yellow-500 to-yellow-600 font-extrabold"
-                        >
-                          {studio.basePricePerHour?.toLocaleString("vi-VN")} VNĐ
-                        </Text>
-                        <Text className="text-xs text-gray-500 font-medium">
-                          /giờ
-                        </Text>
+                        </div>
+
+                        {/* Nội dung bên phải */}
+                        <div className="w-full md:w-7/12 p-8 flex flex-col justify-between bg-white">
+                          <div>
+                            <Title level={3} className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+                              {studio.name}
+                            </Title>
+                            <p className="text-gray-600 text-base line-clamp-3 mb-6">
+                              {studio.description || "Studio hiện đại, đầy đủ ánh sáng tự nhiên và thiết bị chuyên nghiệp."}
+                            </p>
+
+                            <div className="flex flex-wrap gap-4">
+                              {studio.area && (
+                                <span className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-full text-sm font-medium">
+                                  <FiMapPin size={16} />
+                                  {studio.area} m²
+                                </span>
+                              )}
+                              {studio.capacity && (
+                                <span className="inline-flex items-center gap-2 bg-purple-50 text-purple-700 px-4 py-2 rounded-full text-sm font-medium">
+                                  <FiUsers size={16} />
+                                  {studio.capacity} người
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex justify-between items-end mt-8 pt-6 border-t border-gray-100">
+                            <div>
+                              <Text className="text-gray-500 text-sm">Giá từ</Text>
+                              <div className="text-3xl font-bold text-orange-600">
+                                {studio.basePricePerHour?.toLocaleString("vi-VN")}đ
+                              </div>
+                              <Text className="text-gray-500 text-sm">/ giờ</Text>
+                            </div>
+                            <FiArrowRight
+                              size={36}
+                              className="text-gray-400 group-hover:text-orange-600 group-hover:translate-x-3 transition-all duration-300"
+                            />
+                          </div>
+                        </div>
                       </div>
-                      <motion.div
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                      >
-                        <Button
-                          type="primary"
-                          size="small"
-                          href={`/studio/${studio._id}`}
-                          className="bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400 border-none rounded-lg shadow-lg shadow-yellow-500/30 hover:shadow-yellow-500/50 font-semibold"
-                        >
-                          Xem chi tiết
-                        </Button>
-                      </motion.div>
-                    </div>
-                  </div>
-                </Card>
-              </motion.div>
-            ))
+                    </Card>
+                  </motion.div>
+                </div>
+              ))}
+            </motion.div>
+          </div>
+
+          {/* Nút prev/next */}
+          {studios.length > itemsPerView && (
+            <>
+              <button
+                onClick={goPrev}
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white shadow-2xl rounded-full p-4 z-10 hover:scale-110 transition-all"
+              >
+                <FiChevronLeft size={36} className="text-gray-800" />
+              </button>
+              <button
+                onClick={goNext}
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white shadow-2xl rounded-full p-4 z-10 hover:scale-110 transition-all"
+              >
+                <FiChevronRight size={36} className="text-gray-800" />
+              </button>
+            </>
           )}
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.8 }}
-          className="text-center mt-16"
-        >
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button
-              type="default"
-              size="large"
-              href="/studio"
-              className="bg-gradient-to-r from-gray-800 to-gray-900 text-white border-none shadow-xl hover:shadow-2xl font-semibold px-8 py-6 h-auto rounded-xl"
-              icon={<FiArrowRight className="inline-block" />}
-              iconPosition="end"
-            >
-              Xem tất cả Studio
-            </Button>
-          </motion.div>
-        </motion.div>
+        {/* Dots */}
+        {studios.length > itemsPerView && (
+          <div className="flex justify-center gap-3 mt-12">
+            {Array.from({ length: totalSlides }).map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrentIndex(i)}
+                className={`transition-all duration-300 ${
+                  i === currentIndex
+                    ? "w-12 h-3 bg-black rounded-full"
+                    : "w-3 h-3 bg-gray-400 rounded-full hover:bg-gray-600"
+                }`}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Nút xem tất cả */}
+        <div className="text-center mt-16">
+          <Button
+            type="primary"
+            size="large"
+            href="/studio"
+            className="bg-black hover:bg-gray-900 text-white font-bold text-lg px-14 py-7 rounded-2xl shadow-2xl hover:scale-105 transition-all"
+            icon={<FiArrowRight size={24} className="ml-3" />}
+          >
+            Xem tất cả Studio
+          </Button>
+        </div>
       </div>
     </Section>
   );

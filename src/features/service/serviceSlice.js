@@ -103,6 +103,23 @@ export const deleteService = createAsyncThunk(
     }
   }
 );
+// Lấy danh sách dịch vụ đang active
+export const getActiveServices = createAsyncThunk(
+  "service/getActiveServices",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get(`/services/available`);
+      // API: { success: true, data: [...] }
+      return response.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || {
+          message: "Không thể tải danh sách dịch vụ active",
+        }
+      );
+    }
+  }
+);
 
 // === INITIAL STATE ===
 const initialState = {
@@ -207,6 +224,19 @@ const serviceSlice = createSlice({
         }
       })
       .addCase(deleteService.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // === GET ACTIVE SERVICES ===
+      .addCase(getActiveServices.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getActiveServices.fulfilled, (state, action) => {
+        state.loading = false;
+        state.services = Array.isArray(action.payload) ? action.payload : [];
+      })
+      .addCase(getActiveServices.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

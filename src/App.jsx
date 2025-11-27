@@ -49,7 +49,7 @@ import StaffPromotionPage from "./pages/StaffDashboard/StaffPromotionPage";
 import StudioReviewsRecord from "./pages/Studio/StudioReviewsRecord";
 import StudioLikedPage from "./pages/Studio/StudioLikedPage";
 import EquipmentListPage from "./pages/Equipment/EquipmentList";
-import EquipmentDetailPage from "./pages/Equipment/EquipmentDetailPage";
+import StaffUserPage from "./pages/StaffDashboard/StaffUserPage";
 
 const pageVariants = {
   initial: { opacity: 0 },
@@ -85,8 +85,7 @@ const AppContent = () => {
             {/* PUBLIC ROUTES */}
             <Route path="/" element={<Homepage />} />
             <Route path="/about" element={<AboutUsPage />} />
-            <Route path="/equipment" element={<EquipmentListPage  />} />
-            <Route path="/equipment/:id" element={<EquipmentDetailPage />} />
+            <Route path="/equipment" element={<EquipmentListPage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
@@ -94,15 +93,15 @@ const AppContent = () => {
             <Route path="/verify-email" element={<VerifyEmailPage />} />
             <Route path="/studio" element={<StudioPage />} />
             <Route path="/studio/:id" element={<StudioDetailPage />} />
-            <Route path="/booking" element={<StudioBookingPage />} />
+            <Route path="/booking/:id" element={<StudioBookingPage />} />
 
             {/* CUSTOMER DASHBOARD */}
             <Route
               path="/dashboard/customer/*"
               element={
-                //<ProtectedRouteForCustomer>
-                <DashboardLayout sidebar={UserSidebar} variant="customer" />
-                //</ProtectedRouteForCustomer>
+                <ProtectedRouteForCustomer>
+                  <DashboardLayout sidebar={UserSidebar} variant="customer" />
+                </ProtectedRouteForCustomer>
               }
             >
               <Route index element={<UserDashboardPage />} />
@@ -133,15 +132,16 @@ const AppContent = () => {
             <Route
               path="/dashboard/staff/*"
               element={
-                //<ProtectedRouteForStaff>
-                <DashboardLayout sidebar={StaffSidebar} variant="staff" />
-                //</ProtectedRouteForStaff>
+                <ProtectedRouteForStaff>
+                  <DashboardLayout sidebar={StaffSidebar} variant="staff" />
+                </ProtectedRouteForStaff>
               }
             >
               <Route index element={<StaffDashboardPage />} />
               <Route path="order" element={<StaffOrderPage />} />
               <Route path="schedule" element={<StaffSchedulePage />} />
               <Route path="studios" element={<StaffStudiosPage />} />
+              <Route path="user" element={<StaffUserPage />} />
               <Route path="equipment" element={<StaffEquipmentPage />} />
               <Route path="profile" element={<StaffProfilePage />} />
               <Route path="service" element={<StaffServicePage />} />
