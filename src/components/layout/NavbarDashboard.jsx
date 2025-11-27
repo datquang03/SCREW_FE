@@ -57,18 +57,12 @@ const DashboardNavbar = ({ variant = "default" }) => {
     return () => document.removeEventListener("mousedown", close);
   }, []);
 
-  const getDashboardPath = () => {
-    if (user?.role === "admin") return "/dashboard/admin";
-    if (user?.role === "staff") return "/dashboard/staff";
-    return "/dashboard/customer";
-  };
-
   return (
     <header
       className={`fixed top-0 left-0 lg:left-64 xl:left-72 right-0 z-30 border-b border-white/40 shadow backdrop-blur-xl ${theme.bg}`}
     >
       <div className="flex items-center justify-between px-4 sm:px-6 lg:px-10 py-3">
-        <button onClick={() => navigate(getDashboardPath())} className="group">
+        <button onClick={() => navigate("/")} className="group cursor-pointer">
           <motion.img
             src={SPlusLogo}
             alt="S+ logo"

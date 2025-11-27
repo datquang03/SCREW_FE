@@ -8,13 +8,14 @@ const DataTable = ({ columns = [], data = [], title }) => {
           <h3 className="font-bold text-gray-800">{title}</h3>
         </div>
       )}
+
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
-              {columns.map((c, columnIndex) => (
+              {columns.map((c, i) => (
                 <th
-                  key={c.key || c.dataIndex || columnIndex}
+                  key={c.key || c.dataIndex || i}
                   className="py-3 px-4 text-left font-semibold text-gray-600"
                 >
                   {c.title}
@@ -22,22 +23,27 @@ const DataTable = ({ columns = [], data = [], title }) => {
               ))}
             </tr>
           </thead>
+
           <tbody>
             {data.length === 0 && (
               <tr>
-                <td className="py-8 px-4 text-center text-gray-500" colSpan={columns.length}>
+                <td
+                  colSpan={columns.length}
+                  className="py-8 px-4 text-center text-gray-500"
+                >
                   Không có dữ liệu
                 </td>
               </tr>
             )}
+
             {data.map((row, idx) => (
               <tr
-                key={row.id || row.key || idx}
+                key={row.id || idx}
                 className={idx % 2 === 0 ? "bg-white" : "bg-gray-50/60"}
               >
-                {columns.map((c, columnIndex) => (
+                {columns.map((c, i) => (
                   <td
-                    key={`${c.key || c.dataIndex || columnIndex}-cell`}
+                    key={`${i}-cell`}
                     className="py-3 px-4 text-gray-700"
                   >
                     {c.render ? c.render(row[c.dataIndex], row) : row[c.dataIndex]}
@@ -53,5 +59,3 @@ const DataTable = ({ columns = [], data = [], title }) => {
 };
 
 export default DataTable;
-
-

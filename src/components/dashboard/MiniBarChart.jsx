@@ -10,8 +10,9 @@ const MiniBarChart = ({ data = [], color = "#10b981", height = 140 }) => {
     <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-36">
       {data.map((v, i) => {
         const x = padding + i * (barWidth + 6);
-        const barHeight = ((v / maxY) * (height - padding * 2));
+        const barHeight = (v / maxY) * (height - padding * 2);
         const y = height - padding - barHeight;
+
         return (
           <rect
             key={i}
@@ -30,5 +31,3 @@ const MiniBarChart = ({ data = [], color = "#10b981", height = 140 }) => {
 };
 
 export default MiniBarChart;
-
-

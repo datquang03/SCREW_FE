@@ -17,3 +17,20 @@
   transform: translateX(-100%);
   transition: all 400ms ease-in-out;
 }
+/* Minimal Embla Carousel CSS */
+.embla {
+  overflow: hidden;
+  width: 100%;
+}
+.embla__container {
+  display: flex;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  margin-left: -10px;
+}
+.embla__slide {
+  position: relative;
+  min-width: 0;
+  padding-left: 10px;
+}

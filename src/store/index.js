@@ -7,6 +7,11 @@ import customerReducer from "../features/customer/customerSlice";
 import adminCustomerReducer from "../features/admin/admin.customerSlice";
 import adminStaffReducer from "../features/admin/admin.staffSlice";
 import serviceReducer from "../features/service/serviceSlice";
+import adminAnalyticReducer from "../features/admin/admin.analyticSlice";
+import promotionReducer from "../features/promotion/promotionSlice";
+import bookingReducer from "../features/booking/bookingSlice";
+import paymentReducer from "../features/payment/paymentSlice";
+import setDesignReducer from "../features/setdesign/setDesignSlice";
 const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -16,6 +21,11 @@ const store = configureStore({
     adminCustomer: adminCustomerReducer,
     adminStaff: adminStaffReducer,
     service: serviceReducer,
+    adminAnalytics: adminAnalyticReducer,
+    promotion: promotionReducer,
+    booking: bookingReducer,
+    payment: paymentReducer,
+    setDesign: setDesignReducer,
   },
 });
 

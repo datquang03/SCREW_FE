@@ -191,12 +191,12 @@ const StaffEquipmentPage = () => {
         if (status === "available") {
           color = "green";
           text = "Sẵn sàng";
-        } else if (status === "maintenance") {
+        } else if (status === "in_use") {
           color = "orange";
-          text = "Bảo trì";
-        } else if (status === "unavailable") {
+          text = "Đang sử dụng";
+        } else if (status === "maintenance") {
           color = "red";
-          text = "Không hoạt động";
+          text = "Bảo trì";
         }
         return <Tag color={color}>{text}</Tag>;
       },
