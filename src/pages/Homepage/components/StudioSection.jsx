@@ -108,7 +108,7 @@ const StudioSection = () => {
                     <Card
                       hoverable
                       className="overflow-hidden rounded-3xl border-0 shadow-lg group-hover:shadow-2xl transition-all duration-500"
-                      bodyStyle={{ padding: 0 }}
+                      style={{padding: 0}}
                     >
                       <div className="flex flex-col md:flex-row h-full">
                         {/* Ảnh bên trái */}

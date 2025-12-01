@@ -50,6 +50,7 @@ import StudioReviewsRecord from "./pages/Studio/StudioReviewsRecord";
 import StudioLikedPage from "./pages/Studio/StudioLikedPage";
 import EquipmentListPage from "./pages/Equipment/EquipmentList";
 import StaffUserPage from "./pages/StaffDashboard/StaffUserPage";
+import StaffSetDesignPage from "./pages/StaffDashboard/StaffSetDesignPage";
 
 const pageVariants = {
   initial: { opacity: 0 },
@@ -141,6 +142,7 @@ const AppContent = () => {
               <Route path="order" element={<StaffOrderPage />} />
               <Route path="schedule" element={<StaffSchedulePage />} />
               <Route path="studios" element={<StaffStudiosPage />} />
+              <Route path="setdesign" element={<StaffSetDesignPage />} />
               <Route path="user" element={<StaffUserPage />} />
               <Route path="equipment" element={<StaffEquipmentPage />} />
               <Route path="profile" element={<StaffProfilePage />} />

@@ -1,7 +1,11 @@
 // src/features/booking/bookingSlice.js
+
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../../api/axiosInstance";
 
+// === THUNKS ===
+
+// 1) Tạo booking mới
 export const createBooking = createAsyncThunk(
   "booking/createBooking",
   async (bookingPayload, { rejectWithValue, getState }) => {
@@ -13,7 +17,7 @@ export const createBooking = createAsyncThunk(
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      return response.data.data; 
+      return response.data.data; // → { booking: { ... }, paymentOptions: [...] }
     } catch (err) {
       return rejectWithValue(
         err.response?.data || { message: "Đặt phòng thất bại" }
@@ -22,29 +26,99 @@ export const createBooking = createAsyncThunk(
   }
 );
 
+// 2) Lấy tất cả booking của user
+export const getAllMyBookings = createAsyncThunk(
+  "booking/getAllMyBookings",
+  async (_, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+      const res = await axiosInstance.get("/bookings/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return res.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Không thể lấy booking" }
+      );
+    }
+  }
+);
+
+// 3) Lấy 1 booking theo ID
+export const getBookingById = createAsyncThunk(
+  "booking/getBookingById",
+  async (bookingId, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+      const res = await axiosInstance.get(`/bookings/${bookingId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return res.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Không thể lấy booking" }
+      );
+    }
+  }
+);
+
+// 4) Lấy booking kèm chi tiết services/equipment
+export const getBookingWithDetails = createAsyncThunk(
+  "booking/getBookingWithDetails",
+  async (bookingId, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+      const res = await axiosInstance.get(`/bookings/${bookingId}/details`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return res.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Không thể lấy chi tiết booking" }
+      );
+    }
+  }
+);
+
+// 5) Lấy booking theo trạng thái
+export const getBookingsByStatus = createAsyncThunk(
+  "booking/getBookingsByStatus",
+  async (status, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+      const res = await axiosInstance.get(`/bookings?status=${status}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return res.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Không thể lọc booking" }
+      );
+    }
+  }
+);
+
+// === INITIAL STATE ===
 const initialState = {
-  // Dữ liệu tạm người dùng đang chọn (trước khi bấm xác nhận cuối)
   draft: {
     studioId: null,
     startTime: null,
     endTime: null,
-    details: [], 
+    details: [],
     promoId: null,
-    promoCode: null, 
+    promoCode: null,
   },
-
-  // Booking đã được tạo thành công trên server
-  currentBooking: null, // { bookingId, totalPrice, status, paymentUrl?, ... }
-
+  currentBooking: null, // booking vừa tạo hoặc đang xem
+  myBookings: [], // tất cả booking của user
   loading: false,
   error: null,
 };
 
+// === SLICE ===
 const bookingSlice = createSlice({
   name: "booking",
   initialState,
   reducers: {
-    // Bắt đầu booking mới
     startNewBooking: (state, action) => {
       state.draft = {
         studioId: action.payload?.studioId || null,
@@ -57,46 +131,94 @@ const bookingSlice = createSlice({
       state.currentBooking = null;
       state.error = null;
     },
-
-    // Cập nhật thời gian
     setBookingTime: (state, action) => {
       state.draft.startTime = action.payload.startTime;
       state.draft.endTime = action.payload.endTime;
     },
-
-    // Thêm/sửa/xóa thiết bị hoặc dịch vụ
     setBookingDetails: (state, action) => {
-      state.draft.details = action.payload; // mảng mới
+      state.draft.details = action.payload;
     },
-
-    // Áp dụng mã giảm giá
     applyPromo: (state, action) => {
       state.draft.promoId = action.payload.promoId;
       state.draft.promoCode = action.payload.promoCode;
     },
-
-    // Xóa mã giảm giá
     removePromo: (state) => {
       state.draft.promoId = null;
       state.draft.promoCode = null;
     },
-
-    // Reset khi rời trang hoặc thành công
     resetBooking: () => initialState,
   },
-
   extraReducers: (builder) => {
     builder
+      // CREATE BOOKING – QUAN TRỌNG NHẤT
       .addCase(createBooking.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(createBooking.fulfilled, (state, action) => {
         state.loading = false;
-        state.currentBooking = action.payload; // lưu kết quả cuối cùng
-        state.draft = initialState.draft; // xóa draft
+        // ĐÃ SỬA: CHỈ LẤY PHẦN booking THẬT SỰ
+        state.currentBooking = action.payload.booking;
+        state.draft = initialState.draft;
       })
       .addCase(createBooking.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // GET ALL MY BOOKINGS
+      .addCase(getAllMyBookings.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getAllMyBookings.fulfilled, (state, action) => {
+        state.loading = false;
+        state.myBookings = action.payload;
+      })
+      .addCase(getAllMyBookings.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // GET BOOKING BY ID – thêm fallback an toàn
+      .addCase(getBookingById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getBookingById.fulfilled, (state, action) => {
+        state.loading = false;
+        // Backend có thể trả { booking: ... } hoặc trực tiếp booking object
+        state.currentBooking = action.payload.booking || action.payload;
+      })
+      .addCase(getBookingById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // GET BOOKING WITH DETAILS – cũng thêm fallback
+      .addCase(getBookingWithDetails.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getBookingWithDetails.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentBooking = action.payload.booking || action.payload;
+      })
+      .addCase(getBookingWithDetails.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // GET BOOKINGS BY STATUS
+      .addCase(getBookingsByStatus.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getBookingsByStatus.fulfilled, (state, action) => {
+        state.loading = false;
+        state.myBookings = action.payload;
+      })
+      .addCase(getBookingsByStatus.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

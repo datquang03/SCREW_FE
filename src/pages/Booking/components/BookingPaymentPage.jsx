@@ -1,169 +1,304 @@
-import React, { useState } from "react";
-import { Card, Button, Typography, Space, Tag, Divider, Spin, message } from "antd";
+// src/pages/Booking/components/BookingPaymentPage.jsx
+
+import React, { useEffect, useState } from "react";
+import {
+  Card,
+  Button,
+  Typography,
+  Tag,
+  Divider,
+  Spin,
+  message,
+  Modal,
+  Radio,
+  Table,
+  Space,
+} from "antd";
 import { useSelector, useDispatch } from "react-redux";
 import dayjs from "dayjs";
 import CheckCircleOutlined from "@ant-design/icons/CheckCircleOutlined";
-import { createPaymentWebHook } from "../../../features/payment/paymentSlice";
+import InfoCircleOutlined from "@ant-design/icons/InfoCircleOutlined";
 
+import {
+  createOptionPayment,
+  createSinglePayment,
+  resetPaymentState,
+} from "../../../features/payment/paymentSlice";
 
 const { Title, Text } = Typography;
 
-export default function BookingPaymentPage({ onBack, onPaymentSuccess }) {
+export default function BookingPaymentPage({
+  bookingResult,
+  onBack,
+  onPaymentSuccess,
+}) {
   const dispatch = useDispatch();
+  const reduxBooking = useSelector((state) => state.booking.currentBooking);
+  const currentStudio = useSelector((state) => state.studio.currentStudio);
+  const paymentLoading = useSelector((state) => state.payment.loading);
 
-  const draft = useSelector((state) => state.booking.draft);
-  const currentBooking = useSelector((state) => state.booking.currentBooking);
-  const studio = useSelector((state) => state.studio.currentStudio);
-  const loading = useSelector((state) => state.payment.loading);
-
+  const [booking, setBooking] = useState(null);
   const [localLoading, setLocalLoading] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedPercent, setSelectedPercent] = useState(30);
 
-  if (!currentBooking) {
+  // Load booking
+  useEffect(() => {
+    if (bookingResult) setBooking(bookingResult);
+    else if (reduxBooking) setBooking(reduxBooking);
+    else {
+      const saved = localStorage.getItem("latestBooking");
+      if (saved) setBooking(JSON.parse(saved));
+    }
+  }, [bookingResult, reduxBooking]);
+
+  useEffect(() => {
+    return () => dispatch(resetPaymentState());
+  }, [dispatch]);
+
+  if (!booking || !currentStudio) {
     return (
-      <div className="max-w-3xl mx-auto py-12 px-4">
-        <Spin size="large" className="mx-auto block" />
+      <div className="flex justify-center items-center min-h-screen">
+        <Spin size="large" tip="Đang tải hóa đơn..." />
       </div>
     );
   }
 
-  const totalPrice = currentBooking.totalPrice || 0;
-  const orderCode = currentBooking.bookingId || "UNKNOWN_ORDER";
+  const {
+    _id: bookingId,
+    totalBeforeDiscount = 0,
+    discountAmount = 0,
+    finalAmount = 0,
+    policySnapshots = {},
+    financials = {},
+  } = booking;
 
-  const qrPlaceholder = `https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=PAYMENT_${orderCode}`;
+  const hasDiscount = discountAmount > 0;
+  const formatted = (num) => num.toLocaleString("vi-VN") + "₫";
 
-  const handlePayment = async () => {
+  const qrCode = `https://api.qrserver.com/v1/create-qr-code/?size=380x380&data=PAYMENT_${bookingId}`;
+
+  const cancellationTiers = policySnapshots.cancellation?.refundTiers || [];
+  const noShowRules = policySnapshots.noShow?.noShowRules || {};
+
+  const handlePayPercent = async (percentage) => {
+    if (!bookingId) return message.error("Không có Booking ID!");
+
     setLocalLoading(true);
     try {
-      const payload = {
-        orderCode,
-        amount: totalPrice,
-        code: "00",
-        desc: "OK",
-      };
-
-      const resultAction = await dispatch(createPaymentWebHook(payload));
-
-      if (createPaymentWebHook.fulfilled.match(resultAction)) {
-        message.success("Thanh toán thành công!");
-        dispatch(resetPayment());
-        onPaymentSuccess();
-      } else {
-        message.error(resultAction.payload?.message || "Thanh toán thất bại");
-      }
+      await dispatch(createOptionPayment({ bookingId })).unwrap();
+      await dispatch(createSinglePayment({ bookingId, percentage })).unwrap();
+      message.success(`Đã tạo thanh toán ${percentage}% thành công!`);
+      if (onPaymentSuccess) onPaymentSuccess();
     } catch (err) {
-      message.error(err.message || "Có lỗi xảy ra khi thanh toán");
+      message.error(err?.message || "Thanh toán thất bại!");
     } finally {
       setLocalLoading(false);
     }
   };
 
   return (
-    <div className="max-w-3xl mx-auto py-12 px-4">
+    <div className="max-w-5xl mx-auto py-12 px-4">
       <Card className="shadow-2xl rounded-3xl overflow-hidden border-0">
         {/* Header */}
-        <div className="text-center py-10 bg-gradient-to-r from-green-500 to-emerald-600 text-white">
-          <CheckCircleOutlined className="text-7xl mb-4" />
-          <Title level={1} className="text-white text-4xl font-bold mb-2">
-            Đặt phòng thành công!
+        <div className="text-center py-12 bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+          <CheckCircleOutlined className="text-8xl mb-4" />
+          <Title level={1} className="text-white text-5xl font-bold mb-2">
+            ĐẶT PHÒNG THÀNH CÔNG
           </Title>
           <Text className="text-xl opacity-90">
-            Vui lòng thanh toán để hoàn tất đặt phòng
+            Mã đặt phòng: <strong>{bookingId}</strong>
           </Text>
         </div>
 
         <div className="p-8 md:p-12">
-          <div className="grid md:grid-cols-2 gap-10 items-center">
-            {/* QR Code */}
+          <div className="grid md:grid-cols-2 gap-12 items-start mb-10">
+            {/* QR */}
             <div className="flex justify-center">
-              <div className="bg-white p-8 rounded-3xl shadow-2xl border-8 border-gray-50">
-                <img
-                  src={qrPlaceholder}
-                  alt="QR Thanh toán"
-                  className="w-72 h-72 object-contain"
-                />
-                <div className="text-center mt-6">
-                  <Text className="block mt-3 text-lg font-medium text-gray-700">
-                    Quét mã QR để thanh toán
-                  </Text>
-                </div>
+              <div className="bg-white p-10 rounded-3xl shadow-2xl border-4 border-gray-100">
+                <img src={qrCode} alt="QR Thanh toán" className="w-80 h-80" />
+                <Text className="block text-center mt-6 text-lg font-semibold text-gray-700">
+                  Quét mã QR để chuyển khoản
+                </Text>
               </div>
             </div>
 
-            {/* Info */}
+            {/* Thông tin chính */}
             <div className="space-y-8">
               <div>
-                <Text strong className="text-lg block text-gray-600">
+                <Text strong className="text-lg text-gray-600">
                   Studio
                 </Text>
-                <Title level={2} className="mt-1">
-                  {studio?.name || "Loading..."}
+                <Title level={2} className="mt-1 text-purple-700">
+                  {currentStudio?.name || "Studio"}
                 </Title>
               </div>
 
-              <div>
-                <Text strong className="text-lg block text-gray-600">
-                  Thời gian thuê
-                </Text>
-                <Tag color="blue" className="text-lg mt-2 py-2 px-4">
-                  {draft.startTime
-                    ? dayjs(draft.startTime).format("DD/MM/YYYY HH:mm")
-                    : "..."}{" "}
-                  →{" "}
-                  {draft.endTime
-                    ? dayjs(draft.endTime).format("HH:mm")
-                    : "..."}
-                </Tag>
-              </div>
-
-              <div>
-                <Text strong className="text-2xl block text-gray-700">
-                  Số tiền cần thanh toán
-                </Text>
-                <Title
-                  level={1}
-                  className="text-6xl font-extrabold text-green-600 mt-3"
-                >
-                  {totalPrice.toLocaleString()}₫
-                </Title>
-              </div>
-
-              <div className="pt-6 border-t-2 border-gray-200">
-                <Text type="secondary" className="text-base">
-                  Sau khi chuyển khoản thành công, vui lòng bấm nút bên dưới để
-                  hoàn tất.
-                </Text>
+              {/* Bảng giá */}
+              <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
+                <Space direction="vertical" size="middle" className="w-full">
+                  <div className="flex justify-between text-lg">
+                    <span>Tạm tính</span>
+                    <strong>{formatted(totalBeforeDiscount)}</strong>
+                  </div>
+                  {hasDiscount && (
+                    <div className="flex justify-between text-lg text-green-600 font-bold">
+                      <span>Giảm giá</span>
+                      <span>-{formatted(discountAmount)}</span>
+                    </div>
+                  )}
+                  <Divider className="my-3" />
+                  <div className="flex justify-between items-baseline">
+                    <Title level={3} className="m-0 text-gray-700">
+                      TỔNG CỘNG
+                    </Title>
+                    <Title
+                      level={1}
+                      className="m-0 text-purple-700 font-extrabold"
+                    >
+                      {formatted(finalAmount)}
+                    </Title>
+                  </div>
+                </Space>
               </div>
             </div>
           </div>
 
-          <Divider />
+          {/* Chính sách hủy & No-Show */}
+          <div className="grid md:grid-cols-2 gap-8 mt-12">
+            {/* Hủy phòng */}
+            <Card
+              title={
+                <>
+                  <InfoCircleOutlined /> Chính sách hủy phòng
+                </>
+              }
+              bordered={false}
+              className="shadow-lg"
+            >
+              <Table
+                dataSource={cancellationTiers}
+                pagination={false}
+                rowKey="_id"
+                size="small"
+                columns={[
+                  {
+                    title: "Thời gian hủy",
+                    dataIndex: "hoursBeforeBooking",
+                    render: (hours) =>
+                      hours === 0 ? "Dưới 24 giờ" : `Trước ${hours} giờ`,
+                  },
+                  {
+                    title: "Hoàn tiền",
+                    dataIndex: "refundPercentage",
+                    render: (pct) => (
+                      <Tag
+                        color={
+                          pct === 100 ? "green" : pct === 50 ? "orange" : "red"
+                        }
+                      >
+                        {pct}%
+                      </Tag>
+                    ),
+                  },
+                ]}
+              />
+            </Card>
 
-          {/* Buttons */}
-          <div className="flex justify-center gap-6">
+            {/* No-Show */}
+            <Card
+              title={
+                <>
+                  <InfoCircleOutlined /> Chính sách không đến (No-Show)
+                </>
+              }
+              bordered={false}
+              className="shadow-lg"
+            >
+              <div className="space-y-3 text-gray-700">
+                <p>
+                  <strong>Phạt:</strong> {noShowRules.chargePercentage || 100}%
+                  tổng tiền
+                </p>
+                <p>
+                  <strong>Thời gian ân hạn:</strong>{" "}
+                  {noShowRules.graceMinutes || 15} phút
+                </p>
+                <p>
+                  <strong>Số lần tha thứ tối đa:</strong>{" "}
+                  {noShowRules.maxForgivenessCount || 1} lần
+                </p>
+              </div>
+            </Card>
+          </div>
+
+          <Divider className="my-12" />
+
+          {/* Nút hành động */}
+          <div className="flex flex-col md:flex-row justify-center gap-6">
             <Button size="large" onClick={onBack}>
               Quay lại
             </Button>
             <Button
               type="primary"
               size="large"
-              className="bg-green-600 hover:bg-green-700 text-white font-bold px-12"
-              onClick={handlePayment}
-              loading={localLoading || loading}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-lg px-12"
+              loading={localLoading || paymentLoading}
+              disabled={!bookingId}
+              onClick={() => setIsModalVisible(true)}
             >
-              Tôi đã thanh toán
+              Chọn mức thanh toán
             </Button>
           </div>
 
           <div className="text-center mt-8 text-gray-500">
             <Text type="secondary">
-              Hệ thống sẽ tự động xác nhận sau vài phút
-              <br />
-              Nếu quá 15 phút chưa thấy cập nhật, vui lòng liên hệ hotline{" "}
+              Hệ thống tự động xác nhận sau vài phút • Hotline:{" "}
               <strong>0909 888 999</strong>
             </Text>
           </div>
         </div>
       </Card>
+
+      {/* Modal chọn % */}
+      <Modal
+        title={
+          <Title level={4} className="text-center">
+            Chọn mức thanh toán trước
+          </Title>
+        }
+        open={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        onOk={() => {
+          handlePayPercent(selectedPercent);
+          setIsModalVisible(false);
+        }}
+        okText="Xác nhận thanh toán"
+        cancelText="Hủy"
+        width={500}
+      >
+        <Radio.Group
+          value={selectedPercent}
+          onChange={(e) => setSelectedPercent(e.target.value)}
+          className="w-full"
+        >
+          {[30, 50, 100].map((p) => (
+            <Radio
+              key={p}
+              value={p}
+              className="flex justify-between items-center py-5 px-6 border-2 rounded-xl my-4 hover:border-purple-500 transition-all bg-gradient-to-r from-purple-50 to-pink-50"
+            >
+              <span className="text-xl font-semibold">
+                Thanh toán trước{" "}
+                <strong className="text-purple-700">{p}%</strong>
+              </span>
+              <span className="text-2xl font-bold text-purple-700">
+                {formatted((finalAmount * p) / 100)}
+              </span>
+            </Radio>
+          ))}
+        </Radio.Group>
+      </Modal>
     </div>
   );
 }
