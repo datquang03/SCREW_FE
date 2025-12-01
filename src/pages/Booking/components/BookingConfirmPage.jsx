@@ -25,15 +25,17 @@ export default function BookingConfirmPage({ onBack, onSuccess }) {
     (state) => state.booking
   );
 
-  const { startTime, endTime, details = [], promoId } = draft;
+  const { startTime, endTime, details = [], promoId } = draft || {};
 
   const duration =
     startTime && endTime
       ? (new Date(endTime) - new Date(startTime)) / (1000 * 60 * 60)
       : 0;
 
-  const equipment = details.filter((d) => d.detailType === "equipment");
-  const services = details.filter((d) => d.detailType === "extra_service");
+  const equipment = (details || []).filter((d) => d.detailType === "equipment");
+  const services = (details || []).filter(
+    (d) => d.detailType === "extra_service"
+  );
 
   const roomPrice = (studio?.basePricePerHour || 0) * duration;
   const equipmentPrice = equipment.reduce(
@@ -53,14 +55,21 @@ export default function BookingConfirmPage({ onBack, onSuccess }) {
 
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
-    documentTitle: `HoaDon_${studio?.name.replace(/\s/g, "_")}_${dayjs().format(
-      "DD-MM-YYYY"
-    )}`,
+    documentTitle: `HoaDon_${(studio?.name || "studio").replace(
+      /\s/g,
+      "_"
+    )}_${dayjs().format("DD-MM-YYYY")}`,
     pageStyle:
       "@page { size: A4; margin: 10mm; } @media print { .no-print { display: none !important; } }",
   });
 
   const handleConfirm = async () => {
+    if (!draft) {
+      return message.error(
+        "Không có thông tin booking, vui lòng hoàn thành các bước trước."
+      );
+    }
+
     const payload = {
       studioId: draft.studioId,
       startTime: draft.startTime,
@@ -71,6 +80,13 @@ export default function BookingConfirmPage({ onBack, onSuccess }) {
 
     try {
       const result = await dispatch(createBooking(payload)).unwrap();
+
+      // lưu backup để PaymentPage fallback nếu parent không truyền prop
+      try {
+        localStorage.setItem("latestBooking", JSON.stringify(result));
+      } catch (e) {
+        // ignore
+      }
 
       message.success("Đặt phòng thành công! Đang chuyển sang thanh toán...");
 
@@ -117,7 +133,6 @@ export default function BookingConfirmPage({ onBack, onSuccess }) {
           </div>
         </div>
       </div>
-
       {/* HÓA ĐƠN IN */}
       <div ref={printRef} className="max-w-4xl mx-auto bg-white shadow-2xl">
         <div className="bg-gradient-to-r from-purple-700 via-pink-600 to-red-600 text-white py-10 px-12 text-center">
@@ -200,12 +215,18 @@ export default function BookingConfirmPage({ onBack, onSuccess }) {
               {equipment.map((item, i) => (
                 <tr key={i} className="border-b bg-gray-50">
                   <td className="py-4 px-6">→ {item.name}</td>
-                  <td className="py-4 px-6 text-center">{item.quantity || 1}</td>
+                  <td className="py-4 px-6 text-center">
+                    {item.quantity || 1}
+                  </td>
                   <td className="py-4 px-6 text-right">
                     {item.pricePerHour.toLocaleString()}₫/giờ
                   </td>
                   <td className="py-4 px-6 text-right font-semibold">
-                    {(item.pricePerHour * duration * (item.quantity || 1)).toLocaleString()}
+                    {(
+                      item.pricePerHour *
+                      duration *
+                      (item.quantity || 1)
+                    ).toLocaleString()}
                     ₫
                   </td>
                 </tr>
@@ -213,9 +234,15 @@ export default function BookingConfirmPage({ onBack, onSuccess }) {
               {services.map((item, i) => (
                 <tr key={i} className="border-b bg-blue-50">
                   <td className="py-4 px-6">→ {item.name}</td>
-                  <td className="py-4 px-6 text-center">{item.quantity || 1}</td>
-                  <td className="py-4 px-6 text-right">{item.pricePerUse.toLocaleString()}₫</td>
-                  <td className="py-4 px-6 text-right font-semibold">{item.pricePerUse.toLocaleString()}₫</td>
+                  <td className="py-4 px-6 text-center">
+                    {item.quantity || 1}
+                  </td>
+                  <td className="py-4 px-6 text-right">
+                    {item.pricePerUse.toLocaleString()}₫
+                  </td>
+                  <td className="py-4 px-6 text-right font-semibold">
+                    {item.pricePerUse.toLocaleString()}₫
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -227,7 +254,8 @@ export default function BookingConfirmPage({ onBack, onSuccess }) {
               <div className="flex justify-between">
                 <span>Tạm tính:</span>
                 <span className="font-bold">
-                  {(roomPrice + equipmentPrice + servicePrice).toLocaleString()}₫
+                  {(roomPrice + equipmentPrice + servicePrice).toLocaleString()}
+                  ₫
                 </span>
               </div>
               {promoId && (

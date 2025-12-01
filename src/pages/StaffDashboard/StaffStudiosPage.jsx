@@ -1,14 +1,14 @@
 // src/pages/Staff/StaffStudiosPage.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Card,
   Typography,
   Table,
-  Tag,
   Modal,
   Form,
   Input,
   InputNumber,
+  Button,
   Select,
   Spin,
 } from "antd";
@@ -23,6 +23,7 @@ import {
   setActivate,
   setDeactivate,
   setMaintenance,
+  uploadStudioImage,
 } from "../../features/studio/studioSlice";
 import ToastNotification from "../../components/ToastNotification";
 
@@ -48,6 +49,9 @@ const StaffStudiosPage = () => {
   const [previewImagesCreate, setPreviewImagesCreate] = useState([]);
   const [previewImagesEdit, setPreviewImagesEdit] = useState([]);
 
+  const inputFileCreateRef = useRef(null);
+  const inputFileEditRef = useRef(null);
+
   useEffect(() => {
     dispatch(getAllStudios({ page: 1, limit: 10 }));
   }, [dispatch]);
@@ -59,11 +63,56 @@ const StaffStudiosPage = () => {
   };
   const closeToast = () => setShowToast(false);
 
-  // === CREATE ===
+  // --- IMAGE HANDLERS ---
+  const handleSelectImagesCreate = (e) => {
+    const files = Array.from(e.target.files);
+    const currentFiles = createForm.getFieldValue("images") || [];
+    const allFiles = [...currentFiles, ...files];
+    createForm.setFieldValue("images", allFiles);
+    setPreviewImagesCreate(allFiles.map((file) => URL.createObjectURL(file)));
+  };
+
+  const handleSelectImagesEdit = (e) => {
+    const files = Array.from(e.target.files);
+    const currentFiles = editForm.getFieldValue("images") || [];
+    const allFiles = [...currentFiles, ...files];
+    editForm.setFieldValue("images", allFiles);
+    setPreviewImagesEdit(allFiles.map((file) => URL.createObjectURL(file)));
+  };
+
+  const handleRemovePreviewCreate = (index) => {
+    const updatedFiles = createForm
+      .getFieldValue("images")
+      .filter((_, i) => i !== index);
+    createForm.setFieldValue("images", updatedFiles);
+    setPreviewImagesCreate(
+      updatedFiles.map((file) => URL.createObjectURL(file))
+    );
+  };
+
+  const handleRemovePreviewEdit = (index) => {
+    const updatedFiles = editForm
+      .getFieldValue("images")
+      .filter((_, i) => i !== index);
+    editForm.setFieldValue("images", updatedFiles);
+    setPreviewImagesEdit(updatedFiles.map((file) => URL.createObjectURL(file)));
+  };
+
+  // --- CREATE STUDIO ---
   const handleCreateStudio = async () => {
     try {
       const values = await createForm.validateFields();
-      await dispatch(createStudio(values)).unwrap();
+      // Tách dữ liệu tạo studio, bỏ images
+      const { images, ...studioData } = values;
+
+      const newStudio = await dispatch(createStudio(studioData)).unwrap();
+
+      if (images && images.length > 0) {
+        await dispatch(
+          uploadStudioImage({ studioId: newStudio._id, files: images })
+        ).unwrap();
+      }
+
       displayToast("success", "Tạo studio thành công!");
       setIsCreateModalOpen(false);
       createForm.resetFields();
@@ -74,13 +123,22 @@ const StaffStudiosPage = () => {
     }
   };
 
-  // === EDIT ===
+  // --- UPDATE STUDIO ---
   const handleUpdateStudio = async () => {
     try {
       const values = await editForm.validateFields();
+      const { images, ...updateData } = values;
+
       await dispatch(
-        updateStudio({ studioId: editingStudioId, updateData: values })
+        updateStudio({ studioId: editingStudioId, updateData })
       ).unwrap();
+
+      if (images && images.length > 0) {
+        await dispatch(
+          uploadStudioImage({ studioId: editingStudioId, files: images })
+        ).unwrap();
+      }
+
       displayToast("success", "Cập nhật studio thành công!");
       setIsEditModalOpen(false);
       editForm.resetFields();
@@ -99,12 +157,10 @@ const StaffStudiosPage = () => {
       editForm.setFieldsValue({
         name: result.name,
         description: result.description,
-        location: result.location,
         area: result.area,
         capacity: result.capacity,
         basePricePerHour: result.basePricePerHour,
-        amenities: result.amenities,
-        images: result.images,
+        images: [],
       });
       setPreviewImagesEdit(result.images || []);
       setEditingStudioId(studioId);
@@ -116,22 +172,15 @@ const StaffStudiosPage = () => {
     }
   };
 
-  // === DELETE ===
+  // --- DELETE STUDIO ---
   const handleDeleteStudio = (studioId, studioName) => {
     Modal.confirm({
       title: "Xác nhận xóa",
       content: `Bạn có chắc muốn xóa studio "${studioName}" không?`,
       okText: "Xóa",
       cancelText: "Hủy",
-      okButtonProps: {
-        className:
-          "bg-red-500 text-white cursor-pointer hover:bg-red-400 transition-all",
-      },
+      okButtonProps: { className: "bg-red-500 text-white hover:bg-red-400" },
       centered: true,
-      maskStyle: {
-        backdropFilter: "blur(6px)",
-        backgroundColor: "rgba(0,0,0,0.2)",
-      },
       onOk: async () => {
         try {
           await dispatch(deleteStudio(studioId)).unwrap();
@@ -144,44 +193,31 @@ const StaffStudiosPage = () => {
     });
   };
 
-  // === STATUS ===
+  // --- STATUS CHANGE ---
   const handleStatusChange = async (studioId, value) => {
     try {
-      if (value === "active") {
-        await dispatch(setActivate(studioId)).unwrap();
-        displayToast("success", "Studio đã được kích hoạt!");
-      } else if (value === "inactive") {
+      if (value === "active") await dispatch(setActivate(studioId)).unwrap();
+      else if (value === "inactive")
         await dispatch(setDeactivate(studioId)).unwrap();
-        displayToast("success", "Studio đã bị ngưng hoạt động!");
-      } else if (value === "maintenance") {
+      else if (value === "maintenance")
         await dispatch(setMaintenance(studioId)).unwrap();
-        displayToast("success", "Studio đã được đặt lịch bảo trì!");
-      }
 
+      displayToast("success", "Cập nhật trạng thái thành công!");
       dispatch(getAllStudios({ page: 1, limit: 10 }));
     } catch (err) {
       displayToast("error", err?.message || "Cập nhật trạng thái thất bại!");
     }
   };
 
-  const handlePreviewImagesCreate = (urls) =>
-    setPreviewImagesCreate(urls || []);
-  const handlePreviewImagesEdit = (urls) => setPreviewImagesEdit(urls || []);
-
-  // === TABLE COLUMNS ===
+  // --- TABLE COLUMNS ---
   const studiosColumns = [
     { title: "Tên Studio", dataIndex: "name", key: "name" },
     {
       title: "Mô tả",
       dataIndex: "description",
       key: "description",
-      render: (text) => (
-        <div className="max-w-[250px] break-words whitespace-pre-wrap">
-          {text}
-        </div>
-      ),
+      render: (text) => <div className="max-w-[250px] break-words">{text}</div>,
     },
-    { title: "Vị trí", dataIndex: "location", key: "location" },
     { title: "Diện tích (m²)", dataIndex: "area", key: "area" },
     { title: "Sức chứa", dataIndex: "capacity", key: "capacity" },
     {
@@ -200,12 +236,12 @@ const StaffStudiosPage = () => {
       key: "images",
       render: (images) => (
         <div className="flex flex-wrap gap-2">
-          {images?.map((url) => (
+          {images?.map((url, idx) => (
             <img
-              key={url}
+              key={idx}
               src={url}
               alt="Studio"
-              className="w-16 h-16 md:w-20 md:h-20 object-cover rounded"
+              className="w-20 h-20 object-cover rounded"
             />
           ))}
         </div>
@@ -221,51 +257,26 @@ const StaffStudiosPage = () => {
           style={{ width: 160 }}
           onChange={(value) => handleStatusChange(record._id, value)}
           options={[
-            {
-              value: "active",
-              label: (
-                <span className="text-green-500 font-medium">Hoạt động</span>
-              ),
-            },
-            {
-              value: "inactive",
-              label: (
-                <span className="text-red-500 font-medium">
-                  Ngưng hoạt động
-                </span>
-              ),
-            },
-            {
-              value: "maintenance",
-              label: (
-                <span className="text-yellow-500 font-medium">Bảo trì</span>
-              ),
-            },
+            { value: "active", label: "Hoạt động" },
+            { value: "inactive", label: "Ngưng hoạt động" },
+            { value: "maintenance", label: "Bảo trì" },
           ]}
-          className={`rounded-md ${
-            status === "active"
-              ? "border border-green-500 text-white bg-green-500"
-              : status === "inactive"
-              ? "border border-red-500 text-white bg-red-500"
-              : "border border-yellow-500 text-white bg-yellow-500"
-          }`}
         />
       ),
     },
-
     {
       title: "Thao tác",
       key: "actions",
       render: (_, record) => (
         <div className="flex flex-wrap gap-2">
           <button
-            className="flex items-center gap-1 px-3 py-1 bg-green-500 text-white rounded hover:bg-green-400 hover:scale-105 transition-all cursor-pointer"
+            className="flex items-center gap-1 px-3 py-1 bg-green-500 text-white rounded hover:bg-green-400"
             onClick={() => handleEditStudio(record._id)}
           >
             <FiEdit /> Sửa
           </button>
           <button
-            className="flex items-center gap-1 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-400 hover:scale-105 transition-all cursor-pointer"
+            className="flex items-center gap-1 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-400"
             onClick={() => handleDeleteStudio(record._id, record.name)}
           >
             <FiTrash2 /> Xóa
@@ -298,25 +309,15 @@ const StaffStudiosPage = () => {
         </div>
       </div>
 
-      {/* Table (responsive scroll) */}
+      {/* Table */}
       <Card className="overflow-x-auto rounded-2xl shadow-lg border border-gray-100">
-        <div className="min-w-[800px]">
-          <Table
-            columns={studiosColumns.map((col) => ({
-              ...col,
-              onCell: () => ({
-                style: { whiteSpace: "normal", wordBreak: "break-word" },
-              }),
-            }))}
-            dataSource={studios.map((studio) => ({
-              key: studio._id,
-              ...studio,
-            }))}
-            pagination={{ pageSize: 10, responsive: true }}
-            loading={loading}
-            scroll={{ x: true }}
-          />
-        </div>
+        <Table
+          columns={studiosColumns}
+          dataSource={studios.map((s) => ({ key: s._id, ...s }))}
+          pagination={{ pageSize: 10 }}
+          loading={loading}
+          scroll={{ x: true }}
+        />
       </Card>
 
       {/* Modal Create */}
@@ -329,20 +330,12 @@ const StaffStudiosPage = () => {
           setPreviewImagesCreate([]);
         }}
         footer={[
-          <button
-            key="cancel"
-            className="px-4 py-1 bg-gray-400 text-white rounded hover:bg-gray-500 transition-all"
-            onClick={() => setIsCreateModalOpen(false)}
-          >
+          <Button key="cancel" onClick={() => setIsCreateModalOpen(false)}>
             Hủy
-          </button>,
-          <button
-            key="submit"
-            className="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-400 transition-all"
-            onClick={handleCreateStudio}
-          >
+          </Button>,
+          <Button key="submit" type="primary" onClick={handleCreateStudio}>
             Xác nhận
-          </button>,
+          </Button>,
         ]}
         width="90%"
         style={{ maxWidth: 800, maxHeight: "75vh", overflowY: "auto" }}
@@ -352,74 +345,81 @@ const StaffStudiosPage = () => {
             <Form.Item
               name="name"
               label="Tên Studio"
-              rules={[{ required: true, message: "Vui lòng nhập tên studio" }]}
+              rules={[{ required: true }]}
             >
               <Input placeholder="VD: Studio Premium A" />
             </Form.Item>
             <Form.Item
               name="basePricePerHour"
               label="Giá cơ bản / giờ (VND)"
-              rules={[{ required: true, message: "Vui lòng nhập giá" }]}
+              rules={[{ required: true }]}
             >
               <InputNumber min={0} step={10000} className="w-full" />
             </Form.Item>
             <Form.Item
               name="capacity"
               label="Sức chứa"
-              rules={[{ required: true, message: "Vui lòng nhập sức chứa" }]}
+              rules={[{ required: true }]}
             >
               <InputNumber min={1} className="w-full" />
             </Form.Item>
             <Form.Item
               name="area"
               label="Diện tích (m²)"
-              rules={[{ required: true, message: "Vui lòng nhập diện tích" }]}
+              rules={[{ required: true }]}
             >
               <InputNumber min={1} className="w-full" />
             </Form.Item>
-            <Form.Item
-              name="location"
-              label="Vị trí"
-              className="sm:col-span-2"
-              rules={[{ required: true, message: "Vui lòng nhập vị trí" }]}
-            >
-              <Input placeholder="VD: Quận 1, TP.HCM" />
-            </Form.Item>
-            <Form.Item
-              name="amenities"
-              label="Tiện nghi"
-              className="sm:col-span-2"
-              rules={[{ required: true, message: "Nhập ít nhất 1 tiện nghi" }]}
-            >
-              <Select mode="tags" placeholder="Nhập hoặc chọn tiện nghi" />
-            </Form.Item>
+
+            {/* Images */}
             <Form.Item
               name="images"
-              label="Hình ảnh (URL)"
+              label="Hình ảnh"
               className="sm:col-span-2"
-              rules={[{ required: true, message: "Nhập ít nhất 1 ảnh" }]}
+              rules={[{ required: true }]}
             >
-              <Select
-                mode="tags"
-                placeholder="Nhập URL ảnh"
-                onChange={handlePreviewImagesCreate}
-              />
-            </Form.Item>
-            <div className="flex flex-wrap gap-2 sm:col-span-2">
-              {previewImagesCreate.map((url) => (
-                <img
-                  key={url}
-                  src={url}
-                  alt="Preview"
-                  className="w-20 h-20 object-cover rounded"
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-400"
+                  onClick={() => inputFileCreateRef.current.click()}
+                >
+                  Chọn ảnh
+                </button>
+                <input
+                  type="file"
+                  ref={inputFileCreateRef}
+                  multiple
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleSelectImagesCreate}
                 />
-              ))}
-            </div>
+              </div>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {previewImagesCreate.map((url, idx) => (
+                  <div key={idx} className="relative">
+                    <img
+                      src={url}
+                      alt="Preview"
+                      className="w-20 h-20 object-cover rounded"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemovePreviewCreate(idx)}
+                      className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </Form.Item>
+
             <Form.Item
               name="description"
               label="Mô tả"
               className="sm:col-span-2"
-              rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
+              rules={[{ required: true }]}
             >
               <TextArea rows={3} />
             </Form.Item>
@@ -438,20 +438,12 @@ const StaffStudiosPage = () => {
           setPreviewImagesEdit([]);
         }}
         footer={[
-          <button
-            key="cancel"
-            className="px-4 py-1 bg-gray-400 text-white rounded hover:bg-gray-500 transition-all"
-            onClick={() => setIsEditModalOpen(false)}
-          >
+          <Button key="cancel" onClick={() => setIsEditModalOpen(false)}>
             Hủy
-          </button>,
-          <button
-            key="submit"
-            className="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-400 transition-all"
-            onClick={handleUpdateStudio}
-          >
+          </Button>,
+          <Button key="submit" type="primary" onClick={handleUpdateStudio}>
             Cập nhật
-          </button>,
+          </Button>,
         ]}
         width="90%"
         style={{ maxWidth: 800, maxHeight: "75vh", overflowY: "auto" }}
@@ -491,40 +483,50 @@ const StaffStudiosPage = () => {
               >
                 <InputNumber min={1} className="w-full" />
               </Form.Item>
-              <Form.Item
-                name="location"
-                label="Vị trí"
-                className="sm:col-span-2"
-                rules={[{ required: true }]}
-              >
-                <Input />
-              </Form.Item>
-              <Form.Item
-                name="amenities"
-                label="Tiện nghi"
-                className="sm:col-span-2"
-                rules={[{ required: true }]}
-              >
-                <Select mode="tags" />
-              </Form.Item>
+
+              {/* Images */}
               <Form.Item
                 name="images"
-                label="Hình ảnh (URL)"
+                label="Hình ảnh"
                 className="sm:col-span-2"
-                rules={[{ required: true }]}
               >
-                <Select mode="tags" onChange={handlePreviewImagesEdit} />
-              </Form.Item>
-              <div className="flex flex-wrap gap-2 sm:col-span-2">
-                {previewImagesEdit.map((url) => (
-                  <img
-                    key={url}
-                    src={url}
-                    alt="Preview"
-                    className="w-20 h-20 object-cover rounded"
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-400"
+                    onClick={() => inputFileEditRef.current.click()}
+                  >
+                    Chọn ảnh
+                  </button>
+                  <input
+                    type="file"
+                    ref={inputFileEditRef}
+                    multiple
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleSelectImagesEdit}
                   />
-                ))}
-              </div>
+                </div>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {previewImagesEdit.map((url, idx) => (
+                    <div key={idx} className="relative">
+                      <img
+                        src={url}
+                        alt="Preview"
+                        className="w-20 h-20 object-cover rounded"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRemovePreviewEdit(idx)}
+                        className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </Form.Item>
+
               <Form.Item
                 name="description"
                 label="Mô tả"
