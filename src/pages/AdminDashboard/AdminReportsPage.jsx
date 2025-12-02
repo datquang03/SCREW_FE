@@ -28,17 +28,17 @@ const AdminReportsPage = () => {
       <div className="relative overflow-hidden rounded-2xl p-6 md:p-8 bg-gradient-to-br from-slate-100 via-white to-white shadow-lg border border-slate-200/50">
         <div className="absolute -top-10 -right-12 w-48 h-48 rounded-full bg-slate-300/30 blur-3xl" />
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
+        <div>
             <Title level={2} className="mb-2 text-gray-900">
-              Báo cáo & phân tích
-            </Title>
+            Báo cáo & phân tích
+          </Title>
             <Text className="text-base text-gray-700 font-medium">
-              Tổng hợp dữ liệu vận hành, khách hàng và marketing
-            </Text>
-          </div>
+            Tổng hợp dữ liệu vận hành, khách hàng và marketing
+          </Text>
+        </div>
           <Button type="primary" icon={<FiDownload />} size="large" className="font-semibold shadow-lg">
-            Xuất báo cáo tổng
-          </Button>
+          Xuất báo cáo tổng
+        </Button>
         </div>
       </div>
 

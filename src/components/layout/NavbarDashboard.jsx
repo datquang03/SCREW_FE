@@ -74,12 +74,12 @@ const DashboardNavbar = ({ variant = "default" }) => {
 
         <div className="flex items-center gap-3">
           <div className="relative dashboard-avatar">
-            <motion.button
+          <motion.button
               whileHover={{ scale: 1.02 }}
               onClick={() => setDropdownOpen((prev) => !prev)}
               className="flex items-center gap-2 rounded-full pl-1 pr-3 py-1.5 bg-white shadow-lg border border-gray-100"
-            >
-              <img
+          >
+            <img
                 src={
                   user?.avatar ||
                   "https://png.pngtree.com/png-clipart/20191120/original/pngtree-outline-user-icon-png-image_5045523.jpg"
@@ -91,17 +91,17 @@ const DashboardNavbar = ({ variant = "default" }) => {
                 {user?.fullName || user?.username || "User"}
               </span>
               <FiChevronDown className="text-gray-400" />
-            </motion.button>
+          </motion.button>
 
-            <AnimatePresence>
-              {dropdownOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
+          <AnimatePresence>
+            {dropdownOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
                   className="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50"
-                >
+              >
                   <div className="p-4 bg-gray-50">
                     <p className="text-sm font-semibold text-gray-900">
                       {user?.fullName || user?.username}
@@ -109,7 +109,7 @@ const DashboardNavbar = ({ variant = "default" }) => {
                     <p className="text-xs text-gray-500 truncate">
                       {user?.email}
                     </p>
-                  </div>
+                </div>
 
                   <nav className="flex flex-col py-1">
                     <button
@@ -146,9 +146,9 @@ const DashboardNavbar = ({ variant = "default" }) => {
                       <FiLogOut /> Đăng xuất
                     </button>
                   </nav>
-                </motion.div>
-              )}
-            </AnimatePresence>
+              </motion.div>
+            )}
+          </AnimatePresence>
           </div>
         </div>
       </div>

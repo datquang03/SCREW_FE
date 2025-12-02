@@ -38,12 +38,12 @@ const StaffDashboardPage = () => {
         <div className="relative z-10">
           <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3 tracking-tight">
             Bảng điều khiển nhân viên
-          </h1>
+        </h1>
           <p className="text-base md:text-lg text-gray-700 font-medium">
-            Lịch hôm nay, thiết bị và khách hàng đang phụ trách.
-          </p>
+          Lịch hôm nay, thiết bị và khách hàng đang phụ trách.
+        </p>
         </div>
-      </div>
+        </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         <KPIStat title="Đơn hôm nay" value="3" icon={<FiCalendar />} gradient="from-emerald-400 to-teal-500" />

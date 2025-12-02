@@ -328,23 +328,23 @@ const StaffServicePage = () => {
       <div className="relative overflow-hidden rounded-2xl border border-rose-200/60 bg-gradient-to-br from-rose-100 via-white to-white px-6 py-8 shadow-lg">
         <div className="absolute -top-12 -right-12 h-48 w-48 rounded-full bg-rose-200 blur-3xl" />
         <div className="relative z-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
+        <div>
             <Title level={2} className="mb-1 text-gray-900">
-              Quản lý dịch vụ
-            </Title>
+            Quản lý dịch vụ
+          </Title>
             <Text className="text-base text-gray-600">
               Theo dõi dịch vụ, giá bán và trạng thái hoạt động
-            </Text>
-          </div>
-          <Button
-            type="primary"
+          </Text>
+        </div>
+        <Button
+          type="primary"
             icon={<FiPlus />}
-            size="large"
+          size="large"
             className="rounded-2xl bg-gradient-to-r from-rose-500 to-purple-600 font-semibold shadow-lg"
-            onClick={() => setAddModalVisible(true)}
-          >
-            Thêm dịch vụ
-          </Button>
+          onClick={() => setAddModalVisible(true)}
+        >
+          Thêm dịch vụ
+        </Button>
         </div>
       </div>
 
@@ -490,23 +490,23 @@ const StaffServicePage = () => {
                   className={`flex items-start gap-3 rounded-2xl border border-indigo-100 bg-indigo-50/70 p-4 transition-all duration-200 hover:-translate-y-1 hover:bg-white ${
                     info.fullWidth ? "sm:col-span-2" : ""
                   }`}
-                >
+                  >
                   <span className="text-xl text-indigo-500">{info.icon}</span>
                   <div className="flex-1">
                     <Text strong className="mb-1 block text-gray-700">
-                      {info.label}
-                    </Text>
-                    {info.code ? (
-                      <Text className="rounded-md bg-gray-100 px-2 py-1 font-mono text-xs">
-                        {info.value}
+                        {info.label}
                       </Text>
-                    ) : (
+                      {info.code ? (
+                      <Text className="rounded-md bg-gray-100 px-2 py-1 font-mono text-xs">
+                          {info.value}
+                        </Text>
+                      ) : (
                       <Text className="text-gray-900">
                         {info.value || "—"}
-                      </Text>
-                    )}
+                        </Text>
+                      )}
+                    </div>
                   </div>
-                </div>
               ))}
             </div>
 
@@ -548,27 +548,27 @@ const StaffServicePage = () => {
         <div className="edit-modal-content">
           <Form form={editForm} layout="vertical" className="mt-4">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <Form.Item
-                name="name"
-                label="Tên dịch vụ"
-                rules={[{ required: true, message: "Vui lòng nhập tên" }]}
-              >
-                <Input size="large" placeholder="Tên dịch vụ" />
-              </Form.Item>
-              <Form.Item
-                name="pricePerUse"
-                label="Giá mỗi lần (VND)"
-                rules={[{ required: true, message: "Vui lòng nhập giá" }]}
-              >
-                <InputNumber
-                  min={0}
-                  step={10000}
-                  className="w-full"
-                  size="large"
+                <Form.Item
+                  name="name"
+                  label="Tên dịch vụ"
+                  rules={[{ required: true, message: "Vui lòng nhập tên" }]}
+                >
+                  <Input size="large" placeholder="Tên dịch vụ" />
+                </Form.Item>
+                <Form.Item
+                  name="pricePerUse"
+                  label="Giá mỗi lần (VND)"
+                  rules={[{ required: true, message: "Vui lòng nhập giá" }]}
+                >
+                  <InputNumber
+                    min={0}
+                    step={10000}
+                    className="w-full"
+                    size="large"
                   formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-                  parser={(v) => v.replace(/\$\s?|(,*)/g, "")}
-                />
-              </Form.Item>
+                    parser={(v) => v.replace(/\$\s?|(,*)/g, "")}
+                  />
+                </Form.Item>
             </div>
             <Form.Item name="description" label="Mô tả">
               <TextArea rows={4} placeholder="Mô tả chi tiết..." size="large" />
@@ -625,30 +625,30 @@ const StaffServicePage = () => {
         <div className="add-modal-content">
           <Form form={addForm} layout="vertical" className="mt-4">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <Form.Item
-                name="name"
-                label="Tên dịch vụ"
-                rules={[
-                  { required: true, message: "Vui lòng nhập tên dịch vụ" },
-                ]}
-              >
-                <Input size="large" placeholder="Ví dụ: Cắt tóc nam" />
-              </Form.Item>
-              <Form.Item
-                name="pricePerUse"
-                label="Giá mỗi lần (VND)"
-                rules={[{ required: true, message: "Vui lòng nhập giá" }]}
-              >
-                <InputNumber
-                  min={0}
-                  step={10000}
-                  className="w-full"
-                  size="large"
-                  placeholder="100000"
+                <Form.Item
+                  name="name"
+                  label="Tên dịch vụ"
+                  rules={[
+                    { required: true, message: "Vui lòng nhập tên dịch vụ" },
+                  ]}
+                >
+                  <Input size="large" placeholder="Ví dụ: Cắt tóc nam" />
+                </Form.Item>
+                <Form.Item
+                  name="pricePerUse"
+                  label="Giá mỗi lần (VND)"
+                  rules={[{ required: true, message: "Vui lòng nhập giá" }]}
+                >
+                  <InputNumber
+                    min={0}
+                    step={10000}
+                    className="w-full"
+                    size="large"
+                    placeholder="100000"
                   formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-                  parser={(v) => v.replace(/\$\s?|(,*)/g, "")}
-                />
-              </Form.Item>
+                    parser={(v) => v.replace(/\$\s?|(,*)/g, "")}
+                  />
+                </Form.Item>
             </div>
             <Form.Item
               name="description"

@@ -13,11 +13,11 @@ const AdminSettingsPage = () => {
         <div className="absolute -top-10 -right-12 w-48 h-48 rounded-full bg-yellow-300/30 blur-3xl" />
         <div className="relative z-10">
           <Title level={2} className="mb-2 text-gray-900">
-            Cài đặt hệ thống
-          </Title>
+          Cài đặt hệ thống
+        </Title>
           <Text className="text-base text-gray-700 font-medium">
-            Quản lý brand, quy trình và thông báo của S+ Studio
-          </Text>
+          Quản lý brand, quy trình và thông báo của S+ Studio
+        </Text>
         </div>
       </div>
 

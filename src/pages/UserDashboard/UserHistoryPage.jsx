@@ -61,11 +61,11 @@ const UserHistoryPage = () => {
         <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-purple-300/30 blur-2xl" />
         <div className="relative z-10">
           <Title level={2} className="mb-3 text-gray-900">
-            Lịch sử thuê
-          </Title>
+          Lịch sử thuê
+        </Title>
           <Text className="text-base text-gray-700 font-medium">
-            Xem lại tất cả các lần bạn đã thuê studio tại S+ Studio
-          </Text>
+          Xem lại tất cả các lần bạn đã thuê studio tại S+ Studio
+        </Text>
         </div>
       </div>
 

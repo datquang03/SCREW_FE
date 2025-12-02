@@ -149,7 +149,7 @@ const Navbar = () => {
                   transition={{ type: "spring", stiffness: 400, damping: 20 }}
                   className="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-lg hover:shadow-xl transition-shadow duration-300"
                 >
-                  <FiSearch className="text-lg text-gray-900" />
+                  <SearchOutlined className="text-lg text-gray-900" />
                 </motion.button>
               ) : (
                 <motion.div
@@ -167,7 +167,7 @@ const Navbar = () => {
                   style={{ transformOrigin: "100% 50%" }}
                 >
                   <motion.div className="flex items-center gap-2 rounded-full px-4 py-2.5 bg-white shadow-xl shadow-gray-900/20 border border-gray-100">
-                    <FiSearch className="text-base text-amber-500" />
+                    <SearchOutlined className="text-base text-amber-500" />
                     <input
                       ref={searchInputRef}
                       type="text"
@@ -182,7 +182,7 @@ const Navbar = () => {
                       transition={{ type: "spring", stiffness: 400 }}
                       className="text-gray-400 hover:text-gray-700 transition-colors"
                     >
-                      <FiX />
+                      <CloseOutlined />
                     </motion.button>
                   </motion.div>
                 </motion.div>
@@ -343,9 +343,9 @@ const Navbar = () => {
               transition={{ duration: 0.3, ease: "easeInOut" }}
             >
               {mobileMenuOpen ? (
-                <FiX className="text-lg" />
+                <CloseOutlined className="text-lg" />
               ) : (
-                <FiMenu className="text-lg" />
+                <MenuOutlined className="text-lg" />
               )}
             </motion.div>
           </motion.button>
@@ -376,7 +376,7 @@ const Navbar = () => {
                 </span>
                 <Button
                   type="text"
-                  icon={<FiX />}
+                  icon={<CloseOutlined />}
                   onClick={closeMobileMenu}
                   className="text-gray-700"
                 />

@@ -36,7 +36,7 @@ const StaffSetDesignPage = () => {
 
   // IMAGE UPLOAD STATE (for both add & edit)
   const [previewImages, setPreviewImages] = useState([]); // array of base64 strings for UI preview
-  const [uploadPayload, setUploadPayload] = useState([]); // array of { base64Image, fileName }
+  const [uploadPayload, setUploadPayload] = useState([]); // array of File objects
 
   const { setDesigns, total } = useSelector((state) => state.setDesign);
   const [addForm] = Form.useForm();
@@ -64,18 +64,14 @@ const StaffSetDesignPage = () => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
 
-    const results = await Promise.all(
-      files.map(async (file) => {
-        const base64 = await fileToBase64(file);
-        return {
-          base64Image: base64,
-          fileName: file.name,
-        };
-      })
+    // Create preview images (base64 for display)
+    const previews = await Promise.all(
+      files.map(async (file) => await fileToBase64(file))
     );
 
-    setUploadPayload((prev) => [...prev, ...results]);
-    setPreviewImages((prev) => [...prev, ...results.map((r) => r.base64Image)]);
+    // Store File objects for upload
+    setUploadPayload((prev) => [...prev, ...files]);
+    setPreviewImages((prev) => [...prev, ...previews]);
     // reset input value if needed (so same file can be selected again)
     e.target.value = null;
   };
@@ -90,47 +86,40 @@ const StaffSetDesignPage = () => {
     try {
       const values = await addForm.validateFields();
 
-      // 1) upload images if any
-      let uploadedImages = [];
-      if (uploadPayload.length > 0) {
-        const resImg = await dispatch(
-          uploadSetDesignImages({ images: uploadPayload })
-        );
-        if (resImg.error) {
-          setToast({
-            type: "error",
-            message: resImg.error?.message || "Upload ảnh thất bại",
-          });
-          return;
-        }
-        // backend may return { images: [...] } or { data: { images: [...] } }
-        uploadedImages =
-          resImg.payload?.images ||
-          resImg.payload?.data ||
-          resImg.payload ||
-          [];
-      }
-
-      // 2) create set design with images (if any)
-      const payload = {
-        ...values,
-        images: uploadedImages,
-      };
-
-      const res = await dispatch(createSetDesign(payload));
+      // 1) Create set design first (without images)
+      const res = await dispatch(createSetDesign(values));
       if (res.error) {
         setToast({
           type: "error",
           message: res.error?.message || "Tạo thất bại",
         });
-      } else {
-        setToast({ type: "success", message: "Tạo Set Design thành công!" });
-        // clear form & previews
-        addForm.resetFields();
-        setPreviewImages([]);
-        setUploadPayload([]);
-        fetchSetDesigns(1);
+        return;
       }
+
+      const createdSetDesign = res.payload;
+
+      // 2) Upload images if any (after creation, we have the ID)
+      if (uploadPayload.length > 0 && createdSetDesign?._id) {
+        const resImg = await dispatch(
+          uploadSetDesignImages({
+            setDesignId: createdSetDesign._id,
+            images: uploadPayload,
+          })
+        );
+        if (resImg.error) {
+          setToast({
+            type: "error",
+            message:
+              "Tạo Set Design thành công nhưng upload ảnh thất bại: " +
+              (resImg.error?.message || "Lỗi không xác định"),
+          });
+        }
+      }
+
+      setToast({ type: "success", message: "Tạo Set Design thành công!" });
+      // clear form
+      addForm.resetFields();
+      fetchSetDesigns(1);
       setAddModalVisible(false);
     } catch (err) {
       // validation error or other
@@ -158,40 +147,9 @@ const StaffSetDesignPage = () => {
     try {
       const values = await editForm.validateFields();
 
-      // upload new images if any
-      let uploadedNewImages = [];
-      if (uploadPayload.length > 0) {
-        const resImg = await dispatch(
-          uploadSetDesignImages({ images: uploadPayload })
-        );
-        if (resImg.error) {
-          setToast({
-            type: "error",
-            message: resImg.error?.message || "Upload ảnh thất bại",
-          });
-          return;
-        }
-        uploadedNewImages =
-          resImg.payload?.images ||
-          resImg.payload?.data ||
-          resImg.payload ||
-          [];
-      }
-
-      // merge existing images (which are in previewImages but may be URLs) with uploadedNewImages
-      // assume currentEdit.images holds existing images (URLs)
-      const existingFromRecord = Array.isArray(currentEdit?.images)
-        ? currentEdit.images
-        : [];
-      const mergedImages = [...existingFromRecord, ...uploadedNewImages];
-
-      const updateData = {
-        ...values,
-        images: mergedImages,
-      };
-
+      // 1) Update set design first
       const res = await dispatch(
-        updateSetDesign({ setDesignId: currentEdit._id, updateData })
+        updateSetDesign({ setDesignId: currentEdit._id, updateData: values })
       );
 
       if (res.error) {
@@ -199,13 +157,32 @@ const StaffSetDesignPage = () => {
           type: "error",
           message: res.error?.message || "Cập nhật thất bại",
         });
-      } else {
-        setToast({ type: "success", message: "Cập nhật thành công!" });
-        setEditModalVisible(false);
-        setPreviewImages([]);
-        setUploadPayload([]);
-        fetchSetDesigns(currentPage);
+        return;
       }
+
+      // 2) Upload new images if any (after update, we have the ID)
+      if (uploadPayload.length > 0 && currentEdit._id) {
+        const resImg = await dispatch(
+          uploadSetDesignImages({
+            setDesignId: currentEdit._id,
+            images: uploadPayload,
+          })
+        );
+        if (resImg.error) {
+          setToast({
+            type: "error",
+            message:
+              "Cập nhật Set Design thành công nhưng upload ảnh thất bại: " +
+              (resImg.error?.message || "Lỗi không xác định"),
+          });
+        }
+      }
+
+      setToast({ type: "success", message: "Cập nhật thành công!" });
+      setEditModalVisible(false);
+      setPreviewImages([]);
+      setUploadPayload([]);
+      fetchSetDesigns(currentPage);
     } catch (err) {
       setToast({ type: "error", message: err.message || "Có lỗi xảy ra" });
     }
@@ -237,6 +214,32 @@ const StaffSetDesignPage = () => {
 
   // TABLE COLUMNS
   const columns = [
+    {
+      title: "Hình ảnh",
+      key: "images",
+      width: 120,
+      render: (_, record) => {
+        const defaultImage =
+          "https://via.placeholder.com/100x100?text=No+Image";
+        const firstImage =
+          Array.isArray(record.images) && record.images.length > 0
+            ? record.images[0]
+            : null;
+
+        return (
+          <div className="w-20 h-20 rounded-lg overflow-hidden border border-gray-200">
+            <img
+              src={firstImage || defaultImage}
+              alt={record.name || "Set Design"}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.target.src = defaultImage;
+              }}
+            />
+          </div>
+        );
+      },
+    },
     {
       title: "Tên",
       dataIndex: "name",
@@ -275,8 +278,6 @@ const StaffSetDesignPage = () => {
           onClick={() => {
             setAddModalVisible(true);
             addForm.resetFields();
-            setPreviewImages([]);
-            setUploadPayload([]);
           }}
         >
           Thêm Set Design
@@ -304,8 +305,6 @@ const StaffSetDesignPage = () => {
         open={addModalVisible}
         onCancel={() => {
           setAddModalVisible(false);
-          setPreviewImages([]);
-          setUploadPayload([]);
         }}
         onOk={handleAdd}
         okText="Tạo mới"
@@ -334,45 +333,6 @@ const StaffSetDesignPage = () => {
             rules={[{ required: true }]}
           >
             <TextArea rows={4} />
-          </Form.Item>
-
-          {/* IMAGE UPLOAD UI */}
-          <Form.Item label="Hình ảnh Set Design">
-            <div className="flex flex-wrap gap-3 items-start">
-              {previewImages.map((src, idx) => (
-                <div
-                  key={idx}
-                  className="relative w-28 h-28 rounded-lg overflow-hidden border"
-                >
-                  <img
-                    src={src}
-                    alt={`preview-${idx}`}
-                    className="w-full h-full object-cover"
-                  />
-                  <button
-                    onClick={() => removePreviewAt(idx)}
-                    type="button"
-                    className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-
-              <label className="w-28 h-28 flex items-center justify-center border-2 border-dashed rounded-lg cursor-pointer hover:border-blue-400">
-                <div className="text-center">
-                  <PlusOutlined className="text-2xl text-gray-500" />
-                  <div className="text-xs text-gray-500">Thêm ảnh</div>
-                </div>
-                <input
-                  type="file"
-                  hidden
-                  multiple
-                  accept="image/*"
-                  onChange={handleImageSelect}
-                />
-              </label>
-            </div>
           </Form.Item>
         </Form>
       </Modal>

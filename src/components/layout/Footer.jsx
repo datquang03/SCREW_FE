@@ -38,7 +38,7 @@ const Footer = () => (
           style={{ color: "#93c5fd" }}
         >
           Không gian sáng tạo chuyên nghiệp tại TP.HCM. Chúng tôi đồng hành cùng các nhãn hàng và nhà sáng tạo trong mọi dự án hình ảnh.
-        </Text>
+            </Text>
         <div className="mt-5 flex gap-3">
           {social.map((item, index) => (
             <Link
@@ -72,8 +72,8 @@ const Footer = () => (
               </Link>
             </li>
           ))}
-        </ul>
-      </div>
+            </ul>
+            </div>
 
       <div>
         <Title
@@ -107,8 +107,8 @@ const Footer = () => (
       >
         © {new Date().getFullYear()} S+ Studio. All rights reserved.
       </Text>
-    </div>
-  </footer>
-);
+      </div>
+    </footer>
+  );
 
 export default Footer;

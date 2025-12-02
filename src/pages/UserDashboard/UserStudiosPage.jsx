@@ -43,11 +43,11 @@ const UserStudiosPage = () => {
         <div className="absolute -top-10 -left-10 w-40 h-40 rounded-full bg-pink-300/30 blur-2xl" />
         <div className="relative z-10">
           <Title level={2} className="mb-3 text-gray-900">
-            Studio yêu thích
-          </Title>
+          Studio yêu thích
+        </Title>
           <Text className="text-base text-gray-700 font-medium">
-            Danh sách các studio bạn đã đánh dấu yêu thích
-          </Text>
+          Danh sách các studio bạn đã đánh dấu yêu thích
+        </Text>
         </div>
       </div>
 

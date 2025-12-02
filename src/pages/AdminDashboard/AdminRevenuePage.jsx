@@ -68,11 +68,11 @@ const AdminRevenuePage = () => {
         <div className="absolute -top-10 -right-12 w-52 h-52 rounded-full bg-emerald-300/25 blur-3xl" />
         <div className="relative z-10">
           <Title level={2} className="mb-2 text-gray-900">
-            Doanh thu & Tăng trưởng
-          </Title>
+          Doanh thu & Tăng trưởng
+        </Title>
           <Text className="text-base text-gray-700 font-medium">
-            Theo dõi doanh thu, nguồn đặt và khách hàng giá trị cao
-          </Text>
+          Theo dõi doanh thu, nguồn đặt và khách hàng giá trị cao
+        </Text>
         </div>
       </div>
 
