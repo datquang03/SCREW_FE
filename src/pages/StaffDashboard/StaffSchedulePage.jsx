@@ -94,9 +94,9 @@ const StaffSchedulePage = () => {
     if (info.type === "date") {
       const listData = getListData(currentDate);
       if (listData.length === 0) return null;
-      return (
+    return (
         <div className="flex flex-wrap gap-1 items-center justify-center">
-          {listData.map((item) => (
+        {listData.map((item) => (
             <div
               key={item.id}
               className="cursor-pointer hover:scale-110 transition-transform"
@@ -121,11 +121,11 @@ const StaffSchedulePage = () => {
                     ? "text-emerald-500"
                     : "text-gray-400"
                 }`}
-              />
+            />
             </div>
-          ))}
+        ))}
         </div>
-      );
+    );
     }
     return info.originNode;
   };
@@ -186,13 +186,13 @@ const StaffSchedulePage = () => {
       <div className="relative overflow-hidden rounded-2xl p-6 md:p-8 bg-gradient-to-br from-emerald-100 via-teal-50 to-white shadow-lg border border-emerald-200/50">
         <div className="absolute -top-10 -left-10 w-40 h-40 rounded-full bg-emerald-300/30 blur-2xl" />
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
+      <div>
             <Title level={2} className="mb-3 text-gray-900">
-              Lịch làm việc
-            </Title>
+          Lịch làm việc
+        </Title>
             <Text className="text-base text-gray-700 font-medium">
-              Quản lý và theo dõi lịch làm việc của bạn
-            </Text>
+          Quản lý và theo dõi lịch làm việc của bạn
+        </Text>
           </div>
           <Button
             type="primary"
@@ -229,8 +229,8 @@ const StaffSchedulePage = () => {
               </div>
             ) : (
               selectedDateSchedule.map((item, idx) => (
-                <div
-                  key={idx}
+              <div
+                key={idx}
                   className="p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-emerald-400 hover:bg-emerald-50 transition-all cursor-pointer"
                   onClick={async () => {
                     try {
@@ -241,24 +241,24 @@ const StaffSchedulePage = () => {
                       setDetailLoading(false);
                     }
                   }}
-                >
-                  <div className="flex justify-between items-start mb-2">
+              >
+                <div className="flex justify-between items-start mb-2">
                     <FiClock className="text-blue-500" />
-                    <Tag
-                      color={
+                  <Tag
+                    color={
                         item.rawStatus === "booked"
                           ? "red"
                           : item.rawStatus === "available"
-                          ? "green"
-                          : "default"
-                      }
-                    >
-                      {item.status}
-                    </Tag>
-                  </div>
-                  <div className="font-semibold">{item.time}</div>
-                  <div className="text-gray-600 text-sm">{item.studio}</div>
+                        ? "green"
+                        : "default"
+                    }
+                  >
+                    {item.status}
+                  </Tag>
                 </div>
+                <div className="font-semibold">{item.time}</div>
+                <div className="text-gray-600 text-sm">{item.studio}</div>
+              </div>
               ))
             )}
           </div>

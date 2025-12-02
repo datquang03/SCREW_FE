@@ -10,10 +10,11 @@ import {
   Col,
   Avatar,
   Spin,
+  message,
 } from "antd";
-import { FiUser, FiEdit, FiSave, FiPhone, FiMail } from "react-icons/fi";
+import { FiUser, FiEdit, FiSave, FiPhone, FiMail, FiLock } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
-import { getCurrentUser } from "../../features/auth/authSlice";
+import { getCurrentUser, changePassword } from "../../features/auth/authSlice";
 
 const { Title, Text } = Typography;
 
@@ -23,6 +24,8 @@ const StaffProfilePage = () => {
 
   const [editing, setEditing] = useState(false);
   const [form] = Form.useForm();
+  const [passwordForm] = Form.useForm();
+  const [changingPassword, setChangingPassword] = useState(false);
 
   // === GỌI GET CURRENT USER ===
   useEffect(() => {
@@ -183,6 +186,109 @@ const StaffProfilePage = () => {
                 </Text>
               </div>
             </div>
+          </Card>
+
+          {/* ĐỔI MẬT KHẨU */}
+          <Card
+            className="mt-6 shadow-lg border border-gray-100 rounded-2xl bg-gradient-to-br from-indigo-50 via-white to-slate-50"
+            title={
+              <div className="flex items-center gap-2">
+                <FiLock className="text-indigo-600" />
+                <span>Đổi mật khẩu</span>
+              </div>
+            }
+          >
+            <Form
+              layout="vertical"
+              form={passwordForm}
+              onFinish={async (values) => {
+                const { oldPassword, newPassword, confirmPassword } = values;
+                if (newPassword !== confirmPassword) {
+                  message.warning("Mật khẩu mới và xác nhận không khớp");
+                  return;
+                }
+                setChangingPassword(true);
+                try {
+                  await dispatch(
+                    changePassword({ oldPassword, newPassword })
+                  ).unwrap();
+                  message.success("Đổi mật khẩu thành công");
+                  passwordForm.resetFields();
+                } catch (err) {
+                  message.error(
+                    err?.message || err?.data?.message || "Đổi mật khẩu thất bại"
+                  );
+                } finally {
+                  setChangingPassword(false);
+                }
+              }}
+            >
+              <Row gutter={16}>
+                <Col xs={24} md={12}>
+                  <Form.Item
+                    label="Mật khẩu hiện tại"
+                    name="oldPassword"
+                    rules={[
+                      { required: true, message: "Vui lòng nhập mật khẩu hiện tại" },
+                    ]}
+                  >
+                    <Input.Password
+                      prefix={<FiLock />}
+                      className="rounded-lg"
+                      placeholder="Nhập mật khẩu hiện tại"
+                    />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={12}>
+                  <Form.Item
+                    label="Mật khẩu mới"
+                    name="newPassword"
+                    rules={[
+                      { required: true, message: "Vui lòng nhập mật khẩu mới" },
+                      {
+                        min: 6,
+                        message: "Mật khẩu phải có ít nhất 6 ký tự",
+                      },
+                    ]}
+                  >
+                    <Input.Password
+                      prefix={<FiLock />}
+                      className="rounded-lg"
+                      placeholder="Nhập mật khẩu mới"
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <Row gutter={16}>
+                <Col xs={24} md={12}>
+                  <Form.Item
+                    label="Xác nhận mật khẩu mới"
+                    name="confirmPassword"
+                    rules={[
+                      { required: true, message: "Vui lòng xác nhận mật khẩu mới" },
+                    ]}
+                  >
+                    <Input.Password
+                      prefix={<FiLock />}
+                      className="rounded-lg"
+                      placeholder="Nhập lại mật khẩu mới"
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <div className="flex justify-end">
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  loading={changingPassword}
+                  className="bg-indigo-600 hover:bg-indigo-700 px-6 rounded-lg"
+                >
+                  Cập nhật mật khẩu
+                </Button>
+              </div>
+            </Form>
           </Card>
         </Col>
       </Row>

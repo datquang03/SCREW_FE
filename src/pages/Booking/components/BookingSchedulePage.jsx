@@ -83,11 +83,11 @@ const BookingSchedulePage = ({ onNext }) => {
       <div className="text-center space-y-2">
         <Title level={2} className="text-gray-900 mb-0">
           Chọn ngày và giờ đặt phòng
-        </Title>
+              </Title>
         <Text className="text-gray-600 text-lg">
           Vui lòng chọn ngày và khung giờ bạn muốn thuê studio
-        </Text>
-      </div>
+                </Text>
+        </div>
 
       {/* Chọn ngày & giờ */}
       <div className="grid lg:grid-cols-2 gap-10">

@@ -118,11 +118,23 @@ const UserProfilePage = () => {
     setEditing(false);
   };
 
-  // === ĐỔI MẬT KHẨU - ĐÃ SỬA ===
+  // === ĐỔI MẬT KHẨU ===
   const handleChangePassword = async () => {
     try {
       const values = await passwordForm.validateFields();
-      const result = await dispatch(changePassword(values)).unwrap();
+      const { oldPassword, newPassword, confirmPassword } = values;
+
+      if (newPassword !== confirmPassword) {
+        setToast({
+          type: "error",
+          message: "Mật khẩu mới và xác nhận không khớp",
+        });
+        return;
+      }
+
+      const result = await dispatch(
+        changePassword({ oldPassword, newPassword })
+      ).unwrap();
 
       // Thành công
       setToast({ type: "success", message: result.message || "Đổi mật khẩu thành công!" });
@@ -353,6 +365,16 @@ const UserProfilePage = () => {
             rules={[
               { required: true, message: "Vui lòng nhập mật khẩu mới" },
               { min: 6, message: "Mật khẩu phải ít nhất 6 ký tự" },
+            ]}
+          >
+            <Input.Password prefix={<FiLock />} />
+          </Form.Item>
+
+          <Form.Item
+            label="Xác nhận mật khẩu mới"
+            name="confirmPassword"
+            rules={[
+              { required: true, message: "Vui lòng xác nhận mật khẩu mới" },
             ]}
           >
             <Input.Password prefix={<FiLock />} />

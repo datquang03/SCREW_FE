@@ -511,32 +511,32 @@ export default function BookingStudioDetails({ onNext, onBack }) {
       {/* MÃ GIẢM GIÁ */}
       <Card title="Mã giảm giá">
         {!appliedPromotion ? (
-          <Space.Compact className="w-full">
-            <Input
-              placeholder="Nhập mã giảm giá..."
-              value={promoCode}
-              onChange={(e) => setPromoCode(e.target.value)}
-              prefix={<GiftOutlined />}
-              size="large"
-              onPressEnter={handleApplyPromo}
+        <Space.Compact className="w-full">
+          <Input
+            placeholder="Nhập mã giảm giá..."
+            value={promoCode}
+            onChange={(e) => setPromoCode(e.target.value)}
+            prefix={<GiftOutlined />}
+            size="large"
+            onPressEnter={handleApplyPromo}
               disabled={applyingPromo}
-            />
+          />
             <Button
               type="primary"
               size="large"
               onClick={handleApplyPromo}
               loading={applyingPromo}
             >
-              Áp dụng
-            </Button>
-          </Space.Compact>
+            Áp dụng
+          </Button>
+        </Space.Compact>
         ) : (
           <div className="space-y-3">
             <div className="flex items-center justify-between p-4 bg-green-50 rounded-xl border border-green-200">
               <div>
                 <Tag color="green" className="text-lg px-3 py-1 mb-2">
                   {appliedPromotion.code || promoId}
-                </Tag>
+          </Tag>
                 <div className="text-green-700 font-semibold">
                   Giảm {discountAmount.toLocaleString()}₫
                 </div>
@@ -557,19 +557,19 @@ export default function BookingStudioDetails({ onNext, onBack }) {
       {/* TỔNG TIỀN */}
       <Card className="bg-gradient-to-r from-purple-700 to-pink-600 text-white rounded-3xl p-8">
         <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <Title level={3} className="text-white mb-0">
-                Tổng thanh toán
-              </Title>
+        <div className="flex justify-between items-center">
+          <div>
+            <Title level={3} className="text-white mb-0">
+              Tổng thanh toán
+            </Title>
               <Text className="opacity-90 block mt-2">
-                {details.length > 0
-                  ? `${details.filter((d) => d.detailType === "equipment").length} thiết bị + ${details.filter(
-                      (d) => d.detailType === "extra_service"
-                    ).length} dịch vụ`
-                  : "Chưa chọn thêm"}
-              </Text>
-            </div>
+              {details.length > 0
+                ? `${details.filter((d) => d.detailType === "equipment").length} thiết bị + ${details.filter(
+                    (d) => d.detailType === "extra_service"
+                  ).length} dịch vụ`
+                : "Chưa chọn thêm"}
+            </Text>
+          </div>
           </div>
 
           <Divider className="bg-white/30 my-4" />
@@ -595,7 +595,7 @@ export default function BookingStudioDetails({ onNext, onBack }) {
             <Text className="text-xl opacity-90">Thành tiền:</Text>
             <Title level={1} className="text-white text-5xl font-bold m-0">
               {finalPrice.toLocaleString()}₫
-            </Title>
+          </Title>
           </div>
         </div>
       </Card>
