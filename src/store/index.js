@@ -11,8 +11,9 @@ import adminAnalyticReducer from "../features/admin/admin.analyticSlice";
 import promotionReducer from "../features/promotion/promotionSlice";
 import bookingReducer from "../features/booking/bookingSlice";
 import paymentReducer from "../features/payment/paymentSlice";
-import setDesignReducer from "../features/setdesign/setDesignSlice";
 import scheduleReducer from "../features/schedule/scheduleSlice";
+import setDesignReducer from "../features/setDesign/setDesignSlice";
+import commentReducer from "../features/comment/commentSlice";
 const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -28,6 +29,7 @@ const store = configureStore({
     payment: paymentReducer,
     setDesign: setDesignReducer,
     schedule: scheduleReducer,
+    comment: commentReducer,
   },
 });
 

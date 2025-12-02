@@ -4,7 +4,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../../api/axiosInstance";
 
 // =========================================================
-// ================       THUNKS API      ==================
+// ================          THUNKS API        =============
 // =========================================================
 
 // 1) Tạo booking mới
@@ -19,6 +19,7 @@ export const createBooking = createAsyncThunk(
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      // Trả về { booking, paymentOptions }
       return response.data.data;
     } catch (err) {
       return rejectWithValue(
@@ -34,10 +35,12 @@ export const getAllMyBookings = createAsyncThunk(
   async (_, { rejectWithValue, getState }) => {
     try {
       const { token } = getState().auth;
+
       const res = await axiosInstance.get("/bookings", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      return res.data.data;
+
+      return res.data.data; // → luôn trả array
     } catch (err) {
       return rejectWithValue(
         err.response?.data || { message: "Không thể lấy booking" }
@@ -52,10 +55,12 @@ export const getBookingById = createAsyncThunk(
   async (bookingId, { rejectWithValue, getState }) => {
     try {
       const { token } = getState().auth;
+
       const res = await axiosInstance.get(`/bookings/${bookingId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      return res.data.data;
+
+      return res.data.data; // { booking } hoặc trực tiếp booking
     } catch (err) {
       return rejectWithValue(
         err.response?.data || { message: "Không thể lấy booking" }
@@ -64,16 +69,18 @@ export const getBookingById = createAsyncThunk(
   }
 );
 
-// 4) Lấy booking + services + equipment
+// 4) Lấy booking + details
 export const getBookingWithDetails = createAsyncThunk(
   "booking/getBookingWithDetails",
   async (bookingId, { rejectWithValue, getState }) => {
     try {
       const { token } = getState().auth;
+
       const res = await axiosInstance.get(`/bookings/${bookingId}/details`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      return res.data.data;
+
+      return res.data.data; // backend có thể trả { booking } hoặc details
     } catch (err) {
       return rejectWithValue(
         err.response?.data || { message: "Không thể lấy chi tiết booking" }
@@ -91,6 +98,7 @@ export const getBookingsByStatus = createAsyncThunk(
       const res = await axiosInstance.get(`/bookings?status=${status}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       return res.data.data;
     } catch (err) {
       return rejectWithValue(
@@ -100,47 +108,7 @@ export const getBookingsByStatus = createAsyncThunk(
   }
 );
 
-// 6) Staff xác nhận booking
-export const confirmBooking = createAsyncThunk(
-  "booking/confirmBooking",
-  async (bookingId, { rejectWithValue, getState }) => {
-    try {
-      const { token } = getState().auth;
-      const res = await axiosInstance.post(
-        `/bookings/${bookingId}/confirm`,
-        {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      return res.data.data;
-    } catch (err) {
-      return rejectWithValue(
-        err.response?.data || { message: "Không thể xác nhận booking" }
-      );
-    }
-  }
-);
-
-// 7) Cập nhật booking
-export const updateBooking = createAsyncThunk(
-  "booking/updateBooking",
-  async ({ bookingId, payload }, { rejectWithValue, getState }) => {
-    try {
-      const { token } = getState().auth;
-      const res = await axiosInstance.patch(`/bookings/${bookingId}`, payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return res.data.data;
-    } catch (err) {
-      return rejectWithValue(
-        err.response?.data || { message: "Không thể cập nhật booking" }
-      );
-    }
-  }
-);
-
-// 8) ⭐ Lấy tất cả booking active dành cho STAFF
+// 6) Staff – lấy booking active
 export const getAllBookingForStaff = createAsyncThunk(
   "booking/getAllBookingForStaff",
   async (_, { rejectWithValue, getState }) => {
@@ -151,10 +119,54 @@ export const getAllBookingForStaff = createAsyncThunk(
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      return res.data.data; // mong đợi trả về mảng bookings
+      return res.data.data; // { bookings, pagination, filters }
     } catch (err) {
       return rejectWithValue(
         err.response?.data || { message: "Không thể lấy booking cho staff" }
+      );
+    }
+  }
+);
+
+// 7) Staff xác nhận booking
+export const confirmBooking = createAsyncThunk(
+  "booking/confirmBooking",
+  async (bookingId, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+
+      const res = await axiosInstance.post(
+        `/bookings/${bookingId}/confirm`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      return res.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Không thể xác nhận booking" }
+      );
+    }
+  }
+);
+
+// 8) Update booking
+export const updateBooking = createAsyncThunk(
+  "booking/updateBooking",
+  async ({ bookingId, payload }, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+
+      const res = await axiosInstance.patch(`/bookings/${bookingId}`, payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      return res.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Không thể cập nhật booking" }
       );
     }
   }
@@ -174,9 +186,11 @@ const initialState = {
     promoCode: null,
     discountAmount: 0,
   },
+
   currentBooking: null,
   myBookings: [],
-  staffBookings: [], // ⭐ thêm cho staff
+  staffBookings: [],
+
   loading: false,
   error: null,
 };
@@ -201,29 +215,34 @@ const bookingSlice = createSlice({
       state.currentBooking = null;
       state.error = null;
     },
+
     setBookingTime: (state, action) => {
       state.draft.startTime = action.payload.startTime;
       state.draft.endTime = action.payload.endTime;
     },
+
     setBookingDetails: (state, action) => {
       state.draft.details = action.payload;
     },
+
     applyPromo: (state, action) => {
       state.draft.promoId = action.payload.promoId;
       state.draft.promoCode = action.payload.promoCode;
       state.draft.discountAmount = action.payload.discountAmount || 0;
     },
+
     removePromo: (state) => {
       state.draft.promoId = null;
       state.draft.promoCode = null;
       state.draft.discountAmount = 0;
     },
+
     resetBooking: () => initialState,
   },
 
   extraReducers: (builder) => {
     builder
-      // CREATE BOOKING
+      // ================= CREATE =================
       .addCase(createBooking.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -238,22 +257,21 @@ const bookingSlice = createSlice({
         state.error = action.payload;
       })
 
-      // GET ALL MY BOOKINGS
+      // ================= MY BOOKINGS =================
       .addCase(getAllMyBookings.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(getAllMyBookings.fulfilled, (state, action) => {
         state.loading = false;
-        const data = action.payload || {};
-        state.myBookings = data.items || data;
+        state.myBookings = action.payload?.items;
       })
       .addCase(getAllMyBookings.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
 
-      // GET BOOKING BY ID
+      // ================= GET BY ID =================
       .addCase(getBookingById.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -267,7 +285,7 @@ const bookingSlice = createSlice({
         state.error = action.payload;
       })
 
-      // GET BOOKING WITH DETAILS
+      // ================= DETAILS =================
       .addCase(getBookingWithDetails.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -281,7 +299,7 @@ const bookingSlice = createSlice({
         state.error = action.payload;
       })
 
-      // GET BY STATUS
+      // ================= STATUS FILTER =================
       .addCase(getBookingsByStatus.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -295,60 +313,46 @@ const bookingSlice = createSlice({
         state.error = action.payload;
       })
 
-      // CONFIRM BOOKING
-      .addCase(confirmBooking.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(confirmBooking.fulfilled, (state, action) => {
-        state.loading = false;
-        const updated = action.payload.booking || action.payload;
-        state.currentBooking = updated;
-        state.myBookings = state.myBookings.map((b) =>
-          b._id === updated._id ? updated : b
-        );
-      })
-      .addCase(confirmBooking.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-
-      // UPDATE BOOKING
-      .addCase(updateBooking.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(updateBooking.fulfilled, (state, action) => {
-        state.loading = false;
-        const updated = action.payload.booking || action.payload;
-        state.currentBooking = updated;
-        state.myBookings = state.myBookings.map((b) =>
-          b._id === updated._id ? updated : b
-        );
-      })
-      .addCase(updateBooking.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-
-      // ⭐ GET ALL BOOKING FOR STAFF
+      // ================= STAFF LIST =================
       .addCase(getAllBookingForStaff.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(getAllBookingForStaff.fulfilled, (state, action) => {
         state.loading = false;
-        // API trả về { bookings: [...], pagination: {...}, filters: {...} }
         const data = action.payload || {};
         state.staffBookings = data.bookings || data.data?.bookings || [];
       })
       .addCase(getAllBookingForStaff.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+
+      // ================= CONFIRM =================
+      .addCase(confirmBooking.fulfilled, (state, action) => {
+        const updated =
+          action.payload.booking || action.payload;
+
+        state.currentBooking = updated;
+        state.myBookings = state.myBookings.map((b) =>
+          b._id === updated._id ? updated : b
+        );
+      })
+
+      // ================= UPDATE =================
+      .addCase(updateBooking.fulfilled, (state, action) => {
+        const updated =
+          action.payload.booking || action.payload;
+
+        state.currentBooking = updated;
+        state.myBookings = state.myBookings.map((b) =>
+          b._id === updated._id ? updated : b
+        );
       });
   },
 });
 
+// EXPORT ACTIONS
 export const {
   startNewBooking,
   setBookingTime,

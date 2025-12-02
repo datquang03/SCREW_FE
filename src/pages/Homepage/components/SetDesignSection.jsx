@@ -1,152 +1,176 @@
 // src/pages/Homepage/components/SetDesignSection.jsx
 import React, { useState, useRef, useEffect } from "react";
-import { Card, Typography } from "antd";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom"; // ← THÊM DÒNG NÀY
+import { Typography, Skeleton, Empty } from "antd";
 import { FiStar, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
+import { getActiveSetDesigns, getSetDesignById } from "../../../features/setDesign/setDesignSlice";
 
 const { Title, Paragraph, Text } = Typography;
 
-// Dữ liệu ảo
-const designItems = [
-  {
-    id: 1,
-    name: "Modern Studio",
-    rating: 4.8,
-    description:
-      "Thiết kế hiện đại, ánh sáng tối ưu, phù hợp chụp ảnh sản phẩm và quảng cáo.",
-    image:
-      "https://images.unsplash.com/photo-1612831455541-ff0e86f52751?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 2,
-    name: "Minimalist Space",
-    rating: 4.5,
-    description: "Không gian tối giản, thanh lịch, thích hợp cho studio video.",
-    image:
-      "https://images.unsplash.com/photo-1605902711622-cfb43c443f12?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 3,
-    name: "Classic Set",
-    rating: 4.7,
-    description:
-      "Không gian cổ điển, nhiều chi tiết trang trí, tạo cảm giác sang trọng.",
-    image:
-      "https://images.unsplash.com/photo-1622735343734-2d5517c026b0?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 4,
-    name: "Outdoor Inspired",
-    rating: 4.6,
-    description:
-      "Phòng được thiết kế như ngoài trời, ánh sáng tự nhiên tuyệt vời.",
-    image:
-      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80",
-  },
-];
-
 const SetDesignSection = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate(); // ← Dùng để chuyển trang
+
+  const activeSetDesigns = useSelector((state) => state.setDesign.activeSetDesigns);
+  const loading = useSelector((state) => state.setDesign.loading);
+
   const [current, setCurrent] = useState(0);
-  const total = designItems.length;
   const timeoutRef = useRef(null);
   const [isHovering, setIsHovering] = useState(false);
 
-  // Auto slide mỗi 5s, chỉ khi không hover
   useEffect(() => {
-    if (!isHovering) {
+    if (activeSetDesigns.length === 0 && !loading) {
+      dispatch(getActiveSetDesigns());
+    }
+  }, [dispatch, activeSetDesigns.length, loading]);
+
+  useEffect(() => {
+    if (!isHovering && activeSetDesigns.length > 1) {
       timeoutRef.current = setTimeout(() => {
-        setCurrent((prev) => (prev + 1) % total);
+        setCurrent((prev) => (prev + 1) % activeSetDesigns.length);
       }, 5000);
     }
     return () => clearTimeout(timeoutRef.current);
-  }, [current, isHovering, total]);
+  }, [current, isHovering, activeSetDesigns.length]);
 
-  const handlePrev = () => setCurrent((prev) => (prev - 1 + total) % total);
-  const handleNext = () => setCurrent((prev) => (prev + 1) % total);
+  const handlePrev = () => setCurrent((prev) => (prev - 1 + activeSetDesigns.length) % activeSetDesigns.length);
+  const handleNext = () => setCurrent((prev) => (prev + 1) % activeSetDesigns.length);
+
+  // Hàm chung: chuyển sang trang chi tiết + gọi API
+  const goToDetail = (id) => {
+    dispatch(getSetDesignById(id));        // Gọi API lấy chi tiết trước
+    navigate(`/set-design/${id}`);         // Chuyển trang luôn
+  };
+
+  if (loading) {
+    return (
+      <div className="w-full max-w-6xl mx-auto py-16 px-4">
+        <Title level={2} className="text-center mb-12 font-bold">
+          Set Design Nổi Bật
+        </Title>
+        <Skeleton active paragraph={{ rows: 8 }} />
+      </div>
+    );
+  }
+
+  if (activeSetDesigns.length === 0) {
+    return (
+      <div className="w-full max-w-6xl mx-auto py-16 px-4 text-center">
+        <Title level={2} className="mb-8">Set Design Nổi Bật</Title>
+        <Empty description="Chưa có Set Design nào được kích hoạt" />
+      </div>
+    );
+  }
+
+  const item = activeSetDesigns[current];
+  const imageUrl = item.images?.[0] || "https://images.unsplash.com/photo-1618776148559-309e0b8775d3?auto=format&fit=crop&w=1000&q=80";
 
   return (
-    <div className="relative w-full max-w-6xl mx-auto py-16 px-4">
-      <Title level={2} className="text-center mb-12 font-bold">
-        Set Design Highlights
+    <div className="relative w-full max-w-7xl mx-auto py-16 px-4">
+      <Title level={2} className="text-center mb-12 font-bold text-4xl">
+        Set Design Nổi Bật
       </Title>
 
-      {/* Carousel wrapper */}
-      <div className="relative w-full overflow-visible">
-        {" "}
-        {/* overflow-visible để button không bị cắt */}
+      <div className="relative overflow-visible">
         <AnimatePresence mode="wait">
-          {designItems.map(
-            (item, index) =>
-              index === current && (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, x: 50, scale: 0.95 }}
-                  animate={{ opacity: 1, x: 0, scale: 1 }}
-                  exit={{ opacity: 0, x: -50, scale: 0.95 }}
-                  transition={{ duration: 0.6 }}
-                  className="grid md:grid-cols-2 gap-8 items-center bg-white rounded-3xl shadow-2xl p-6 md:p-12"
-                  onMouseEnter={() => setIsHovering(true)}
-                  onMouseLeave={() => setIsHovering(false)}
-                >
-                  {/* Image */}
-                  <motion.div
-                    className="overflow-hidden rounded-2xl shadow-lg"
-                    whileHover={{ scale: 1.05 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <motion.img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-full h-72 md:h-96 object-cover"
-                      initial={{ scale: 1 }}
-                      animate={{ scale: 1 }}
-                      transition={{ duration: 0.6 }}
-                    />
-                  </motion.div>
+          <motion.div
+            key={current}
+            initial={{ opacity: 0, x: 100 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -100 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="grid md:grid-cols-2 gap-10 items-center bg-white rounded-3xl shadow-2xl overflow-hidden cursor-pointer"
+            onMouseEnter={() => setIsHovering(true)}
+            onMouseLeave={() => setIsHovering(false)}
+            // BẤM VÀO TOÀN BỘ CARD → CHUYỂN TRANG
+            onClick={() => goToDetail(item._id)}
+          >
+            {/* Ảnh */}
+            <motion.div
+              className="relative overflow-hidden h-96 md:h-full"
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.5 }}
+            >
+              <motion.img
+                src={imageUrl}
+                alt={item.name}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+            </motion.div>
 
-                  {/* Info */}
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-start">
-                      <Title level={3} className="text-2xl font-extrabold">
-                        {item.name}
-                      </Title>
-                      <div className="flex items-center gap-1 bg-yellow-100 px-3 py-1 rounded-full">
-                        <FiStar className="text-yellow-500" />
-                        <Text strong>{item.rating}</Text>
-                      </div>
-                    </div>
-                    <Paragraph className="text-gray-700 line-clamp-3">
-                      {item.description}
-                    </Paragraph>
-                  </div>
-                </motion.div>
-              )
-          )}
+            {/* Nội dung */}
+            <div className="p-8 md:p-12 space-y-6">
+              <div className="flex justify-between items-start">
+                <Title level={3} className="text-3xl md:text-4xl font-extrabold text-gray-900">
+                  {item.name}
+                </Title>
+                <div className="flex items-center gap-2 bg-yellow-100 px-4 py-2 rounded-full">
+                  <FiStar className="text-yellow-600 text-lg" />
+                  <Text strong className="text-lg">
+                    {item.averageRating > 0 ? item.averageRating.toFixed(1) : "Chưa có"}
+                  </Text>
+                  <Text type="secondary" className="text-sm">
+                    ({item.totalReviews} đánh giá)
+                  </Text>
+                </div>
+              </div>
+
+              {item.category && (
+                <div className="inline-block px-4 py-2 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium">
+                  {item.category === "wedding" ? "Tiệc cưới" :
+                   item.category === "corporate" ? "Doanh nghiệp" :
+                   item.category === "birthday" ? "Sinh nhật" :
+                   item.category === "other" ? "Khác" : item.category}
+                </div>
+              )}
+
+              <Paragraph className="text-gray-700 text-lg leading-relaxed">
+                {item.description || "Bộ thiết kế đẹp, chuyên nghiệp và sẵn sàng phục vụ mọi nhu cầu chụp ảnh của bạn."}
+              </Paragraph>
+
+              <div className="flex items-center gap-6 text-sm text-gray-500">
+                <span>{item.totalComments} bình luận</span>
+                <span>•</span>
+                <span>Đã tạo {new Date(item.createdAt).toLocaleDateString("vi-VN")}</span>
+              </div>
+
+              {/* NÚT XEM CHI TIẾT – CŨNG CHUYỂN TRANG */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation(); // ← Quan trọng: tránh trigger click của card
+                  goToDetail(item._id);
+                }}
+                className="mt-6 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-full hover:shadow-xl transform hover:scale-105 transition"
+              >
+                Xem chi tiết
+              </button>
+            </div>
+          </motion.div>
         </AnimatePresence>
-        {/* Navigation Buttons */}
-        <button
-          onClick={handlePrev}
-          className="absolute top-1/2 -left-10 transform -translate-y-1/2 bg-white rounded-full shadow-lg p-3 hover:bg-gray-100 transition z-10 cursor-pointer"
-        >
-          <FiChevronLeft size={24} />
+
+        {/* Nút trái phải */}
+        <button onClick={handlePrev} className="absolute top-1/2 -left-6 md:-left-12 transform -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full shadow-2xl p-4 hover:bg-white transition z-10">
+          <FiChevronLeft size={32} className="text-gray-800" />
         </button>
-        <button
-          onClick={handleNext}
-          className="absolute top-1/2 -right-10 transform -translate-y-1/2 bg-white rounded-full shadow-lg p-3 hover:bg-gray-100 transition z-10 cursor-pointer"
-        >
-          <FiChevronRight size={24} />
+        <button onClick={handleNext} className="absolute top-1/2 -right-6 md:-right-12 transform -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full shadow-2xl p-4 hover:bg-white transition z-10">
+          <FiChevronRight size={32} className="text-gray-800" />
         </button>
       </div>
 
-      {/* Dots */}
-      <div className="flex justify-center mt-6 gap-3">
-        {designItems.map((_, idx) => (
-          <div
+      {/* Chấm tròn */}
+      <div className="flex justify-center mt-10 gap-3">
+        {activeSetDesigns.map((_, idx) => (
+          <motion.div
             key={idx}
             onClick={() => setCurrent(idx)}
-            className={`w-3 h-3 rounded-full cursor-pointer transition ${
-              current === idx ? "bg-gray-800" : "bg-gray-300"
+            className={`w-3 h-3 rounded-full cursor-pointer transition-all duration-300 ${
+              current === idx ? "bg-indigo-600 w-10" : "bg-gray-300"
             }`}
+            whileHover={{ scale: 1.2 }}
           />
         ))}
       </div>

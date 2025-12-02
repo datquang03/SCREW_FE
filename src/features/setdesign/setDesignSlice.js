@@ -1,3 +1,4 @@
+
 // src/features/setDesign/setDesignSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../../api/axiosInstance";
@@ -101,40 +102,50 @@ export const deleteSetDesign = createAsyncThunk(
     }
   }
 );
-
 /* =============================
-   UPLOAD MULTIPLE IMAGES
-   API: /api/upload/set-design/:id/images
-   body: FormData with files
+   GET ACTIVE SET DESIGNS (cho Homepage)
+============================= */
+export const getActiveSetDesigns = createAsyncThunk(
+  "setDesign/getActiveSetDesigns",
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await axiosInstance.get("/set-designs/active");
+      return res.data.data; // mảng các set design active
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Không thể tải Set Design nổi bật" }
+      );
+    }
+  }
+);
+/* =============================
+   UPLOAD MULTIPLE IMAGES (Option B)
+   body: { images: [ { base64Image, fileName }, ... ] }
 ============================= */
 export const uploadSetDesignImages = createAsyncThunk(
   "setDesign/uploadSetDesignImages",
-  async ({ setDesignId, images }, { rejectWithValue, getState }) => {
+  async ({ images }, { rejectWithValue, getState }) => {
     try {
       const { token } = getState().auth;
 
-      // Create FormData and append files
-      const formData = new FormData();
-
-      // images should be an array of File objects
-      // Append each file with the same field name "images" for multiple files
-      images.forEach((file) => {
-        if (file instanceof File) {
-          formData.append("images", file);
-        } else {
-          // If not a File object, skip or handle error
-          console.warn("Invalid file object:", file);
-        }
-      });
+      // Ensure shape exactly { base64Image, fileName }
+      const payload = {
+        images: images.map((img) => ({
+          base64Image:
+            img.base64Image ||
+            img.base64 ||
+            img.base64Img ||
+            img.base64_data ||
+            img.base64,
+          fileName: img.fileName || img.name || "file.png",
+        })),
+      };
 
       const res = await axiosInstance.post(
-        `/upload/set-design/${setDesignId}/images`,
-        formData,
+        `/set-designs/upload-image`,
+        payload,
         {
-          headers: {
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            "Content-Type": "multipart/form-data",
-          },
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
         }
       );
 
@@ -154,6 +165,7 @@ export const uploadSetDesignImages = createAsyncThunk(
 const initialState = {
   setDesigns: [],
   currentSetDesign: null,
+  activeSetDesigns: [],
   total: 0,
   loading: false,
   uploadedImages: [], // last uploaded images info
@@ -265,7 +277,19 @@ const setDesignSlice = createSlice({
       .addCase(uploadSetDesignImages.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-      });
+      })
+            // GET ACTIVE SET DESIGNS
+      .addCase(getActiveSetDesigns.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getActiveSetDesigns.fulfilled, (state, action) => {
+        state.loading = false;
+        state.activeSetDesigns = action.payload || []; // lưu riêng để dùng ở homepage
+      })
+      .addCase(getActiveSetDesigns.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
   },
 });
 

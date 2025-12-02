@@ -181,8 +181,6 @@ export const setMaintenance = createAsyncThunk(
 );
 
 // UPLOAD IMAGES
-// API: /studios/:studioId/media
-// Body: FormData with field name "images"
 export const uploadStudioImage = createAsyncThunk(
   "studio/uploadStudioImage",
   async ({ studioId, files }, { rejectWithValue, getState }) => {
@@ -190,11 +188,8 @@ export const uploadStudioImage = createAsyncThunk(
       const { token } = getState().auth;
 
       const formData = new FormData();
-      // Append each file with field name "images"
       files.forEach((file) => {
-        if (file instanceof File) {
-          formData.append("images", file);
-        }
+        if (file instanceof File) formData.append("images", file);
       });
 
       const response = await axiosInstance.post(
@@ -236,7 +231,6 @@ const studioSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // ========== 1. Tất cả addCase() ==========
       .addCase(createStudio.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -316,7 +310,7 @@ const studioSlice = createSlice({
           state.currentStudio = updated;
       })
 
-      // ========== 2. addMatcher() — luôn nằm cuối ==========
+      // ================= addMatcher (cuối) =================
       .addMatcher(
         (action) =>
           [setActivate, setDeactivate, setMaintenance].some((t) =>
