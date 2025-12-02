@@ -58,12 +58,16 @@ import SetDesignSection from "./pages/SetDesign/SetDesignDetailPage";
 import StaffTransactionPage from "./pages/StaffDashboard/StaffTransactionPage";
 
 const pageVariants = {
-  initial: { opacity: 0 },
-  in: { opacity: 1 },
-  out: { opacity: 0 },
+  initial: { opacity: 0, y: 10 },
+  in: { opacity: 1, y: 0 },
+  out: { opacity: 0, y: -10 },
 };
 
-const pageTransition = { type: "tween", ease: "easeInOut", duration: 0.2 };
+const pageTransition = { 
+  type: "tween", 
+  ease: [0.25, 0.1, 0.25, 1], // Custom easing cho mượt mà hơn
+  duration: 0.3 
+};
 
 const AppContent = () => {
   const location = useLocation();

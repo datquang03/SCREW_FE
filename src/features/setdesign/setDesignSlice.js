@@ -40,6 +40,155 @@ export const getSetDesignById = createAsyncThunk(
 );
 
 /* =============================
+   COMMENTS FOR SET DESIGN
+   - CREATE COMMENT
+   - REPLY COMMENT
+   - UPDATE COMMENT
+   - UPDATE REPLY
+   - DELETE REPLY
+   - DELETE COMMENT
+============================= */
+
+export const createSetDesignComment = createAsyncThunk(
+  "setDesign/createSetDesignComment",
+  async ({ setDesignId, message }, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth || {};
+
+      const res = await axiosInstance.post(
+        `/set-designs/${setDesignId}/comments`,
+        { message },
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        }
+      );
+
+      return res.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Gửi bình luận thất bại" }
+      );
+    }
+  }
+);
+
+export const replySetDesignComment = createAsyncThunk(
+  "setDesign/replySetDesignComment",
+  async ({ setDesignId, commentIndex, replyContent }, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth || {};
+
+      const res = await axiosInstance.post(
+        `/set-designs/${setDesignId}/comments/${commentIndex}/reply`,
+        { content: replyContent },
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        }
+      );
+
+      return res.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Trả lời bình luận thất bại" }
+      );
+    }
+  }
+);
+
+export const updateSetDesignComment = createAsyncThunk(
+  "setDesign/updateSetDesignComment",
+  async ({ setDesignId, commentIndex, message }, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth || {};
+
+      const res = await axiosInstance.put(
+        `/set-designs/${setDesignId}/comments/${commentIndex}`,
+        { message },
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        }
+      );
+
+      return res.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Cập nhật bình luận thất bại" }
+      );
+    }
+  }
+);
+
+export const updateSetDesignReply = createAsyncThunk(
+  "setDesign/updateSetDesignReply",
+  async (
+    { setDesignId, commentIndex, replyIndex, replyContent },
+    { rejectWithValue, getState }
+  ) => {
+    try {
+      const { token } = getState().auth || {};
+
+      const res = await axiosInstance.put(
+        `/set-designs/${setDesignId}/comments/${commentIndex}/replies/${replyIndex}`,
+        { content: replyContent },
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        }
+      );
+
+      return res.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Cập nhật trả lời thất bại" }
+      );
+    }
+  }
+);
+
+export const deleteSetDesignReply = createAsyncThunk(
+  "setDesign/deleteSetDesignReply",
+  async ({ setDesignId, commentIndex, replyIndex }, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth || {};
+
+      await axiosInstance.delete(
+        `/set-designs/${setDesignId}/comments/${commentIndex}/replies/${replyIndex}`,
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        }
+      );
+
+      return { setDesignId, commentIndex, replyIndex };
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Xóa trả lời thất bại" }
+      );
+    }
+  }
+);
+
+export const deleteSetDesignComment = createAsyncThunk(
+  "setDesign/deleteSetDesignComment",
+  async ({ setDesignId, commentIndex }, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth || {};
+
+      await axiosInstance.delete(
+        `/set-designs/${setDesignId}/comments/${commentIndex}`,
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        }
+      );
+
+      return { setDesignId, commentIndex };
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Xóa bình luận thất bại" }
+      );
+    }
+  }
+);
+
+/* =============================
    CREATE
 ============================= */
 export const createSetDesign = createAsyncThunk(
@@ -211,6 +360,73 @@ const setDesignSlice = createSlice({
         state.currentSetDesign = action.payload;
       })
       .addCase(getSetDesignById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // COMMENTS (SET DESIGN)
+      .addCase(createSetDesignComment.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(createSetDesignComment.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(createSetDesignComment.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      .addCase(replySetDesignComment.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(replySetDesignComment.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(replySetDesignComment.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      .addCase(updateSetDesignComment.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(updateSetDesignComment.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(updateSetDesignComment.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      .addCase(updateSetDesignReply.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(updateSetDesignReply.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(updateSetDesignReply.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      .addCase(deleteSetDesignReply.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(deleteSetDesignReply.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(deleteSetDesignReply.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      .addCase(deleteSetDesignComment.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(deleteSetDesignComment.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(deleteSetDesignComment.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

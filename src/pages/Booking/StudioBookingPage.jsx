@@ -14,6 +14,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 
 import Layout from "../../components/layout/Layout";
+import BookingStudioInfo from "./components/BookingStudioInfo";
 import BookingSchedulePage from "./components/BookingSchedulePage";
 import BookingStudioDetails from "./components/BookingStudioDetails";
 import BookingConfirmPage from "./components/BookingConfirmPage";
@@ -49,10 +50,11 @@ const StudioBookingPage = () => {
   const handleBack = () => setLocalStep((prev) => prev - 1);
 
   const steps = [
+    { title: "Thông tin studio", icon: <CameraOutlined /> },
     { title: "Chọn ngày giờ", icon: <CalendarOutlined /> },
     { title: "Thiết bị & dịch vụ", icon: <CameraOutlined /> },
     { title: "Xác nhận", icon: <CheckCircleOutlined /> },
-    { title: "Thanh toán QR", icon: <QrcodeOutlined /> },
+    { title: "Thanh toán", icon: <QrcodeOutlined /> },
   ];
 
   return (
@@ -86,13 +88,15 @@ const StudioBookingPage = () => {
             exit={{ opacity: 0, y: -30 }}
             transition={{ duration: 0.4 }}
           >
-            {localStep === 0 && <BookingSchedulePage onNext={handleNext} />}
+            {localStep === 0 && <BookingStudioInfo onNext={handleNext} />}
 
-            {localStep === 1 && (
+            {localStep === 1 && <BookingSchedulePage onNext={handleNext} />}
+
+            {localStep === 2 && (
               <BookingStudioDetails onNext={handleNext} onBack={handleBack} />
             )}
 
-            {localStep === 2 && (
+            {localStep === 3 && (
               <BookingConfirmPage
                 onBack={handleBack}
                 onSuccess={(result) => {
@@ -100,14 +104,14 @@ const StudioBookingPage = () => {
                     "Đặt phòng thành công! Chuyển sang thanh toán..."
                   );
                   setBookingResult(result); // lưu kết quả booking
-                  setLocalStep(3); // chuyển sang step thanh toán
+                  setLocalStep(4); // chuyển sang step thanh toán
                 }}
               />
             )}
 
-            {localStep === 3 && (
+            {localStep === 4 && (
               <BookingPaymentPage
-                bookingResult={bookingResult} // truyền dữ liệu booking sang step 4
+                bookingResult={bookingResult} // truyền dữ liệu booking sang step 5
                 onBack={handleBack}
                 onPaymentSuccess={() => {
                   message.success("Thanh toán thành công!");

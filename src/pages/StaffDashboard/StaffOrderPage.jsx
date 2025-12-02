@@ -170,16 +170,16 @@ const StaffOrderPage = () => {
         dataIndex: "createdAt",
         render: (v) => (v ? dayjs(v).format("DD/MM/YYYY HH:mm") : "-"),
       },
-    {
-      title: "Trạng thái",
-      dataIndex: "status",
-      render: (status) => (
+      {
+        title: "Trạng thái",
+        dataIndex: "status",
+        render: (status) => (
           <Tag color={statusColor(status)} className="px-3 py-1 rounded-full">
             {mapStatusLabel(status)}
-        </Tag>
-      ),
-    },
-    {
+          </Tag>
+        ),
+      },
+      {
         title: "Tổng phí",
         dataIndex: "finalAmount",
         render: (v) => (
@@ -187,9 +187,9 @@ const StaffOrderPage = () => {
             {formatCurrency(v)}
           </span>
         ),
-    },
-    {
-      title: "Thao tác",
+      },
+      {
+        title: "Thao tác",
         key: "actions",
         render: (_, record) => (
           <div className="flex gap-2">
@@ -198,8 +198,8 @@ const StaffOrderPage = () => {
               type="link"
               onClick={() => handleViewDetail(record._id)}
             >
-          Xem chi tiết
-        </Button>
+              Xem chi tiết
+            </Button>
             {record.status === "pending" && (
               <Button
                 size="small"
@@ -212,7 +212,7 @@ const StaffOrderPage = () => {
             )}
           </div>
         ),
-    },
+      },
     ],
     [updatingStatus]
   );
@@ -228,13 +228,13 @@ const StaffOrderPage = () => {
       <div className="relative overflow-hidden rounded-2xl p-6 md:p-8 bg-gradient-to-br from-blue-100 via-cyan-50 to-white shadow-lg border border-blue-200/50">
         <div className="absolute -top-10 -left-10 w-40 h-40 rounded-full bg-blue-300/30 blur-2xl" />
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
+          <div>
             <Title level={2} className="mb-3 text-gray-900">
-            Quản lý đơn đặt
-          </Title>
+              Quản lý đơn đặt
+            </Title>
             <Text className="text-base text-gray-700 font-medium">
-            Theo dõi tiến độ setup và hỗ trợ khách hàng tại studio
-          </Text>
+              Theo dõi tiến độ setup và hỗ trợ khách hàng tại studio
+            </Text>
           </div>
           <Button
             type="primary"
@@ -282,7 +282,7 @@ const StaffOrderPage = () => {
             <div className="p-3 bg-red-100 rounded-xl">
               <FiAlertTriangle className="text-3xl text-red-500" />
             </div>
-    <div>
+            <div>
               <Text className="text-sm font-medium text-gray-600 block mb-1">
                 Tổng số đơn
               </Text>

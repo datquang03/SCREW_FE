@@ -25,11 +25,9 @@ import { motion } from "framer-motion";
 
 import {
   getSetDesignById,
+  createSetDesignComment,
+  replySetDesignComment,
 } from "../../features/setDesign/setDesignSlice";
-import {
-  createComment,
-  replyCommentForStaff,
-} from "../../features/comment/commentSlice";
 
 const { Title, Paragraph, Text } = Typography;
 const { TextArea } = Input;
@@ -41,7 +39,8 @@ const SetDesignDetail = () => {
 
   const { currentSetDesign, loading } = useSelector((state) => state.setDesign);
   const { user: currentUser } = useSelector((state) => state.auth || {});
-  const isStaff = currentUser?.role === "staff" || currentUser?.role === "admin";
+  const isStaff =
+    currentUser?.role === "staff" || currentUser?.role === "admin";
 
   const [newComment, setNewComment] = useState("");
   const [commentLoading, setCommentLoading] = useState(false);
@@ -63,9 +62,9 @@ const SetDesignDetail = () => {
     setCommentLoading(true);
     try {
       await dispatch(
-        createComment({
+        createSetDesignComment({
           setDesignId: id,
-          message: newComment.trim(), 
+          message: newComment.trim(),
         })
       ).unwrap();
 
@@ -86,7 +85,7 @@ const SetDesignDetail = () => {
 
     try {
       await dispatch(
-        replyCommentForStaff({
+        replySetDesignComment({
           setDesignId: id,
           commentIndex,
           replyContent: reply.trim(),
@@ -113,7 +112,12 @@ const SetDesignDetail = () => {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
         <Empty description="Không tìm thấy Set Design này" />
-        <Button type="primary" size="large" className="mt-6" onClick={() => navigate(-1)}>
+        <Button
+          type="primary"
+          size="large"
+          className="mt-6"
+          onClick={() => navigate(-1)}
+        >
           Quay lại
         </Button>
       </div>
@@ -125,14 +129,15 @@ const SetDesignDetail = () => {
     item.images?.[0] ||
     "https://images.unsplash.com/photo-1618776148559-309e0b8775d3?auto=format&fit=crop&w=1200&q=80";
 
-  const categoryLabel = {
-    wedding: "Tiệc cưới",
-    corporate: "Doanh nghiệp & Sự kiện",
-    birthday: "Sinh nhật",
-    product: "Chụp sản phẩm",
-    portrait: "Chân dung",
-    other: "Khác",
-  }[item.category] || "Không xác định";
+  const categoryLabel =
+    {
+      wedding: "Tiệc cưới",
+      corporate: "Doanh nghiệp & Sự kiện",
+      birthday: "Sinh nhật",
+      product: "Chụp sản phẩm",
+      portrait: "Chân dung",
+      other: "Khác",
+    }[item.category] || "Không xác định";
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -168,7 +173,10 @@ const SetDesignDetail = () => {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
               <div className="absolute bottom-6 left-6">
-                <Tag color="white" className="text-lg px-5 py-2 backdrop-blur-sm bg-white/20 border-white">
+                <Tag
+                  color="white"
+                  className="text-lg px-5 py-2 backdrop-blur-sm bg-white/20 border-white"
+                >
                   {categoryLabel}
                 </Tag>
               </div>
@@ -176,14 +184,19 @@ const SetDesignDetail = () => {
 
             <div className="flex flex-col justify-center space-y-8">
               <div>
-                <Title level={1} className="text-4xl lg:text-5xl font-extrabold text-gray-900 mb-4">
+                <Title
+                  level={1}
+                  className="text-4xl lg:text-5xl font-extrabold text-gray-900 mb-4"
+                >
                   {item.name}
                 </Title>
                 <div className="flex items-center gap-6 text-lg">
                   <div className="flex items-center gap-2">
                     <FiStar className="text-yellow-500" />
                     <Text strong>
-                      {item.averageRating > 0 ? item.averageRating.toFixed(1) : "Chưa có"}
+                      {item.averageRating > 0
+                        ? item.averageRating.toFixed(1)
+                        : "Chưa có"}
                     </Text>
                     <Text type="secondary">({item.totalReviews} đánh giá)</Text>
                   </div>
@@ -197,7 +210,9 @@ const SetDesignDetail = () => {
 
               <div className="flex items-center gap-3 text-gray-600">
                 <FiCalendar />
-                <Text>Đã tạo: {new Date(item.createdAt).toLocaleDateString("vi-VN")}</Text>
+                <Text>
+                  Đã tạo: {new Date(item.createdAt).toLocaleDateString("vi-VN")}
+                </Text>
               </div>
 
               <Button
@@ -212,15 +227,21 @@ const SetDesignDetail = () => {
 
           {/* Mô tả */}
           <div className="bg-white rounded-3xl shadow-xl p-8 lg:p-12 mb-16">
-            <Title level={2} className="text-3xl font-bold mb-6">Giới thiệu về Set Design</Title>
+            <Title level={2} className="text-3xl font-bold mb-6">
+              Giới thiệu về Set Design
+            </Title>
             <Paragraph className="text-lg text-gray-700 leading-relaxed whitespace-pre-line">
-              {item.description || "Chưa có mô tả chi tiết. Set design này đang được hoàn thiện và sẽ sớm có thông tin đầy đủ."}
+              {item.description ||
+                "Chưa có mô tả chi tiết. Set design này đang được hoàn thiện và sẽ sớm có thông tin đầy đủ."}
             </Paragraph>
           </div>
 
           {/* ==================== PHẦN BÌNH LUẬN ĐẸP NHƯ FACEBOOK ==================== */}
           <div className="bg-white rounded-3xl shadow-xl p-8 lg:p-12">
-            <Title level={2} className="text-3xl font-bold mb-8 flex items-center gap-3">
+            <Title
+              level={2}
+              className="text-3xl font-bold mb-8 flex items-center gap-3"
+            >
               <FiMessageCircle className="text-indigo-600" />
               Bình luận ({item.totalComments})
             </Title>
@@ -230,9 +251,17 @@ const SetDesignDetail = () => {
               <div className="flex gap-4">
                 <Avatar
                   size={48}
-                  className="bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl flex-shrink-0"
+                  src={
+                    currentUser?.avatar ||
+                    "https://png.pngtree.com/png-clipart/20191120/original/pngtree-outline-user-icon-png-image_5045523.jpg"
+                  }
+                  className="bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl flex-shrink-0 cursor-pointer border border-white shadow-md"
+                  onClick={() => navigate("/dashboard/customer/profile")}
                 >
-                  {currentUser?.name?.[0]?.toUpperCase() || "K"}
+                  {!currentUser?.avatar &&
+                    (currentUser?.fullName?.[0]?.toUpperCase() ||
+                      currentUser?.username?.[0]?.toUpperCase() ||
+                      "K")}
                 </Avatar>
                 <div className="flex-1">
                   <TextArea
@@ -292,13 +321,17 @@ const SetDesignDetail = () => {
                       <div className="bg-gray-100 rounded-3xl px-6 py-4">
                         <div className="flex items-center gap-3 mb-1">
                           <Text strong className="text-gray-900">
-                            {comment.user?.name || "Khách"}
+                            {comment?.customerName || "Khách"}
                           </Text>
                           {comment.isStaff && (
-                            <Tag color="gold" className="text-xs">Nhân viên</Tag>
+                            <Tag color="gold" className="text-xs">
+                              Nhân viên
+                            </Tag>
                           )}
                           <Text type="secondary" className="text-xs">
-                            {new Date(comment.createdAt).toLocaleString("vi-VN")}
+                            {new Date(comment.createdAt).toLocaleString(
+                              "vi-VN"
+                            )}
                           </Text>
                         </div>
                         <Paragraph className="text-gray-800 mb-0">
@@ -332,9 +365,13 @@ const SetDesignDetail = () => {
                               <Text strong className="text-indigo-700">
                                 Studio trả lời
                               </Text>
-                              <Tag color="blue" className="text-xs">Chính thức</Tag>
+                              <Tag color="blue" className="text-xs">
+                                Chính thức
+                              </Tag>
                             </div>
-                            <Text className="text-indigo-900">{comment.reply}</Text>
+                            <Text className="text-indigo-900">
+                              {comment.reply}
+                            </Text>
                           </div>
                         </div>
                       )}
@@ -343,9 +380,13 @@ const SetDesignDetail = () => {
                 ))
               ) : (
                 <div className="text-center py-16">
-                  <FiMessageCircle size={80} className="mx-auto text-gray-300 mb-4" />
+                  <FiMessageCircle
+                    size={80}
+                    className="mx-auto text-gray-300 mb-4"
+                  />
                   <Text type="secondary" className="text-xl">
-                    Chưa có bình luận nào. Hãy là người đầu tiên chia sẻ cảm nhận!
+                    Chưa có bình luận nào. Hãy là người đầu tiên chia sẻ cảm
+                    nhận!
                   </Text>
                 </div>
               )}

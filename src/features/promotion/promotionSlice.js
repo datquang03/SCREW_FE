@@ -5,9 +5,12 @@ import axiosInstance from "../../api/axiosInstance";
 // APPLY PROMOTION CODE
 export const applyPromotionCode = createAsyncThunk(
   "promotion/applyPromotionCode",
-  async (code, { rejectWithValue }) => {
+  async ({ code, subtotal }, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.post(`/promotions/apply`, { code });
+      const response = await axiosInstance.post(`/promotions/apply`, {
+        code,
+        subtotal,
+      });
       return response.data.data;
     } catch (err) {
       return rejectWithValue(

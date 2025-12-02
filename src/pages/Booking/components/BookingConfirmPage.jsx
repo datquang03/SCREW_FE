@@ -25,7 +25,14 @@ export default function BookingConfirmPage({ onBack, onSuccess }) {
     (state) => state.booking
   );
 
-  const { startTime, endTime, details = [], promoId } = draft || {};
+  const {
+    startTime,
+    endTime,
+    details = [],
+    promoId,
+    promoCode,
+    discountAmount = 0,
+  } = draft || {};
 
   const duration =
     startTime && endTime
@@ -46,8 +53,9 @@ export default function BookingConfirmPage({ onBack, onSuccess }) {
     (s, d) => s + (d.pricePerUse || 0) * (d.quantity || 1),
     0
   );
-  const discount = promoId ? 100000 : 0; // tạm giả lập
-  const totalPrice = roomPrice + equipmentPrice + servicePrice - discount;
+  const subtotal = roomPrice + equipmentPrice + servicePrice;
+  const discount = discountAmount || 0; // Lấy từ draft (đã được tính khi apply promotion)
+  const totalPrice = subtotal - discount;
 
   const invoiceId = `HD${dayjs().format("YYMMDDHHmm")}${String(
     Math.floor(Math.random() * 1000)
@@ -105,76 +113,74 @@ export default function BookingConfirmPage({ onBack, onSuccess }) {
   }
 
   return (
-    <>
-      {/* NÚT ĐIỀU KHIỂN */}
-      <div className="max-w-4xl mx-auto my-8 px-4 no-print">
-        <div className="flex flex-col sm:flex-row justify-between gap-4">
-          <Button size="large" icon={<ArrowLeftOutlined />} onClick={onBack}>
-            Quay lại chỉnh sửa
-          </Button>
-          <div className="flex gap-3">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+      {/* NÚT QUAY LẠI - CHỈ MỘT NÚT Ở BÊN TRÁI */}
+      <div className="max-w-4xl mx-auto px-4 pt-6 pb-4">
             <Button
               size="large"
-              icon={<PrinterOutlined />}
-              onClick={handlePrint}
+          icon={<ArrowLeftOutlined />}
+          onClick={onBack}
+          className="mb-4"
             >
-              In hóa đơn
+          Quay lại
             </Button>
-            <Button
-              type="primary"
-              size="large"
-              loading={bookingLoading}
-              icon={<CheckCircleOutlined />}
-              onClick={handleConfirm}
-              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 border-none text-white font-bold"
-            >
-              Xác nhận & Thanh toán ngay
-            </Button>
-          </div>
-        </div>
       </div>
+
+      {/* CONTAINER VỚI SCROLL */}
+      <div className="max-w-4xl mx-auto px-4 pb-6">
+        <div className="max-h-[calc(100vh-120px)] overflow-y-auto custom-scrollbar bg-white rounded-2xl shadow-2xl">
       {/* HÓA ĐƠN IN */}
-      <div ref={printRef} className="max-w-4xl mx-auto bg-white shadow-2xl">
-        <div className="bg-gradient-to-r from-purple-700 via-pink-600 to-red-600 text-white py-10 px-12 text-center">
-          <div className="w-24 h-24 bg-white rounded-full mx-auto mb-4 flex items-center justify-center shadow-2xl">
-            <span className="text-5xl font-bold text-purple-600">S</span>
+          <div ref={printRef} className="bg-white">
+            <div className="bg-gradient-to-r from-purple-700 via-pink-600 to-red-600 text-white py-6 md:py-10 px-4 md:px-12 text-center">
+              <div className="w-16 h-16 md:w-24 md:h-24 bg-white rounded-full mx-auto mb-4 flex items-center justify-center shadow-2xl">
+                <span className="text-3xl md:text-5xl font-bold text-purple-600">
+                  S
+                </span>
           </div>
-          <h1 className="text-5xl font-bold mb-2">HÓA ĐƠN ĐẶT PHÒNG</h1>
-          <p className="text-2xl font-bold mt-4">{invoiceId}</p>
+              <h1 className="text-2xl md:text-5xl font-bold mb-2">
+                HÓA ĐƠN ĐẶT PHÒNG
+              </h1>
+              <p className="text-lg md:text-2xl font-bold mt-4">{invoiceId}</p>
         </div>
 
-        <div className="p-12">
+            <div className="p-4 md:p-12">
           {/* THÔNG TIN STUDIO & THỜI GIAN */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-10">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 mb-6 md:mb-10">
             <div>
-              <h3 className="text-2xl font-bold flex items-center gap-3 mb-4">
+                  <h3 className="text-xl md:text-2xl font-bold flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
                 <ShopOutlined className="text-purple-600" /> STUDIO
               </h3>
-              <p className="text-xl font-semibold">{studio.name}</p>
-              <p className="text-gray-600">
-                {studio.address || "123 Đường Sáng Tạo, Q.1, TP.HCM"}
+                  <p className="text-lg md:text-xl font-semibold">
+                    {studio.name}
+                  </p>
+                  <p className="text-sm md:text-base text-gray-600">
+                    {studio.location ||
+                      studio.address ||
+                      "123 Đường Sáng Tạo, Q.1, TP.HCM"}
               </p>
-              <p className="text-gray-600">Hotline: 0909 888 999</p>
+                  <p className="text-sm md:text-base text-gray-600">
+                    Hotline: 0909 888 999
+                  </p>
             </div>
-            <div className="text-right">
-              <h3 className="text-2xl font-bold flex items-center justify-end gap-3 mb-4">
+                <div className="text-left md:text-right">
+                  <h3 className="text-xl md:text-2xl font-bold flex items-center gap-2 md:gap-3 mb-3 md:mb-4 md:justify-end">
                 <CalendarOutlined className="text-blue-600" /> THỜI GIAN
               </h3>
-              <div className="space-y-3">
-                <div className="bg-blue-50 rounded-xl p-4 inline-block">
-                  <p className="text-3xl font-bold text-blue-600">
+                  <div className="space-y-2 md:space-y-3">
+                    <div className="bg-blue-50 rounded-xl p-3 md:p-4 inline-block">
+                      <p className="text-xl md:text-3xl font-bold text-blue-600">
                     {dayjs(startTime).format("DD/MM/YYYY")}
                   </p>
                 </div>
-                <div className="bg-green-50 rounded-xl p-4 inline-block text-left">
-                  <p className="text-gray-700">Từ</p>
-                  <p className="text-3xl font-bold text-green-600">
+                    <div className="bg-green-50 rounded-xl p-3 md:p-4 inline-block text-left">
+                      <p className="text-sm md:text-base text-gray-700">Từ</p>
+                      <p className="text-xl md:text-3xl font-bold text-green-600">
                     {dayjs(startTime).format("HH:mm")} →{" "}
                     {dayjs(endTime).format("HH:mm")}
                   </p>
                 </div>
-                <div className="bg-orange-50 rounded-xl p-4 inline-block">
-                  <p className="text-4xl font-bold text-orange-600">
+                    <div className="bg-orange-50 rounded-xl p-3 md:p-4 inline-block">
+                      <p className="text-2xl md:text-4xl font-bold text-orange-600">
                     {duration.toFixed(1)} giờ
                   </p>
                 </div>
@@ -182,46 +188,57 @@ export default function BookingConfirmPage({ onBack, onSuccess }) {
             </div>
           </div>
 
-          <div className="border-t-4 border-dashed border-gray-300 my-10"></div>
+              <div className="border-t-4 border-dashed border-gray-300 my-6 md:my-10"></div>
 
           {/* BẢNG CHI TIẾT */}
-          <h2 className="text-3xl font-bold text-center mb-8">
+              <h2 className="text-xl md:text-3xl font-bold text-center mb-4 md:mb-8">
             CHI TIẾT ĐẶT PHÒNG
           </h2>
-          <table className="w-full text-left border-collapse text-base">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-sm md:text-base min-w-[600px]">
             <thead>
               <tr className="bg-gray-100">
-                <th className="py-4 px-6">Hạng mục</th>
-                <th className="py-4 px-6 text-center">SL</th>
-                <th className="py-4 px-6 text-right">Đơn giá</th>
-                <th className="py-4 px-6 text-right font-bold">Thành tiền</th>
+                      <th className="py-3 md:py-4 px-3 md:px-6 text-xs md:text-base">
+                        Hạng mục
+                      </th>
+                      <th className="py-3 md:py-4 px-3 md:px-6 text-center text-xs md:text-base">
+                        SL
+                      </th>
+                      <th className="py-3 md:py-4 px-3 md:px-6 text-right text-xs md:text-base">
+                        Đơn giá
+                      </th>
+                      <th className="py-3 md:py-4 px-3 md:px-6 text-right font-bold text-xs md:text-base">
+                        Thành tiền
+                      </th>
               </tr>
             </thead>
             <tbody>
               <tr className="border-b-2 border-gray-200">
-                <td className="py-5 px-6 font-medium text-lg">
+                      <td className="py-4 md:py-5 px-3 md:px-6 font-medium text-sm md:text-lg">
                   Thuê phòng "{studio.name}"
                 </td>
-                <td className="py-5 px-6 text-center font-bold text-purple-600">
+                      <td className="py-4 md:py-5 px-3 md:px-6 text-center font-bold text-purple-600 text-sm md:text-base">
                   {duration.toFixed(1)} giờ
                 </td>
-                <td className="py-5 px-6 text-right">
+                      <td className="py-4 md:py-5 px-3 md:px-6 text-right text-xs md:text-base">
                   {studio.basePricePerHour.toLocaleString()}₫/giờ
                 </td>
-                <td className="py-5 px-6 text-right text-xl font-bold text-purple-700">
+                      <td className="py-4 md:py-5 px-3 md:px-6 text-right text-base md:text-xl font-bold text-purple-700">
                   {roomPrice.toLocaleString()}₫
                 </td>
               </tr>
               {equipment.map((item, i) => (
                 <tr key={i} className="border-b bg-gray-50">
-                  <td className="py-4 px-6">→ {item.name}</td>
-                  <td className="py-4 px-6 text-center">
+                        <td className="py-3 md:py-4 px-3 md:px-6 text-xs md:text-base">
+                          → {item.name}
+                        </td>
+                        <td className="py-3 md:py-4 px-3 md:px-6 text-center text-xs md:text-base">
                     {item.quantity || 1}
                   </td>
-                  <td className="py-4 px-6 text-right">
+                        <td className="py-3 md:py-4 px-3 md:px-6 text-right text-xs md:text-base">
                     {item.pricePerHour.toLocaleString()}₫/giờ
                   </td>
-                  <td className="py-4 px-6 text-right font-semibold">
+                        <td className="py-3 md:py-4 px-3 md:px-6 text-right font-semibold text-xs md:text-base">
                     {(
                       item.pricePerHour *
                       duration *
@@ -233,43 +250,47 @@ export default function BookingConfirmPage({ onBack, onSuccess }) {
               ))}
               {services.map((item, i) => (
                 <tr key={i} className="border-b bg-blue-50">
-                  <td className="py-4 px-6">→ {item.name}</td>
-                  <td className="py-4 px-6 text-center">
+                        <td className="py-3 md:py-4 px-3 md:px-6 text-xs md:text-base">
+                          → {item.name}
+                        </td>
+                        <td className="py-3 md:py-4 px-3 md:px-6 text-center text-xs md:text-base">
                     {item.quantity || 1}
                   </td>
-                  <td className="py-4 px-6 text-right">
+                        <td className="py-3 md:py-4 px-3 md:px-6 text-right text-xs md:text-base">
                     {item.pricePerUse.toLocaleString()}₫
                   </td>
-                  <td className="py-4 px-6 text-right font-semibold">
+                        <td className="py-3 md:py-4 px-3 md:px-6 text-right font-semibold text-xs md:text-base">
                     {item.pricePerUse.toLocaleString()}₫
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+              </div>
 
           {/* TỔNG KẾT */}
-          <div className="mt-10 flex justify-end">
-            <div className="w-full max-w-md space-y-4 text-xl">
+              <div className="mt-6 md:mt-10 flex justify-end">
+                <div className="w-full max-w-md space-y-3 md:space-y-4 text-base md:text-xl">
               <div className="flex justify-between">
                 <span>Tạm tính:</span>
                 <span className="font-bold">
-                  {(roomPrice + equipmentPrice + servicePrice).toLocaleString()}
-                  ₫
+                      {subtotal.toLocaleString()}₫
                 </span>
               </div>
-              {promoId && (
-                <div className="flex justify-between text-green-600 font-bold">
+                  {promoId && discount > 0 && (
+                    <div className="flex justify-between text-green-600 font-bold text-sm md:text-base">
                   <span className="flex items-center gap-2">
-                    <GiftOutlined /> Mã giảm giá ({promoId})
+                        <GiftOutlined /> Mã giảm giá ({promoCode || promoId})
                   </span>
                   <span>-{discount.toLocaleString()}₫</span>
                 </div>
               )}
-              <div className="border-t-4 border-purple-600 pt-4">
+                  <div className="border-t-4 border-purple-600 pt-3 md:pt-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-3xl font-bold">TỔNG CỘNG</span>
-                  <span className="text-5xl font-extrabold text-purple-700">
+                      <span className="text-xl md:text-3xl font-bold">
+                        TỔNG CỘNG
+                      </span>
+                      <span className="text-3xl md:text-5xl font-extrabold text-purple-700">
                     {totalPrice.toLocaleString()}₫
                   </span>
                 </div>
@@ -277,14 +298,40 @@ export default function BookingConfirmPage({ onBack, onSuccess }) {
             </div>
           </div>
 
-          <div className="text-center mt-16 text-gray-600">
-            <p className="text-2xl font-bold">Cảm ơn quý khách đã tin tưởng!</p>
-            <p className="text-lg">
+              <div className="text-center mt-8 md:mt-16 text-gray-600">
+                <p className="text-lg md:text-2xl font-bold">
+                  Cảm ơn quý khách đã tin tưởng!
+                </p>
+                <p className="text-sm md:text-lg">
               Hệ thống đặt phòng tự động • Hotline: 1900 9999
             </p>
+              </div>
+
+              {/* NÚT HÀNH ĐỘNG */}
+              <div className="mt-8 mb-6 px-6 pb-6 flex flex-col sm:flex-row gap-3 justify-end">
+                <Button
+                  size="large"
+                  icon={<PrinterOutlined />}
+                  onClick={handlePrint}
+                  className="no-print"
+                >
+                  In hóa đơn
+                </Button>
+                <Button
+                  type="primary"
+                  size="large"
+                  loading={bookingLoading}
+                  icon={<CheckCircleOutlined />}
+                  onClick={handleConfirm}
+                  className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 border-none text-white font-bold no-print"
+                >
+                  Xác nhận & Thanh toán ngay
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

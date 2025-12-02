@@ -6,13 +6,10 @@ import {
   Button,
   Card,
   Typography,
-  Image,
-  Space,
   Tag,
   message,
-  Spin,
 } from "antd";
-import { TeamOutlined, ArrowRightOutlined } from "@ant-design/icons";
+import { ArrowRightOutlined } from "@ant-design/icons";
 import { useSelector, useDispatch } from "react-redux";
 import dayjs from "dayjs";
 import { motion } from "framer-motion";
@@ -23,10 +20,7 @@ const { RangePicker } = TimePicker;
 
 const BookingSchedulePage = ({ onNext }) => {
   const dispatch = useDispatch();
-
-  const studio = useSelector((state) => state.studio.currentStudio);
   const draft = useSelector((state) => state.booking.draft);
-  const loading = useSelector((state) => state.studio.loading);
 
   const [selectedDate, setSelectedDate] = useState(null);
   const [timeRange, setTimeRange] = useState([null, null]);
@@ -78,15 +72,6 @@ const BookingSchedulePage = ({ onNext }) => {
     onNext();
   };
 
-  if (loading || !studio) {
-    return (
-      <div className="text-center py-20">
-        <Spin size="large" />
-        <Text className="block mt-4 text-lg">Đang tải thông tin studio...</Text>
-      </div>
-    );
-  }
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -94,55 +79,15 @@ const BookingSchedulePage = ({ onNext }) => {
       exit={{ opacity: 0, y: -20 }}
       className="max-w-6xl mx-auto space-y-10 py-6"
     >
-      {/* Thông tin Studio */}
-      <Card className="shadow-2xl overflow-hidden border-0 rounded-3xl">
-        <div className="grid md:grid-cols-3 gap-0">
-          <div className="md:col-span-1">
-            <Image
-              src={studio.images?.[0]?.url || "/images/studio-default.jpg"}
-              alt={studio.name}
-              className="w-full h-64 md:h-full object-cover"
-              preview={false}
-              fallback="/images/studio-default.jpg"
-            />
-          </div>
-
-          <div className="md:col-span-2 p-8 flex flex-col justify-between">
-            <div>
-              <Title level={2} className="mb-4 text-3xl font-bold">
-                {studio.name}
+      {/* Header */}
+      <div className="text-center space-y-2">
+        <Title level={2} className="text-gray-900 mb-0">
+          Chọn ngày và giờ đặt phòng
               </Title>
-              <Text className="text-gray-600 text-lg leading-relaxed block mb-6">
-                {studio.description ||
-                  "Studio chuyên nghiệp với đầy đủ tiện nghi."}
-              </Text>
-
-              <Space size="large" className="mb-8">
-                <Tag
-                  icon={<TeamOutlined />}
-                  color="blue"
-                  className="text-base py-1 px-4"
-                >
-                  Sức chứa {studio.capacity} người
-                </Tag>
-              </Space>
-
-              <div className="text-right">
-                <Text className="text-xl text-gray-500 block">
-                  Giá thuê mỗi giờ
+        <Text className="text-gray-600 text-lg">
+          Vui lòng chọn ngày và khung giờ bạn muốn thuê studio
                 </Text>
-                <Title
-                  level={1}
-                  className="m-0 text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"
-                >
-                  {(studio.basePricePerHour / 1_000_000).toFixed(1)} triệu
-                </Title>
-                <Text className="text-lg text-gray-600">VND / giờ</Text>
-              </div>
-            </div>
-          </div>
         </div>
-      </Card>
 
       {/* Chọn ngày & giờ */}
       <div className="grid lg:grid-cols-2 gap-10">

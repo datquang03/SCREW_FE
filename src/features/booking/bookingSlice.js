@@ -184,6 +184,7 @@ const initialState = {
     details: [],
     promoId: null,
     promoCode: null,
+    discountAmount: 0,
   },
 
   currentBooking: null,
@@ -227,11 +228,13 @@ const bookingSlice = createSlice({
     applyPromo: (state, action) => {
       state.draft.promoId = action.payload.promoId;
       state.draft.promoCode = action.payload.promoCode;
+      state.draft.discountAmount = action.payload.discountAmount || 0;
     },
 
     removePromo: (state) => {
       state.draft.promoId = null;
       state.draft.promoCode = null;
+      state.draft.discountAmount = 0;
     },
 
     resetBooking: () => initialState,
