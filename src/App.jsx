@@ -51,6 +51,10 @@ import StudioLikedPage from "./pages/Studio/StudioLikedPage";
 import EquipmentListPage from "./pages/Equipment/EquipmentList";
 import StaffUserPage from "./pages/StaffDashboard/StaffUserPage";
 import StaffSetDesignPage from "./pages/StaffDashboard/StaffSetDesignPage";
+import PaymentSuccessPage from "./pages/Payment/PaymentSuccessPage";
+import PaymentCancelPage from "./pages/Payment/PaymentCancelPage";
+import NotFoundPage from "./pages/Notfound/NotFoundPage";
+import SetDesignSection from "./pages/SetDesign/SetDesignDetailPage";
 
 const pageVariants = {
   initial: { opacity: 0 },
@@ -90,11 +94,21 @@ const AppContent = () => {
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="*" element={<NotFoundPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/verify-email" element={<VerifyEmailPage />} />
             <Route path="/studio" element={<StudioPage />} />
             <Route path="/studio/:id" element={<StudioDetailPage />} />
             <Route path="/booking/:id" element={<StudioBookingPage />} />
+            <Route path="/set-design/:id" element={<SetDesignSection />} />
+            <Route
+              path="/payment/success"
+              element={<PaymentSuccessPage />}
+            />  
+            <Route
+              path="/payment/cancel"
+              element={<PaymentCancelPage />}
+            />  
 
             {/* CUSTOMER DASHBOARD */}
             <Route

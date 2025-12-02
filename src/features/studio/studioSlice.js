@@ -181,8 +181,6 @@ export const setMaintenance = createAsyncThunk(
 );
 
 // UPLOAD IMAGES
-// API: /studios/:studioId/media
-// Body: FormData with field name "images"
 export const uploadStudioImage = createAsyncThunk(
   "studio/uploadStudioImage",
   async ({ studioId, files }, { rejectWithValue, getState }) => {
@@ -190,11 +188,8 @@ export const uploadStudioImage = createAsyncThunk(
       const { token } = getState().auth;
 
       const formData = new FormData();
-      // Append each file with field name "images"
       files.forEach((file) => {
-        if (file instanceof File) {
-          formData.append("images", file);
-        }
+        if (file instanceof File) formData.append("images", file);
       });
 
       const response = await axiosInstance.post(
@@ -236,7 +231,6 @@ const studioSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // ========== 1. Tất cả addCase() ==========
       .addCase(createStudio.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -316,47 +310,7 @@ const studioSlice = createSlice({
           state.currentStudio = updated;
       })
 
-      // ========== 2. addMatcher() — luôn nằm cuối ==========
-      .addMatcher(
-        (action) =>
-          [setActivate, setDeactivate, setMaintenance].some((t) =>
-            t.pending.match(action)
-          ),
-        (state) => {
-          state.loading = true;
-        }
-      )
-      .addMatcher(
-        (action) =>
-          [setActivate, setDeactivate, setMaintenance].some((t) =>
-            t.fulfilled.match(action)
-          ),
-        (state, action) => {
-          state.loading = false;
-          const updated = action.payload;
-          const index = state.studios.findIndex((s) => s._id === updated._id);
-          if (index !== -1) state.studios[index] = updated;
-          if (state.currentStudio?._id === updated._id)
-            state.currentStudio = updated;
-        }
-      )
-      .addMatcher(
-        (action) =>
-          [setActivate, setDeactivate, setMaintenance].some((t) =>
-            t.rejected.match(action)
-          ),
-        (state, action) => {
-          state.loading = false;
-          state.error = action.payload;
-        }
-      );
-  },
-});
-
-export const { clearStudioError } = studioSlice.actions;
-export default studioSlice.reducer;
-
-      // ========== 2. addMatcher() — luôn nằm cuối ==========
+      // ================= addMatcher (cuối) =================
       .addMatcher(
         (action) =>
           [setActivate, setDeactivate, setMaintenance].some((t) =>
