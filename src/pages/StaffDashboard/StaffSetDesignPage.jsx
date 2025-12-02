@@ -112,14 +112,14 @@ const StaffSetDesignPage = () => {
             message:
               "Tạo Set Design thành công nhưng upload ảnh thất bại: " +
               (resImg.error?.message || "Lỗi không xác định"),
-          });
+        });
         }
       }
 
-      setToast({ type: "success", message: "Tạo Set Design thành công!" });
+        setToast({ type: "success", message: "Tạo Set Design thành công!" });
       // clear form
-      addForm.resetFields();
-      fetchSetDesigns(1);
+        addForm.resetFields();
+        fetchSetDesigns(1);
       setAddModalVisible(false);
     } catch (err) {
       // validation error or other
@@ -178,11 +178,11 @@ const StaffSetDesignPage = () => {
         }
       }
 
-      setToast({ type: "success", message: "Cập nhật thành công!" });
-      setEditModalVisible(false);
-      setPreviewImages([]);
-      setUploadPayload([]);
-      fetchSetDesigns(currentPage);
+        setToast({ type: "success", message: "Cập nhật thành công!" });
+        setEditModalVisible(false);
+        setPreviewImages([]);
+        setUploadPayload([]);
+        fetchSetDesigns(currentPage);
     } catch (err) {
       setToast({ type: "error", message: err.message || "Có lỗi xảy ra" });
     }

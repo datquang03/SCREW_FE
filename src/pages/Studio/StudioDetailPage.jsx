@@ -82,18 +82,19 @@ const StudioDetailPage = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 md:px-8 py-12 space-y-12">
-        {/* Back button */}
-        <Button
-          type="default"
-          onClick={() => navigate(-1)}
-          className="mb-6 flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-900 transition"
-          icon={<FiArrowLeft />}
-        >
-          Quay lại
-        </Button>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+        <div className="container mx-auto px-4 md:px-8 py-8 space-y-8">
+          {/* Back button */}
+          <Button
+            type="default"
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 shadow-sm transition-all"
+            icon={<FiArrowLeft />}
+          >
+            Quay lại
+          </Button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left: Images + Ads */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
@@ -105,36 +106,38 @@ const StudioDetailPage = () => {
               <Carousel
                 autoplay
                 dots
-                className="rounded-2xl overflow-hidden shadow-xl"
+                className="rounded-2xl overflow-hidden shadow-2xl border border-gray-100"
               >
                 {currentStudio.images.map((img, idx) => (
                   <div key={idx} className="h-96 lg:h-[500px] w-full">
                     <img
                       src={img}
                       alt={currentStudio.name}
-                      className="w-full h-full object-cover rounded-2xl"
+                      className="w-full h-full object-cover"
                     />
                   </div>
                 ))}
               </Carousel>
             ) : (
-              <div className="h-96 lg:h-[500px] w-full bg-gray-200 rounded-2xl flex items-center justify-center text-6xl text-gray-400">
+              <div className="h-96 lg:h-[500px] w-full bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center text-6xl text-gray-400 shadow-lg border border-gray-200">
                 📷
               </div>
             )}
 
             {/* Quảng cáo */}
-            <div className="bg-yellow-50 p-6 rounded-xl shadow-lg text-center space-y-2">
-              <Text className="text-lg font-semibold text-yellow-700">
-                Khuyến mãi tháng này!
+            <div className="bg-gradient-to-br from-yellow-50 via-yellow-100 to-amber-50 p-6 rounded-2xl shadow-lg border border-yellow-200 text-center space-y-3">
+              <div className="inline-block bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                Khuyến mãi
+              </div>
+              <Text className="text-xl font-bold text-yellow-900 block">
+                Giảm giá 20% cho mọi đơn đặt
               </Text>
               <Paragraph className="text-gray-700 text-sm">
-                Giảm giá 20% cho mọi đơn đặt từ 500,000 VNĐ. Chỉ áp dụng đến
-                31/12!
+                Áp dụng cho đơn từ 500,000 VNĐ. Chỉ đến 31/12!
               </Paragraph>
               <Button
                 type="primary"
-                className="bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400 border-none text-white font-bold px-6 py-3 rounded-lg shadow-md hover:shadow-xl transition"
+                className="bg-gradient-to-r from-yellow-500 to-amber-500 border-none text-white font-semibold px-6 py-2 rounded-xl shadow-md hover:shadow-xl hover:from-yellow-600 hover:to-amber-600 transition-all"
               >
                 Xem khuyến mãi
               </Button>
@@ -148,124 +151,151 @@ const StudioDetailPage = () => {
             transition={{ duration: 0.6 }}
             className="space-y-6"
           >
-            <div className="flex items-center justify-between">
-              <Title className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-0">
-                {currentStudio.name}
-              </Title>
-              <Button
-                type="text"
-                icon={
-                  liked ? (
-                    <AiFillHeart className="text-red-500 text-2xl" />
-                  ) : (
-                    <AiOutlineHeart className="text-gray-400 text-2xl" />
-                  )
-                }
-                onClick={() => setLiked(!liked)}
-              />
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+              <div className="flex items-start justify-between mb-4">
+                <Title className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-0 leading-tight">
+                  {currentStudio.name}
+                </Title>
+                <Button
+                  type="text"
+                  className="flex-shrink-0"
+                  icon={
+                    liked ? (
+                      <AiFillHeart className="text-red-500 text-2xl" />
+                    ) : (
+                      <AiOutlineHeart className="text-gray-400 text-2xl hover:text-red-400 transition-colors" />
+                    )
+                  }
+                  onClick={() => setLiked(!liked)}
+                />
+              </div>
+
+              <Paragraph className="text-gray-600 text-base leading-relaxed mb-6">
+                {currentStudio.description}
+              </Paragraph>
+
+              <div className="flex flex-wrap gap-3 mb-6">
+                <Tag
+                  color="blue"
+                  className="flex items-center gap-2 font-medium px-4 py-2 rounded-full text-sm"
+                >
+                  <FiMapPin />
+                  {currentStudio.location || "Không xác định"}
+                </Tag>
+                <Tag
+                  color="purple"
+                  className="flex items-center gap-2 font-medium px-4 py-2 rounded-full text-sm"
+                >
+                  <FiUsers />
+                  {currentStudio.capacity} người
+                </Tag>
+                <Tag
+                  color={
+                    currentStudio.status === "active"
+                      ? "green"
+                      : currentStudio.status === "maintenance"
+                      ? "orange"
+                      : "red"
+                  }
+                  className="font-medium px-4 py-2 rounded-full text-sm"
+                >
+                  {currentStudio.status.charAt(0).toUpperCase() +
+                    currentStudio.status.slice(1)}
+                </Tag>
+              </div>
+
+              <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-5 border border-gray-200 space-y-4 mb-6">
+                <div className="flex items-center justify-between">
+                  <Text className="text-gray-600 font-medium">Diện tích</Text>
+                  <Text className="font-bold text-gray-900 text-lg">
+                    {currentStudio.area} m²
+                  </Text>
+                </div>
+                <div className="border-t border-gray-200 pt-4">
+                  <Text className="text-gray-600 font-medium block mb-2">
+                    Giá thuê
+                  </Text>
+                  <Text className="font-extrabold text-yellow-600 text-3xl md:text-4xl">
+                    {currentStudio.basePricePerHour.toLocaleString()}₫
+                  </Text>
+                  <Text className="text-gray-500 text-sm">/ giờ</Text>
+                </div>
+              </div>
+
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button
+                  type="primary"
+                  size="large"
+                  className="w-full md:w-auto bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400 border-none text-white font-bold px-8 py-4 rounded-xl shadow-lg hover:shadow-2xl transition"
+                  onClick={() => navigate(`/booking/${id}`)}
+                >
+                  Thuê ngay
+                </Button>
+              </motion.div>
             </div>
-
-            <Paragraph className="text-gray-700 text-md md:text-lg">
-              {currentStudio.description}
-            </Paragraph>
-
-            <div className="flex flex-wrap gap-4 mb-4">
-              <Tag
-                color="blue"
-                className="flex items-center gap-1 font-medium px-3 py-2"
-              >
-                <FiMapPin />
-                {currentStudio.location || "Không xác định"}
-              </Tag>
-              <Tag
-                color="purple"
-                className="flex items-center gap-1 font-medium px-3 py-2"
-              >
-                <FiUsers />
-                {currentStudio.capacity} người
-              </Tag>
-              <Tag
-                color={
-                  currentStudio.status === "active"
-                    ? "green"
-                    : currentStudio.status === "maintenance"
-                    ? "orange"
-                    : "red"
-                }
-                className="font-medium px-3 py-2"
-              >
-                {currentStudio.status.charAt(0).toUpperCase() +
-                  currentStudio.status.slice(1)}
-              </Tag>
-            </div>
-
-            <div className="flex flex-col gap-2 text-gray-700 mb-6">
-              <Text>
-                <span className="font-medium text-gray-500">Diện tích:</span>{" "}
-                <span className="font-semibold text-gray-900">
-                  {currentStudio.area} m²
-                </span>
-              </Text>
-              <Text>
-                <span className="font-medium text-gray-500">Giá thuê:</span>{" "}
-                <span className="font-semibold text-yellow-600 text-xl md:text-2xl">
-                  {currentStudio.basePricePerHour.toLocaleString()} VNĐ / giờ
-                </span>
-              </Text>
-            </div>
-
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button
-                type="primary"
-                size="large"
-                className="w-full md:w-auto bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400 border-none text-white font-bold px-8 py-4 rounded-xl shadow-lg hover:shadow-2xl transition"
-              >
-                Thuê ngay
-              </Button>
-            </motion.div>
           </motion.div>
         </div>
 
         {/* Reviews Section */}
         <div className="space-y-6">
-          <Title level={3} className="text-gray-900">
-            Đánh giá
-          </Title>
-          <div className="space-y-4">
-            {sampleReviews.map((review) => (
-              <div
-                key={review.id}
-                className="bg-gray-50 p-4 rounded-xl shadow-sm space-y-2"
-              >
-                <div className="flex items-center gap-3">
-                  <Avatar size="small">{review.user.charAt(0)}</Avatar>
-                  <Text className="font-medium">{review.user}</Text>
-                  {review.liked && (
-                    <AiFillHeart className="text-red-500 ml-auto" />
+          <div className="flex items-center justify-between">
+            <Title level={3} className="text-gray-900 mb-0">
+              Đánh giá ({sampleReviews.length})
+            </Title>
+          </div>
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+            <div className="max-h-[600px] overflow-y-auto px-6 py-4 space-y-4 custom-scrollbar">
+              {sampleReviews.map((review) => (
+                <div
+                  key={review.id}
+                  className="bg-gradient-to-br from-gray-50 to-white p-5 rounded-xl border border-gray-100 hover:border-yellow-300 hover:shadow-md transition-all duration-300 space-y-3"
+                >
+                  <div className="flex items-center gap-3">
+                    <Avatar
+                      size={40}
+                      className="bg-gradient-to-br from-yellow-400 to-yellow-600 text-white font-semibold shadow-md"
+                    >
+                      {review.user.charAt(0)}
+                    </Avatar>
+                    <div className="flex-1">
+                      <Text className="font-semibold text-gray-900 block">
+                        {review.user}
+                      </Text>
+                      <Text className="text-xs text-gray-500">
+                        {new Date().toLocaleDateString("vi-VN")}
+                      </Text>
+                    </div>
+                    {review.liked && (
+                      <AiFillHeart className="text-red-500 text-xl" />
+                    )}
+                  </div>
+                  <Paragraph className="text-gray-700 text-sm leading-relaxed ml-12">
+                    {review.content}
+                  </Paragraph>
+                  {/* Replies */}
+                  {review.replies && review.replies.length > 0 && (
+                    <div className="ml-12 pl-4 space-y-2 border-l-2 border-yellow-300 bg-yellow-50/50 rounded-r-lg p-3">
+                      {review.replies.map((rep) => (
+                        <div
+                          key={rep.id}
+                          className="flex items-start gap-2 text-sm"
+                        >
+                          <Text className="font-semibold text-yellow-700 min-w-fit">
+                            {rep.user}:
+                          </Text>
+                          <Text className="text-gray-700 flex-1">
+                            {rep.content}
+                          </Text>
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
-                <Paragraph className="text-gray-700 text-sm">
-                  {review.content}
-                </Paragraph>
-                {/* Replies */}
-                {review.replies && review.replies.length > 0 && (
-                  <div className="pl-8 space-y-1 border-l-2 border-gray-200">
-                    {review.replies.map((rep) => (
-                      <div key={rep.id} className="flex items-center gap-2">
-                        <Text className="font-medium text-gray-800">
-                          {rep.user}:
-                        </Text>
-                        <Text className="text-gray-700 text-sm">
-                          {rep.content}
-                        </Text>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
+      </div>
       </div>
     </Layout>
   );

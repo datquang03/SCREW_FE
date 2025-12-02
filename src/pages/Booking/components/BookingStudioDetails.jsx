@@ -34,6 +34,7 @@ import {
   applyPromo,
   removePromo,
 } from "../../../features/booking/bookingSlice";
+import { applyPromotionCode } from "../../../features/promotion/promotionSlice";
 
 const { Title, Text } = Typography;
 
@@ -53,6 +54,9 @@ export default function BookingStudioDetails({ onNext, onBack }) {
 
   const [selectedEquipment, setSelectedEquipment] = useState(null);
   const [promoCode, setPromoCode] = useState("");
+  const [appliedPromotion, setAppliedPromotion] = useState(null);
+  const [applyingPromo, setApplyingPromo] = useState(false);
+  const [discountAmount, setDiscountAmount] = useState(0);
 
   // Lấy từ Redux draft
   const { startTime, endTime, details = [], promoId } = draft;
@@ -82,8 +86,6 @@ export default function BookingStudioDetails({ onNext, onBack }) {
     }
     return sum;
   }, 0);
-
-  const totalPrice = roomPrice + equipmentPrice + servicePrice;
 
   // Load dữ liệu khi vào bước này
   useEffect(() => {
@@ -146,19 +148,58 @@ export default function BookingStudioDetails({ onNext, onBack }) {
     dispatch(setBookingDetails(newDetails));
   };
 
-  // Áp dụng mã giảm giá (giả lập)
-  const handleApplyPromo = () => {
-    const code = promoCode.trim().toUpperCase();
-    if (!code) return;
+  // Tính lại totalPrice khi có thay đổi
+  const totalPrice = roomPrice + equipmentPrice + servicePrice;
+  const finalPrice = totalPrice - discountAmount;
 
-    const validCodes = ["GIAM20", "STUDIOVIP", "FOAP2025", "FREE100K"];
-    if (validCodes.includes(code)) {
-      dispatch(applyPromo({ promoId: code, promoCode: code }));
-      message.success(`Áp dụng mã ${code} thành công!`);
-      setPromoCode("");
-    } else {
-      message.error("Mã giảm giá không hợp lệ");
+  // Áp dụng mã giảm giá với API thật
+  const handleApplyPromo = async () => {
+    const code = promoCode.trim().toUpperCase();
+    if (!code) {
+      message.warning("Vui lòng nhập mã giảm giá!");
+      return;
     }
+
+    if (totalPrice <= 0) {
+      message.warning("Tổng tiền phải lớn hơn 0 để áp dụng mã giảm giá!");
+      return;
+    }
+
+    try {
+      setApplyingPromo(true);
+      const result = await dispatch(
+        applyPromotionCode({ code, subtotal: totalPrice })
+      ).unwrap();
+
+      // result có thể chứa: { discountAmount, promotion, ... }
+      const discount = result.discountAmount || result.discount || 0;
+      setDiscountAmount(discount);
+      setAppliedPromotion(result.promotion || result);
+      dispatch(
+        applyPromo({
+          promoId: result._id || result.id || result.promotion?._id,
+          promoCode: code,
+          discountAmount: discount,
+        })
+      );
+      message.success(`Áp dụng mã ${code} thành công! Giảm ${discount.toLocaleString()}₫`);
+      setPromoCode("");
+    } catch (err) {
+      message.error(err?.message || "Mã giảm giá không hợp lệ hoặc đã hết hạn!");
+      setDiscountAmount(0);
+      setAppliedPromotion(null);
+    } finally {
+      setApplyingPromo(false);
+    }
+  };
+
+  // Xóa mã giảm giá
+  const handleRemovePromo = () => {
+    setDiscountAmount(0);
+    setAppliedPromotion(null);
+    setPromoCode("");
+    dispatch(removePromo());
+    message.info("Đã xóa mã giảm giá");
   };
 
   const formatTime = (iso) =>
@@ -279,7 +320,7 @@ export default function BookingStudioDetails({ onNext, onBack }) {
           <Col xs={24} md={10} className="text-right mt-4 md:mt-0">
             <Text className="block text-xl opacity-90">Tiền thuê phòng</Text>
             <Title level={1} className="m-0 text-white text-4xl">
-              {(roomPrice / 1_000_000).toFixed(2).replace(".00", "")} triệu
+              {roomPrice.toLocaleString()}₫
             </Title>
           </Col>
         </Row>
@@ -468,45 +509,94 @@ export default function BookingStudioDetails({ onNext, onBack }) {
       </Modal>
 
       {/* MÃ GIẢM GIÁ */}
-      <Card title="Bạn có mã giảm giá?">
-        <Space.Compact className="w-full">
-          <Input
-            placeholder="Nhập mã giảm giá..."
-            value={promoCode}
-            onChange={(e) => setPromoCode(e.target.value)}
-            prefix={<GiftOutlined />}
-            size="large"
-            onPressEnter={handleApplyPromo}
-          />
-          <Button type="primary" size="large" onClick={handleApplyPromo}>
-            Áp dụng
-          </Button>
-        </Space.Compact>
-        {promoId && (
-          <Tag color="green" className="mt-3 text-lg">
-            Đã áp dụng: {promoId}
-          </Tag>
+      <Card title="Mã giảm giá">
+        {!appliedPromotion ? (
+          <Space.Compact className="w-full">
+            <Input
+              placeholder="Nhập mã giảm giá..."
+              value={promoCode}
+              onChange={(e) => setPromoCode(e.target.value)}
+              prefix={<GiftOutlined />}
+              size="large"
+              onPressEnter={handleApplyPromo}
+              disabled={applyingPromo}
+            />
+            <Button
+              type="primary"
+              size="large"
+              onClick={handleApplyPromo}
+              loading={applyingPromo}
+            >
+              Áp dụng
+            </Button>
+          </Space.Compact>
+        ) : (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-4 bg-green-50 rounded-xl border border-green-200">
+              <div>
+                <Tag color="green" className="text-lg px-3 py-1 mb-2">
+                  {appliedPromotion.code || promoId}
+                </Tag>
+                <div className="text-green-700 font-semibold">
+                  Giảm {discountAmount.toLocaleString()}₫
+                </div>
+              </div>
+              <Button
+                type="text"
+                danger
+                onClick={handleRemovePromo}
+                size="small"
+              >
+                Xóa
+              </Button>
+            </div>
+          </div>
         )}
       </Card>
 
       {/* TỔNG TIỀN */}
       <Card className="bg-gradient-to-r from-purple-700 to-pink-600 text-white rounded-3xl p-8">
-        <div className="flex justify-between items-center">
-          <div>
-            <Title level={3} className="text-white mb-0">
-              Tổng thanh toán
-            </Title>
-            <Text className="opacity-90">
-              {details.length > 0
-                ? `${details.filter((d) => d.detailType === "equipment").length} thiết bị + ${details.filter(
-                    (d) => d.detailType === "extra_service"
-                  ).length} dịch vụ`
-                : "Chưa chọn thêm"}
-            </Text>
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <Title level={3} className="text-white mb-0">
+                Tổng thanh toán
+              </Title>
+              <Text className="opacity-90 block mt-2">
+                {details.length > 0
+                  ? `${details.filter((d) => d.detailType === "equipment").length} thiết bị + ${details.filter(
+                      (d) => d.detailType === "extra_service"
+                    ).length} dịch vụ`
+                  : "Chưa chọn thêm"}
+              </Text>
+            </div>
           </div>
-          <Title level={1} className="text-white text-5xl font-bold">
-            {(totalPrice / 1_000_000).toFixed(2).replace(".00", "")} triệu
-          </Title>
+
+          <Divider className="bg-white/30 my-4" />
+
+          <div className="space-y-2">
+            <div className="flex justify-between items-center text-lg">
+              <Text className="opacity-90">Tổng tiền:</Text>
+              <Text className="font-semibold">{totalPrice.toLocaleString()}₫</Text>
+            </div>
+            {discountAmount > 0 && (
+              <div className="flex justify-between items-center text-lg">
+                <Text className="opacity-90">Giảm giá:</Text>
+                <Text className="font-semibold text-green-300">
+                  -{discountAmount.toLocaleString()}₫
+                </Text>
+              </div>
+            )}
+          </div>
+
+          <Divider className="bg-white/30 my-4" />
+
+          <div className="flex justify-between items-center">
+            <Text className="text-xl opacity-90">Thành tiền:</Text>
+            <Title level={1} className="text-white text-5xl font-bold m-0">
+              {finalPrice.toLocaleString()}₫
+            </Title>
+          </div>
         </div>
       </Card>
 
