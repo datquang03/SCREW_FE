@@ -15,12 +15,10 @@ import {
   Space,
 } from "antd";
 import { useSelector, useDispatch } from "react-redux";
-import dayjs from "dayjs";
 import CheckCircleOutlined from "@ant-design/icons/CheckCircleOutlined";
 import InfoCircleOutlined from "@ant-design/icons/InfoCircleOutlined";
 
 import {
-  createOptionPayment,
   createSinglePayment,
   resetPaymentState,
 } from "../../../features/payment/paymentSlice";
@@ -44,11 +42,24 @@ export default function BookingPaymentPage({
 
   // Load booking
   useEffect(() => {
-    if (bookingResult) setBooking(bookingResult);
-    else if (reduxBooking) setBooking(reduxBooking);
-    else {
+    const normalizeBooking = (raw) => (raw?.booking ? raw.booking : raw);
+
+    if (bookingResult) {
+      // bookingResult có thể là { booking, paymentOptions } hoặc booking thuần
+      setBooking(normalizeBooking(bookingResult));
+    } else if (reduxBooking) {
+      // currentBooking trong redux đã là booking thuần, nhưng để an toàn vẫn normalize
+      setBooking(normalizeBooking(reduxBooking));
+    } else {
       const saved = localStorage.getItem("latestBooking");
-      if (saved) setBooking(JSON.parse(saved));
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          setBooking(normalizeBooking(parsed));
+        } catch (e) {
+          console.error("Cannot parse latestBooking from localStorage", e);
+        }
+      }
     }
   }, [bookingResult, reduxBooking]);
 
@@ -76,8 +87,6 @@ export default function BookingPaymentPage({
   const hasDiscount = discountAmount > 0;
   const formatted = (num) => num.toLocaleString("vi-VN") + "₫";
 
-  const qrCode = `https://api.qrserver.com/v1/create-qr-code/?size=380x380&data=PAYMENT_${bookingId}`;
-
   const cancellationTiers = policySnapshots.cancellation?.refundTiers || [];
   const noShowRules = policySnapshots.noShow?.noShowRules || {};
 
@@ -86,10 +95,28 @@ export default function BookingPaymentPage({
 
     setLocalLoading(true);
     try {
-      await dispatch(createOptionPayment({ bookingId })).unwrap();
-      await dispatch(createSinglePayment({ bookingId, percentage })).unwrap();
-      message.success(`Đã tạo thanh toán ${percentage}% thành công!`);
-      if (onPaymentSuccess) onPaymentSuccess();
+      const result = await dispatch(
+        createSinglePayment({ bookingId, percentage })
+      ).unwrap();
+
+      // Ưu tiên dùng url trả về từ BE
+      const payUrl =
+        result?.qrCodeUrl ||
+        result?.payUrl ||
+        result?.paymentUrl ||
+        result?.gatewayResponse?.qrCodeUrl ||
+        result?.gatewayResponse?.checkoutUrl;
+
+      if (payUrl) {
+        window.open(payUrl, "_blank", "noopener,noreferrer");
+        message.success(
+          `Đang chuyển tới trang thanh toán PayOS (${percentage}%)`
+        );
+      } else {
+        message.warning(
+          "Tạo payment thành công nhưng không tìm thấy đường dẫn thanh toán."
+        );
+      }
     } catch (err) {
       message.error(err?.message || "Thanh toán thất bại!");
     } finally {
@@ -113,18 +140,8 @@ export default function BookingPaymentPage({
 
         <div className="p-8 md:p-12">
           <div className="grid md:grid-cols-2 gap-12 items-start mb-10">
-            {/* QR */}
-            <div className="flex justify-center">
-              <div className="bg-white p-10 rounded-3xl shadow-2xl border-4 border-gray-100">
-                <img src={qrCode} alt="QR Thanh toán" className="w-80 h-80" />
-                <Text className="block text-center mt-6 text-lg font-semibold text-gray-700">
-                  Quét mã QR để chuyển khoản
-                </Text>
-              </div>
-            </div>
-
             {/* Thông tin chính */}
-            <div className="space-y-8">
+            <div className="space-y-8 md:col-span-2">
               <div>
                 <Text strong className="text-lg text-gray-600">
                   Studio

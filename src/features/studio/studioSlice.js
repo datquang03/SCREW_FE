@@ -181,6 +181,8 @@ export const setMaintenance = createAsyncThunk(
 );
 
 // UPLOAD IMAGES
+// API: /studios/:studioId/media
+// Body: FormData with field name "images"
 export const uploadStudioImage = createAsyncThunk(
   "studio/uploadStudioImage",
   async ({ studioId, files }, { rejectWithValue, getState }) => {
@@ -188,7 +190,12 @@ export const uploadStudioImage = createAsyncThunk(
       const { token } = getState().auth;
 
       const formData = new FormData();
-      files.forEach((file) => formData.append("media", file));
+      // Append each file with field name "images"
+      files.forEach((file) => {
+        if (file instanceof File) {
+          formData.append("images", file);
+        }
+      });
 
       const response = await axiosInstance.post(
         `/studios/${studioId}/media`,

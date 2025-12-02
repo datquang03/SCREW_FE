@@ -103,33 +103,38 @@ export const deleteSetDesign = createAsyncThunk(
 );
 
 /* =============================
-   UPLOAD MULTIPLE IMAGES (Option B)
-   body: { images: [ { base64Image, fileName }, ... ] }
+   UPLOAD MULTIPLE IMAGES
+   API: /api/upload/set-design/:id/images
+   body: FormData with files
 ============================= */
 export const uploadSetDesignImages = createAsyncThunk(
   "setDesign/uploadSetDesignImages",
-  async ({ images }, { rejectWithValue, getState }) => {
+  async ({ setDesignId, images }, { rejectWithValue, getState }) => {
     try {
       const { token } = getState().auth;
 
-      // Ensure shape exactly { base64Image, fileName }
-      const payload = {
-        images: images.map((img) => ({
-          base64Image:
-            img.base64Image ||
-            img.base64 ||
-            img.base64Img ||
-            img.base64_data ||
-            img.base64,
-          fileName: img.fileName || img.name || "file.png",
-        })),
-      };
+      // Create FormData and append files
+      const formData = new FormData();
+
+      // images should be an array of File objects
+      // Append each file with the same field name "images" for multiple files
+      images.forEach((file) => {
+        if (file instanceof File) {
+          formData.append("images", file);
+        } else {
+          // If not a File object, skip or handle error
+          console.warn("Invalid file object:", file);
+        }
+      });
 
       const res = await axiosInstance.post(
-        `/set-designs/upload-image`,
-        payload,
+        `/upload/set-design/${setDesignId}/images`,
+        formData,
         {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            "Content-Type": "multipart/form-data",
+          },
         }
       );
 

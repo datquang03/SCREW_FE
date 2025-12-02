@@ -171,8 +171,8 @@ const UserProfilePage = () => {
         <div className="absolute -bottom-16 -right-10 w-60 h-60 rounded-full bg-blue-300/30 blur-3xl" />
         <div className="relative z-10">
           <Title level={2} className="font-semibold mb-2 text-gray-900">
-            Hồ sơ của tôi
-          </Title>
+          Hồ sơ của tôi
+        </Title>
           <Text className="text-base text-gray-700 font-medium">
             Quản lý thông tin cá nhân và bảo mật tài khoản của bạn
           </Text>

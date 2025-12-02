@@ -69,14 +69,14 @@ const AdminStudiosPage = () => {
       <div className="relative overflow-hidden rounded-2xl p-6 md:p-8 bg-gradient-to-br from-cyan-100 via-blue-50 to-white shadow-lg border border-cyan-200/50">
         <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-cyan-300/30 blur-2xl" />
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
+        <div>
             <Title level={2} className="mb-3 text-gray-900">
-              Hiệu suất studio
-            </Title>
+            Hiệu suất studio
+          </Title>
             <Text className="text-base text-gray-700 font-medium">
-              Theo dõi tình trạng, hiệu suất và doanh thu từng không gian
-            </Text>
-          </div>
+            Theo dõi tình trạng, hiệu suất và doanh thu từng không gian
+          </Text>
+        </div>
           <Button 
             type="primary" 
             size="large" 
@@ -84,8 +84,8 @@ const AdminStudiosPage = () => {
             className="font-semibold shadow-lg"
             onClick={() => navigate("/dashboard/staff/studios")}
           >
-            Thêm studio mới
-          </Button>
+          Thêm studio mới
+        </Button>
         </div>
       </div>
 

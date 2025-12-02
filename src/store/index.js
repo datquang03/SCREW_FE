@@ -12,6 +12,7 @@ import promotionReducer from "../features/promotion/promotionSlice";
 import bookingReducer from "../features/booking/bookingSlice";
 import paymentReducer from "../features/payment/paymentSlice";
 import setDesignReducer from "../features/setdesign/setDesignSlice";
+import scheduleReducer from "../features/schedule/scheduleSlice";
 const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -26,6 +27,7 @@ const store = configureStore({
     booking: bookingReducer,
     payment: paymentReducer,
     setDesign: setDesignReducer,
+    schedule: scheduleReducer,
   },
 });
 

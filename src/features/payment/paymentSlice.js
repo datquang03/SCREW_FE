@@ -27,7 +27,8 @@ export const createOptionPayment = createAsyncThunk(
 
 export const createSinglePayment = createAsyncThunk(
   "payment/createSinglePayment",
-  async ({ bookingId, percentage = 30 }, { rejectWithValue, getState }) => {
+  // percentage sẽ được truyền trực tiếp từ UI (BookingPaymentPage)
+  async ({ bookingId, percentage }, { rejectWithValue, getState }) => {
     try {
       const { token } = getState().auth;
       const res = await axiosInstance.post(

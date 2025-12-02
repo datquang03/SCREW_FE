@@ -71,11 +71,11 @@ const UserDashboardPage = () => {
         <div className="absolute -bottom-12 -right-10 w-60 h-60 rounded-full bg-yellow-400/30 blur-3xl" />
         <div className="relative z-10">
           <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3 tracking-tight">
-            Bảng điều khiển của bạn
-          </h1>
+          Bảng điều khiển của bạn
+        </h1>
           <p className="text-base md:text-lg text-gray-700 font-medium">
-            Theo dõi lịch thuê, trạng thái đơn và gợi ý studio tại S+ Studio.
-          </p>
+          Theo dõi lịch thuê, trạng thái đơn và gợi ý studio tại S+ Studio.
+        </p>
         </div>
       </div>
 
