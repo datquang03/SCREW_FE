@@ -55,6 +55,7 @@ import PaymentSuccessPage from "./pages/Payment/PaymentSuccessPage";
 import PaymentCancelPage from "./pages/Payment/PaymentCancelPage";
 import NotFoundPage from "./pages/Notfound/NotFoundPage";
 import SetDesignSection from "./pages/SetDesign/SetDesignDetailPage";
+import StaffTransactionPage from "./pages/StaffDashboard/StaffTransactionPage";
 
 const pageVariants = {
   initial: { opacity: 0 },
@@ -162,6 +163,7 @@ const AppContent = () => {
               <Route path="profile" element={<StaffProfilePage />} />
               <Route path="service" element={<StaffServicePage />} />
               <Route path="promotion" element={<StaffPromotionPage />} />
+              <Route path="transaction" element={<StaffTransactionPage />} />
             </Route>
 
             {/* ADMIN DASHBOARD */}

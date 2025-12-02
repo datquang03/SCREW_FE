@@ -14,6 +14,7 @@ import paymentReducer from "../features/payment/paymentSlice";
 import scheduleReducer from "../features/schedule/scheduleSlice";
 import setDesignReducer from "../features/setDesign/setDesignSlice";
 import commentReducer from "../features/comment/commentSlice";
+import transactionReducer from "../features/transaction/transactionSlice";
 const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -30,6 +31,7 @@ const store = configureStore({
     setDesign: setDesignReducer,
     schedule: scheduleReducer,
     comment: commentReducer,
+    transaction: transactionReducer,
   },
 });
 

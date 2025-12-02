@@ -11,6 +11,7 @@ import {
   FiUsers,
 } from "react-icons/fi";
 import { MdDesignServices, MdMiscellaneousServices, MdOutlineDiscount } from "react-icons/md";
+import { GiMoneyStack } from "react-icons/gi";
 import { AiOutlineProfile } from "react-icons/ai";
 
 const StaffSidebar = () => {
@@ -28,6 +29,7 @@ const StaffSidebar = () => {
       { key: "equipment", icon: <FiTool />, label: "Thiết bị", path: "/dashboard/staff/equipment" },
       { key: "service", icon: <MdMiscellaneousServices />, label: "Dịch vụ", path: "/dashboard/staff/service" },
       { key: "promotion", icon: <MdOutlineDiscount />, label: "Phiếu giảm", path: "/dashboard/staff/promotion" },
+      { key: "transaction", icon: <GiMoneyStack />, label: "Quản lý giao dịch", path: "/dashboard/staff/transaction" },
       { key: "profile", icon: <AiOutlineProfile  />, label: "Hồ sơ", path: "/dashboard/staff/profile" },
     ],
     []
