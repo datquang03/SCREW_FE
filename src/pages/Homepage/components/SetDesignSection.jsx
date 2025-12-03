@@ -133,19 +133,13 @@ const SetDesignSection = () => {
                 {item.description || "Bộ thiết kế đẹp, chuyên nghiệp và sẵn sàng phục vụ mọi nhu cầu chụp ảnh của bạn."}
               </Paragraph>
 
-              <div className="flex items-center gap-6 text-sm text-gray-500">
-                <span>{item.totalComments} bình luận</span>
-                <span>•</span>
-                <span>Đã tạo {new Date(item.createdAt).toLocaleDateString("vi-VN")}</span>
-              </div>
-
               {/* NÚT XEM CHI TIẾT – CŨNG CHUYỂN TRANG */}
               <button
                 onClick={(e) => {
                   e.stopPropagation(); // ← Quan trọng: tránh trigger click của card
                   goToDetail(item._id);
                 }}
-                className="mt-6 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-full hover:shadow-xl transform hover:scale-105 transition"
+                className="mt-6 px-8 py-4 bg-white text-indigo-700 font-bold rounded-full border border-indigo-200 hover:border-indigo-400 hover:shadow-xl transform hover:scale-105 transition"
               >
                 Xem chi tiết
               </button>

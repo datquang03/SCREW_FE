@@ -70,7 +70,7 @@ const DashboardLayout = ({
             <div className="p-4 sm:p-8 lg:p-10">
           {children ?? <Outlet />}
             </div>
-          </div>
+      </div>
         </main>
       </div>
     </div>

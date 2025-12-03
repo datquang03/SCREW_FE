@@ -161,3 +161,129 @@ html {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
 }
+
+/* Fullscreen image modal */
+.fullscreen-image-modal .ant-modal-content {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.fullscreen-image-modal .ant-modal-body {
+  padding: 0 !important;
+  height: 100vh;
+}
+
+.fullscreen-image-modal .ant-modal-close {
+  color: white !important;
+  top: 20px !important;
+  right: 20px !important;
+  width: 40px !important;
+  height: 40px !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.fullscreen-image-modal .ant-modal-close:hover {
+  background: rgba(0, 0, 0, 0.7) !important;
+}
+
+/* Enhanced 3D effects */
+.perspective-1000 {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+/* Smooth scroll for tags */
+.tags-scroll-container {
+  scrollbar-width: thin;
+  scrollbar-color: #fbbf24 transparent;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tags-scroll-container::-webkit-scrollbar {
+  height: 4px;
+}
+
+.tags-scroll-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tags-scroll-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  border-radius: 2px;
+}
+
+/* Enhanced card 3D effect */
+.card-3d {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transform-style: preserve-3d;
+}
+
+.card-3d:hover {
+  transform: translateY(-8px) rotateX(2deg);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), 0 0 20px rgba(251, 191, 36, 0.1);
+}
+
+/* Tag hover effect */
+.tag-3d {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+}
+
+.tag-3d:hover {
+  transform: translateY(-3px) rotateY(5deg);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Enhanced tag alignment */
+.ant-tag {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  vertical-align: middle !important;
+}
+
+.ant-tag .anticon,
+.ant-tag svg {
+  display: inline-flex !important;
+  align-items: center !important;
+  vertical-align: middle !important;
+  line-height: 1 !important;
+}
+
+/* Smooth animations for complex effects */
+@keyframes float-glow {
+  0%, 100% {
+    transform: translateY(0px);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateY(-10px);
+    opacity: 0.8;
+  }
+}
+
+.animate-float-glow {
+  animation: float-glow 3s ease-in-out infinite;
+}
+
+/* Glass morphism for buttons */
+.glass-button {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Enhanced shadow effects */
+.shadow-glow {
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+}
+
+.shadow-glow-lg {
+  box-shadow: 0 0 40px rgba(251, 191, 36, 0.4);
+}

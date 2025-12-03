@@ -17,7 +17,13 @@ import { MdNotifications, MdOutlineSpaceDashboard } from "react-icons/md";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../features/auth/authSlice";
+import {
+  getNotifications,
+  markNotificationRead,
+  deleteNotification,
+} from "../../features/notification/notificationSlice";
 import SPlusLogo from "../../assets/S+Logo.png";
+import notificationSound from "../../assets/notification.mp3";
 import { NAV_LINKS } from "../../constants/navigation";
 import { useScrollEffect } from "../../hooks/useScrollEffect";
 
@@ -27,15 +33,21 @@ const Navbar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
-  const [notifications, setNotifications] = useState([]);
+  const [allNotificationsModalOpen, setAllNotificationsModalOpen] =
+    useState(false);
 
   const headerRef = useRef(null);
   const searchContainerRef = useRef(null);
   const searchInputRef = useRef(null);
+  const notificationAudioRef = useRef(null);
+  const previousUnreadCountRef = useRef(0);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
+  const { notifications, loading: notificationsLoading } = useSelector(
+    (state) => state.notification || { notifications: [], loading: false }
+  );
 
   const handleLogout = () => {
     dispatch(logout());
@@ -46,26 +58,44 @@ const Navbar = () => {
   const toggleMobileMenu = () => setMobileMenuOpen((prev) => !prev);
   const closeMobileMenu = () => setMobileMenuOpen(false);
 
-  // Fetch notifications
+  // Initialize audio
+  useEffect(() => {
+    if (notificationAudioRef.current) return;
+    notificationAudioRef.current = new Audio(notificationSound);
+    notificationAudioRef.current.volume = 0.5; // Set volume to 50%
+  }, []);
+
+  // Fetch notifications from Redux
   useEffect(() => {
     if (!user) return;
-    const fetchNotifications = async () => {
-      try {
-        const res = await fetch(`/api/notifications?userId=${user._id}`);
-        const data = await res.json();
-        if (data.success) {
-          setNotifications(data.data.notifications);
-        }
-      } catch (err) {
-        console.error(err);
+    dispatch(getNotifications());
+  }, [user, dispatch]);
+
+  const unreadCount = notifications.filter((n) => !n.isRead && !n.read).length;
+  const displayedNotifications = notifications.slice(0, 4);
+
+  // Play notification sound when new notification arrives
+  useEffect(() => {
+    if (!user || notificationsLoading) return;
+
+    const currentUnreadCount = unreadCount;
+    const previousUnreadCount = previousUnreadCountRef.current;
+
+    // Play sound if there's a new unread notification (unread count increased)
+    if (currentUnreadCount > previousUnreadCount && previousUnreadCount >= 0) {
+      if (notificationAudioRef.current) {
+        notificationAudioRef.current.play().catch((err) => {
+          // Handle autoplay restrictions
+          console.log("Could not play notification sound:", err);
+        });
       }
-    };
-    fetchNotifications();
-  }, [user]);
+    }
 
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+    // Update previous count
+    previousUnreadCountRef.current = currentUnreadCount;
+  }, [unreadCount, notifications, user, notificationsLoading]);
 
-  // Auto mark read when visible
+  // Auto mark read when visible or hovered in dropdown
   useEffect(() => {
     if (!notifOpen) return;
 
@@ -73,10 +103,13 @@ const Navbar = () => {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            const id = entry.target.dataset.id;
-            setNotifications((prev) =>
-              prev.map((n) => (n._id === id ? { ...n, isRead: true } : n))
+            const notificationId = entry.target.dataset.id;
+            const notification = notifications.find(
+              (n) => n._id === notificationId
             );
+            if (notification && !notification.isRead && !notification.read) {
+              dispatch(markNotificationRead(notificationId));
+            }
           }
         });
       },
@@ -87,16 +120,53 @@ const Navbar = () => {
     elems.forEach((el) => observer.observe(el));
 
     return () => observer.disconnect();
-  }, [notifOpen, notifications]);
+  }, [notifOpen, notifications, dispatch]);
+
+  // Auto mark read when visible or hovered in modal
+  useEffect(() => {
+    if (!allNotificationsModalOpen) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const notificationId = entry.target.dataset.id;
+            const notification = notifications.find(
+              (n) => n._id === notificationId
+            );
+            if (notification && !notification.isRead && !notification.read) {
+              dispatch(markNotificationRead(notificationId));
+            }
+          }
+        });
+      },
+      {
+        root: document.querySelector(".all-notifications-modal"),
+        threshold: 0.5,
+      }
+    );
+
+    const elems = document.querySelectorAll(".modal-notification-item");
+    elems.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, [allNotificationsModalOpen, notifications, dispatch]);
 
   const handleDeleteNotification = (id) => {
     Modal.confirm({
       title: "Xác nhận xóa",
       content: "Bạn có chắc muốn xóa thông báo này không?",
       onOk: () => {
-        setNotifications((prev) => prev.filter((n) => n._id !== id));
+        dispatch(deleteNotification(id));
       },
     });
+  };
+
+  const handleNotificationHover = (notificationId) => {
+    const notification = notifications.find((n) => n._id === notificationId);
+    if (notification && !notification.isRead && !notification.read) {
+      dispatch(markNotificationRead(notificationId));
+    }
   };
 
   const headerClass = scrolled
@@ -248,19 +318,26 @@ const Navbar = () => {
 
           {/* ===== NOTIFICATION ICON ===== */}
           {user && (
-            <div className="relative">
-              <Button
-                type="text"
+            <div className="relative notif-dropdown">
+              <motion.button
+                type="button"
                 onClick={() => setNotifOpen((prev) => !prev)}
-                className="relative text-gray-700 hover:text-gray-900"
-                icon={<MdNotifications className="text-2xl" />}
+                initial={{ opacity: 1, scale: 1 }}
+                whileHover={{
+                  scale: 1.1,
+                  boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+                }}
+                whileTap={{ scale: 0.92 }}
+                transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                className="relative flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-lg hover:shadow-xl transition-shadow duration-300"
               >
+                <MdNotifications className="text-lg text-gray-900" />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-500 rounded-full">
-                    {unreadCount}
+                  <span className="absolute -top-1 -right-1 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-bold leading-none text-white bg-red-500 rounded-full">
+                    {unreadCount > 9 ? "9+" : unreadCount}
                   </span>
                 )}
-              </Button>
+              </motion.button>
 
               <AnimatePresence>
                 {notifOpen && (
@@ -269,40 +346,72 @@ const Navbar = () => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                     transition={{ duration: 0.2 }}
-                    className="notif-dropdown absolute right-0 mt-2 w-80 max-h-96 bg-white rounded-xl shadow-2xl border border-gray-200 z-[110] flex flex-col"
+                    className="notif-dropdown absolute left-1/2 -translate-x-1/2 mt-2 w-80 max-h-96 bg-white rounded-xl shadow-2xl border border-gray-200 z-[110] flex flex-col overflow-hidden"
                   >
                     <div className="flex-1 overflow-y-auto max-h-72 p-2">
-                      {notifications.slice(0, 4).map((n) => (
-                        <div
-                          key={n._id}
-                          data-id={n._id}
-                          className={`notification-item flex items-center justify-between px-4 py-3 mb-1 rounded-lg cursor-pointer ${
-                            n.isRead ? "bg-gray-100" : "bg-white"
-                          } hover:bg-gray-200`}
-                        >
-                          <div className="flex flex-col">
-                            <span className="font-semibold text-gray-800">
-                              {n.title}
-                            </span>
-                            <span className="text-sm text-gray-600">
-                              {n.message}
-                            </span>
-                          </div>
-                          <DeleteOutlined
-                            className="text-red-500 text-base opacity-0 hover:opacity-100"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteNotification(n._id);
-                            }}
-                          />
+                      {notificationsLoading ? (
+                        <div className="flex items-center justify-center py-8">
+                          <span className="text-gray-500">Đang tải...</span>
                         </div>
-                      ))}
+                      ) : displayedNotifications.length === 0 ? (
+                        <div className="flex items-center justify-center py-8">
+                          <span className="text-gray-500">
+                            Chưa có thông báo
+                          </span>
+                        </div>
+                      ) : (
+                        displayedNotifications.map((n) => {
+                          const isRead = n.isRead || n.read;
+                          return (
+                            <div
+                              key={n._id}
+                              data-id={n._id}
+                              onMouseEnter={() =>
+                                handleNotificationHover(n._id)
+                              }
+                              className={`notification-item group relative flex items-start justify-between px-4 py-3 mb-2 rounded-lg cursor-pointer transition-all ${
+                                isRead
+                                  ? "bg-gray-100 hover:bg-gray-200"
+                                  : "bg-white hover:bg-gray-50 border-l-4 border-blue-500"
+                              }`}
+                            >
+                              <div className="flex flex-col flex-1 pr-2">
+                                {!isRead && (
+                                  <span className="inline-block mb-1 px-2 py-0.5 text-xs font-semibold text-blue-600 bg-blue-100 rounded-full w-fit">
+                                    Chưa đọc
+                                  </span>
+                                )}
+                                <span className="font-semibold text-gray-800 text-sm">
+                                  {n.title}
+                                </span>
+                                <span className="text-xs text-gray-600 mt-1 line-clamp-2">
+                                  {n.message}
+                                </span>
+                              </div>
+                              <motion.button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteNotification(n._id);
+                                }}
+                                className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0 p-1.5 hover:bg-red-100 rounded-full"
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                              >
+                                <DeleteOutlined className="text-red-500 text-base" />
+                              </motion.button>
+                            </div>
+                          );
+                        })
+                      )}
                     </div>
-                    <div className="border-t border-gray-200 p-2 text-center">
+                    <div className="border-t-2 border-gray-200 bg-gray-50 p-3">
                       <Button
                         type="link"
-                        onClick={() => navigate("/notifications")}
-                        className="text-sm font-semibold"
+                        onClick={() => {
+                          setNotifOpen(false);
+                          setAllNotificationsModalOpen(true);
+                        }}
+                        className="w-full text-sm font-semibold text-gray-700 hover:text-yellow-600 hover:underline"
                       >
                         Xem tất cả
                       </Button>
@@ -510,6 +619,96 @@ const Navbar = () => {
           </>
         )}
       </AnimatePresence>
+
+      {/* ===== ALL NOTIFICATIONS MODAL ===== */}
+      <Modal
+        title={
+          <div className="flex items-center justify-between">
+            <span className="text-xl font-bold text-gray-900">
+              Tất cả thông báo
+            </span>
+            {unreadCount > 0 && (
+              <span className="px-3 py-1 text-sm font-semibold text-blue-600 bg-blue-100 rounded-full">
+                {unreadCount} chưa đọc
+              </span>
+            )}
+          </div>
+        }
+        open={allNotificationsModalOpen}
+        onCancel={() => setAllNotificationsModalOpen(false)}
+        footer={null}
+        width={600}
+        className="all-notifications-modal"
+        styles={{
+          body: { padding: 0, maxHeight: "70vh", overflow: "hidden" },
+        }}
+      >
+        <div className="overflow-y-auto max-h-[70vh] p-4">
+          {notificationsLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <span className="text-gray-500">Đang tải...</span>
+            </div>
+          ) : notifications.length === 0 ? (
+            <div className="flex items-center justify-center py-12">
+              <span className="text-gray-500">Chưa có thông báo</span>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {notifications.map((n) => {
+                const isRead = n.isRead || n.read;
+                return (
+                  <div
+                    key={n._id}
+                    data-id={n._id}
+                    onMouseEnter={() => handleNotificationHover(n._id)}
+                    className={`modal-notification-item group relative flex items-start justify-between px-4 py-3 rounded-lg cursor-pointer transition-all ${
+                      isRead
+                        ? "bg-gray-100 hover:bg-gray-200"
+                        : "bg-white hover:bg-gray-50 border-l-4 border-blue-500"
+                    }`}
+                  >
+                    <div className="flex flex-col flex-1 pr-2">
+                      {!isRead && (
+                        <span className="inline-block mb-1 px-2 py-0.5 text-xs font-semibold text-blue-600 bg-blue-100 rounded-full w-fit">
+                          Chưa đọc
+                        </span>
+                      )}
+                      <span className="font-semibold text-gray-800 text-sm">
+                        {n.title}
+                      </span>
+                      <span className="text-xs text-gray-600 mt-1 line-clamp-3">
+                        {n.message}
+                      </span>
+                      {n.createdAt && (
+                        <span className="text-xs text-gray-400 mt-1">
+                          {new Date(n.createdAt).toLocaleString("vi-VN", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                      )}
+                    </div>
+                    <motion.button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteNotification(n._id);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0 p-1.5 hover:bg-red-100 rounded-full ml-2"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <DeleteOutlined className="text-red-500 text-base" />
+                    </motion.button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </Modal>
     </motion.header>
   );
 };

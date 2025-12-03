@@ -13,6 +13,7 @@ import {
   updateSetDesign,
   deleteSetDesign,
   uploadSetDesignImages,
+  deleteUploadedFile,
 } from "../../features/setDesign/setDesignSlice";
 
 const { Option } = Select;
@@ -77,7 +78,27 @@ const StaffSetDesignPage = () => {
   };
 
   const removePreviewAt = (index) => {
-    setPreviewImages((prev) => prev.filter((_, i) => i !== index));
+    setPreviewImages((prevImages) => {
+      const target = prevImages[index];
+
+      // Nếu đang chỉnh sửa (edit) và ảnh là URL đã upload (không phải base64 mới)
+      if (
+        currentEdit &&
+        typeof target === "string" &&
+        !target.startsWith("data:")
+      ) {
+        // Gửi request xóa file dùng chung
+        dispatch(
+          deleteUploadedFile({
+            publicId: target,
+          })
+        );
+      }
+
+      return prevImages.filter((_, i) => i !== index);
+    });
+
+    // Nếu là ảnh mới chọn (có File tương ứng), chỉ cần bỏ khỏi payload (chưa upload nên không cần call API xóa)
     setUploadPayload((prev) => prev.filter((_, i) => i !== index));
   };
 
@@ -86,7 +107,7 @@ const StaffSetDesignPage = () => {
     try {
       const values = await addForm.validateFields();
 
-      // 1) Create set design first (without images)
+      // 1) Create set design trước để có setDesignId
       const res = await dispatch(createSetDesign(values));
       if (res.error) {
         setToast({
@@ -98,7 +119,7 @@ const StaffSetDesignPage = () => {
 
       const createdSetDesign = res.payload;
 
-      // 2) Upload images if any (after creation, we have the ID)
+      // 2) Upload images (nếu có) dùng API mới /upload/set-design/:setDesignId/images
       if (uploadPayload.length > 0 && createdSetDesign?._id) {
         const resImg = await dispatch(
           uploadSetDesignImages({
@@ -112,14 +133,16 @@ const StaffSetDesignPage = () => {
             message:
               "Tạo Set Design thành công nhưng upload ảnh thất bại: " +
               (resImg.error?.message || "Lỗi không xác định"),
-        });
+          });
         }
       }
 
-        setToast({ type: "success", message: "Tạo Set Design thành công!" });
+      setToast({ type: "success", message: "Tạo Set Design thành công!" });
       // clear form
-        addForm.resetFields();
-        fetchSetDesigns(1);
+      addForm.resetFields();
+      setPreviewImages([]);
+      setUploadPayload([]);
+      fetchSetDesigns(1);
       setAddModalVisible(false);
     } catch (err) {
       // validation error or other

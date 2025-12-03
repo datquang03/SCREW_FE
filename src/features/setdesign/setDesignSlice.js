@@ -268,41 +268,65 @@ export const getActiveSetDesigns = createAsyncThunk(
   }
 );
 /* =============================
-   UPLOAD MULTIPLE IMAGES (Option B)
-   body: { images: [ { base64Image, fileName }, ... ] }
+   UPLOAD SET DESIGN IMAGES
+   POST {{base_url}}/api/upload/set-design/:setDesignId/images
+   body: FormData với images là File objects
 ============================= */
 export const uploadSetDesignImages = createAsyncThunk(
   "setDesign/uploadSetDesignImages",
-  async ({ images }, { rejectWithValue, getState }) => {
+  async ({ setDesignId, images }, { rejectWithValue, getState }) => {
     try {
       const { token } = getState().auth;
 
-      // Ensure shape exactly { base64Image, fileName }
-      const payload = {
-        images: images.map((img) => ({
-          base64Image:
-            img.base64Image ||
-            img.base64 ||
-            img.base64Img ||
-            img.base64_data ||
-            img.base64,
-          fileName: img.fileName || img.name || "file.png",
-        })),
-      };
+      // Tạo FormData và append các File objects
+      const formData = new FormData();
+      images.forEach((file) => {
+        // Đảm bảo file là File object
+        if (file instanceof File) {
+          formData.append("images", file);
+        }
+      });
 
       const res = await axiosInstance.post(
-        `/set-designs/upload-image`,
-        payload,
+        `/upload/set-design/${setDesignId}/images`,
+        formData,
         {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            "Content-Type": "multipart/form-data",
+          },
         }
       );
 
-      // Expect res.data to include uploaded images array or URLs
-      return res.data; // e.g. { success: true, images: [ ... ] }
+      // Backend nên trả về danh sách URL / publicId đã lưu trong set design
+      return res.data; // ví dụ: { success: true, data: updatedSetDesign } hoặc { images: [...] }
     } catch (err) {
       return rejectWithValue(
         err.response?.data || { message: "Upload ảnh thất bại" }
+      );
+    }
+  }
+);
+
+/* =============================
+   DELETE UPLOADED FILE (Dùng chung)
+   DELETE {{base_url}}/api/upload/file/:publicId
+============================= */
+export const deleteUploadedFile = createAsyncThunk(
+  "upload/deleteUploadedFile",
+  async ({ publicId }, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth || {};
+      const encodedId = encodeURIComponent(publicId);
+
+      const res = await axiosInstance.delete(`/upload/file/${encodedId}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+
+      return { publicId, response: res.data };
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Xóa file thất bại" }
       );
     }
   }
@@ -486,11 +510,26 @@ const setDesignSlice = createSlice({
       })
       .addCase(uploadSetDesignImages.fulfilled, (state, action) => {
         state.loading = false;
-        // store whatever backend returned (try common keys)
+        // lưu thông tin ảnh mới upload (tùy backend trả về)
         state.uploadedImages =
-          action.payload?.images || action.payload?.data || [];
+          action.payload?.images ||
+          action.payload?.data?.images ||
+          action.payload?.data ||
+          [];
       })
       .addCase(uploadSetDesignImages.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // DELETE UPLOADED FILE (không ảnh hưởng nhiều tới state chung)
+      .addCase(deleteUploadedFile.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(deleteUploadedFile.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(deleteUploadedFile.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

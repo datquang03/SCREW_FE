@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Card,
   Typography,
@@ -14,18 +14,21 @@ import {
 } from "antd";
 import { FiUser, FiEdit, FiSave, FiPhone, FiMail, FiLock } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
-import { getCurrentUser, changePassword } from "../../features/auth/authSlice";
+import { getCurrentUser, changePassword, uploadAvatar } from "../../features/auth/authSlice";
 
 const { Title, Text } = Typography;
 
 const StaffProfilePage = () => {
   const dispatch = useDispatch();
   const { user, loading } = useSelector((state) => state.auth);
+  const fileInputRef = useRef(null);
 
   const [editing, setEditing] = useState(false);
   const [form] = Form.useForm();
   const [passwordForm] = Form.useForm();
   const [changingPassword, setChangingPassword] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState(null);
 
   // === GỌI GET CURRENT USER ===
   useEffect(() => {
@@ -41,8 +44,55 @@ const StaffProfilePage = () => {
         phone: user.phone,
         note: "",
       });
+      setAvatarPreview(null); // Reset preview khi user thay đổi
     }
   }, [user, form]);
+
+  // === HANDLE AVATAR CLICK ===
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  // === HANDLE FILE SELECT ===
+  const handleFileSelect = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      message.error("Vui lòng chọn file ảnh");
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      message.error("Kích thước ảnh không được vượt quá 5MB");
+      return;
+    }
+
+    // Tạo preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setAvatarPreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+
+    // Upload avatar
+    setUploadingAvatar(true);
+    try {
+      await dispatch(uploadAvatar({ avatar: file })).unwrap();
+      message.success("Cập nhật avatar thành công");
+      // Refresh user data
+      dispatch(getCurrentUser());
+    } catch (err) {
+      message.error(err?.message || "Upload avatar thất bại");
+      setAvatarPreview(null);
+    } finally {
+      setUploadingAvatar(false);
+      // Reset input để có thể chọn lại file giống nhau
+      e.target.value = null;
+    }
+  };
 
   if (loading || !user) {
     return (
@@ -70,11 +120,26 @@ const StaffProfilePage = () => {
         {/* LEFT COLUMN */}
         <Col xs={24} md={8}>
           <Card className="text-center shadow-lg border border-gray-100 rounded-2xl">
-            <Avatar
-              size={120}
-              src={user.avatar}
-              icon={<FiUser />}
-              className="mb-4"
+            <div className="relative inline-block">
+              <Avatar
+                size={120}
+                src={avatarPreview || user.avatar}
+                icon={<FiUser />}
+                className="mb-4 cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={handleAvatarClick}
+              />
+              {uploadingAvatar && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
+                  <Spin size="small" />
+                </div>
+              )}
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={handleFileSelect}
             />
             <Title level={4} className="mb-1">
               {user.fullName}

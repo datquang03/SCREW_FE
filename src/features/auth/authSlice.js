@@ -163,6 +163,38 @@ export const registerStaff = createAsyncThunk(
   }
 );
 
+// === UPLOAD AVATAR ===
+export const uploadAvatar = createAsyncThunk(
+  "auth/uploadAvatar",
+  async ({ avatar }, { getState, rejectWithValue }) => {
+    try {
+      const { token } = getState().auth;
+      if (!token) throw new Error("Không có token để xác thực");
+
+      // Tạo FormData và append file avatar
+      const formData = new FormData();
+      if (avatar instanceof File) {
+        formData.append("avatar", avatar);
+      } else {
+        throw new Error("Avatar phải là File object");
+      }
+
+      const response = await axiosInstance.post("/upload/avatar", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      return response.data; // { success: true, data: { avatarUrl: "..." } }
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Upload avatar thất bại" }
+      );
+    }
+  }
+);
+
 // === SLICE ===
 const authSlice = createSlice({
   name: "auth",
@@ -295,6 +327,27 @@ const authSlice = createSlice({
         localStorage.setItem("pendingEmail", email);
       })
       .addCase(registerStaff.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // === UPLOAD AVATAR ===
+      .addCase(uploadAvatar.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(uploadAvatar.fulfilled, (state, action) => {
+        state.loading = false;
+        // Cập nhật avatar trong user state
+        const avatarUrl =
+          action.payload?.data?.avatarUrl ||
+          action.payload?.avatarUrl ||
+          action.payload?.data?.avatar;
+        if (avatarUrl && state.user) {
+          state.user.avatar = avatarUrl;
+          saveToStorage(state.user, state.token);
+        }
+      })
+      .addCase(uploadAvatar.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
