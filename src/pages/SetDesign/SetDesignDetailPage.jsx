@@ -11,6 +11,7 @@ import {
   message,
   Avatar,
   Input,
+  Modal,
 } from "antd";
 import {
   FiArrowLeft,
@@ -20,14 +21,23 @@ import {
   FiSmile,
   FiImage,
   FiSend,
+  FiCornerDownRight,
 } from "react-icons/fi";
+import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { motion } from "framer-motion";
+import Layout from "../../components/layout/Layout";
 
 import {
   getSetDesignById,
   createSetDesignComment,
   replySetDesignComment,
 } from "../../features/setDesign/setDesignSlice";
+import {
+  likeComment,
+  unlikeComment,
+  likeReply,
+  unlikeReply,
+} from "../../features/comment/commentSlice";
 
 const { Title, Paragraph, Text } = Typography;
 const { TextArea } = Input;
@@ -41,15 +51,55 @@ const SetDesignDetail = () => {
   const { user: currentUser } = useSelector((state) => state.auth || {});
   const isStaff =
     currentUser?.role === "staff" || currentUser?.role === "admin";
+  const currentUserId = currentUser?._id || currentUser?.id;
 
   const [newComment, setNewComment] = useState("");
   const [commentLoading, setCommentLoading] = useState(false);
+  const [comments, setComments] = useState([]);
+  const [replyModal, setReplyModal] = useState({
+    open: false,
+    commentIndex: null,
+    targetName: "",
+  });
+  const [replyMessage, setReplyMessage] = useState("");
+  const [replySubmitting, setReplySubmitting] = useState(false);
+
+  const formatEntry = (entry = {}, parentCommentId = null) => {
+    const likes = Array.isArray(entry.likes) ? entry.likes : [];
+    return {
+      ...entry,
+      parentCommentId: parentCommentId || entry.parentCommentId || null,
+      likes,
+      likesCount:
+        typeof entry.likesCount === "number" ? entry.likesCount : likes.length,
+      isLikedByCurrentUser: currentUserId
+        ? likes.includes(currentUserId)
+        : !!entry.isLikedByCurrentUser,
+    };
+  };
+
+  const enrichComments = (rawComments = []) =>
+    rawComments.map((comment) => ({
+      ...formatEntry(comment),
+      replies: Array.isArray(comment.replies)
+        ? comment.replies.map((reply) =>
+            formatEntry(reply, comment._id || comment.id || comment.id)
+          )
+        : [],
+    }));
 
   useEffect(() => {
     if (!currentSetDesign || currentSetDesign._id !== id) {
       dispatch(getSetDesignById(id));
     }
-  }, [dispatch, id, currentSetDesign]);
+  }, [dispatch, id, currentSetDesign?._id]);
+
+  // Đồng bộ comments local để dễ cập nhật like/unlike mà không phải refetch toàn bộ
+  useEffect(() => {
+    if (currentSetDesign?.comments) {
+      setComments(enrichComments(currentSetDesign.comments));
+    }
+  }, [currentSetDesign, currentUser]);
 
   // === GỬI BÌNH LUẬN ===
   const handleSendComment = async () => {
@@ -61,7 +111,7 @@ const SetDesignDetail = () => {
 
     setCommentLoading(true);
     try {
-      await dispatch(
+      const created = await dispatch(
         createSetDesignComment({
           setDesignId: id,
           message: newComment.trim(),
@@ -70,7 +120,16 @@ const SetDesignDetail = () => {
 
       setNewComment("");
       message.success("Gửi bình luận thành công!");
-      dispatch(getSetDesignById(id)); // refresh lại để thấy comment mới
+
+      // Backend có thể trả về cả set design (data.comments) hoặc chỉ comment mới
+      if (created?.comments && Array.isArray(created.comments)) {
+        setComments(enrichComments(created.comments));
+      } else if (created && created._id) {
+        const [formatted] = enrichComments([created]);
+        setComments((prev) => [formatted, ...prev]);
+      } else {
+        dispatch(getSetDesignById(id));
+      }
     } catch (err) {
       message.error(err?.message || "Gửi bình luận thất bại");
     } finally {
@@ -78,24 +137,162 @@ const SetDesignDetail = () => {
     }
   };
 
-  // === TRẢ LỜI BÌNH LUẬN (STAFF) ===
-  const handleReply = async (commentIndex) => {
-    const reply = window.prompt("Nhập câu trả lời của studio:");
-    if (!reply?.trim()) return;
+  const openReplyModal = (commentIndex, customerName) => {
+    if (!currentUser) {
+      message.warning("Vui lòng đăng nhập để trả lời bình luận");
+      return;
+    }
+    setReplyModal({
+      open: true,
+      commentIndex,
+      targetName: customerName || "bình luận",
+    });
+    setReplyMessage("");
+  };
 
+  const handleSendReply = async () => {
+    if (replyModal.commentIndex === null) return;
+    if (!replyMessage.trim()) {
+      message.warning("Vui lòng nhập nội dung trả lời");
+      return;
+    }
     try {
-      await dispatch(
+      setReplySubmitting(true);
+      const result = await dispatch(
         replySetDesignComment({
           setDesignId: id,
-          commentIndex,
-          replyContent: reply.trim(),
+          commentIndex: replyModal.commentIndex,
+          message: replyMessage.trim(),
         })
       ).unwrap();
 
       message.success("Đã trả lời bình luận");
-      dispatch(getSetDesignById(id));
+      setReplyModal({ open: false, commentIndex: null, targetName: "" });
+      if (result?.comments && Array.isArray(result.comments)) {
+        setComments(enrichComments(result.comments));
+      } else {
+        setComments((prev) =>
+          prev.map((c, idx) =>
+            idx === replyModal.commentIndex
+              ? {
+                  ...c,
+                  replies: [
+                    ...(c.replies || []),
+                    formatEntry(
+                      {
+                        _id: Date.now().toString(),
+                        id: Date.now().toString(),
+                        userId: currentUserId,
+                        userName:
+                          currentUser?.fullName ||
+                          currentUser?.username ||
+                          currentUser?.name ||
+                          "Bạn",
+                        userRole: currentUser?.role || "customer",
+                        message: replyMessage.trim(),
+                        createdAt: new Date().toISOString(),
+                        likes: [],
+                      },
+                      c._id || c.id || null
+                    ),
+                  ],
+                }
+              : c
+          )
+        );
+      }
+      setReplyMessage("");
     } catch (err) {
       message.error("Trả lời thất bại");
+    } finally {
+      setReplySubmitting(false);
+    }
+  };
+
+  const handleToggleLike = async (
+    target,
+    parentIndex = null,
+    parentCommentId = null
+  ) => {
+    if (!currentUser) {
+      message.warning("Vui lòng đăng nhập để thích bình luận");
+      return;
+    }
+
+    const commentId = target?._id || target?.id;
+    if (!commentId) return;
+
+    try {
+      const isReply = !!parentCommentId || !!target.parentCommentId;
+      const effectiveParentId =
+        parentCommentId || target.parentCommentId || null;
+
+      let result;
+      if (isReply && effectiveParentId) {
+        const action = target.isLikedByCurrentUser ? unlikeReply : likeReply;
+        result = await dispatch(
+          action({ commentId: effectiveParentId, replyId: commentId })
+        ).unwrap();
+      } else {
+        const action = target.isLikedByCurrentUser
+          ? unlikeComment
+          : likeComment;
+        result = await dispatch(action(commentId)).unwrap();
+      }
+
+      const likesFromApi = Array.isArray(result?.likes)
+        ? result.likes
+        : target.likes || [];
+      const resolvedCount =
+        typeof result?.likesCount === "number"
+          ? result.likesCount
+          : Array.isArray(result?.likes)
+          ? result.likes.length
+          : (target.likesCount || 0) + (target.isLikedByCurrentUser ? -1 : 1);
+      const nextIsLikedByCurrentUser =
+        currentUserId && Array.isArray(result?.likes)
+          ? result.likes.includes(currentUserId)
+          : !target.isLikedByCurrentUser;
+
+      setComments((prev) =>
+        prev.map((comment, idx) => {
+          const commentKey = comment._id || comment.id;
+          if (!isReply && commentKey === commentId) {
+            return {
+              ...comment,
+              likes: likesFromApi,
+              likesCount: resolvedCount,
+              isLikedByCurrentUser: nextIsLikedByCurrentUser,
+            };
+          }
+
+          const shouldInspectReplies =
+            isReply &&
+            ((parentIndex !== null && idx === parentIndex) ||
+              commentKey === effectiveParentId);
+
+          if (!shouldInspectReplies || !Array.isArray(comment.replies)) {
+            return comment;
+          }
+
+          const updatedReplies = comment.replies.map((reply) => {
+            if ((reply._id || reply.id) !== commentId) return reply;
+            return {
+              ...reply,
+              likes: likesFromApi,
+              likesCount: resolvedCount,
+              isLikedByCurrentUser: nextIsLikedByCurrentUser,
+            };
+          });
+
+          return {
+            ...comment,
+            replies: updatedReplies,
+          };
+        })
+      );
+    } catch (err) {
+      message.error(err?.message || "Không thể cập nhật lượt thích");
     }
   };
 
@@ -103,7 +300,7 @@ const SetDesignDetail = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Spin size="large" tip="Đang tải chi tiết set design..." />
+        <Spin size="large" tip="Đang tải chi tiết set design..." fullscreen />
       </div>
     );
   }
@@ -140,21 +337,7 @@ const SetDesignDetail = () => {
     }[item.category] || "Không xác định";
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Back Button */}
-      <div className="bg-white shadow-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center gap-4">
-          <Button
-            type="text"
-            icon={<FiArrowLeft size={20} />}
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-lg font-medium hover:text-indigo-600"
-          >
-            Quay lại
-          </Button>
-        </div>
-      </div>
-
+    <Layout>
       <div className="max-w-7xl mx-auto px-6 py-12">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -203,7 +386,7 @@ const SetDesignDetail = () => {
                   <span className="text-gray-400">•</span>
                   <div className="flex items-center gap-2">
                     <FiMessageCircle className="text-indigo-600" />
-                    <Text strong>{item.totalComments} bình luận</Text>
+                    <Text strong>{comments.length} bình luận</Text>
                   </div>
                 </div>
               </div>
@@ -243,7 +426,7 @@ const SetDesignDetail = () => {
               className="text-3xl font-bold mb-8 flex items-center gap-3"
             >
               <FiMessageCircle className="text-indigo-600" />
-              Bình luận ({item.totalComments})
+              Bình luận ({comments.length})
             </Title>
 
             {/* Form gửi bình luận */}
@@ -302,8 +485,8 @@ const SetDesignDetail = () => {
 
             {/* Danh sách bình luận */}
             <div className="space-y-8">
-              {item.comments && item.comments.length > 0 ? (
-                item.comments.map((comment, index) => (
+              {comments && comments.length > 0 ? (
+                comments.map((comment, index) => (
                   <motion.div
                     key={index}
                     initial={{ opacity: 0, y: 20 }}
@@ -320,61 +503,150 @@ const SetDesignDetail = () => {
                     <div className="flex-1">
                       <div className="bg-gray-100 rounded-3xl px-6 py-4">
                         <div className="flex items-center gap-3 mb-1">
-                          <Text strong className="text-gray-900">
-                            {comment?.customerName || "Khách"}
-                          </Text>
-                          {comment.isStaff && (
-                            <Tag color="gold" className="text-xs">
-                              Nhân viên
-                            </Tag>
-                          )}
-                          <Text type="secondary" className="text-xs">
-                            {new Date(comment.createdAt).toLocaleString(
-                              "vi-VN"
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <Text strong className="text-gray-900">
+                              {comment?.customerName || "Khách"}
+                            </Text>
+                            {comment.isStaff && (
+                              <Tag color="gold" className="text-xs">
+                                Nhân viên
+                              </Tag>
                             )}
-                          </Text>
+                            <Text type="secondary" className="text-xs">
+                              {new Date(comment.createdAt).toLocaleString(
+                                "vi-VN"
+                              )}
+                            </Text>
+                          </div>
+                          <button
+                            className="flex items-center gap-1 text-xs text-gray-500 cursor-pointer hover:text-red-500 transition-colors"
+                            onClick={() => handleToggleLike(comment)}
+                          >
+                            {comment.isLikedByCurrentUser ? (
+                              <AiFillHeart className="text-red-500" />
+                            ) : (
+                              <AiOutlineHeart className="text-gray-300" />
+                            )}
+                            <span>
+                              {comment.likesCount ??
+                                (Array.isArray(comment.likes)
+                                  ? comment.likes.length
+                                  : 0)}
+                            </span>
+                          </button>
                         </div>
                         <Paragraph className="text-gray-800 mb-0">
                           {comment.message}
                         </Paragraph>
                       </div>
 
-                      {/* Nút trả lời (chỉ staff thấy) */}
-                      {isStaff && !comment.reply && (
+                      <div className="mt-3 ml-2">
                         <Button
                           type="text"
                           size="small"
-                          className="mt-2 text-indigo-600 font-medium"
-                          onClick={() => handleReply(index)}
+                          className="text-indigo-600 font-medium px-0"
+                          onClick={() =>
+                            openReplyModal(index, comment.customerName)
+                          }
                         >
                           Trả lời
                         </Button>
-                      )}
+                      </div>
 
-                      {/* Reply từ studio */}
-                      {comment.reply && (
-                        <div className="mt-5 ml-10 flex gap-3">
-                          <Avatar
-                            size={40}
-                            className="bg-gradient-to-br from-cyan-500 to-blue-600"
-                          >
-                            S
-                          </Avatar>
-                          <div className="bg-indigo-50 rounded-3xl px-5 py-3 flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <Text strong className="text-indigo-700">
-                                Studio trả lời
-                              </Text>
-                              <Tag color="blue" className="text-xs">
-                                Chính thức
-                              </Tag>
-                            </div>
-                            <Text className="text-indigo-900">
-                              {comment.reply}
-                            </Text>
+                      {Array.isArray(comment.replies) &&
+                        comment.replies.length > 0 && (
+                          <div className="mt-4 ml-10 space-y-3">
+                            {comment.replies.map((reply, replyIdx) => (
+                              <div
+                                key={reply._id || reply.id || replyIdx}
+                                className="pl-6 border-l-2 border-indigo-100"
+                              >
+                                <div className="flex gap-3 items-start">
+                                  <FiCornerDownRight className="mt-1 text-indigo-400" />
+                                  <Avatar
+                                    size={32}
+                                    className="bg-gradient-to-br from-cyan-500 to-blue-600"
+                                  >
+                                    {reply.userName?.[0]?.toUpperCase() ||
+                                      reply.userRole?.[0]?.toUpperCase() ||
+                                      "R"}
+                                  </Avatar>
+                                  <div className="bg-indigo-50 rounded-2xl px-4 py-3 flex-1">
+                                    <div className="flex items-center justify-between gap-3 mb-1 flex-wrap">
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <Text
+                                          strong
+                                          className="text-indigo-700 text-sm"
+                                        >
+                                          {reply.userName || "Người dùng"}
+                                        </Text>
+                                        {reply.userRole === "staff" ||
+                                        reply.userRole === "admin" ? (
+                                          <Tag
+                                            color="blue"
+                                            className="text-[10px]"
+                                          >
+                                            {reply.userRole === "admin"
+                                              ? "Quản trị"
+                                              : "Nhân viên"}
+                                          </Tag>
+                                        ) : null}
+                                        <Text
+                                          type="secondary"
+                                          className="text-[11px]"
+                                        >
+                                          {reply.createdAt
+                                            ? new Date(
+                                                reply.createdAt
+                                              ).toLocaleString("vi-VN")
+                                            : ""}
+                                        </Text>
+                                      </div>
+
+                                      <button
+                                        className="flex items-center gap-1 text-[11px] text-slate-500 hover:text-red-500 transition-colors"
+                                        onClick={() =>
+                                          handleToggleLike(
+                                            reply,
+                                            index,
+                                            comment._id || comment.id
+                                          )
+                                        }
+                                      >
+                                        {reply.isLikedByCurrentUser ? (
+                                          <AiFillHeart className="text-red-500" />
+                                        ) : (
+                                          <AiOutlineHeart className="text-gray-300" />
+                                        )}
+                                        <span>
+                                          {reply.likesCount ??
+                                            (Array.isArray(reply.likes)
+                                              ? reply.likes.length
+                                              : 0)}
+                                        </span>
+                                      </button>
+                                    </div>
+                                    <Text className="text-indigo-900 text-sm block">
+                                      {reply.message}
+                                    </Text>
+                                    <div className="mt-2">
+                                      <Button
+                                        type="text"
+                                        size="small"
+                                        className="text-indigo-600 font-medium px-0"
+                                        onClick={() =>
+                                          openReplyModal(index, reply.userName)
+                                        }
+                                      >
+                                        Trả lời
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
                           </div>
-                        </div>
-                      )}
+                        )}
                     </div>
                   </motion.div>
                 ))
@@ -394,7 +666,26 @@ const SetDesignDetail = () => {
           </div>
         </motion.div>
       </div>
-    </div>
+
+      <Modal
+        title={`Trả lời ${replyModal.targetName}`}
+        open={replyModal.open}
+        onCancel={() =>
+          setReplyModal({ open: false, commentIndex: null, targetName: "" })
+        }
+        onOk={handleSendReply}
+        okText="Gửi trả lời"
+        cancelText="Hủy"
+        confirmLoading={replySubmitting}
+      >
+        <Input.TextArea
+          rows={4}
+          placeholder="Nhập nội dung trả lời..."
+          value={replyMessage}
+          onChange={(e) => setReplyMessage(e.target.value)}
+        />
+      </Modal>
+    </Layout>
   );
 };
 

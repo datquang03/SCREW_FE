@@ -18,7 +18,11 @@ const VARIANTS = {
   },
 };
 
-const DashboardLayout = ({ sidebar: SidebarComponent, variant = "default" }) => {
+const DashboardLayout = ({
+  sidebar: SidebarComponent,
+  variant = "default",
+  children,
+}) => {
   const sidebarRef = useRef(null);
   const contentRef = useRef(null);
   const location = useLocation();
@@ -64,7 +68,7 @@ const DashboardLayout = ({ sidebar: SidebarComponent, variant = "default" }) => 
             className={`rounded-3xl bg-gradient-to-br ${theme.accent} shadow-[0_30px_90px_rgba(15,23,42,0.12)] border border-white/60 min-h-[calc(100vh-8rem)]`}
           >
             <div className="p-4 sm:p-8 lg:p-10">
-          <Outlet />
+          {children ?? <Outlet />}
             </div>
           </div>
         </main>

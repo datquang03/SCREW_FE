@@ -74,13 +74,13 @@ export const createSetDesignComment = createAsyncThunk(
 
 export const replySetDesignComment = createAsyncThunk(
   "setDesign/replySetDesignComment",
-  async ({ setDesignId, commentIndex, replyContent }, { rejectWithValue, getState }) => {
+  async ({ setDesignId, commentIndex, message }, { rejectWithValue, getState }) => {
     try {
       const { token } = getState().auth || {};
 
       const res = await axiosInstance.post(
         `/set-designs/${setDesignId}/comments/${commentIndex}/reply`,
-        { content: replyContent },
+        { message },
         {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         }
