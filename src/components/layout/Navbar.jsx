@@ -1,7 +1,7 @@
 // src/components/navbar/Navbar.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
-import { Button } from "antd";
+import { Button, Modal } from "antd";
 import {
   SearchOutlined,
   MenuOutlined,
@@ -10,21 +10,24 @@ import {
   SettingOutlined,
   HeartOutlined,
   FileTextOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
-import { MdOutlineSpaceDashboard } from "react-icons/md";
+import { MdNotifications, MdOutlineSpaceDashboard } from "react-icons/md";
+
 import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../features/auth/authSlice";
 import SPlusLogo from "../../assets/S+Logo.png";
 import { NAV_LINKS } from "../../constants/navigation";
 import { useScrollEffect } from "../../hooks/useScrollEffect";
-import { FiMenu, FiUser, FiSearch, FiX } from "react-icons/fi";
 
 const Navbar = () => {
   const scrolled = useScrollEffect(20);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
 
   const headerRef = useRef(null);
   const searchContainerRef = useRef(null);
@@ -40,23 +43,83 @@ const Navbar = () => {
     navigate("/login", { replace: true });
   };
 
+  const toggleMobileMenu = () => setMobileMenuOpen((prev) => !prev);
+  const closeMobileMenu = () => setMobileMenuOpen(false);
+
+  // Fetch notifications
+  useEffect(() => {
+    if (!user) return;
+    const fetchNotifications = async () => {
+      try {
+        const res = await fetch(`/api/notifications?userId=${user._id}`);
+        const data = await res.json();
+        if (data.success) {
+          setNotifications(data.data.notifications);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchNotifications();
+  }, [user]);
+
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
+
+  // Auto mark read when visible
+  useEffect(() => {
+    if (!notifOpen) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const id = entry.target.dataset.id;
+            setNotifications((prev) =>
+              prev.map((n) => (n._id === id ? { ...n, isRead: true } : n))
+            );
+          }
+        });
+      },
+      { root: document.querySelector(".notif-dropdown"), threshold: 0.5 }
+    );
+
+    const elems = document.querySelectorAll(".notification-item");
+    elems.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, [notifOpen, notifications]);
+
+  const handleDeleteNotification = (id) => {
+    Modal.confirm({
+      title: "Xác nhận xóa",
+      content: "Bạn có chắc muốn xóa thông báo này không?",
+      onOk: () => {
+        setNotifications((prev) => prev.filter((n) => n._id !== id));
+      },
+    });
+  };
+
+  const headerClass = scrolled
+    ? "fixed top-0 left-0 w-full bg-white/95 border-b border-white/60 shadow-xl backdrop-blur-xl"
+    : "absolute top-0 left-0 w-full bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900";
+
   // Click outside dropdown/search
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (dropdownOpen && !e.target.closest(".avatar-dropdown")) {
+      if (dropdownOpen && !e.target.closest(".avatar-dropdown"))
         setDropdownOpen(false);
-      }
       if (
         searchOpen &&
         searchContainerRef.current &&
         !searchContainerRef.current.contains(e.target)
-      ) {
+      )
         setSearchOpen(false);
-      }
+      if (notifOpen && !e.target.closest(".notif-dropdown"))
+        setNotifOpen(false);
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [dropdownOpen, searchOpen]);
+  }, [dropdownOpen, searchOpen, notifOpen]);
 
   // Escape key to close search
   useEffect(() => {
@@ -71,13 +134,6 @@ const Navbar = () => {
   useEffect(() => {
     if (searchOpen && searchInputRef.current) searchInputRef.current.focus();
   }, [searchOpen]);
-
-  const toggleMobileMenu = () => setMobileMenuOpen((prev) => !prev);
-  const closeMobileMenu = () => setMobileMenuOpen(false);
-
-  const headerClass = scrolled
-    ? "fixed top-0 left-0 w-full bg-white/95 border-b border-white/60 shadow-xl backdrop-blur-xl"
-    : "absolute top-0 left-0 w-full bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900";
 
   return (
     <motion.header
@@ -190,10 +246,76 @@ const Navbar = () => {
             </AnimatePresence>
           </div>
 
+          {/* ===== NOTIFICATION ICON ===== */}
+          {user && (
+            <div className="relative">
+              <Button
+                type="text"
+                onClick={() => setNotifOpen((prev) => !prev)}
+                className="relative text-gray-700 hover:text-gray-900"
+                icon={<MdNotifications className="text-2xl" />}
+              >
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-500 rounded-full">
+                    {unreadCount}
+                  </span>
+                )}
+              </Button>
+
+              <AnimatePresence>
+                {notifOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.2 }}
+                    className="notif-dropdown absolute right-0 mt-2 w-80 max-h-96 bg-white rounded-xl shadow-2xl border border-gray-200 z-[110] flex flex-col"
+                  >
+                    <div className="flex-1 overflow-y-auto max-h-72 p-2">
+                      {notifications.slice(0, 4).map((n) => (
+                        <div
+                          key={n._id}
+                          data-id={n._id}
+                          className={`notification-item flex items-center justify-between px-4 py-3 mb-1 rounded-lg cursor-pointer ${
+                            n.isRead ? "bg-gray-100" : "bg-white"
+                          } hover:bg-gray-200`}
+                        >
+                          <div className="flex flex-col">
+                            <span className="font-semibold text-gray-800">
+                              {n.title}
+                            </span>
+                            <span className="text-sm text-gray-600">
+                              {n.message}
+                            </span>
+                          </div>
+                          <DeleteOutlined
+                            className="text-red-500 text-base opacity-0 hover:opacity-100"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteNotification(n._id);
+                            }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    <div className="border-t border-gray-200 p-2 text-center">
+                      <Button
+                        type="link"
+                        onClick={() => navigate("/notifications")}
+                        className="text-sm font-semibold"
+                      >
+                        Xem tất cả
+                      </Button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
+
           {/* USER / AUTH */}
           {user ? (
             <div className="flex items-center gap-2">
-              {/* Avatar dropdown */}
               <div className="relative avatar-dropdown">
                 <motion.button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -361,67 +483,30 @@ const Navbar = () => {
               animate={{ opacity: 0.6 }}
               exit={{ opacity: 0 }}
               onClick={closeMobileMenu}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[99]"
+              className="fixed inset-0 bg-black z-[50]"
             />
-            <motion.div
-              initial={{ x: "-100%" }}
+            <motion.nav
+              initial={{ x: "100%" }}
               animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed top-0 left-0 h-full w-64 bg-white z-[100] shadow-2xl flex flex-col"
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="fixed top-0 right-0 w-72 h-screen bg-white shadow-2xl z-[60] flex flex-col p-6"
             >
-              <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-                <span className="text-lg font-semibold text-gray-900">
-                  Menu
-                </span>
-                <Button
-                  type="text"
-                  icon={<CloseOutlined />}
+              {NAV_LINKS.map(({ path, label, key: linkKey }) => (
+                <NavLink
+                  key={linkKey}
+                  to={path}
                   onClick={closeMobileMenu}
-                  className="text-gray-700"
-                />
-              </div>
-              <nav className="flex-1 overflow-y-auto p-4">
-                <ul className="flex flex-col gap-2">
-                  {NAV_LINKS.map(({ path, label, key: linkKey }) => (
-                    <li key={linkKey}>
-                      <NavLink
-                        to={path}
-                        onClick={closeMobileMenu}
-                        className={({ isActive }) =>
-                          `block px-4 py-3 rounded-lg text-base font-semibold ${
-                            isActive
-                              ? "bg-yellow-100 text-yellow-700"
-                              : "text-gray-700 hover:bg-gray-100"
-                          }`
-                        }
-                      >
-                        {label}
-                      </NavLink>
-                    </li>
-                  ))}
-                  {!user && (
-                    <li className="pt-3 flex flex-col gap-2">
-                      <Button
-                        href="/login"
-                        className="border border-yellow-500 text-yellow-600 font-semibold"
-                        block
-                      >
-                        Đăng nhập
-                      </Button>
-                      <Button
-                        type="primary"
-                        block
-                        href="/register"
-                        className="bg-gradient-to-r from-yellow-400 to-yellow-500 border-none"
-                      >
-                        Đăng ký
-                      </Button>
-                    </li>
-                  )}
-                </ul>
-              </nav>
-            </motion.div>
+                  className={({ isActive }) =>
+                    `px-4 py-3 rounded-lg font-semibold text-gray-700 hover:bg-gray-100 transition-all ${
+                      isActive ? "bg-yellow-100 text-yellow-600" : ""
+                    }`
+                  }
+                >
+                  {label}
+                </NavLink>
+              ))}
+            </motion.nav>
           </>
         )}
       </AnimatePresence>

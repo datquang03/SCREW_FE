@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom"; // ← THÊM DÒNG NÀY
 import { Typography, Skeleton, Empty } from "antd";
 import { FiStar, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
-import { getActiveSetDesigns, getSetDesignById } from "../../../features/setDesign/setDesignSlice";
+import { getAllSetDesigns, getSetDesignById } from "../../../features/setDesign/setDesignSlice";
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -13,30 +13,31 @@ const SetDesignSection = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate(); // ← Dùng để chuyển trang
 
-  const activeSetDesigns = useSelector((state) => state.setDesign.activeSetDesigns);
+  const setDesigns = useSelector((state) => state.setDesign.setDesigns);
   const loading = useSelector((state) => state.setDesign.loading);
 
   const [current, setCurrent] = useState(0);
   const timeoutRef = useRef(null);
   const [isHovering, setIsHovering] = useState(false);
 
+  // Chỉ gọi API một lần khi component được mount
   useEffect(() => {
-    if (activeSetDesigns.length === 0 && !loading) {
-      dispatch(getActiveSetDesigns());
-    }
-  }, [dispatch, activeSetDesigns.length, loading]);
+    dispatch(getAllSetDesigns({ page: 1, limit: 10 }));
+  }, [dispatch]);
 
   useEffect(() => {
-    if (!isHovering && activeSetDesigns.length > 1) {
+    if (!isHovering && setDesigns.length > 1) {
       timeoutRef.current = setTimeout(() => {
-        setCurrent((prev) => (prev + 1) % activeSetDesigns.length);
+        setCurrent((prev) => (prev + 1) % setDesigns.length);
       }, 5000);
     }
     return () => clearTimeout(timeoutRef.current);
-  }, [current, isHovering, activeSetDesigns.length]);
+  }, [current, isHovering, setDesigns.length]);
 
-  const handlePrev = () => setCurrent((prev) => (prev - 1 + activeSetDesigns.length) % activeSetDesigns.length);
-  const handleNext = () => setCurrent((prev) => (prev + 1) % activeSetDesigns.length);
+  const handlePrev = () =>
+    setCurrent((prev) => (prev - 1 + setDesigns.length) % setDesigns.length);
+  const handleNext = () =>
+    setCurrent((prev) => (prev + 1) % setDesigns.length);
 
   // Hàm chung: chuyển sang trang chi tiết + gọi API
   const goToDetail = (id) => {
@@ -55,16 +56,16 @@ const SetDesignSection = () => {
     );
   }
 
-  if (activeSetDesigns.length === 0) {
+  if (setDesigns.length === 0) {
     return (
       <div className="w-full max-w-6xl mx-auto py-16 px-4 text-center">
         <Title level={2} className="mb-8">Set Design Nổi Bật</Title>
-        <Empty description="Chưa có Set Design nào được kích hoạt" />
+        <Empty description="Chưa có Set Design nào" />
       </div>
     );
   }
 
-  const item = activeSetDesigns[current];
+  const item = setDesigns[current];
   const imageUrl = item.images?.[0] || "https://images.unsplash.com/photo-1618776148559-309e0b8775d3?auto=format&fit=crop&w=1000&q=80";
 
   return (
@@ -163,7 +164,7 @@ const SetDesignSection = () => {
 
       {/* Chấm tròn */}
       <div className="flex justify-center mt-10 gap-3">
-        {activeSetDesigns.map((_, idx) => (
+        {setDesigns.map((_, idx) => (
           <motion.div
             key={idx}
             onClick={() => setCurrent(idx)}

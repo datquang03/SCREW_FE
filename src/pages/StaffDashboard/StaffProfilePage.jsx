@@ -58,11 +58,11 @@ const StaffProfilePage = () => {
         <div className="absolute -top-10 -right-10 w-44 h-44 rounded-full bg-indigo-300/30 blur-3xl" />
         <div className="relative z-10">
           <Title level={2} className="mb-2 text-gray-900">
-            Hồ sơ nhân viên
-          </Title>
+          Hồ sơ nhân viên
+        </Title>
           <Text className="text-base text-gray-700 font-medium">
-            Thông tin cá nhân và lịch sử công việc tại S+ Studio
-          </Text>
+          Thông tin cá nhân và lịch sử công việc tại S+ Studio
+        </Text>
         </div>
       </div>
 

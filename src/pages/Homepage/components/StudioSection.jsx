@@ -109,28 +109,28 @@ const StudioSection = () => {
                     <Card
                       hoverable
                       className="overflow-hidden rounded-2xl md:rounded-3xl border border-gray-200/70 group-hover:border-gray-300 shadow-md group-hover:shadow-xl transition-all duration-500 h-full bg-transparent"
-                      bodyStyle={{ padding: 0 }}
+                      style={{padding: 0, boxShadow: 'none' }}
                     >
                       <div className="relative w-full h-72 md:h-80">
                         {/* Ảnh nền */}
-                        {studio.images?.[0] ? (
-                          <img
-                            src={studio.images[0]}
-                            alt={studio.name}
+                          {studio.images?.[0] ? (
+                            <img
+                              src={studio.images[0]}
+                              alt={studio.name}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                          />
-                        ) : (
+                            />
+                          ) : (
                           <div className="w-full h-full bg-gray-200 flex items-center justify-center text-3xl md:text-4xl font-bold text-gray-400">
-                            {studio.name}
-                          </div>
-                        )}
+                              {studio.name}
+                            </div>
+                          )}
 
                         {/* Badge rating */}
                         <div className="absolute top-4 left-4 bg-black/70 text-white px-4 py-2 rounded-full flex items-center gap-2 shadow-lg backdrop-blur-sm">
                           <FiStar className="text-yellow-400" size={18} />
                           <span className="font-semibold text-sm md:text-base">
-                            {studio.rating?.toFixed(1) || "5.0"}
-                          </span>
+                              {studio.rating?.toFixed(1) || "5.0"}
+                            </span>
                         </div>
 
                         {/* Icon info dẫn tới trang chi tiết */}
@@ -157,12 +157,12 @@ const StudioSection = () => {
 
                             <div className="border-l-4 border-orange-400 pl-3 md:pl-4">
                               <h3 className="text-lg md:text-2xl font-bold line-clamp-2 drop-shadow">
-                                {studio.name}
+                              {studio.name}
                               </h3>
                               <p className="mt-1.5 text-xs md:text-sm text-gray-100/95 line-clamp-2 drop-shadow-sm">
                                 {studio.description ||
                                   "Studio hiện đại, ánh sáng đẹp, phù hợp chụp lookbook, cưới, profile cá nhân."}
-                              </p>
+                            </p>
                             </div>
 
                             <div className="flex flex-wrap gap-2 md:gap-3">
@@ -191,7 +191,7 @@ const StudioSection = () => {
                               <p className="text-[11px] md:text-xs text-gray-200">
                                 / giờ • đã bao gồm setup cơ bản
                               </p>
-                            </div>
+                              </div>
 
                             <div className="flex flex-wrap gap-3 md:gap-4 justify-end">
                               <Button

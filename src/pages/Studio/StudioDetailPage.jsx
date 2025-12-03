@@ -10,6 +10,8 @@ import {
   updateReply,
   deleteReply,
   deleteComment,
+  likeComment,
+  unlikeComment,
 } from "../../features/comment/commentSlice";
 import { Typography, Button, Tag, Carousel, Spin, Input, Avatar } from "antd";
 import {
@@ -236,6 +238,38 @@ const StudioDetailPage = () => {
         )
       );
     } catch (e) {}
+  };
+
+  const handleToggleLikeComment = async (index) => {
+    const review = comments[index];
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    const commentId = review._id || review.id;
+    if (!commentId) {
+      // Không có id từ backend → chỉ toggle local
+      setComments((prev) =>
+        prev.map((c, i) => (i === index ? { ...c, liked: !c.liked } : c))
+      );
+      return;
+    }
+
+    try {
+      if (review.liked) {
+        await dispatch(unlikeComment(commentId)).unwrap();
+      } else {
+        await dispatch(likeComment(commentId)).unwrap();
+      }
+
+      // Optimistic update UI
+      setComments((prev) =>
+        prev.map((c, i) => (i === index ? { ...c, liked: !c.liked } : c))
+      );
+    } catch (e) {
+      // có thể show message.error nếu cần
+    }
   };
 
   if (loading || !currentStudio) {
@@ -503,9 +537,16 @@ const StudioDetailPage = () => {
                         </div>
                       </div>
                     </div>
-                    {review.liked && (
-                      <AiFillHeart className="text-red-500 text-xl mt-1" />
-                    )}
+                    <button
+                      className="ml-2 text-xl mt-1 focus:outline-none"
+                      onClick={() => handleToggleLikeComment(index)}
+                    >
+                      {review.liked ? (
+                        <AiFillHeart className="text-red-500" />
+                      ) : (
+                        <AiOutlineHeart className="text-gray-300 hover:text-red-400 transition-colors" />
+                      )}
+                    </button>
                   </div>
 
                   {/* Nội dung comment hoặc form edit */}

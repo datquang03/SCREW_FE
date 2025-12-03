@@ -192,6 +192,146 @@ export const deleteComment = createAsyncThunk(
 );
 
 // =============================
+// LIKE / UNLIKE COMMENT (GLOBAL)
+// POST   {{base_url}}/api/comments/:commentId/like
+// DELETE {{base_url}}/api/comments/:commentId/like
+// =============================
+export const likeComment = createAsyncThunk(
+  "comment/likeComment",
+  async (commentId, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth || {};
+
+      const res = await axiosInstance.post(
+        `/comments/${commentId}/like`,
+        {},
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        }
+      );
+
+      // Chuẩn hoá data: { commentId, likes, likesCount }
+      const data = res.data?.data || res.data || {};
+      return {
+        commentId: data.commentId || commentId,
+        likes: data.likes || [],
+        likesCount:
+          typeof data.likesCount === "number"
+            ? data.likesCount
+            : Array.isArray(data.likes)
+            ? data.likes.length
+            : 0,
+      };
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Thích bình luận thất bại" }
+      );
+    }
+  }
+);
+
+export const unlikeComment = createAsyncThunk(
+  "comment/unlikeComment",
+  async (commentId, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth || {};
+
+      const res = await axiosInstance.delete(`/comments/${commentId}/like`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+
+      const data = res.data?.data || res.data || {};
+      return {
+        commentId: data.commentId || commentId,
+        likes: data.likes || [],
+        likesCount:
+          typeof data.likesCount === "number"
+            ? data.likesCount
+            : Array.isArray(data.likes)
+            ? data.likes.length
+            : 0,
+      };
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Bỏ thích bình luận thất bại" }
+      );
+    }
+  }
+);
+
+// =============================
+// LIKE / UNLIKE REPLY (GLOBAL)
+// POST   {{base_url}}/api/comments/:commentId/replies/:replyId/like
+// DELETE {{base_url}}/api/comments/:commentId/replies/:replyId/like
+// =============================
+export const likeReply = createAsyncThunk(
+  "comment/likeReply",
+  async ({ commentId, replyId }, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth || {};
+
+      const res = await axiosInstance.post(
+        `/comments/${commentId}/replies/${replyId}/like`,
+        {},
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        }
+      );
+
+      const data = res.data?.data || res.data || {};
+      return {
+        commentId: data.commentId || commentId,
+        replyId: data.replyId || replyId,
+        likes: data.likes || [],
+        likesCount:
+          typeof data.likesCount === "number"
+            ? data.likesCount
+            : Array.isArray(data.likes)
+            ? data.likes.length
+            : 0,
+      };
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Thích phản hồi thất bại" }
+      );
+    }
+  }
+);
+
+export const unlikeReply = createAsyncThunk(
+  "comment/unlikeReply",
+  async ({ commentId, replyId }, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth || {};
+
+      const res = await axiosInstance.delete(
+        `/comments/${commentId}/replies/${replyId}/like`,
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        }
+      );
+
+      const data = res.data?.data || res.data || {};
+      return {
+        commentId: data.commentId || commentId,
+        replyId: data.replyId || replyId,
+        likes: data.likes || [],
+        likesCount:
+          typeof data.likesCount === "number"
+            ? data.likesCount
+            : Array.isArray(data.likes)
+            ? data.likes.length
+            : 0,
+      };
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Bỏ thích phản hồi thất bại" }
+      );
+    }
+  }
+);
+
+// =============================
 // INITIAL STATE
 // =============================
 const initialState = {
@@ -289,6 +429,21 @@ const commentSlice = createSlice({
       })
       .addCase(deleteComment.rejected, (state, action) => {
         state.loading = false;
+        state.error = action.payload;
+      })
+
+      // === LIKE / UNLIKE COMMENT ===
+      // Không đụng tới state.loading để tránh giật UI khi chỉ like/unlike
+      .addCase(likeComment.rejected, (state, action) => {
+        state.error = action.payload;
+      })
+      .addCase(unlikeComment.rejected, (state, action) => {
+        state.error = action.payload;
+      })
+      .addCase(likeReply.rejected, (state, action) => {
+        state.error = action.payload;
+      })
+      .addCase(unlikeReply.rejected, (state, action) => {
         state.error = action.payload;
       });
   },
