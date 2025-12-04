@@ -35,12 +35,16 @@ const Navbar = () => {
   const [notifOpen, setNotifOpen] = useState(false);
   const [allNotificationsModalOpen, setAllNotificationsModalOpen] =
     useState(false);
+  const [visibleDropdownCount, setVisibleDropdownCount] = useState(4);
 
   const headerRef = useRef(null);
   const searchContainerRef = useRef(null);
   const searchInputRef = useRef(null);
   const notificationAudioRef = useRef(null);
   const previousUnreadCountRef = useRef(0);
+  const dropdownPanelRef = useRef(null);
+  const dropdownScrollRef = useRef(null);
+  const modalBodyRef = useRef(null);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -72,7 +76,7 @@ const Navbar = () => {
   }, [user, dispatch]);
 
   const unreadCount = notifications.filter((n) => !n.isRead && !n.read).length;
-  const displayedNotifications = notifications.slice(0, 4);
+  const dropdownNotifications = notifications.slice(0, visibleDropdownCount);
 
   // Play notification sound when new notification arrives
   useEffect(() => {
@@ -95,9 +99,18 @@ const Navbar = () => {
     previousUnreadCountRef.current = currentUnreadCount;
   }, [unreadCount, notifications, user, notificationsLoading]);
 
+  // Reset dropdown count when toggling
+  useEffect(() => {
+    if (notifOpen) {
+      setVisibleDropdownCount(4);
+      }
+  }, [notifOpen]);
+
   // Auto mark read when visible or hovered in dropdown
   useEffect(() => {
     if (!notifOpen) return;
+
+    const root = dropdownScrollRef.current || dropdownPanelRef.current || null;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -113,7 +126,7 @@ const Navbar = () => {
           }
         });
       },
-      { root: document.querySelector(".notif-dropdown"), threshold: 0.5 }
+      { root, threshold: 0.5 }
     );
 
     const elems = document.querySelectorAll(".notification-item");
@@ -125,6 +138,8 @@ const Navbar = () => {
   // Auto mark read when visible or hovered in modal
   useEffect(() => {
     if (!allNotificationsModalOpen) return;
+
+    const root = modalBodyRef.current;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -141,7 +156,7 @@ const Navbar = () => {
         });
       },
       {
-        root: document.querySelector(".all-notifications-modal"),
+        root,
         threshold: 0.5,
       }
     );
@@ -151,6 +166,18 @@ const Navbar = () => {
 
     return () => observer.disconnect();
   }, [allNotificationsModalOpen, notifications, dispatch]);
+
+  const handleDropdownScroll = (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    if (
+      scrollTop + clientHeight >= scrollHeight - 10 &&
+      visibleDropdownCount < notifications.length
+    ) {
+      setVisibleDropdownCount((prev) =>
+        Math.min(prev + 3, notifications.length)
+      );
+    }
+  };
 
   const handleDeleteNotification = (id) => {
     Modal.confirm({
@@ -342,76 +369,124 @@ const Navbar = () => {
               <AnimatePresence>
                 {notifOpen && (
                   <motion.div
+                    ref={dropdownPanelRef}
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                     transition={{ duration: 0.2 }}
-                    className="notif-dropdown absolute left-1/2 -translate-x-1/2 mt-2 w-80 max-h-96 bg-white rounded-xl shadow-2xl border border-gray-200 z-[110] flex flex-col overflow-hidden"
+                    className="notif-dropdown-panel absolute left-1/2 -translate-x-1/2 mt-3 w-80 max-h-[430px] bg-white rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.25)] border border-gray-200 z-[110] flex flex-col overflow-hidden"
                   >
-                    <div className="flex-1 overflow-y-auto max-h-72 p-2">
-                      {notificationsLoading ? (
-                        <div className="flex items-center justify-center py-8">
-                          <span className="text-gray-500">Đang tải...</span>
-                        </div>
-                      ) : displayedNotifications.length === 0 ? (
-                        <div className="flex items-center justify-center py-8">
-                          <span className="text-gray-500">
-                            Chưa có thông báo
-                          </span>
-                        </div>
-                      ) : (
-                        displayedNotifications.map((n) => {
-                          const isRead = n.isRead || n.read;
-                          return (
-                            <div
-                              key={n._id}
-                              data-id={n._id}
-                              onMouseEnter={() =>
-                                handleNotificationHover(n._id)
-                              }
-                              className={`notification-item group relative flex items-start justify-between px-4 py-3 mb-2 rounded-lg cursor-pointer transition-all ${
-                                isRead
-                                  ? "bg-gray-100 hover:bg-gray-200"
-                                  : "bg-white hover:bg-gray-50 border-l-4 border-blue-500"
-                              }`}
-                            >
-                              <div className="flex flex-col flex-1 pr-2">
-                                {!isRead && (
-                                  <span className="inline-block mb-1 px-2 py-0.5 text-xs font-semibold text-blue-600 bg-blue-100 rounded-full w-fit">
-                                    Chưa đọc
-                                  </span>
-                                )}
-                                <span className="font-semibold text-gray-800 text-sm">
-                                  {n.title}
-                                </span>
-                                <span className="text-xs text-gray-600 mt-1 line-clamp-2">
-                                  {n.message}
-                                </span>
-                              </div>
-                              <motion.button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDeleteNotification(n._id);
-                                }}
-                                className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0 p-1.5 hover:bg-red-100 rounded-full"
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                              >
-                                <DeleteOutlined className="text-red-500 text-base" />
-                              </motion.button>
-                            </div>
-                          );
-                        })
+                    <div className="bg-gradient-to-r from-indigo-50 via-white to-indigo-50 px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">
+                          Thông báo của bạn
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          Cập nhật mới nhất theo thời gian thực
+                        </p>
+                      </div>
+                      {unreadCount > 0 && (
+                        <span className="px-2 py-1 text-xs font-semibold text-white bg-gradient-to-r from-pink-500 to-rose-500 rounded-full shadow">
+                          {unreadCount} mới
+                        </span>
                       )}
                     </div>
-                    <div className="border-t-2 border-gray-200 bg-gray-50 p-3">
+                    <div
+                      ref={dropdownScrollRef}
+                      onScroll={handleDropdownScroll}
+                      className="notif-scroll-container flex-1 overflow-y-auto max-h-[330px] p-3 space-y-2 custom-scrollbar"
+                    >
+                      {notificationsLoading ? (
+                        <div className="flex flex-col gap-3">
+                          {[...Array(3)].map((_, idx) => (
+                            <div
+                              key={idx}
+                              className="animate-pulse rounded-xl border border-gray-100 bg-gray-50 p-4 space-y-2"
+                            >
+                              <div className="h-3 w-24 bg-gray-200 rounded" />
+                              <div className="h-3 w-40 bg-gray-200 rounded" />
+                            </div>
+                          ))}
+                        </div>
+                      ) : dropdownNotifications.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-10 text-center text-gray-500">
+                          <MdNotifications className="text-3xl text-gray-300 mb-2" />
+                          <p>Chưa có thông báo</p>
+                        </div>
+                      ) : (
+                        <>
+                          {dropdownNotifications.map((n) => {
+                            const isRead = n.isRead || n.read;
+                            return (
+                              <div
+                                key={n._id}
+                                data-id={n._id}
+                                onMouseEnter={() =>
+                                  handleNotificationHover(n._id)
+                                }
+                                className={`notification-item group relative flex items-start justify-between px-4 py-3 rounded-xl cursor-pointer transition-all border ${
+                                  isRead
+                                    ? "bg-gray-50 border-gray-100 hover:bg-gray-100"
+                                    : "bg-white border-blue-200 shadow-sm hover:shadow-md"
+                                }`}
+                              >
+                                <div className="flex flex-col flex-1 pr-2">
+                                  {!isRead && (
+                                    <span className="inline-block mb-1 px-2 py-0.5 text-xs font-semibold text-blue-600 bg-blue-100 rounded-full w-fit">
+                                      Chưa đọc
+                                    </span>
+                                  )}
+                                  <span className="font-semibold text-gray-800 text-sm">
+                                    {n.title}
+                                  </span>
+                                  <span className="text-xs text-gray-600 mt-1 line-clamp-2">
+                                    {n.message}
+                                  </span>
+                                  {n.createdAt && (
+                                    <span className="text-[11px] text-gray-400 mt-1">
+                                      {new Date(n.createdAt).toLocaleString(
+                                        "vi-VN",
+                                        {
+                                          hour: "2-digit",
+                                          minute: "2-digit",
+                                          day: "2-digit",
+                                          month: "2-digit",
+                                        }
+                                      )}
+                                    </span>
+                                  )}
+                                </div>
+                                <motion.button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteNotification(n._id);
+                                  }}
+                                  className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0 p-1.5 hover:bg-red-100 rounded-full"
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
+                                >
+                                  <DeleteOutlined className="text-red-500 text-base" />
+                                </motion.button>
+                              </div>
+                            );
+                          })}
+                          {dropdownNotifications.length ===
+                            notifications.length && (
+                            <p className="text-center text-xs text-gray-400 py-2">
+                              Hết thông báo
+                            </p>
+                          )}
+                        </>
+                      )}
+                    </div>
+                    <div className="border-t border-gray-100 bg-gray-50 p-3">
                       <Button
                         type="link"
                         onClick={() => {
                           setNotifOpen(false);
                           setAllNotificationsModalOpen(true);
                         }}
-                        className="w-full text-sm font-semibold text-gray-700 hover:text-yellow-600 hover:underline"
+                        className="w-full text-sm font-semibold text-indigo-600 hover:text-indigo-800 hover:underline"
                       >
                         Xem tất cả
                       </Button>
@@ -426,58 +501,58 @@ const Navbar = () => {
           {user ? (
             <div className="flex items-center gap-2">
               <div className="relative avatar-dropdown">
-                <motion.button
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
-                  whileHover={{ scale: 1.05 }}
-                  className="flex items-center gap-2 p-1 rounded-full bg-white/10 hover:bg-white/20 transition-all"
-                >
-                  <img
-                    src={
-                      user.avatar ||
-                      "https://png.pngtree.com/png-clipart/20191120/original/pngtree-outline-user-icon-png-image_5045523.jpg"
-                    }
-                    alt="User Avatar"
-                    className="w-12 h-12 rounded-full object-cover border-2 border-white/60 shadow-lg cursor-pointer"
-                  />
-                </motion.button>
+              <motion.button
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                whileHover={{ scale: 1.05 }}
+                className="flex items-center gap-2 p-1 rounded-full bg-white/10 hover:bg-white/20 transition-all"
+              >
+                <img
+                  src={
+                    user.avatar ||
+                    "https://png.pngtree.com/png-clipart/20191120/original/pngtree-outline-user-icon-png-image_5045523.jpg"
+                  }
+                  alt="User Avatar"
+                  className="w-12 h-12 rounded-full object-cover border-2 border-white/60 shadow-lg cursor-pointer"
+                />
+              </motion.button>
 
-                <AnimatePresence>
-                  {dropdownOpen && (
-                    <motion.div
+              <AnimatePresence>
+                {dropdownOpen && (
+                  <motion.div
                       initial={{ opacity: 0, y: -20 }}
-                      animate={{ opacity: 1, y: 0 }}
+                    animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -20 }}
                       transition={{ duration: 0.25 }}
                       className="absolute right-0 mt-2 w-56 bg-gradient-to-b from-yellow-50 to-yellow-100 rounded-xl shadow-2xl border border-yellow-200 z-[110]"
-                    >
+                  >
                       <div className="p-4 border-b border-yellow-200">
                         <p className="text-sm font-bold text-gray-900">
-                          {user.fullName || user.username}
-                        </p>
+                        {user.fullName || user.username}
+                      </p>
                         <p className="text-xs text-gray-600">{user.email}</p>
-                      </div>
+                    </div>
 
                       <ul className="py-2">
                         {/* Dashboard */}
-                        <li>
-                          <button
-                            onClick={() => {
-                              setDropdownOpen(false);
-                              let dashboardPath = "/dashboard";
+                      <li>
+                        <button
+                          onClick={() => {
+                            setDropdownOpen(false);
+                            let dashboardPath = "/dashboard";
                               if (user.role === "customer")
                                 dashboardPath = "/dashboard/customer";
                               if (user.role === "staff")
                                 dashboardPath = "/dashboard/staff";
                               if (user.role === "admin")
                                 dashboardPath = "/dashboard/admin";
-                              navigate(dashboardPath);
-                            }}
+                            navigate(dashboardPath);
+                          }}
                             className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-gray-800 rounded-lg hover:bg-yellow-200 hover:text-yellow-700 transition-all cursor-pointer"
-                          >
+                        >
                             <MdOutlineSpaceDashboard className="text-lg" />{" "}
                             Dashboard
-                          </button>
-                        </li>
+                        </button>
+                      </li>
 
                         {/* Customer only */}
                         {user.role === "customer" && (
@@ -494,47 +569,47 @@ const Navbar = () => {
                                 thích
                               </button>
                             </li>
-                            <li>
-                              <button
-                                onClick={() => {
-                                  setDropdownOpen(false);
+                      <li>
+                        <button
+                          onClick={() => {
+                            setDropdownOpen(false);
                                   navigate("/studio/customer/reviews");
-                                }}
+                          }}
                                 className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-800 rounded-lg hover:bg-yellow-200 hover:text-yellow-700 transition-all cursor-pointer"
-                              >
+                        >
                                 <FileTextOutlined className="text-lg" /> Reviews
                                 đã thích
-                              </button>
-                            </li>
+                        </button>
+                      </li>
                           </>
                         )}
 
                         {/* Settings */}
-                        <li>
-                          <button
-                            onClick={() => {
-                              setDropdownOpen(false);
-                              navigate("/settings");
-                            }}
+                      <li>
+                        <button
+                          onClick={() => {
+                            setDropdownOpen(false);
+                            navigate("/settings");
+                          }}
                             className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-800 rounded-lg hover:bg-yellow-200 hover:text-yellow-700 transition-all"
-                          >
+                        >
                             <SettingOutlined className="text-lg" /> Cài đặt
-                          </button>
-                        </li>
+                        </button>
+                      </li>
 
                         {/* Logout */}
                         <li className="border-t border-yellow-200">
-                          <button
-                            onClick={handleLogout}
+                        <button
+                          onClick={handleLogout}
                             className="flex items-center gap-3 w-full px-4 py-3 text-sm text-red-600 rounded-lg hover:bg-red-100 hover:text-red-700 transition-all cursor-pointer"
-                          >
+                        >
                             <LogoutOutlined className="text-lg" /> Đăng xuất
-                          </button>
-                        </li>
-                      </ul>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                        </button>
+                      </li>
+                    </ul>
+                  </motion.div>
+                )}
+              </AnimatePresence>
               </div>
             </div>
           ) : (
@@ -601,20 +676,20 @@ const Navbar = () => {
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
               className="fixed top-0 right-0 w-72 h-screen bg-white shadow-2xl z-[60] flex flex-col p-6"
             >
-              {NAV_LINKS.map(({ path, label, key: linkKey }) => (
-                <NavLink
+                  {NAV_LINKS.map(({ path, label, key: linkKey }) => (
+                      <NavLink
                   key={linkKey}
-                  to={path}
-                  onClick={closeMobileMenu}
-                  className={({ isActive }) =>
+                        to={path}
+                        onClick={closeMobileMenu}
+                        className={({ isActive }) =>
                     `px-4 py-3 rounded-lg font-semibold text-gray-700 hover:bg-gray-100 transition-all ${
                       isActive ? "bg-yellow-100 text-yellow-600" : ""
-                    }`
-                  }
-                >
-                  {label}
-                </NavLink>
-              ))}
+                          }`
+                        }
+                      >
+                        {label}
+                      </NavLink>
+                  ))}
             </motion.nav>
           </>
         )}
@@ -643,7 +718,10 @@ const Navbar = () => {
           body: { padding: 0, maxHeight: "70vh", overflow: "hidden" },
         }}
       >
-        <div className="overflow-y-auto max-h-[70vh] p-4">
+        <div
+          ref={modalBodyRef}
+          className="overflow-y-auto max-h-[70vh] p-4 space-y-2 custom-scrollbar"
+        >
           {notificationsLoading ? (
             <div className="flex items-center justify-center py-12">
               <span className="text-gray-500">Đang tải...</span>
@@ -705,6 +783,11 @@ const Navbar = () => {
                   </div>
                 );
               })}
+
+              {/* End of notifications marker */}
+              <p className="text-center text-xs text-gray-400 py-3">
+                Hết thông báo
+              </p>
             </div>
           )}
         </div>

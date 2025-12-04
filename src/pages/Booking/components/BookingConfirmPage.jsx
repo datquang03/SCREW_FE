@@ -107,7 +107,9 @@ export default function BookingConfirmPage({ onBack, onSuccess }) {
   if (studioLoading || !studio) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Spin size="large" tip="Đang chuẩn bị hóa đơn..." />
+        <Spin size="large" tip="Đang chuẩn bị hóa đơn...">
+          <div className="w-0 h-0" />
+        </Spin>
       </div>
     );
   }

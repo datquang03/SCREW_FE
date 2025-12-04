@@ -293,9 +293,9 @@ const StudioDetailPage = () => {
   if (loading || !currentStudio) {
     return (
       <Layout>
-        <div className="flex justify-center items-center h-screen">
+      <div className="flex justify-center items-center h-screen">
           <Spin size="large" tip="Đang tải thông tin studio..." />
-        </div>
+      </div>
       </Layout>
     );
   }
@@ -341,12 +341,12 @@ const StudioDetailPage = () => {
         <div className="container mx-auto px-4 md:px-8 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left: Image Gallery */}
-            <motion.div
+          <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4 }}
               className="space-y-4"
-            >
+          >
               {/* Main Image */}
               <div
                 className="relative bg-white rounded-2xl shadow-2xl overflow-hidden border-2 border-gray-200 cursor-pointer group"
@@ -370,10 +370,10 @@ const StudioDetailPage = () => {
                 {mainImage ? (
                   <img
                     src={mainImage}
-                    alt={currentStudio.name}
+                      alt={currentStudio.name}
                     className="w-full h-[500px] md:h-[600px] object-cover pointer-events-none"
                     draggable={false}
-                  />
+                    />
                 ) : (
                   <div className="w-full h-[500px] md:h-[600px] bg-gradient-to-br from-gray-100 via-gray-50 to-gray-200 flex items-center justify-center text-6xl text-gray-400 pointer-events-none">
                     📷
@@ -485,19 +485,19 @@ const StudioDetailPage = () => {
                       <Text className="text-gray-600 text-xs font-semibold">
                         {currentStudio._id?.slice(-8).toUpperCase()}
                       </Text>
-                    </div>
-                  </motion.div>
+            </div>
+          </motion.div>
 
                   {/* Title */}
-                  <motion.div
+          <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.3, delay: 0.15 }}
-                  >
+          >
                     <Title level={2} className="text-3xl md:text-4xl font-extrabold mb-4 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent relative">
                       <span className="relative z-10">{currentStudio.name}</span>
                       <div className="absolute bottom-0 left-0 w-20 h-1 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full" />
-                    </Title>
+              </Title>
                   </motion.div>
 
                   {/* Description */}
@@ -530,8 +530,8 @@ const StudioDetailPage = () => {
                         value={avgRating}
                         allowHalf
                         className="text-yellow-500"
-                      />
-                    </div>
+              />
+            </div>
                     <div className="flex items-center gap-2">
                       <Text className="text-gray-700 font-bold text-lg">
                         {avgRating > 0 ? avgRating.toFixed(1) : "Chưa có đánh giá"}
@@ -585,13 +585,13 @@ const StudioDetailPage = () => {
                     >
                       <div className="relative group">
                         <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full blur-md opacity-0 group-hover:opacity-50 transition-opacity duration-300" />
-                        <Tag
-                          color="blue"
+              <Tag
+                color="blue"
                           className="relative flex items-center justify-center gap-2 font-semibold px-4 md:px-5 py-2.5 md:py-3 rounded-full text-xs md:text-sm whitespace-nowrap shadow-lg hover:shadow-2xl transition-all cursor-pointer border-2 border-blue-300 bg-gradient-to-br from-blue-50 to-blue-100"
-                        >
+              >
                           <FiMapPin className="text-base md:text-lg flex-shrink-0" style={{ lineHeight: 1 }} />
                           <span className="whitespace-nowrap leading-none">{currentStudio.location || "Không xác định"}</span>
-                        </Tag>
+              </Tag>
                       </div>
                     </motion.div>
                     <motion.div
@@ -604,10 +604,10 @@ const StudioDetailPage = () => {
                     >
                       <div className="relative group">
                         <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-purple-600 rounded-full blur-md opacity-0 group-hover:opacity-50 transition-opacity duration-300" />
-                        <Tag
-                          color="purple"
+              <Tag
+                color="purple"
                           className="relative flex items-center justify-center gap-2 font-semibold px-4 md:px-5 py-2.5 md:py-3 rounded-full text-xs md:text-sm whitespace-nowrap shadow-lg hover:shadow-2xl transition-all cursor-pointer border-2 border-purple-300 bg-gradient-to-br from-purple-50 to-purple-100"
-                        >
+              >
                           <FiUsers className="text-base md:text-lg flex-shrink-0" style={{ lineHeight: 1 }} />
                           <span className="whitespace-nowrap leading-none">{currentStudio.capacity || 0} người</span>
                         </Tag>
@@ -628,7 +628,7 @@ const StudioDetailPage = () => {
                           className="relative flex items-center justify-center font-semibold px-4 md:px-5 py-2.5 md:py-3 rounded-full text-xs md:text-sm whitespace-nowrap shadow-lg hover:shadow-2xl transition-all cursor-pointer border-2 border-green-300 bg-gradient-to-br from-green-50 to-green-100"
                         >
                           <span className="whitespace-nowrap leading-none">{currentStudio.area || 0} m²</span>
-                        </Tag>
+              </Tag>
                       </div>
                     </motion.div>
                     <motion.div
@@ -647,14 +647,14 @@ const StudioDetailPage = () => {
                             ? "bg-gradient-to-r from-orange-400 to-orange-600"
                             : "bg-gradient-to-r from-red-400 to-red-600"
                         }`} />
-                        <Tag
-                          color={
-                            currentStudio.status === "active"
-                              ? "green"
-                              : currentStudio.status === "maintenance"
-                              ? "orange"
-                              : "red"
-                          }
+              <Tag
+                color={
+                  currentStudio.status === "active"
+                    ? "green"
+                    : currentStudio.status === "maintenance"
+                    ? "orange"
+                    : "red"
+                }
                           className={`relative flex items-center justify-center font-semibold px-4 md:px-5 py-2.5 md:py-3 rounded-full text-xs md:text-sm whitespace-nowrap shadow-lg hover:shadow-2xl transition-all cursor-pointer border-2 bg-gradient-to-br ${
                             currentStudio.status === "active"
                               ? "border-green-300 from-green-50 to-green-100"
@@ -670,11 +670,11 @@ const StudioDetailPage = () => {
                               ? "Bảo trì"
                               : "Không khả dụng"}
                           </span>
-                        </Tag>
-                      </div>
+              </Tag>
+            </div>
                     </motion.div>
                   </div>
-                </div>
+            </div>
 
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-4">
@@ -687,9 +687,9 @@ const StudioDetailPage = () => {
                     transition={{ duration: 0.3, delay: 0.6 }}
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
-                    <Button
-                      type="primary"
-                      size="large"
+              <Button
+                type="primary"
+                size="large"
                       icon={<FiShoppingCart className="text-lg" />}
                       className="relative w-full bg-gradient-to-r from-yellow-400 via-yellow-500 to-amber-500 border-none text-white font-bold py-6 rounded-xl shadow-xl hover:shadow-2xl transition-all border-2 border-yellow-300"
                       onClick={() => navigate(`/booking/${id}`)}
@@ -814,9 +814,9 @@ const StudioDetailPage = () => {
                     </motion.div>
                   </div>
                 </div>
-              </motion.div>
             </motion.div>
-          </div>
+          </motion.div>
+        </div>
 
         {/* Reviews Section */}
         <div className="space-y-6">
@@ -1076,8 +1076,8 @@ const StudioDetailPage = () => {
                           Gửi trả lời
                         </Button>
                       </div>
-                    </div>
-                  )}
+                  </div>
+                )}
               </div>
             ))}
             </div>

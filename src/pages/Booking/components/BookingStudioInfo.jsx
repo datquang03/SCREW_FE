@@ -13,7 +13,9 @@ const BookingStudioInfo = ({ onNext }) => {
   if (loading || !currentStudio) {
     return (
       <div className="flex justify-center items-center py-20">
-        <Spin size="large" tip="Đang tải thông tin studio..." />
+        <Spin size="large" tip="Đang tải thông tin studio...">
+          <div className="w-0 h-0" />
+        </Spin>
       </div>
     );
   }

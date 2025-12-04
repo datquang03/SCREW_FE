@@ -70,7 +70,9 @@ export default function BookingPaymentPage({
   if (!booking || !currentStudio) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <Spin size="large" tip="Đang tải hóa đơn..." />
+        <Spin size="large" tip="Đang tải hóa đơn...">
+          <div className="w-0 h-0" />
+        </Spin>
       </div>
     );
   }

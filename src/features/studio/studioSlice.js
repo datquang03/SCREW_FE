@@ -24,6 +24,25 @@ export const createStudio = createAsyncThunk(
   }
 );
 
+// GET STUDIO SCHEDULE
+// Có thể truyền các query như { studioId, date, from, to, ... }
+export const getStudioSchedule = createAsyncThunk(
+  "studio/getStudioSchedule",
+  async (params = {}, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get("/studios/schedule", {
+        params,
+      });
+      // API dự kiến trả về { data: [...] }
+      return response.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Lấy lịch studio thất bại" }
+      );
+    }
+  }
+);
+
 // GET ALL STUDIOS
 export const getAllStudios = createAsyncThunk(
   "studio/getAllStudios",
@@ -215,6 +234,7 @@ export const uploadStudioImage = createAsyncThunk(
 const initialState = {
   studios: [],
   currentStudio: null,
+  studioSchedule: [],
   total: 0,
   loading: false,
   error: null,
@@ -278,6 +298,21 @@ const studioSlice = createSlice({
         state.currentStudio = action.payload;
       })
       .addCase(getStudioById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // STUDIO SCHEDULE
+      .addCase(getStudioSchedule.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getStudioSchedule.fulfilled, (state, action) => {
+        state.loading = false;
+        // Lưu toàn bộ payload, nhưng ưu tiên mảng studios để dùng dễ hơn
+        const payload = action.payload || {};
+        state.studioSchedule = payload.studios || payload || [];
+      })
+      .addCase(getStudioSchedule.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
