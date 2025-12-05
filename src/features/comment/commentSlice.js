@@ -2,62 +2,76 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../../api/axiosInstance";
 
-// =============================
-// TẠO COMMENT MỚI CHO SET DESIGN
-// POST {{base_url}}/api/set-designs/:id/comments
-// =============================
-export const createComment = createAsyncThunk(
-  "comment/createComment",
-  async ({ setDesignId, message }, { rejectWithValue, getState }) => {
+// =========================================================
+// GET COMMENTS BY TARGET (SetDesign hoặc Studio)
+// GET /api/comments?targetType=SetDesign&targetId={id}
+// =========================================================
+export const getComments = createAsyncThunk(
+  "comment/getComments",
+  async ({ targetType, targetId }, { rejectWithValue }) => {
     try {
-      const { token } = getState().auth;
-
-      const response = await axiosInstance.post(
-        `/set-designs/${setDesignId}/comments`,
-        { message },
-        {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        }
+      const res = await axiosInstance.get(
+        `/comments?targetType=${targetType}&targetId=${targetId}`
       );
-
-      // API trả về comment mới vừa tạo
-      return {
-        setDesignId,
-        comment: response.data.data, // hoặc response.data.comment tùy backend
-      };
+      return res.data.data; // trả về list comments
     } catch (err) {
       return rejectWithValue(
-        err.response?.data || { message: "Gửi bình luận thất bại" }
+        err.response?.data || { message: "Lấy danh sách bình luận thất bại" }
       );
     }
   }
 );
 
-// =============================
-// CUSTOMER REPLY COMMENT
-// POST {{base_url}}/api/set-designs/:id/comments/:commentIndex/reply
-// =============================
+// =========================================================
+// CREATE COMMENT (chung cho SetDesign + Studio)
+// POST /api/comments
+// body: { content, targetType, targetId }
+// =========================================================
+export const createComment = createAsyncThunk(
+  "comment/createComment",
+  async ({ content, targetType, targetId }, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth || {};
+
+      const res = await axiosInstance.post(
+        "/comments",
+        { content, targetType, targetId },
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        }
+      );
+
+      return res.data.data; // trả về comment vừa tạo
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Tạo bình luận thất bại" }
+      );
+    }
+  }
+);
+
+// =========================================================
+// REPLY COMMENT
+// POST /api/comments/:id/reply
+// body: { content }
+// =========================================================
 export const replyComment = createAsyncThunk(
   "comment/replyComment",
-  async (
-    { setDesignId, commentIndex, replyContent },
-    { rejectWithValue, getState }
-  ) => {
+  async ({ commentId, content }, { rejectWithValue, getState }) => {
     try {
-      const { token } = getState().auth;
+      const { token } = getState().auth || {};
 
-      const response = await axiosInstance.post(
-        `/set-designs/${setDesignId}/comments/${commentIndex}/reply`,
-        { content: replyContent },
+      const res = await axiosInstance.post(
+        `/comments/${commentId}/reply`,
+        { content },
         {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         }
       );
 
       return {
-        setDesignId,
-        commentIndex,
-        reply: response.data.data,
+        commentId,
+        reply: res.data.data,
       };
     } catch (err) {
       return rejectWithValue(
@@ -67,32 +81,26 @@ export const replyComment = createAsyncThunk(
   }
 );
 
-// =============================
+// =========================================================
 // UPDATE COMMENT
-// PUT {{base_url}}/api/set-designs/:id/comments/:commentIndex
-// =============================
+// PUT /api/comments/:id
+// body: { content }
+// =========================================================
 export const updateComment = createAsyncThunk(
   "comment/updateComment",
-  async (
-    { setDesignId, commentIndex, message },
-    { rejectWithValue, getState }
-  ) => {
+  async ({ commentId, content }, { rejectWithValue, getState }) => {
     try {
-      const { token } = getState().auth;
+      const { token } = getState().auth || {};
 
-      const response = await axiosInstance.put(
-        `/set-designs/${setDesignId}/comments/${commentIndex}`,
-        { message },
+      const res = await axiosInstance.put(
+        `/comments/${commentId}`,
+        { content },
         {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         }
       );
 
-      return {
-        setDesignId,
-        commentIndex,
-        comment: response.data.data,
-      };
+      return res.data.data; // comment updated
     } catch (err) {
       return rejectWithValue(
         err.response?.data || { message: "Cập nhật bình luận thất bại" }
@@ -101,88 +109,21 @@ export const updateComment = createAsyncThunk(
   }
 );
 
-// =============================
-// UPDATE REPLY
-// PUT {{base_url}}/api/set-designs/:id/comments/:commentIndex/replies/:replyIndex
-// =============================
-export const updateReply = createAsyncThunk(
-  "comment/updateReply",
-  async (
-    { setDesignId, commentIndex, replyIndex, replyContent },
-    { rejectWithValue, getState }
-  ) => {
-    try {
-      const { token } = getState().auth;
-
-      const response = await axiosInstance.put(
-        `/set-designs/${setDesignId}/comments/${commentIndex}/replies/${replyIndex}`,
-        { content: replyContent },
-        {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        }
-      );
-
-      return {
-        setDesignId,
-        commentIndex,
-        replyIndex,
-        reply: response.data.data,
-      };
-    } catch (err) {
-      return rejectWithValue(
-        err.response?.data || { message: "Cập nhật trả lời thất bại" }
-      );
-    }
-  }
-);
-
-// =============================
-// DELETE REPLY
-// DELETE {{base_url}}/api/set-designs/:id/comments/:commentIndex/replies/:replyIndex
-// =============================
-export const deleteReply = createAsyncThunk(
-  "comment/deleteReply",
-  async (
-    { setDesignId, commentIndex, replyIndex },
-    { rejectWithValue, getState }
-  ) => {
-    try {
-      const { token } = getState().auth;
-
-      await axiosInstance.delete(
-        `/set-designs/${setDesignId}/comments/${commentIndex}/replies/${replyIndex}`,
-        {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        }
-      );
-
-      return { setDesignId, commentIndex, replyIndex };
-    } catch (err) {
-      return rejectWithValue(
-        err.response?.data || { message: "Xóa trả lời thất bại" }
-      );
-    }
-  }
-);
-
-// =============================
+// =========================================================
 // DELETE COMMENT
-// DELETE {{base_url}}/api/set-designs/:id/comments/:commentIndex
-// =============================
+// DELETE /api/comments/:id
+// =========================================================
 export const deleteComment = createAsyncThunk(
   "comment/deleteComment",
-  async ({ setDesignId, commentIndex }, { rejectWithValue, getState }) => {
+  async ({ commentId }, { rejectWithValue, getState }) => {
     try {
-      const { token } = getState().auth;
+      const { token } = getState().auth || {};
 
-      await axiosInstance.delete(
-        `/set-designs/${setDesignId}/comments/${commentIndex}`,
-        {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        }
-      );
+      await axiosInstance.delete(`/comments/${commentId}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
 
-      return { setDesignId, commentIndex };
+      return { commentId };
     } catch (err) {
       return rejectWithValue(
         err.response?.data || { message: "Xóa bình luận thất bại" }
@@ -190,12 +131,7 @@ export const deleteComment = createAsyncThunk(
     }
   }
 );
-
-// =============================
-// LIKE / UNLIKE COMMENT (GLOBAL)
-// POST   {{base_url}}/api/comments/:commentId/like
-// DELETE {{base_url}}/api/comments/:commentId/like
-// =============================
+// LIKE COMMENT
 export const likeComment = createAsyncThunk(
   "comment/likeComment",
   async (commentId, { rejectWithValue, getState }) => {
@@ -210,18 +146,7 @@ export const likeComment = createAsyncThunk(
         }
       );
 
-      // Chuẩn hoá data: { commentId, likes, likesCount }
-      const data = res.data?.data || res.data || {};
-      return {
-        commentId: data.commentId || commentId,
-        likes: data.likes || [],
-        likesCount:
-          typeof data.likesCount === "number"
-            ? data.likesCount
-            : Array.isArray(data.likes)
-            ? data.likes.length
-            : 0,
-      };
+      return { commentId, data: res.data.data };
     } catch (err) {
       return rejectWithValue(
         err.response?.data || { message: "Thích bình luận thất bại" }
@@ -230,27 +155,18 @@ export const likeComment = createAsyncThunk(
   }
 );
 
+// UNLIKE COMMENT
 export const unlikeComment = createAsyncThunk(
   "comment/unlikeComment",
   async (commentId, { rejectWithValue, getState }) => {
     try {
       const { token } = getState().auth || {};
 
-      const res = await axiosInstance.delete(`/comments/${commentId}/like`, {
+      await axiosInstance.delete(`/comments/${commentId}/like`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
 
-      const data = res.data?.data || res.data || {};
-      return {
-        commentId: data.commentId || commentId,
-        likes: data.likes || [],
-        likesCount:
-          typeof data.likesCount === "number"
-            ? data.likesCount
-            : Array.isArray(data.likes)
-            ? data.likes.length
-            : 0,
-      };
+      return { commentId };
     } catch (err) {
       return rejectWithValue(
         err.response?.data || { message: "Bỏ thích bình luận thất bại" }
@@ -259,89 +175,15 @@ export const unlikeComment = createAsyncThunk(
   }
 );
 
-// =============================
-// LIKE / UNLIKE REPLY (GLOBAL)
-// POST   {{base_url}}/api/comments/:commentId/replies/:replyId/like
-// DELETE {{base_url}}/api/comments/:commentId/replies/:replyId/like
-// =============================
-export const likeReply = createAsyncThunk(
-  "comment/likeReply",
-  async ({ commentId, replyId }, { rejectWithValue, getState }) => {
-    try {
-      const { token } = getState().auth || {};
-
-      const res = await axiosInstance.post(
-        `/comments/${commentId}/replies/${replyId}/like`,
-        {},
-        {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        }
-      );
-
-      const data = res.data?.data || res.data || {};
-      return {
-        commentId: data.commentId || commentId,
-        replyId: data.replyId || replyId,
-        likes: data.likes || [],
-        likesCount:
-          typeof data.likesCount === "number"
-            ? data.likesCount
-            : Array.isArray(data.likes)
-            ? data.likes.length
-            : 0,
-      };
-    } catch (err) {
-      return rejectWithValue(
-        err.response?.data || { message: "Thích phản hồi thất bại" }
-      );
-    }
-  }
-);
-
-export const unlikeReply = createAsyncThunk(
-  "comment/unlikeReply",
-  async ({ commentId, replyId }, { rejectWithValue, getState }) => {
-    try {
-      const { token } = getState().auth || {};
-
-      const res = await axiosInstance.delete(
-        `/comments/${commentId}/replies/${replyId}/like`,
-        {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        }
-      );
-
-      const data = res.data?.data || res.data || {};
-      return {
-        commentId: data.commentId || commentId,
-        replyId: data.replyId || replyId,
-        likes: data.likes || [],
-        likesCount:
-          typeof data.likesCount === "number"
-            ? data.likesCount
-            : Array.isArray(data.likes)
-            ? data.likes.length
-            : 0,
-      };
-    } catch (err) {
-      return rejectWithValue(
-        err.response?.data || { message: "Bỏ thích phản hồi thất bại" }
-      );
-    }
-  }
-);
-
-// =============================
-// INITIAL STATE
-// =============================
+// =========================================================
+// SLICE
+// =========================================================
 const initialState = {
+  comments: [],
   loading: false,
   error: null,
 };
 
-// =============================
-// SLICE
-// =============================
 const commentSlice = createSlice({
   name: "comment",
   initialState,
@@ -352,98 +194,88 @@ const commentSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // === CREATE COMMENT ===
-      .addCase(createComment.pending, (state) => {
+      // GET COMMENTS
+      .addCase(getComments.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(createComment.fulfilled, (state) => {
+      .addCase(getComments.fulfilled, (state, action) => {
         state.loading = false;
-        // Không cần lưu vào state toàn cục vì comment thuộc về setDesign
-        // → Sẽ được cập nhật ở component chi tiết qua refetch hoặc optimistic
+        state.comments = action.payload;
+      })
+      .addCase(getComments.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // CREATE COMMENT
+      .addCase(createComment.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(createComment.fulfilled, (state, action) => {
+        state.loading = false;
+        state.comments.unshift(action.payload); // thêm vào đầu list
       })
       .addCase(createComment.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
 
-      // === REPLY COMMENT ===
-      .addCase(replyComment.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(replyComment.fulfilled, (state) => {
-        state.loading = false;
+      // REPLY COMMENT
+      .addCase(replyComment.fulfilled, (state, action) => {
+        const { commentId, reply } = action.payload;
+        const cmt = state.comments.find((c) => c._id === commentId);
+        if (cmt) {
+          cmt.replies = cmt.replies ? [reply, ...cmt.replies] : [reply];
+        }
       })
       .addCase(replyComment.rejected, (state, action) => {
-        state.loading = false;
         state.error = action.payload;
       })
 
-      // === UPDATE COMMENT ===
-      .addCase(updateComment.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(updateComment.fulfilled, (state) => {
-        state.loading = false;
+      // UPDATE COMMENT
+      .addCase(updateComment.fulfilled, (state, action) => {
+        const updated = action.payload;
+        state.comments = state.comments.map((c) =>
+          c._id === updated._id ? updated : c
+        );
       })
       .addCase(updateComment.rejected, (state, action) => {
-        state.loading = false;
         state.error = action.payload;
       })
 
-      // === UPDATE REPLY ===
-      .addCase(updateReply.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(updateReply.fulfilled, (state) => {
-        state.loading = false;
-      })
-      .addCase(updateReply.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-
-      // === DELETE REPLY ===
-      .addCase(deleteReply.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(deleteReply.fulfilled, (state) => {
-        state.loading = false;
-      })
-      .addCase(deleteReply.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-
-      // === DELETE COMMENT ===
-      .addCase(deleteComment.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(deleteComment.fulfilled, (state) => {
-        state.loading = false;
+      // DELETE COMMENT
+      .addCase(deleteComment.fulfilled, (state, action) => {
+        state.comments = state.comments.filter(
+          (c) => c._id !== action.payload.commentId
+        );
       })
       .addCase(deleteComment.rejected, (state, action) => {
-        state.loading = false;
         state.error = action.payload;
       })
-
-      // === LIKE / UNLIKE COMMENT ===
-      // Không đụng tới state.loading để tránh giật UI khi chỉ like/unlike
+      // LIKE COMMENT
+      .addCase(likeComment.fulfilled, (state, action) => {
+        const { commentId } = action.payload;
+        const cmt = state.comments.find((c) => c._id === commentId);
+        if (cmt) {
+          cmt.isLikedByCurrentUser = true;
+          cmt.likesCount = (cmt.likesCount || 0) + 1;
+        }
+      })
       .addCase(likeComment.rejected, (state, action) => {
         state.error = action.payload;
       })
+
+      // UNLIKE COMMENT
+      .addCase(unlikeComment.fulfilled, (state, action) => {
+        const { commentId } = action.payload;
+        const cmt = state.comments.find((c) => c._id === commentId);
+        if (cmt) {
+          cmt.isLikedByCurrentUser = false;
+          cmt.likesCount = Math.max(0, (cmt.likesCount || 0) - 1);
+        }
+      })
       .addCase(unlikeComment.rejected, (state, action) => {
-        state.error = action.payload;
-      })
-      .addCase(likeReply.rejected, (state, action) => {
-        state.error = action.payload;
-      })
-      .addCase(unlikeReply.rejected, (state, action) => {
         state.error = action.payload;
       });
   },
