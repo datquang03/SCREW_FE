@@ -42,6 +42,20 @@ import {
 const { Title, Paragraph, Text } = Typography;
 const { TextArea } = Input;
 
+const modalVariants = {
+  hidden: { opacity: 0, y: 50, scale: 0.98 },
+  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.32 } },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 8 },
+  visible: (i = 1) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.06, duration: 0.26 },
+  }),
+};
+
 const SetDesignDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -63,6 +77,9 @@ const SetDesignDetail = () => {
   });
   const [replyMessage, setReplyMessage] = useState("");
   const [replySubmitting, setReplySubmitting] = useState(false);
+
+  // Booking modal state (nút Đặt lịch)
+  const [bookingModal, setBookingModal] = useState(false);
 
   const formatEntry = (entry = {}, parentCommentId = null) => {
     const likes = Array.isArray(entry.likes) ? entry.likes : [];
@@ -338,6 +355,39 @@ const SetDesignDetail = () => {
 
   return (
     <Layout>
+      {/* Styles nhanh để copy-paste chạy ngay (bạn có thể chuyển vào global css) */}
+      <style>{`
+        /* Modal dim + blur */
+        .ant-modal-mask {
+          backdrop-filter: blur(6px);
+          background-color: rgba(0,0,0,0.55) !important;
+        }
+
+        /* booking modal glass */
+        .booking-modal-custom .ant-modal-content {
+          border-radius: 20px !important;
+          background: rgba(255,255,255,0.72) !important;
+          backdrop-filter: blur(18px) saturate(1.05);
+          box-shadow: 0 10px 30px rgba(2,6,23,0.2);
+          overflow: hidden;
+        }
+        .booking-card {
+          transition: transform .22s ease, box-shadow .22s ease;
+        }
+        .booking-card:hover {
+          transform: translateY(-6px) scale(1.01);
+          box-shadow: 0 12px 30px rgba(99,102,241,0.18);
+        }
+        /* small helper */
+        .glass-icon {
+          width: 48px;
+          height: 48px;
+          display: grid;
+          place-items: center;
+          border-radius: 12px;
+        }
+      `}</style>
+
       <div className="max-w-7xl mx-auto px-6 py-12">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -401,6 +451,7 @@ const SetDesignDetail = () => {
               <Button
                 type="primary"
                 size="large"
+                onClick={() => setBookingModal(true)}
                 className="bg-gradient-to-r from-indigo-600 to-purple-600 border-none font-bold px-10 py-6 text-lg rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition"
               >
                 Đặt lịch chụp ngay
@@ -667,6 +718,95 @@ const SetDesignDetail = () => {
         </motion.div>
       </div>
 
+      {/* Booking Modal (slide-up + fade-in items) */}
+      <Modal
+        open={bookingModal}
+        onCancel={() => setBookingModal(false)}
+        footer={null}
+        centered
+        width={540}
+        className="booking-modal-custom"
+        maskClosable
+      >
+        <motion.div
+          variants={modalVariants}
+          initial="hidden"
+          animate="visible"
+          className="p-6"
+        >
+          <div className="text-center mb-4">
+            <h3 className="text-2xl font-semibold text-gray-800">
+              Chọn phương thức đặt lịch
+            </h3>
+            <p className="text-sm text-gray-500 mt-1">
+              Chọn một trong hai cách để đặt lịch hoặc trao đổi yêu cầu
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <motion.div
+              className="booking-card bg-white/70 rounded-2xl p-4 cursor-pointer flex items-center gap-4"
+              onClick={() => {
+                // Đã chọn đặt gói hiện tại
+                setBookingModal(false);
+                navigate(`/booking/set-design/${id}`);
+              }}
+              variants={itemVariants}
+              initial="hidden"
+              animate="visible"
+              custom={1}
+            >
+              <div className="glass-icon bg-indigo-100 text-indigo-600">
+                <FiCalendar size={22} />
+              </div>
+              <div className="flex-1 text-left">
+                <div className="font-semibold text-gray-800">Đặt gói này</div>
+                <div className="text-sm text-gray-500">
+                  Đặt lịch ngay với gói Set Design hiện tại
+                </div>
+              </div>
+              <div className="text-sm text-indigo-600 font-medium">Chọn</div>
+            </motion.div>
+
+            <motion.div
+              className="booking-card bg-white/70 rounded-2xl p-4 cursor-pointer flex items-center gap-4"
+              onClick={() => {
+                setBookingModal(false);
+                navigate(`/set-design-request?from=set-design&designId=${id}`);
+              }}
+              variants={itemVariants}
+              initial="hidden"
+              animate="visible"
+              custom={2}
+            >
+              <div className="glass-icon bg-purple-100 text-purple-600">
+                <FiMessageCircle size={22} />
+              </div>
+              <div className="flex-1 text-left">
+                <div className="font-semibold text-gray-800">
+                  Liên hệ theo yêu cầu
+                </div>
+                <div className="text-sm text-gray-500">
+                  Trao đổi concept & yêu cầu riêng với đội ngũ
+                </div>
+              </div>
+              <div className="text-sm text-indigo-600 font-medium">Chọn</div>
+            </motion.div>
+          </div>
+
+          <div className="mt-6 text-center">
+            <Button
+              type="text"
+              onClick={() => setBookingModal(false)}
+              className="text-gray-500"
+            >
+              Hủy
+            </Button>
+          </div>
+        </motion.div>
+      </Modal>
+
+      {/* Reply Modal */}
       <Modal
         title={`Trả lời ${replyModal.targetName}`}
         open={replyModal.open}

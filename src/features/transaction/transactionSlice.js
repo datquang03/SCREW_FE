@@ -14,7 +14,7 @@ export const getAllTransactions = createAsyncThunk(
         `/payments/transactions/all?page=${page}&limit=${limit}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      return res.data.data.transactions;
+      return res.data.data;
     } catch (err) {
       return rejectWithValue(
         err.response?.data || { message: "Không thể lấy danh sách giao dịch" }
@@ -68,7 +68,9 @@ const transactionSlice = createSlice({
       })
       .addCase(getAllTransactions.fulfilled, (state, action) => {
         state.loading = false;
-        state.transactions = action.payload;
+        state.transactions = action.payload.transactions || [];
+        state.pagination = action.payload.pagination || {};
+        state.summary = action.payload.summary || {};
       })
       .addCase(getAllTransactions.rejected, (state, action) => {
         state.loading = false;

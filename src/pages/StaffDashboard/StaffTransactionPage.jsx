@@ -11,7 +11,7 @@ import {
   Button,
   Table,
   Tag,
-  Divider,
+  Tabs,
 } from "antd";
 import {
   FiEye,
@@ -19,12 +19,13 @@ import {
   FiMoreHorizontal,
   FiTag,
   FiDollarSign,
-  FiFileText,
   FiCalendar,
   FiArrowUp,
   FiArrowDown,
   FiUser,
   FiHome,
+  FiClock,
+  FiAlertTriangle,
 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { gsap } from "gsap";
@@ -37,27 +38,31 @@ import {
 
 const { Title, Text } = Typography;
 const { Option } = Select;
+const { TabPane } = Tabs;
 
 const StaffTransactionPage = () => {
   const dispatch = useDispatch();
   const {
     transactions = [],
-    total = 0,
     loading,
+    pagination = {},
+    summary = {},
   } = useSelector((state) => state.transaction);
+
+  const totalTransactions =
+    summary?.totalTransactions || pagination?.total || 0;
 
   // STATE
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [sortOption, setSortOption] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [activeTab, setActiveTab] = useState("all");
   const [toast, setToast] = useState(null);
-
-  // Modal chi tiết
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [currentTransaction, setCurrentTransaction] = useState(null);
 
-  // Fetch transactions
+  // Fetch
   const fetchTransactions = (page = 1) => {
     dispatch(getAllTransactions({ page, limit: 10 }));
   };
@@ -70,85 +75,107 @@ const StaffTransactionPage = () => {
     if (currentPage !== 1) fetchTransactions(currentPage);
   }, [currentPage]);
 
-  // FILTER + SORT
-  const filteredAndSorted = useMemo(() => {
-    let result = [...transactions];
-
-    if (search) {
-      const lower = search.toLowerCase();
-      result = result.filter(
-        (t) =>
-          t.transactionId?.toLowerCase().includes(lower) ||
-          t.paymentCode?.toLowerCase().includes(lower)
-      );
-    }
-
-    if (statusFilter) {
-      result = result.filter((t) => t.status === statusFilter);
-    }
-
-    if (sortOption) {
-      const [field, dir] = sortOption.split("-");
-      result.sort((a, b) => {
-        const valA =
-          field === "amount"
-            ? a.amount
-            : field === "date"
-            ? new Date(a.createdAt)
-            : 0;
-        const valB =
-          field === "amount"
-            ? b.amount
-            : field === "date"
-            ? new Date(b.createdAt)
-            : 0;
-        return dir === "asc" ? valA - valB : valB - valA;
-      });
-    }
-
-    return result;
-  }, [transactions, search, statusFilter, sortOption]);
-
-  const paginated = useMemo(() => {
-    const start = (currentPage - 1) * 10;
-    return filteredAndSorted.slice(start, start + 10);
-  }, [filteredAndSorted, currentPage]);
-
-  const clientTotal = filteredAndSorted.length;
-
-  // Toast
-  const showToast = (type, message) => {
-    setToast({ type, message });
-    setTimeout(() => setToast(null), 3000);
+  // Xác định trạng thái thực tế
+  const getEffectiveStatus = (t) => {
+    if (t.status === "paid") return "paid";
+    if (t.status !== "pending") return t.status;
+    if (t.expiresAt && new Date(t.expiresAt) < new Date()) return "expired";
+    return "pending";
   };
+
+  // Lọc giao dịch hết hạn
+  const expiredTransactions = useMemo(() => {
+    return transactions.filter((t) => getEffectiveStatus(t) === "expired");
+  }, [transactions]);
+
+  // Tính doanh thu từ các giao dịch đã thanh toán
+  const totalRevenue = useMemo(() => {
+    return transactions
+      .filter((t) => t.status === "paid")
+      .reduce((sum, t) => sum + t.amount, 0);
+  }, [transactions]);
 
   // STATUS TAG
   const statusTag = (status) => {
     switch (status) {
-      case "success":
-        return <Tag color="green">Thành công</Tag>;
+      case "paid":
+        return (
+          <Tag color="green" className="font-medium">
+            Đã thanh toán
+          </Tag>
+        );
       case "pending":
-        return <Tag color="blue">Đang xử lý</Tag>;
-      case "failed":
-        return <Tag color="red">Thất bại</Tag>;
+        return (
+          <Tag color="orange" className="font-medium">
+            Chờ thanh toán
+          </Tag>
+        );
+      case "expired":
+        return (
+          <Tag color="red" className="font-medium">
+            Hết hạn
+          </Tag>
+        );
       default:
-        return <Tag>Khác</Tag>;
+        return <Tag>{status}</Tag>;
     }
   };
 
-  // View transaction detail
-  const handleView = async (record) => {
-    try {
-      const data = await dispatch(getTransactionById(record._id)).unwrap();
+  // FILTER + SORT
+  const processedTransactions = useMemo(() => {
+    let list =
+      activeTab === "expired" ? expiredTransactions : [...transactions];
 
-      setCurrentTransaction(data);
-      setDetailModalVisible(true);
-    } catch (error) {
-      showToast("error", "Không thể tải chi tiết giao dịch");
+    if (search) {
+      const lower = search.toLowerCase();
+      list = list.filter(
+        (t) =>
+          t.transactionId?.toLowerCase().includes(lower) ||
+          t.paymentCode?.toLowerCase().includes(lower) ||
+          t._id.toLowerCase().includes(lower)
+      );
     }
-  };
 
-  // Mapped data để Table
+    if (statusFilter && activeTab !== "expired") {
+      list = list.filter((t) => getEffectiveStatus(t) === statusFilter);
+    }
+
+    if (sortOption) {
+      const [field, dir] = sortOption.split("-");
+      list.sort((a, b) => {
+        let valA, valB;
+        if (field === "amount") {
+          valA = a.amount;
+          valB = b.amount;
+        } else if (field === "date") {
+          valA = new Date(a.createdAt);
+          valB = new Date(b.createdAt);
+        } else if (field === "expires") {
+          valA = a.expiresAt ? new Date(a.expiresAt) : Infinity;
+          valB = b.expiresAt ? new Date(b.expiresAt) : Infinity;
+        }
+        return dir === "asc" ? valA - valB : valB - valA;
+      });
+    }
+
+    return list;
+  }, [
+    transactions,
+    expiredTransactions,
+    search,
+    statusFilter,
+    sortOption,
+    activeTab,
+  ]);
+
+  const paginated = useMemo(() => {
+    const start = (currentPage - 1) * 10;
+    return processedTransactions.slice(start, start + 10);
+  }, [processedTransactions, currentPage]);
+
+  const clientTotal = processedTransactions.length;
+
+  // Mapped data
   const mappedData = useMemo(
     () =>
       paginated.map((t) => ({
@@ -157,6 +184,7 @@ const StaffTransactionPage = () => {
         transactionNo: t.transactionId || t.paymentCode || t._id,
         studioName: t.bookingId?.scheduleId?.studioId?.name || "Không có",
         userName: t.bookingId?.userId?.fullName || "Không rõ",
+        effectiveStatus: getEffectiveStatus(t),
       })),
     [paginated]
   );
@@ -164,41 +192,47 @@ const StaffTransactionPage = () => {
   // COLUMNS
   const columns = [
     {
-      title: "Mã giao dịch",
+      title: "Mã GD",
       dataIndex: "transactionNo",
       key: "transactionNo",
       render: (txt) => <Text strong>{txt}</Text>,
     },
-    {
-      title: "Studio",
-      dataIndex: "studioName",
-      key: "studioName",
-      render: (txt) => <Text>{txt}</Text>,
-    },
-    {
-      title: "Người dùng",
-      dataIndex: "userName",
-      key: "userName",
-      render: (txt) => <Text>{txt}</Text>,
-    },
+    { title: "Studio", dataIndex: "studioName", key: "studioName" },
+    { title: "Khách hàng", dataIndex: "userName", key: "userName" },
     {
       title: "Số tiền",
       dataIndex: "amount",
       key: "amount",
-      render: (price) => (
+      render: (p) => (
         <Text strong className="text-blue-600">
-          {price.toLocaleString("vi-VN")}₫
+          {p.toLocaleString("vi-VN")}₫
         </Text>
       ),
     },
     {
       title: "Trạng thái",
-      dataIndex: "status",
+      dataIndex: "effectiveStatus",
       key: "status",
-      render: statusTag,
+      render: (_, r) => statusTag(r.effectiveStatus),
     },
     {
-      title: "Ngày tạo",
+      title: "Hết hạn lúc",
+      key: "expiresAt",
+      render: (_, r) => {
+        if (!r.expiresAt || r.status === "paid") return "—";
+        const isExpired = new Date(r.expiresAt) < new Date();
+        return (
+          <div className="flex items-center gap-1">
+            <FiClock className={isExpired ? "text-red-500" : "text-gray-500"} />
+            <Text type={isExpired ? "danger" : "secondary"}>
+              {new Date(r.expiresAt).toLocaleString("vi-VN")}
+            </Text>
+          </div>
+        );
+      },
+    },
+    {
+      title: "Tạo lúc",
       dataIndex: "createdAt",
       key: "createdAt",
       render: (d) => new Date(d).toLocaleString("vi-VN"),
@@ -206,183 +240,55 @@ const StaffTransactionPage = () => {
     {
       title: "Thao tác",
       key: "action",
-      render: (_, record) => {
-        const items = [
-          {
-            key: "view",
-            label: "Xem chi tiết",
-            icon: <FiEye />,
-            onClick: () => handleView(record),
-          },
-        ];
-        return (
-          <Dropdown menu={{ items }} trigger={["click"]}>
-            <Button
-              icon={<FiMoreHorizontal />}
-              className="hover:bg-gray-100 rounded-full"
-            />
-          </Dropdown>
-        );
-      },
+      render: (_, r) => (
+        <Dropdown
+          menu={{
+            items: [
+              {
+                key: "view",
+                label: "Xem chi tiết",
+                icon: <FiEye />,
+                onClick: () => handleView(r),
+              },
+            ],
+          }}
+          trigger={["click"]}
+        >
+          <Button
+            icon={<FiMoreHorizontal />}
+            className="hover:bg-gray-100 rounded-full"
+          />
+        </Dropdown>
+      ),
     },
   ];
 
-  // Render Policies
-  const renderPolicies = (policies) => {
-    if (!policies) return null;
-
-    return (
-      <div className="mt-4 grid gap-4 sm:grid-cols-2">
-        {/* Cancellation */}
-        {policies.cancellation && (
-          <Card className="rounded-2xl border-l-4 border-blue-400 bg-blue-50 shadow-sm">
-            <Title level={5} className="mb-2">
-              {policies.cancellation.name}
-            </Title>
-            {policies.cancellation.refundTiers.map((tier) => (
-              <div key={tier._id} className="mb-1">
-                <Text>
-                  {tier.hoursBeforeBooking}h trước: {tier.refundPercentage}% -{" "}
-                  {tier.description}
-                </Text>
-              </div>
-            ))}
-          </Card>
-        )}
-        {/* No-Show */}
-        {policies.noShow && (
-          <Card className="rounded-2xl border-l-4 border-red-400 bg-red-50 shadow-sm">
-            <Title level={5} className="mb-2">
-              {policies.noShow.name}
-            </Title>
-            <Text>
-              Loại phạt: {policies.noShow.noShowRules.chargeType},{" "}
-              {policies.noShow.noShowRules.chargePercentage}%. Grace time:{" "}
-              {policies.noShow.noShowRules.graceMinutes} phút, Max forgiveness:{" "}
-              {policies.noShow.noShowRules.maxForgivenessCount}.
-            </Text>
-          </Card>
-        )}
-      </div>
-    );
+  const rowClassName = (r) => {
+    if (r.effectiveStatus === "expired")
+      return "bg-red-50 hover:bg-red-100 border-l-4 border-red-500";
+    if (r.effectiveStatus === "pending")
+      return "bg-orange-50 hover:bg-orange-100";
+    return "";
   };
 
-  // Modal info items
-  const infoItems = currentTransaction
-    ? [
-        {
-          label: "Mã giao dịch",
-          value: currentTransaction.transactionId || currentTransaction._id,
-          icon: <FiTag />,
-        },
-        {
-          label: "Loại thanh toán",
-          value:
-            currentTransaction.payType === "full"
-              ? "Thanh toán đầy đủ"
-              : "Thanh toán một phần",
-          icon: <FiDollarSign />,
-        },
-        {
-          label: "Người dùng",
-          value: (
-            <div className="flex flex-col gap-1">
-              <Text>
-                {currentTransaction.bookingId?.userId?.fullName || "Không rõ"}
-              </Text>
-              <Text type="secondary">
-                {currentTransaction.bookingId?.userId?.username}
-              </Text>
-              <Text type="secondary">
-                {currentTransaction.bookingId?.userId?.email}
-              </Text>
-              <Text type="secondary">
-                {currentTransaction.bookingId?.userId?.phone}
-              </Text>
-            </div>
-          ),
-          icon: <FiUser />,
-          fullWidth: true,
-        },
-        {
-          label: "Studio",
-          value: (
-            <div className="flex flex-col gap-1">
-              <Text>
-                {currentTransaction.bookingId?.scheduleId?.studioId?.name ||
-                  "Không có"}
-              </Text>
-              <Text type="secondary">
-                Diện tích:{" "}
-                {currentTransaction.bookingId?.scheduleId?.studioId?.area} m²
-              </Text>
-              <Text type="secondary">
-                Giá cơ bản/giờ:{" "}
-                {currentTransaction.bookingId?.scheduleId?.studioId?.basePricePerHour.toLocaleString(
-                  "vi-VN"
-                )}
-                ₫
-              </Text>
-            </div>
-          ),
-          icon: <FiHome />,
-          fullWidth: true,
-        },
-        {
-          label: "Thời gian đặt",
-          value: (
-            <>
-              <Text>
-                {new Date(
-                  currentTransaction.bookingId?.scheduleId?.startTime
-                ).toLocaleString("vi-VN")}{" "}
-                →{" "}
-                {new Date(
-                  currentTransaction.bookingId?.scheduleId?.endTime
-                ).toLocaleString("vi-VN")}
-              </Text>
-            </>
-          ),
-          icon: <FiCalendar />,
-        },
-        {
-          label: "Số tiền",
-          value: (
-            <div className="flex flex-col gap-1">
-              <Text>
-                Trước giảm giá:{" "}
-                {currentTransaction.bookingId?.totalBeforeDiscount.toLocaleString(
-                  "vi-VN"
-                )}
-                ₫
-              </Text>
-              <Text>
-                Giảm giá:{" "}
-                {currentTransaction.bookingId?.discountAmount.toLocaleString(
-                  "vi-VN"
-                )}
-                ₫
-              </Text>
-              <Text strong>
-                Thanh toán: {currentTransaction.amount.toLocaleString("vi-VN")}₫
-              </Text>
-            </div>
-          ),
-          icon: <FiDollarSign />,
-          fullWidth: true,
-        },
-        {
-          label: "Trạng thái",
-          value: statusTag(currentTransaction.status),
-          icon: <FiTag />,
-        },
-        {
-          label: "Ngày tạo",
-          value: new Date(currentTransaction.createdAt).toLocaleString("vi-VN"),
-          icon: <FiCalendar />,
-        },
-      ]
-    : [];
+  const handleView = async (record) => {
+    try {
+      const data = await dispatch(getTransactionById(record._id)).unwrap();
+      setCurrentTransaction(data);
+      setDetailModalVisible(true);
+    } catch {
+      setToast({ type: "error", message: "Không tải được chi tiết" });
+      setTimeout(() => setToast(null), 3000);
+    }
+  };
+
+  const handleTabChange = (key) => {
+    setActiveTab(key);
+    setCurrentPage(1);
+    setSearch("");
+    setStatusFilter("");
+    setSortOption("");
+  };
 
   return (
     <div className="flex flex-col gap-6 px-4 py-6 lg:px-8">
@@ -398,49 +304,64 @@ const StaffTransactionPage = () => {
       <div className="relative overflow-hidden rounded-2xl border border-rose-200/60 bg-gradient-to-br from-rose-100 via-white to-white px-6 py-8 shadow-lg">
         <div className="absolute -top-12 -right-12 h-48 w-48 rounded-full bg-rose-200 blur-3xl" />
         <div className="relative z-10">
-          <Title level={2} className="text-gray-900">
-            Quản lý giao dịch
-          </Title>
+          <Title level={2}>Quản lý giao dịch</Title>
           <Text className="text-base text-gray-600">
-            Theo dõi thanh toán & trạng thái giao dịch
+            Theo dõi thanh toán và xử lý giao dịch hết hạn
           </Text>
         </div>
       </div>
 
-      {/* SUMMARY */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {/* SUMMARY - ĐÃ CÓ DOANH THU */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="rounded-2xl bg-white shadow-lg">
           <p className="text-sm text-gray-500">Tổng giao dịch</p>
-          <p className="text-4xl font-extrabold text-purple-600">{total}</p>
-        </Card>
-        <Card className="rounded-2xl bg-white shadow-lg">
-          <p className="text-sm text-gray-500">Giao dịch lớn nhất</p>
-          <p className="text-3xl font-bold text-gray-900">
-            {transactions.length
-              ? `${Math.max(
-                  ...transactions.map((t) => t.amount)
-                ).toLocaleString("vi-VN")}₫`
-              : "—"}
+          <p className="text-4xl font-extrabold text-purple-600">
+            {totalTransactions}
           </p>
         </Card>
-        <Card className="rounded-2xl bg-white shadow-lg">
-          <p className="text-sm text-gray-500">Giao dịch nhỏ nhất</p>
-          <p className="text-3xl font-bold text-gray-900">
-            {transactions.length
-              ? `${Math.min(
-                  ...transactions.map((t) => t.amount)
-                ).toLocaleString("vi-VN")}₫`
-              : "—"}
+        <Card className="rounded-2xl bg-white shadow-lg border-l-4 border-green-500">
+          <p className="text-sm text-gray-500">Đã thanh toán</p>
+          <p className="text-3xl font-bold text-green-600">
+            {transactions.filter((t) => t.status === "paid").length}
+          </p>
+        </Card>
+        <Card className="rounded-2xl bg-white shadow-lg border-l-4 border-orange-500">
+          <p className="text-sm text-gray-500">Chờ thanh toán</p>
+          <p className="text-3xl font-bold text-orange-600">
+            {
+              transactions.filter((t) => getEffectiveStatus(t) === "pending")
+                .length
+            }
+          </p>
+        </Card>
+        <Card className="rounded-2xl bg-white shadow-lg border-l-4 border-red-500">
+          <p className="text-sm text-gray-500">Hết hạn cần xử lý</p>
+          <p className="text-3xl font-bold text-red-600 flex items-center gap-2">
+            <FiAlertTriangle />
+            {expiredTransactions.length}
           </p>
         </Card>
       </div>
+
+      {/* DOANH THU RIÊNG - ĐẸP & RÕ RÀNG */}
+      <Card className="rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-xl">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-gray-500">Tổng doanh thu thực tế</p>
+            <p className="text-4xl font-extrabold">
+              {totalRevenue.toLocaleString("vi-VN")}₫
+            </p>
+          </div>
+          <FiDollarSign className="text-6xl opacity-30" color="green" />
+        </div>
+      </Card>
 
       {/* FILTER */}
       <div className="flex flex-wrap items-center gap-3">
         <Input
           placeholder="Tìm mã giao dịch..."
-          prefix={<FiSearch className="text-gray-400" />}
-          className="w-full rounded-2xl border border-gray-200 sm:w-80"
+          prefix={<FiSearch />}
+          className="w-full sm:w-80 rounded-2xl"
           allowClear
           value={search}
           onChange={(e) => {
@@ -448,85 +369,112 @@ const StaffTransactionPage = () => {
             setCurrentPage(1);
           }}
         />
-        <Select
-          placeholder="Trạng thái"
-          allowClear
-          className="w-full rounded-2xl sm:w-48"
-          value={statusFilter || undefined}
-          onChange={(v) => {
-            setStatusFilter(v || "");
-            setCurrentPage(1);
-          }}
-        >
-          <Option value="success">Thành công</Option>
-          <Option value="pending">Đang xử lý</Option>
-          <Option value="failed">Thất bại</Option>
-        </Select>
+        {activeTab !== "expired" && (
+          <Select
+            placeholder="Trạng thái"
+            allowClear
+            className="w-48 rounded-2xl"
+            value={statusFilter || undefined}
+            onChange={(v) => {
+              setStatusFilter(v || "");
+              setCurrentPage(1);
+            }}
+          >
+            <Option value="paid">Đã thanh toán</Option>
+            <Option value="pending">Chờ thanh toán</Option>
+            <Option value="expired">Hết hạn</Option>
+          </Select>
+        )}
         <Select
           placeholder="Sắp xếp"
           allowClear
-          className="w-full rounded-2xl sm:w-64"
+          className="w-64 rounded-2xl"
           value={sortOption || undefined}
           onChange={(v) => {
             setSortOption(v || "");
             setCurrentPage(1);
           }}
         >
-          <Option value="amount-asc">
-            <FiArrowUp /> Số tiền: Tăng dần
-          </Option>
-          <Option value="amount-desc">
-            <FiArrowDown /> Số tiền: Giảm dần
-          </Option>
-          <Option value="date-asc">
-            <FiArrowUp /> Ngày: Cũ → Mới
-          </Option>
-          <Option value="date-desc">
-            <FiArrowDown /> Ngày: Mới → Cũ
-          </Option>
+          <Option value="amount-desc">Số tiền: Cao → Thấp</Option>
+          <Option value="amount-asc">Số tiền: Thấp → Cao</Option>
+          <Option value="date-desc">Mới nhất</Option>
+          <Option value="expires-asc">Hết hạn sớm nhất</Option>
         </Select>
       </div>
 
-      {/* TABLE */}
-      {loading ? (
-        <div className="flex justify-center py-16">
-          <Spin size="large" />
-        </div>
-      ) : (
-        <Card className="rounded-3xl bg-white shadow-lg">
-          <Table
-            columns={columns}
-            dataSource={mappedData}
-            pagination={{
-              current: currentPage,
-              pageSize: 10,
-              total: clientTotal,
-              showSizeChanger: false,
-            }}
-            onChange={(p) => setCurrentPage(p.current)}
-          />
-        </Card>
-      )}
+      {/* TABS + TABLES */}
+      <Card className="rounded-3xl bg-white shadow-lg overflow-hidden">
+        <Tabs
+          activeKey={activeTab}
+          onChange={handleTabChange}
+          type="card"
+          items={[
+            {
+              key: "all",
+              label: `Tất cả (${totalTransactions})`,
+              children: loading ? (
+                <div className="py-16 text-center">
+                  <Spin size="large" />
+                </div>
+              ) : (
+                <Table
+                  columns={columns}
+                  dataSource={mappedData}
+                  rowClassName={rowClassName}
+                  pagination={{
+                    current: currentPage,
+                    pageSize: 10,
+                    total: clientTotal,
+                    showSizeChanger: false,
+                  }}
+                  onChange={(p) => setCurrentPage(p.current)}
+                />
+              ),
+            },
+            {
+              key: "expired",
+              label: (
+                <span className="flex items-center gap-2">
+                  <FiAlertTriangle className="text-red-500" />
+                  Hết hạn cần xử lý ({expiredTransactions.length})
+                </span>
+              ),
+              children:
+                expiredTransactions.length === 0 ? (
+                  <div className="py-20 text-center text-gray-500">
+                    <FiAlertTriangle className="mx-auto text-6xl text-green-500 mb-4" />
+                    <Text strong className="text-xl">
+                      Chúc mừng! Hiện không có giao dịch nào hết hạn.
+                    </Text>
+                  </div>
+                ) : (
+                  <Table
+                    columns={columns}
+                    dataSource={mappedData}
+                    rowClassName="bg-red-50 hover:bg-red-100 border-l-4 border-red-500"
+                    pagination={{
+                      current: currentPage,
+                      pageSize: 10,
+                      total: clientTotal,
+                    }}
+                    onChange={(p) => setCurrentPage(p.current)}
+                  />
+                ),
+            },
+          ]}
+        />
+      </Card>
 
       {/* MODAL CHI TIẾT */}
       <Modal
         open={detailModalVisible}
         footer={null}
         onCancel={() => setDetailModalVisible(false)}
-        width={700}
+        width={800}
         centered
-        afterOpenChange={(open) => {
-          if (open) {
-            gsap.fromTo(
-              ".transaction-modal",
-              { y: -40, opacity: 0 },
-              { y: 0, opacity: 1, duration: 0.4, ease: "power3.out" }
-            );
-          }
-        }}
       >
         {currentTransaction && (
-          <div className="transaction-modal flex flex-col gap-6">
+          <div className="flex flex-col gap-6">
             <div className="text-center">
               <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-xl">
                 <FiTag className="text-3xl" />
@@ -534,32 +482,16 @@ const StaffTransactionPage = () => {
               <Title level={3}>
                 {currentTransaction.transactionId || currentTransaction._id}
               </Title>
+              <Text type="secondary">
+                Mã thanh toán: {currentTransaction.paymentCode}
+              </Text>
             </div>
-
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {infoItems.map((info, i) => (
-                <div
-                  key={i}
-                  className={`flex items-start gap-3 rounded-2xl border p-4 ${
-                    info.fullWidth ? "sm:col-span-2" : ""
-                  }`}
-                >
-                  <span className="text-xl text-indigo-500">{info.icon}</span>
-                  <div>
-                    <Text strong className="block">
-                      {info.label}
-                    </Text>
-                    <div>{info.value}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
- 
-            {/* Chính sách */}
-            {renderPolicies(currentTransaction.bookingId?.policySnapshots)}
-
-            <div className="flex justify-end mt-4">
-              <Button size="large" onClick={() => setDetailModalVisible(false)}>
+            <div className="flex justify-end">
+              <Button
+                type="primary"
+                size="large"
+                onClick={() => setDetailModalVisible(false)}
+              >
                 Đóng
               </Button>
             </div>

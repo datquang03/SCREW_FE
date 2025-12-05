@@ -108,26 +108,6 @@ export const getBookingsByStatus = createAsyncThunk(
   }
 );
 
-// 6) Staff – lấy booking active
-export const getAllBookingForStaff = createAsyncThunk(
-  "booking/getAllBookingForStaff",
-  async (_, { rejectWithValue, getState }) => {
-    try {
-      const { token } = getState().auth;
-
-      const res = await axiosInstance.get("/bookings/staff?includeAll=true", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      return res.data.data; // { bookings, pagination, filters }
-    } catch (err) {
-      return rejectWithValue(
-        err.response?.data || { message: "Không thể lấy booking cho staff" }
-      );
-    }
-  }
-);
-
 // 7) Staff xác nhận booking
 export const confirmBooking = createAsyncThunk(
   "booking/confirmBooking",
@@ -313,25 +293,9 @@ const bookingSlice = createSlice({
         state.error = action.payload;
       })
 
-      // ================= STAFF LIST =================
-      .addCase(getAllBookingForStaff.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(getAllBookingForStaff.fulfilled, (state, action) => {
-        state.loading = false;
-        const data = action.payload || {};
-        state.staffBookings = data.bookings || data.data?.bookings || [];
-      })
-      .addCase(getAllBookingForStaff.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-
       // ================= CONFIRM =================
       .addCase(confirmBooking.fulfilled, (state, action) => {
-        const updated =
-          action.payload.booking || action.payload;
+        const updated = action.payload.booking || action.payload;
 
         state.currentBooking = updated;
         state.myBookings = state.myBookings.map((b) =>
@@ -341,8 +305,7 @@ const bookingSlice = createSlice({
 
       // ================= UPDATE =================
       .addCase(updateBooking.fulfilled, (state, action) => {
-        const updated =
-          action.payload.booking || action.payload;
+        const updated = action.payload.booking || action.payload;
 
         state.currentBooking = updated;
         state.myBookings = state.myBookings.map((b) =>

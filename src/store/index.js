@@ -16,6 +16,8 @@ import setDesignReducer from "../features/setDesign/setDesignSlice";
 import commentReducer from "../features/comment/commentSlice";
 import transactionReducer from "../features/transaction/transactionSlice";
 import notificationReducer from "../features/notification/notificationSlice";
+import aiReducer from "../features/AI/AISlice";
+import messageReducer from "../features/message/messageSlice";
 const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -34,6 +36,8 @@ const store = configureStore({
     comment: commentReducer,
     transaction: transactionReducer,
     notification: notificationReducer,
+    ai: aiReducer,
+    message: messageReducer,
   },
 });
 

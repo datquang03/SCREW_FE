@@ -15,7 +15,7 @@ import dayjs from "dayjs";
 import { FiClock, FiCheckCircle, FiAlertTriangle } from "react-icons/fi";
 import DataTable from "../../components/dashboard/DataTable";
 import {
-  getAllBookingForStaff,
+  getAllMyBookings as getAllBookingForStaff,
   getBookingById,
   confirmBooking,
   updateBooking,
@@ -58,12 +58,12 @@ const formatCurrency = (v) =>
 
 const StaffOrderPage = () => {
   const dispatch = useDispatch();
-  const { staffBookings, currentBooking, loading } = useSelector(
+  const { myBookings: staffBookings, currentBooking, loading } = useSelector(
     (state) => state.booking
   );
 
   const [detailModalOpen, setDetailModalOpen] = useState(false);
-  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);  
   const [updatingStatus, setUpdatingStatus] = useState(false);
 
   useEffect(() => {

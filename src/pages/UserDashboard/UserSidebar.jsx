@@ -3,6 +3,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Menu } from "antd";
 import { FiHome, FiCalendar, FiVideo, FiClock, FiUser } from "react-icons/fi";
+import { AiOutlineAudit } from "react-icons/ai";
 
 const roleTextMap = {
   customer: "Người dùng",
@@ -40,6 +41,12 @@ const UserSidebar = ({ variant = "customer" }) => {
         icon: <FiClock />,
         label: "Lịch sử thuê",
         path: "/dashboard/customer/history",
+      },
+        {
+        key: "custom-requests",
+        icon: <AiOutlineAudit />,
+        label: "Yêu cầu Set Design",
+        path: "/dashboard/customer/custom-requests",
       },
       {
         key: "profile",

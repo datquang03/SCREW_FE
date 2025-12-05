@@ -1,4 +1,3 @@
-
 // src/features/setDesign/setDesignSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../../api/axiosInstance";
@@ -74,7 +73,10 @@ export const createSetDesignComment = createAsyncThunk(
 
 export const replySetDesignComment = createAsyncThunk(
   "setDesign/replySetDesignComment",
-  async ({ setDesignId, commentIndex, message }, { rejectWithValue, getState }) => {
+  async (
+    { setDesignId, commentIndex, message },
+    { rejectWithValue, getState }
+  ) => {
     try {
       const { token } = getState().auth || {};
 
@@ -97,7 +99,10 @@ export const replySetDesignComment = createAsyncThunk(
 
 export const updateSetDesignComment = createAsyncThunk(
   "setDesign/updateSetDesignComment",
-  async ({ setDesignId, commentIndex, message }, { rejectWithValue, getState }) => {
+  async (
+    { setDesignId, commentIndex, message },
+    { rejectWithValue, getState }
+  ) => {
     try {
       const { token } = getState().auth || {};
 
@@ -146,7 +151,10 @@ export const updateSetDesignReply = createAsyncThunk(
 
 export const deleteSetDesignReply = createAsyncThunk(
   "setDesign/deleteSetDesignReply",
-  async ({ setDesignId, commentIndex, replyIndex }, { rejectWithValue, getState }) => {
+  async (
+    { setDesignId, commentIndex, replyIndex },
+    { rejectWithValue, getState }
+  ) => {
     try {
       const { token } = getState().auth || {};
 
@@ -331,6 +339,83 @@ export const deleteUploadedFile = createAsyncThunk(
     }
   }
 );
+/* =============================
+   CUSTOM SET DESIGN REQUEST
+   POST /set-designs/custom-request
+============================= */
+// SEND CUSTOM SET DESIGN REQUEST
+export const customSetDesignRequest = createAsyncThunk(
+  "setDesign/customSetDesignRequest",
+  async ({ customerName, email, phoneNumber, description }, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth || {};
+
+      const res = await axiosInstance.post(
+        "/set-designs/custom-request",
+        { customerName, email, phoneNumber, description },
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        }
+      );
+
+      return res.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Gửi yêu cầu custom thất bại" }
+      );
+    }
+  }
+);
+
+
+/* =============================
+   GET ALL CUSTOM REQUESTS
+   GET /set-designs/custom-requests
+============================= */
+export const getCustomRequestSetDesign = createAsyncThunk(
+  "setDesign/getCustomRequestSetDesign",
+  async (_, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth || {};
+
+      const res = await axiosInstance.get("/set-designs/custom-requests", {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+
+      return res.data.data; // danh sách yêu cầu custom
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || {
+          message: "Không thể tải danh sách yêu cầu custom",
+        }
+      );
+    }
+  }
+);
+
+/* =============================
+   GET CUSTOM REQUEST BY ID
+   GET /set-designs/custom-requests/:id
+============================= */
+export const getCustomRequestSetDesignById = createAsyncThunk(
+  "setDesign/getCustomRequestSetDesignById",
+  async (requestId, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth || {};
+
+      const res = await axiosInstance.get(
+        `/set-designs/custom-requests/${requestId}`,
+        { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+      );
+
+      return res.data.data; // yêu cầu custom theo id
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Không thể tải yêu cầu custom" }
+      );
+    }
+  }
+);
 
 /* =============================
    INITIAL
@@ -340,6 +425,8 @@ const initialState = {
   currentSetDesign: null,
   activeSetDesigns: [],
   total: 0,
+  customRequests: [],
+  currentCustomRequest: null,
   loading: false,
   uploadedImages: [], // last uploaded images info
   error: null,
@@ -533,7 +620,7 @@ const setDesignSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-            // GET ACTIVE SET DESIGNS
+      // GET ACTIVE SET DESIGNS
       .addCase(getActiveSetDesigns.pending, (state) => {
         state.loading = true;
       })
@@ -545,6 +632,42 @@ const setDesignSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+      // CUSTOM REQUEST
+
+      .addCase(customSetDesignRequest.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(customSetDesignRequest.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(customSetDesignRequest.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      .addCase(getCustomRequestSetDesign.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getCustomRequestSetDesign.fulfilled, (state, action) => {
+        state.loading = false;
+        state.customRequests = action.payload || [];
+      })
+      .addCase(getCustomRequestSetDesign.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      .addCase(getCustomRequestSetDesignById.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getCustomRequestSetDesignById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentCustomRequest = action.payload;
+      })
+      .addCase(getCustomRequestSetDesignById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
   },
 });
 

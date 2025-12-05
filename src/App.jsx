@@ -56,6 +56,9 @@ import PaymentCancelPage from "./pages/Payment/PaymentCancelPage";
 import NotFoundPage from "./pages/Notfound/NotFoundPage";
 import SetDesignSection from "./pages/SetDesign/SetDesignDetailPage";
 import StaffTransactionPage from "./pages/StaffDashboard/StaffTransactionPage";
+import SetDesignDetail from "./pages/SetDesign/SetDesignDetailPage";
+import BookingSetDesignPage from "./pages/BookingSetDesign/BookingSetDesignPage";
+import ContactSetDesignRequestPage from "./pages/BookingSetDesign/ContactSetDesignPage";
 
 const pageVariants = {
   initial: { opacity: 0, y: 10 },
@@ -103,9 +106,11 @@ const AppContent = () => {
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/verify-email" element={<VerifyEmailPage />} />
             <Route path="/studio" element={<StudioPage />} />
+            <Route path="/set-design-request" element={<ContactSetDesignRequestPage />} />
             <Route path="/studio/:id" element={<StudioDetailPage />} />
             <Route path="/booking/:id" element={<StudioBookingPage />} />
-            <Route path="/set-design/:id" element={<SetDesignSection />} />
+            <Route path="/set-design/:id" element={<SetDesignDetail />} />
+            <Route path="/booking/set-design/:id" element={<BookingSetDesignPage />} />
             <Route
               path="/payment/success"
               element={<PaymentSuccessPage />}
@@ -128,6 +133,7 @@ const AppContent = () => {
               <Route path="bookings" element={<UserBookingsPage />} />
               <Route path="studios" element={<UserStudiosPage />} />
               <Route path="history" element={<UserHistoryPage />} />
+              {/* <Route path="custom-request" element={<UserCustom />} /> */}
               <Route path="profile" element={<UserProfilePage />} />
             </Route>
             {/* CUSTOMER ONLY PAGES */}
@@ -174,9 +180,9 @@ const AppContent = () => {
             <Route
               path="/dashboard/admin/*"
               element={
-                //<ProtectedRouteForAdmin>
+                <ProtectedRouteForAdmin>
                 <DashboardLayout sidebar={AdminSidebar} variant="admin" />
-                //</ProtectedRouteForAdmin>
+                </ProtectedRouteForAdmin>
               }
             >
               <Route index element={<AdminDashboardPage />} />
