@@ -9,14 +9,14 @@ import axiosInstance from "../../api/axiosInstance";
 // CREATE MESSAGE
 export const createMessage = createAsyncThunk(
   "message/createMessage",
-  async ({ toUserId, content, conversationId }, { rejectWithValue, getState }) => {
+  async ({ toUserId, content }, { rejectWithValue, getState }) => {
     try {
       const { token } = getState().auth;
       if (!token) throw new Error("No token found");
 
       const response = await axiosInstance.post(
         "/messages",
-        { toUserId, content, conversationId },
+        { toUserId, content },
         {
           headers: { Authorization: `Bearer ${token}` },
         }

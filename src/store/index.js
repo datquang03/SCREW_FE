@@ -18,6 +18,7 @@ import transactionReducer from "../features/transaction/transactionSlice";
 import notificationReducer from "../features/notification/notificationSlice";
 import aiReducer from "../features/AI/AISlice";
 import messageReducer from "../features/message/messageSlice";
+import uploadReducer from "../features/upload/uploadSlice";
 const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -38,6 +39,7 @@ const store = configureStore({
     notification: notificationReducer,
     ai: aiReducer,
     message: messageReducer,
+    upload: uploadReducer,
   },
 });
 

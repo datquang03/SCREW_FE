@@ -8,11 +8,12 @@ import {
   FiCalendar,
   FiVideo,
   FiTool,
-  FiUsers,
 } from "react-icons/fi";
 import { MdDesignServices, MdMiscellaneousServices, MdOutlineDiscount } from "react-icons/md";
 import { GiMoneyStack } from "react-icons/gi";
 import { AiOutlineProfile } from "react-icons/ai";
+import { RiCustomerService2Fill } from "react-icons/ri";
+
 
 const StaffSidebar = () => {
   const location = useLocation();
@@ -26,6 +27,7 @@ const StaffSidebar = () => {
       { key: "schedule", icon: <FiCalendar />, label: "Lịch làm việc", path: "/dashboard/staff/schedule" },
       { key: "studios", icon: <FiVideo />, label: "Quản lý Studio", path: "/dashboard/staff/studios" },
       { key: "setdesign", icon: <MdDesignServices />, label: "Quản lý Set Design", path: "/dashboard/staff/setdesign" },
+      { key: "custom-request", icon: <RiCustomerService2Fill />, label: "Đơn yêu cầu Set Design tùy chọn", path: "/dashboard/staff/custom-request" },
       { key: "equipment", icon: <FiTool />, label: "Thiết bị", path: "/dashboard/staff/equipment" },
       { key: "service", icon: <MdMiscellaneousServices />, label: "Dịch vụ", path: "/dashboard/staff/service" },
       { key: "promotion", icon: <MdOutlineDiscount />, label: "Phiếu giảm", path: "/dashboard/staff/promotion" },

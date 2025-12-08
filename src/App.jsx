@@ -59,8 +59,7 @@ import StaffTransactionPage from "./pages/StaffDashboard/StaffTransactionPage";
 import SetDesignDetail from "./pages/SetDesign/SetDesignDetailPage";
 import BookingSetDesignPage from "./pages/BookingSetDesign/BookingSetDesignPage";
 import ContactSetDesignRequestPage from "./pages/BookingSetDesign/ContactSetDesignPage";
-import MessagePage from "./pages/Message/MessagePage";
-import Layout from "./components/layout/Layout";
+import StaffCustomRequestPage from "./pages/StaffDashboard/StaffCustomRequestPage";
 
 const pageVariants = {
   initial: { opacity: 0, y: 10 },
@@ -174,6 +173,7 @@ const AppContent = () => {
               <Route path="schedule" element={<StaffSchedulePage />} />
               <Route path="studios" element={<StaffStudiosPage />} />
               <Route path="setdesign" element={<StaffSetDesignPage />} />
+              <Route path="custom-request" element={<StaffCustomRequestPage />} />
               <Route path="user" element={<StaffUserPage />} />
               <Route path="equipment" element={<StaffEquipmentPage />} />
               <Route path="profile" element={<StaffProfilePage />} />
