@@ -89,6 +89,14 @@ const DashboardNavbar = ({ variant = "default" }) => {
     dispatch(getNotifications());
   }, [user, dispatch]);
 
+  // Helper function để lấy avatar URL từ object hoặc string
+  const getAvatarUrl = (avatar) => {
+    if (!avatar) return undefined;
+    if (typeof avatar === "string") return avatar;
+    if (typeof avatar === "object" && avatar.url) return avatar.url;
+    return undefined;
+  };
+
   const unreadCount = notifications.filter((n) => !n.isRead && !n.read).length;
   const dropdownNotifications = notifications.slice(0, visibleDropdownCount);
 
@@ -404,12 +412,16 @@ const DashboardNavbar = ({ variant = "default" }) => {
               className="flex items-center gap-2 rounded-full pl-1 pr-3 py-1.5 bg-white shadow-lg border border-gray-100"
           >
             <img
+                key={getAvatarUrl(user?.avatar) || ""}
                 src={
-                  user?.avatar ||
+                  getAvatarUrl(user?.avatar) ||
                   "https://png.pngtree.com/png-clipart/20191120/original/pngtree-outline-user-icon-png-image_5045523.jpg"
                 }
                 alt="avatar"
                 className="w-10 h-10 rounded-full object-cover border border-white shadow"
+                onError={(e) => {
+                  e.target.src = "https://png.pngtree.com/png-clipart/20191120/original/pngtree-outline-user-icon-png-image_5045523.jpg";
+                }}
               />
               <span className="hidden sm:block text-sm font-semibold text-gray-800">
                 {user?.fullName || user?.username || "User"}

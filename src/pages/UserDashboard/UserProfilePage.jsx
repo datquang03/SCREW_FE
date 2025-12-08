@@ -1,12 +1,11 @@
 // src/pages/User/UserProfilePage.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Card,
   Typography,
   Form,
   Input,
   Button,
-  Upload,
   Avatar,
   Divider,
   Row,
@@ -32,7 +31,12 @@ import {
   updateProfile,
   deleteMyAccount,
 } from "../../features/customer/customerSlice";
-import { changePassword, logout } from "../../features/auth/authSlice";
+import {
+  changePassword,
+  logout,
+  uploadAvatar,
+  getCurrentUser,
+} from "../../features/auth/authSlice";
 import ToastNotification from "../../components/ToastNotification";
 
 const { Title, Text } = Typography;
@@ -42,10 +46,17 @@ const UserProfilePage = () => {
   const navigate = useNavigate();
 
   // === SELECTORS ===
-  const { customer, loading: customerLoading, errorMessage, successMessage } = useSelector(
-    (state) => state.customer
-  );
-  const { loading: authLoading, error: authError } = useSelector((state) => state.auth);
+  const {
+    customer,
+    loading: customerLoading,
+    errorMessage,
+    successMessage,
+  } = useSelector((state) => state.customer);
+  const {
+    user,
+    loading: authLoading,
+    error: authError,
+  } = useSelector((state) => state.auth);
 
   // === STATE ===
   const [editing, setEditing] = useState(false);
@@ -53,6 +64,8 @@ const UserProfilePage = () => {
   const [avatarURL, setAvatarURL] = useState("");
   const [toast, setToast] = useState(null);
   const [isPasswordModal, setIsPasswordModal] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const fileInputRef = useRef(null);
 
   const [form] = Form.useForm();
   const [passwordForm] = Form.useForm();
@@ -60,6 +73,7 @@ const UserProfilePage = () => {
   // === EFFECTS ===
   useEffect(() => {
     dispatch(getMyProfile());
+    dispatch(getCurrentUser()); // Load user data để lấy avatar
   }, [dispatch]);
 
   useEffect(() => {
@@ -69,9 +83,27 @@ const UserProfilePage = () => {
         email: customer.email,
         phone: customer.phone,
       });
-      setAvatarPreview(customer.avatar);
     }
   }, [customer, form]);
+
+  // Helper function để lấy avatar URL từ object hoặc string
+  const getAvatarUrl = (avatar) => {
+    if (!avatar) return undefined;
+    if (typeof avatar === "string") return avatar;
+    if (typeof avatar === "object" && avatar.url) return avatar.url;
+    return undefined;
+  };
+
+  // Debug: Log avatar values
+  useEffect(() => {
+    console.log("User avatar:", user?.avatar);
+    console.log("Customer avatar:", customer?.avatar);
+    console.log("Avatar preview:", avatarPreview);
+    console.log(
+      "Resolved avatar URL:",
+      getAvatarUrl(user?.avatar) || getAvatarUrl(customer?.avatar)
+    );
+  }, [user?.avatar, customer?.avatar, avatarPreview]);
 
   // === TOAST: từ customerSlice ===
   useEffect(() => {
@@ -86,7 +118,10 @@ const UserProfilePage = () => {
   // === TOAST: từ authSlice (changePassword) ===
   useEffect(() => {
     if (authError) {
-      setToast({ type: "error", message: authError.message || "Đổi mật khẩu thất bại" });
+      setToast({
+        type: "error",
+        message: authError.message || "Đổi mật khẩu thất bại",
+      });
 
       // Nếu backend trả 401 → token hết hạn → logout
       if (authError.status === 401) {
@@ -99,14 +134,61 @@ const UserProfilePage = () => {
   }, [authError, dispatch, navigate]);
 
   // === HANDLERS ===
-  const uploadProps = {
-    beforeUpload: (file) => {
-      const previewURL = URL.createObjectURL(file);
-      setAvatarPreview(previewURL);
-      form.setFieldsValue({ avatar: file });
-      return false;
-    },
-    showUploadList: false,
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelect = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      setToast({
+        type: "error",
+        message: "Vui lòng chọn file ảnh",
+      });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setToast({
+        type: "error",
+        message: "Kích thước ảnh không được vượt quá 5MB",
+      });
+      return;
+    }
+
+    // Tạo preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setAvatarPreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+
+    // Upload avatar
+    setUploadingAvatar(true);
+    try {
+      await dispatch(uploadAvatar({ avatar: file })).unwrap();
+      setToast({ type: "success", message: "Cập nhật avatar thành công" });
+
+      // Refresh cả user và customer data từ server để lấy avatar URL mới
+      await Promise.all([dispatch(getCurrentUser()), dispatch(getMyProfile())]);
+
+      // Clear preview để dùng URL từ server
+      setAvatarPreview(null);
+    } catch (err) {
+      setToast({
+        type: "error",
+        message: err?.message || "Upload avatar thất bại",
+      });
+      // Giữ preview nếu upload thất bại
+    } finally {
+      setUploadingAvatar(false);
+      // Reset input để có thể chọn lại file giống nhau
+      e.target.value = null;
+    }
   };
 
   const handleSave = (values) => {
@@ -137,7 +219,10 @@ const UserProfilePage = () => {
       ).unwrap();
 
       // Thành công
-      setToast({ type: "success", message: result.message || "Đổi mật khẩu thành công!" });
+      setToast({
+        type: "success",
+        message: result.message || "Đổi mật khẩu thành công!",
+      });
       setIsPasswordModal(false);
       passwordForm.resetFields();
     } catch (err) {
@@ -183,8 +268,8 @@ const UserProfilePage = () => {
         <div className="absolute -bottom-16 -right-10 w-60 h-60 rounded-full bg-blue-300/30 blur-3xl" />
         <div className="relative z-10">
           <Title level={2} className="font-semibold mb-2 text-gray-900">
-          Hồ sơ của tôi
-        </Title>
+            Hồ sơ của tôi
+          </Title>
           <Text className="text-base text-gray-700 font-medium">
             Quản lý thông tin cá nhân và bảo mật tài khoản của bạn
           </Text>
@@ -195,18 +280,43 @@ const UserProfilePage = () => {
         {/* LEFT CARD */}
         <Col xs={24} md={8}>
           <Card className="text-center rounded-2xl p-5 shadow-lg border border-gray-100 bg-white">
-            <Upload {...uploadProps}>
-              <div className="relative inline-block cursor-pointer group">
-                <Avatar
-                  size={130}
-                  src={avatarPreview}
-                  icon={<FiUser />}
-                  className="mb-4 border-4 border-white shadow-md"
-                  style={{ borderRadius: "999px", transition: "0.25s" }}
-                />
-                <div className="absolute inset-0 rounded-full bg-black/10 opacity-0 group-hover:opacity-20 transition-all"></div>
-              </div>
-            </Upload>
+            <div className="relative inline-block">
+              <Avatar
+                key={`${getAvatarUrl(user?.avatar) || ""}-${
+                  getAvatarUrl(customer?.avatar) || ""
+                }`}
+                size={130}
+                src={
+                  avatarPreview &&
+                  typeof avatarPreview === "string" &&
+                  avatarPreview.startsWith("data:image")
+                    ? avatarPreview
+                    : getAvatarUrl(user?.avatar) ||
+                      getAvatarUrl(customer?.avatar) ||
+                      undefined
+                }
+                icon={<FiUser />}
+                className="mb-4 border-4 border-white shadow-md cursor-pointer hover:opacity-80 transition-opacity"
+                style={{ borderRadius: "999px", transition: "0.25s" }}
+                onClick={handleAvatarClick}
+                onError={(e) => {
+                  console.error("Avatar load error:", e.target.src);
+                  e.target.src = undefined;
+                }}
+              />
+              {uploadingAvatar && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
+                  <Spin size="small" />
+                </div>
+              )}
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={handleFileSelect}
+            />
 
             <div className="mt-3">
               <Input
@@ -266,7 +376,11 @@ const UserProfilePage = () => {
         {/* RIGHT CARD */}
         <Col xs={24} md={16}>
           <Card
-            title={<span className="font-semibold text-lg text-gray-900">Thông tin cá nhân</span>}
+            title={
+              <span className="font-semibold text-lg text-gray-900">
+                Thông tin cá nhân
+              </span>
+            }
             className="shadow-lg rounded-2xl border border-gray-100 bg-white"
             extra={
               <Button
@@ -302,7 +416,9 @@ const UserProfilePage = () => {
               <Form.Item
                 label="Số điện thoại"
                 name="phone"
-                rules={[{ required: true, message: "Vui lòng nhập số điện thoại" }]}
+                rules={[
+                  { required: true, message: "Vui lòng nhập số điện thoại" },
+                ]}
               >
                 <Input prefix={<FiPhone />} disabled={!editing} />
               </Form.Item>
@@ -311,7 +427,11 @@ const UserProfilePage = () => {
 
           {/* SECURITY */}
           <Card
-            title={<span className="font-semibold text-lg text-gray-900">Bảo mật</span>}
+            title={
+              <span className="font-semibold text-lg text-gray-900">
+                Bảo mật
+              </span>
+            }
             className="mt-6 shadow-lg rounded-2xl border border-gray-100 bg-white"
           >
             <div className="flex justify-between items-center">

@@ -80,6 +80,14 @@ const Navbar = () => {
     dispatch(getNotifications());
   }, [user, dispatch]);
 
+  // Helper function để lấy avatar URL từ object hoặc string
+  const getAvatarUrl = (avatar) => {
+    if (!avatar) return undefined;
+    if (typeof avatar === "string") return avatar;
+    if (typeof avatar === "object" && avatar.url) return avatar.url;
+    return undefined;
+  };
+
   const unreadCount = notifications.filter((n) => !n.isRead && !n.read).length;
   const unreadMessagesCount = Object.values(messages).reduce((acc, list) => {
     if (!Array.isArray(list)) return acc;
@@ -548,12 +556,16 @@ const Navbar = () => {
                 className="flex items-center gap-2 p-1 rounded-full bg-white/10 hover:bg-white/20 transition-all"
               >
                 <img
+                  key={getAvatarUrl(user.avatar) || ""}
                   src={
-                    user.avatar ||
+                    getAvatarUrl(user.avatar) ||
                     "https://png.pngtree.com/png-clipart/20191120/original/pngtree-outline-user-icon-png-image_5045523.jpg"
                   }
                   alt="User Avatar"
                   className="w-12 h-12 rounded-full object-cover border-2 border-white/60 shadow-lg cursor-pointer"
+                  onError={(e) => {
+                    e.target.src = "https://png.pngtree.com/png-clipart/20191120/original/pngtree-outline-user-icon-png-image_5045523.jpg";
+                  }}
                 />
               </motion.button>
 

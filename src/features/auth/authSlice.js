@@ -341,7 +341,8 @@ const authSlice = createSlice({
         const avatarUrl =
           action.payload?.data?.avatarUrl ||
           action.payload?.avatarUrl ||
-          action.payload?.data?.avatar;
+          action.payload?.data?.avatar ||
+          action.payload?.avatar;
         if (avatarUrl && state.user) {
           state.user.avatar = avatarUrl;
           saveToStorage(state.user, state.token);

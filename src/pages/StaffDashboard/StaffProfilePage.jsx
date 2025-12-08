@@ -12,9 +12,20 @@ import {
   Spin,
   message,
 } from "antd";
-import { FiUser, FiEdit, FiSave, FiPhone, FiMail, FiLock } from "react-icons/fi";
+import {
+  FiUser,
+  FiEdit,
+  FiSave,
+  FiPhone,
+  FiMail,
+  FiLock,
+} from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
-import { getCurrentUser, changePassword, uploadAvatar } from "../../features/auth/authSlice";
+import {
+  getCurrentUser,
+  changePassword,
+  uploadAvatar,
+} from "../../features/auth/authSlice";
 
 const { Title, Text } = Typography;
 
@@ -44,9 +55,11 @@ const StaffProfilePage = () => {
         phone: user.phone,
         note: "",
       });
-      setAvatarPreview(null); // Reset preview khi user thay đổi
     }
   }, [user, form]);
+
+  // Không cần sync avatarPreview với user avatar
+  // avatarPreview chỉ dùng cho base64 preview khi đang upload
 
   // === HANDLE AVATAR CLICK ===
   const handleAvatarClick = () => {
@@ -82,11 +95,15 @@ const StaffProfilePage = () => {
     try {
       await dispatch(uploadAvatar({ avatar: file })).unwrap();
       message.success("Cập nhật avatar thành công");
-      // Refresh user data
-      dispatch(getCurrentUser());
+
+      // Refresh user data từ server để lấy avatar URL mới
+      await dispatch(getCurrentUser()).unwrap();
+
+      // Clear preview để dùng URL từ server
+      setAvatarPreview(null);
     } catch (err) {
       message.error(err?.message || "Upload avatar thất bại");
-      setAvatarPreview(null);
+      // Giữ preview nếu upload thất bại
     } finally {
       setUploadingAvatar(false);
       // Reset input để có thể chọn lại file giống nhau
@@ -108,11 +125,11 @@ const StaffProfilePage = () => {
         <div className="absolute -top-10 -right-10 w-44 h-44 rounded-full bg-indigo-300/30 blur-3xl" />
         <div className="relative z-10">
           <Title level={2} className="mb-2 text-gray-900">
-          Hồ sơ nhân viên
-        </Title>
+            Hồ sơ nhân viên
+          </Title>
           <Text className="text-base text-gray-700 font-medium">
-          Thông tin cá nhân và lịch sử công việc tại S+ Studio
-        </Text>
+            Thông tin cá nhân và lịch sử công việc tại S+ Studio
+          </Text>
         </div>
       </div>
 
@@ -122,11 +139,21 @@ const StaffProfilePage = () => {
           <Card className="text-center shadow-lg border border-gray-100 rounded-2xl">
             <div className="relative inline-block">
               <Avatar
+                key={user?.avatar}
                 size={120}
-                src={avatarPreview || user.avatar}
+                src={
+                  avatarPreview &&
+                  typeof avatarPreview === "string" &&
+                  avatarPreview.startsWith("data:image")
+                    ? avatarPreview
+                    : user?.avatar || undefined
+                }
                 icon={<FiUser />}
                 className="mb-4 cursor-pointer hover:opacity-80 transition-opacity"
                 onClick={handleAvatarClick}
+                onError={(e) => {
+                  e.target.src = undefined;
+                }}
               />
               {uploadingAvatar && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
@@ -281,7 +308,9 @@ const StaffProfilePage = () => {
                   passwordForm.resetFields();
                 } catch (err) {
                   message.error(
-                    err?.message || err?.data?.message || "Đổi mật khẩu thất bại"
+                    err?.message ||
+                      err?.data?.message ||
+                      "Đổi mật khẩu thất bại"
                   );
                 } finally {
                   setChangingPassword(false);
@@ -294,7 +323,10 @@ const StaffProfilePage = () => {
                     label="Mật khẩu hiện tại"
                     name="oldPassword"
                     rules={[
-                      { required: true, message: "Vui lòng nhập mật khẩu hiện tại" },
+                      {
+                        required: true,
+                        message: "Vui lòng nhập mật khẩu hiện tại",
+                      },
                     ]}
                   >
                     <Input.Password
@@ -331,7 +363,10 @@ const StaffProfilePage = () => {
                     label="Xác nhận mật khẩu mới"
                     name="confirmPassword"
                     rules={[
-                      { required: true, message: "Vui lòng xác nhận mật khẩu mới" },
+                      {
+                        required: true,
+                        message: "Vui lòng xác nhận mật khẩu mới",
+                      },
                     ]}
                   >
                     <Input.Password
