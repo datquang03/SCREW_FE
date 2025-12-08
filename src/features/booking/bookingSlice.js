@@ -151,6 +151,53 @@ export const updateBooking = createAsyncThunk(
     }
   }
 );
+// 9) Check-in booking
+export const checkInBooking = createAsyncThunk(
+  "booking/checkInBooking",
+  async (bookingId, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+
+      const res = await axiosInstance.post(
+        `/bookings/${bookingId}/checkin`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      return res.data.data; // { booking }
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Không thể check-in" }
+      );
+    }
+  }
+);
+
+// 10) Check-out booking
+export const checkOutBooking = createAsyncThunk(
+  "booking/checkOutBooking",
+  async (bookingId, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+
+      const res = await axiosInstance.post(
+        `/bookings/${bookingId}/checkout`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      return res.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Không thể check-out" }
+      );
+    }
+  }
+);
 
 // =========================================================
 // ================       INITIAL STATE     =================
@@ -305,6 +352,25 @@ const bookingSlice = createSlice({
 
       // ================= UPDATE =================
       .addCase(updateBooking.fulfilled, (state, action) => {
+        const updated = action.payload.booking || action.payload;
+
+        state.currentBooking = updated;
+        state.myBookings = state.myBookings.map((b) =>
+          b._id === updated._id ? updated : b
+        );
+      })
+      // ================= CHECK-IN =================
+      .addCase(checkInBooking.fulfilled, (state, action) => {
+        const updated = action.payload.booking || action.payload;
+
+        state.currentBooking = updated;
+        state.myBookings = state.myBookings.map((b) =>
+          b._id === updated._id ? updated : b
+        );
+      })
+
+      // ================= CHECK-OUT =================
+      .addCase(checkOutBooking.fulfilled, (state, action) => {
         const updated = action.payload.booking || action.payload;
 
         state.currentBooking = updated;
