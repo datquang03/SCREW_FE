@@ -59,7 +59,8 @@ import StaffTransactionPage from "./pages/StaffDashboard/StaffTransactionPage";
 import SetDesignDetail from "./pages/SetDesign/SetDesignDetailPage";
 import BookingSetDesignPage from "./pages/BookingSetDesign/BookingSetDesignPage";
 import ContactSetDesignRequestPage from "./pages/BookingSetDesign/ContactSetDesignPage";
-import StaffCustomRequestPage from "./pages/StaffDashboard/StaffCustomRequestPage";
+import MessagePage from "./pages/Message/MessagePage";
+import Layout from "./components/layout/Layout";
 
 const pageVariants = {
   initial: { opacity: 0, y: 10 },
@@ -67,10 +68,10 @@ const pageVariants = {
   out: { opacity: 0, y: -10 },
 };
 
-const pageTransition = { 
-  type: "tween", 
+const pageTransition = {
+  type: "tween",
   ease: [0.25, 0.1, 0.25, 1], // Custom easing cho mượt mà hơn
-  duration: 0.3 
+  duration: 0.3,
 };
 
 const AppContent = () => {
@@ -96,30 +97,34 @@ const AppContent = () => {
           style={{ width: "100%" }}
         >
           <Routes location={location}>
-            {/* PUBLIC ROUTES */}
-            <Route path="/" element={<Homepage />} />
-            <Route path="/about" element={<AboutUsPage />} />
-            <Route path="/equipment" element={<EquipmentListPage />} />
-            <Route path="/contact" element={<ContactPage />} />
+            {/* PUBLIC ROUTES WITH LAYOUT (Navbar + Footer) */}
+            <Route element={<Layout />}>
+              <Route path="/" element={<Homepage />} />
+              <Route path="/about" element={<AboutUsPage />} />
+              <Route path="/equipment" element={<EquipmentListPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/message" element={<MessagePage />} />
+              <Route path="/studio" element={<StudioPage />} />
+              <Route
+                path="/set-design-request"
+                element={<ContactSetDesignRequestPage />}
+              />
+              <Route path="/studio/:id" element={<StudioDetailPage />} />
+              <Route path="/booking/:id" element={<StudioBookingPage />} />
+              <Route path="/set-design/:id" element={<SetDesignDetail />} />
+              <Route
+                path="/booking/set-design/:id"
+                element={<BookingSetDesignPage />}
+              />
+              <Route path="/payment/success" element={<PaymentSuccessPage />} />
+              <Route path="/payment/cancel" element={<PaymentCancelPage />} />
+            </Route>
+
+            {/* AUTH */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
-            <Route path="*" element={<NotFoundPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/verify-email" element={<VerifyEmailPage />} />
-            <Route path="/studio" element={<StudioPage />} />
-            <Route path="/set-design-request" element={<ContactSetDesignRequestPage />} />
-            <Route path="/studio/:id" element={<StudioDetailPage />} />
-            <Route path="/booking/:id" element={<StudioBookingPage />} />
-            <Route path="/set-design/:id" element={<SetDesignDetail />} />
-            <Route path="/booking/set-design/:id" element={<BookingSetDesignPage />} />
-            <Route
-              path="/payment/success"
-              element={<PaymentSuccessPage />}
-            />  
-            <Route
-              path="/payment/cancel"
-              element={<PaymentCancelPage />}
-            />  
 
             {/* CUSTOMER DASHBOARD */}
             <Route
@@ -183,7 +188,7 @@ const AppContent = () => {
               path="/dashboard/admin/*"
               element={
                 <ProtectedRouteForAdmin>
-                <DashboardLayout sidebar={AdminSidebar} variant="admin" />
+                  <DashboardLayout sidebar={AdminSidebar} variant="admin" />
                 </ProtectedRouteForAdmin>
               }
             >
@@ -195,6 +200,9 @@ const AppContent = () => {
               <Route path="reports" element={<AdminReportsPage />} />
               <Route path="settings" element={<AdminSettingsPage />} />
             </Route>
+
+            {/* FALLBACK */}
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </motion.div>
       </AnimatePresence>

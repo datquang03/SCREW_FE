@@ -22,7 +22,8 @@ export const createMessage = createAsyncThunk(
         }
       );
 
-      return response.data.data; // giả sử backend trả về message mới
+      // attach conversationId from input if backend không trả
+      return { ...response.data.data, conversationId };
     } catch (err) {
       return rejectWithValue(
         err.response?.data || { message: "Failed to send message" }
@@ -159,9 +160,12 @@ const messageSlice = createSlice({
       })
       .addCase(createMessage.fulfilled, (state, action) => {
         state.loading = false;
-        // Backend có thể trả về conversationId trong payload nếu cần
         const message = action.payload;
-        const convId = message.conversationId || message.receiverId; // tùy backend
+        const convId =
+          message.conversationId ||
+          message.receiverId ||
+          message.toUserId ||
+          "unknown";
         if (!state.messages[convId]) state.messages[convId] = [];
         state.messages[convId].push(message);
       })
@@ -190,7 +194,13 @@ const messageSlice = createSlice({
       .addCase(getMessagesByConversation.fulfilled, (state, action) => {
         state.loadingMessages = false;
         const { conversationId, messages } = action.payload;
-        state.messages[conversationId] = Array.isArray(messages) ? messages : [];
+        // API may return { messages: [...], pagination: {...} }
+        const list = Array.isArray(messages?.messages)
+          ? messages.messages
+          : Array.isArray(messages)
+          ? messages
+          : [];
+        state.messages[conversationId] = list;
       })
       .addCase(getMessagesByConversation.rejected, (state, action) => {
         state.loadingMessages = false;

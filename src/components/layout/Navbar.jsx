@@ -11,6 +11,7 @@ import {
   HeartOutlined,
   FileTextOutlined,
   DeleteOutlined,
+  MessageOutlined,
 } from "@ant-design/icons";
 import { MdNotifications, MdOutlineSpaceDashboard } from "react-icons/md";
 
@@ -22,6 +23,7 @@ import {
   markNotificationRead,
   deleteNotification,
 } from "../../features/notification/notificationSlice";
+import { getConversations } from "../../features/message/messageSlice";
 import SPlusLogo from "../../assets/S+Logo.png";
 import notificationSound from "../../assets/notification.mp3";
 import { NAV_LINKS } from "../../constants/navigation";
@@ -52,6 +54,9 @@ const Navbar = () => {
   const { notifications, loading: notificationsLoading } = useSelector(
     (state) => state.notification || { notifications: [], loading: false }
   );
+  const { messages = {} } = useSelector(
+    (state) => state.message || { messages: {} }
+  );
 
   const handleLogout = () => {
     dispatch(logout());
@@ -75,7 +80,20 @@ const Navbar = () => {
     dispatch(getNotifications());
   }, [user, dispatch]);
 
+  // Helper function để lấy avatar URL từ object hoặc string
+  const getAvatarUrl = (avatar) => {
+    if (!avatar) return undefined;
+    if (typeof avatar === "string") return avatar;
+    if (typeof avatar === "object" && avatar.url) return avatar.url;
+    return undefined;
+  };
+
   const unreadCount = notifications.filter((n) => !n.isRead && !n.read).length;
+  const unreadMessagesCount = Object.values(messages).reduce((acc, list) => {
+    if (!Array.isArray(list)) return acc;
+    const unread = list.filter((m) => !m.isRead && !m.read);
+    return acc + unread.length;
+  }, 0);
   const dropdownNotifications = notifications.slice(0, visibleDropdownCount);
 
   // Play notification sound when new notification arrives
@@ -177,6 +195,12 @@ const Navbar = () => {
         Math.min(prev + 3, notifications.length)
       );
     }
+  };
+
+  const handleMessageClick = () => {
+    if (!user) return navigate("/login");
+    dispatch(getConversations());
+    navigate("/message");
   };
 
   const handleDeleteNotification = (id) => {
@@ -284,6 +308,31 @@ const Navbar = () => {
 
         {/* ===== RIGHT ACTIONS ===== */}
         <div className="flex items-center gap-3">
+          {/* MESSAGE */}
+          {user && (
+            <div className="relative">
+              <motion.button
+                type="button"
+                onClick={handleMessageClick}
+                initial={{ opacity: 1, scale: 1 }}
+                whileHover={{
+                  scale: 1.1,
+                  boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+                }}
+                whileTap={{ scale: 0.92 }}
+                transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                className="relative flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-lg hover:shadow-xl transition-shadow duration-300"
+              >
+                <MessageOutlined className="text-lg text-gray-900" />
+                {unreadMessagesCount > 0 && (
+                  <span className="absolute -top-1 -right-1 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-bold leading-none text-white bg-green-500 rounded-full">
+                    {unreadMessagesCount > 9 ? "9+" : unreadMessagesCount}
+                  </span>
+                )}
+              </motion.button>
+            </div>
+          )}
+
           {/* SEARCH */}
           <div ref={searchContainerRef} className="relative flex items-center">
             <AnimatePresence mode="wait">
@@ -507,12 +556,16 @@ const Navbar = () => {
                 className="flex items-center gap-2 p-1 rounded-full bg-white/10 hover:bg-white/20 transition-all"
               >
                 <img
+                  key={getAvatarUrl(user.avatar) || ""}
                   src={
-                    user.avatar ||
+                    getAvatarUrl(user.avatar) ||
                     "https://png.pngtree.com/png-clipart/20191120/original/pngtree-outline-user-icon-png-image_5045523.jpg"
                   }
                   alt="User Avatar"
                   className="w-12 h-12 rounded-full object-cover border-2 border-white/60 shadow-lg cursor-pointer"
+                  onError={(e) => {
+                    e.target.src = "https://png.pngtree.com/png-clipart/20191120/original/pngtree-outline-user-icon-png-image_5045523.jpg";
+                  }}
                 />
               </motion.button>
 
