@@ -1,21 +1,13 @@
 // src/pages/Booking/components/BookingSchedulePage.jsx
-import React, { useState, useEffect, useMemo, useCallback } from "react";
-import {
-  Calendar,
-  TimePicker,
-  Button,
-  Card,
-  Typography,
-  Tag,
-  message,
-  Spin,
-} from "antd";
+import React, { useState, useEffect, useMemo } from "react";
+import { TimePicker, Button, Card, Typography, Tag, message, Spin } from "antd";
 import { ArrowRightOutlined } from "@ant-design/icons";
 import { useSelector, useDispatch } from "react-redux";
 import dayjs from "dayjs";
 import { motion } from "framer-motion";
 import { setBookingTime } from "../../../features/booking/bookingSlice";
 import { getStudioSchedule } from "../../../features/studio/studioSlice";
+import ScheduleTable from "./ScheduleTable";
 
 const { Title, Text } = Typography;
 const { RangePicker } = TimePicker;
@@ -134,46 +126,6 @@ const BookingSchedulePage = ({ onNext }) => {
     onNext();
   };
 
-  // Render cell cho calendar
-  const renderDateCell = useCallback(
-    (date) => {
-      const key = date.format("YYYY-MM-DD");
-      const hasBookings =
-        currentStudioSchedule?.scheduleByDate?.[key]?.length > 0;
-      const isPast = date.isBefore(dayjs().startOf("day"), "day");
-      if (!hasBookings && !isPast) return <div className="h-6" />;
-
-      return (
-        <div className="mt-1 flex justify-center">
-          {hasBookings && (
-            <Tag
-              color="red"
-              className="text-[10px] px-1 py-0 rounded-full border-none"
-            >
-              Đã đặt
-            </Tag>
-          )}
-          {!hasBookings && isPast && (
-            <Tag
-              color="default"
-              className="text-[10px] px-1 py-0 rounded-full border-none"
-            >
-              Đã qua
-            </Tag>
-          )}
-        </div>
-      );
-    },
-    [currentStudioSchedule]
-  );
-
-  const calendarCellRender = (current, info) => {
-    if (info.type === "date") {
-      return renderDateCell(current);
-    }
-    return info.originNode;
-  };
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -182,47 +134,48 @@ const BookingSchedulePage = ({ onNext }) => {
       className="max-w-6xl mx-auto space-y-10 py-6"
     >
       {/* Header */}
-      <div className="text-center space-y-2">
+      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 text-center space-y-2">
         <Title level={2} className="text-gray-900 mb-0">
           Chọn ngày và giờ đặt phòng
         </Title>
-        <Text className="text-gray-600 text-lg">
-          Vui lòng chọn ngày và khung giờ bạn muốn thuê studio
+        <Text className="text-gray-600 text-base">
+          Lịch trực quan: ô đỏ là đã đặt, xanh là còn trống, xám là đã qua.
         </Text>
       </div>
 
       {/* Chọn ngày & giờ */}
-      <div className="grid lg:grid-cols-2 gap-10">
-        {/* Lịch */}
+      <div className="grid lg:grid-cols-5 gap-6">
+        {/* Lịch - chiếm 3/5 không gian */}
+        <div className="lg:col-span-3">
         <Card
           title={
-            <Title level={4} className="font-bold">
+              <Title level={4} className="font-bold mb-0">
               Chọn ngày đặt phòng
             </Title>
           }
-          className="shadow-xl"
+            className="shadow-sm border border-slate-200 rounded-2xl"
         >
-          <Calendar
-            fullscreen={false}
+            <ScheduleTable
             value={selectedDate}
             onChange={setSelectedDate}
+              scheduleByDate={currentStudioSchedule?.scheduleByDate || {}}
             disabledDate={(current) =>
               current && current < dayjs().startOf("day")
             }
-            cellRender={calendarCellRender}
-            className="rounded-xl"
           />
         </Card>
+        </div>
 
-        {/* Chọn giờ + Tóm tắt */}
-        <div className="space-y-8">
+        {/* Chọn giờ + Tóm tắt - chiếm 2/5 không gian */}
+        <div className="lg:col-span-2 space-y-6">
           <Card
             title={
-              <Title level={4} className="font-bold">
+              <Title level={4} className="font-bold mb-0">
                 Chọn khung giờ thuê
               </Title>
             }
-            className="shadow-xl"
+            className="shadow-sm border border-slate-200 rounded-2xl"
+            bodyStyle={{ padding: "16px" }}
           >
             <Spin spinning={scheduleLoading} tip="Đang tải lịch...">
               <div>
@@ -230,7 +183,7 @@ const BookingSchedulePage = ({ onNext }) => {
                   format="HH:mm"
                   minuteStep={30}
                   placeholder={["Giờ bắt đầu", "Giờ kết thúc"]}
-                  value={timeRange}
+                  value={timeRange[0] && timeRange[1] ? timeRange : null}
                   onChange={setTimeRange}
                   className="w-full text-lg"
                   size="large"
@@ -243,7 +196,7 @@ const BookingSchedulePage = ({ onNext }) => {
 
             {/* Các khung giờ đã được đặt trong ngày */}
             {selectedDate && bookedSlots.length > 0 && (
-              <div className="mt-6 p-5 rounded-3xl border border-red-200 bg-gradient-to-br from-red-50 via-rose-50 to-orange-50 shadow-inner">
+              <div className="mt-6 p-5 rounded-2xl border border-rose-200 bg-white shadow-inner">
                 <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                   <div>
                     <Text strong className="text-red-600 text-base md:text-lg">
@@ -318,59 +271,9 @@ const BookingSchedulePage = ({ onNext }) => {
             )}
 
             {selectedDate && bookedSlots.length === 0 && (
-              <div className="mt-6 p-5 rounded-3xl border border-emerald-200 bg-emerald-50 text-emerald-700 text-sm md:text-base">
+              <div className="mt-6 p-5 rounded-2xl border border-emerald-200 bg-emerald-50 text-emerald-700 text-sm md:text-base">
                 <strong>Ngày này hiện chưa có lịch đặt trước.</strong> Bạn có
-                thể thoải mái chọn bất kỳ khung giờ nào phù hợp.
-              </div>
-            )}
-
-            {/* Legend */}
-            <div className="mt-4 flex flex-wrap gap-3 text-xs text-gray-500">
-              <div className="flex items-center gap-1">
-                <span className="inline-block w-3 h-3 rounded-full bg-red-400" />
-                <span>Ngày / khung giờ đã được đặt</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="inline-block w-3 h-3 rounded-full bg-gray-300" />
-                <span>Ngày / giờ đã qua</span>
-              </div>
-            </div>
-
-            {/* Tóm tắt */}
-            {selectedDate && timeRange[0] && timeRange[1] && (
-              <div className="mt-8 p-6 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 rounded-2xl border border-purple-200">
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <Text strong className="text-lg">
-                      Ngày thuê:
-                    </Text>
-                    <Tag color="blue" className="text-base">
-                      {selectedDate.format("dddd, DD/MM/YYYY")}
-                    </Tag>
-                  </div>
-
-                  <div className="flex justify-between items-center">
-                    <Text strong className="text-lg">
-                      Khung giờ:
-                    </Text>
-                    <Tag color="green" className="text-base font-medium">
-                      {timeRange[0].format("HH:mm")} →{" "}
-                      {timeRange[1].format("HH:mm")}
-                    </Tag>
-                  </div>
-
-                  <div className="flex justify-between items-center">
-                    <Text strong className="text-lg">
-                      Thời lượng:
-                    </Text>
-                    <Tag
-                      color="purple"
-                      className="text-base font-bold text-purple-700"
-                    >
-                      {durationHours.toFixed(1)} giờ
-                    </Tag>
-                  </div>
-                </div>
+                thể chọn khung giờ phù hợp.
               </div>
             )}
           </Card>
@@ -381,11 +284,7 @@ const BookingSchedulePage = ({ onNext }) => {
             block
             onClick={handleNext}
             disabled={!selectedDate || !timeRange[0] || !timeRange[1]}
-            className="h-16 text-xl font-bold rounded-2xl shadow-2xl hover:shadow-purple-500/50 transition-all"
-            style={{
-              background: "linear-gradient(90deg, #667eea 0%, #764ba2 100%)",
-              border: "none",
-            }}
+            className="h-14 text-lg font-semibold rounded-2xl shadow-sm"
             icon={<ArrowRightOutlined />}
           >
             Tiếp theo → Chọn thiết bị & dịch vụ

@@ -175,6 +175,45 @@ export const unlikeComment = createAsyncThunk(
   }
 );
 
+// LIKE REPLY
+export const likeReply = createAsyncThunk(
+  "comment/likeReply",
+  async ({ commentId, replyId }, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth || {};
+      const res = await axiosInstance.post(
+        `/comments/${commentId}/replies/${replyId}/like`,
+        {},
+        { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+      );
+      return { commentId, replyId, data: res.data.data };
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Thích trả lời thất bại" }
+      );
+    }
+  }
+);
+
+// UNLIKE REPLY
+export const unlikeReply = createAsyncThunk(
+  "comment/unlikeReply",
+  async ({ commentId, replyId }, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth || {};
+      await axiosInstance.delete(
+        `/comments/${commentId}/replies/${replyId}/like`,
+        { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+      );
+      return { commentId, replyId };
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Bỏ thích trả lời thất bại" }
+      );
+    }
+  }
+);
+
 // =========================================================
 // SLICE
 // =========================================================
@@ -276,6 +315,38 @@ const commentSlice = createSlice({
         }
       })
       .addCase(unlikeComment.rejected, (state, action) => {
+        state.error = action.payload;
+      })
+
+      // LIKE REPLY
+      .addCase(likeReply.fulfilled, (state, action) => {
+        const { commentId, replyId } = action.payload;
+        const cmt = state.comments.find((c) => c._id === commentId);
+        if (cmt && cmt.replies) {
+          const rep = cmt.replies.find((r) => r._id === replyId);
+          if (rep) {
+            rep.isLikedByCurrentUser = true;
+            rep.likesCount = (rep.likesCount || 0) + 1;
+          }
+        }
+      })
+      .addCase(likeReply.rejected, (state, action) => {
+        state.error = action.payload;
+      })
+
+      // UNLIKE REPLY
+      .addCase(unlikeReply.fulfilled, (state, action) => {
+        const { commentId, replyId } = action.payload;
+        const cmt = state.comments.find((c) => c._id === commentId);
+        if (cmt && cmt.replies) {
+          const rep = cmt.replies.find((r) => r._id === replyId);
+          if (rep) {
+            rep.isLikedByCurrentUser = false;
+            rep.likesCount = Math.max(0, (rep.likesCount || 0) - 1);
+          }
+        }
+      })
+      .addCase(unlikeReply.rejected, (state, action) => {
         state.error = action.payload;
       });
   },

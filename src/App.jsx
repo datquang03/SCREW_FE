@@ -36,6 +36,8 @@ import AdminRevenuePage from "./pages/AdminDashboard/AdminRevenuePage";
 import AdminReportsPage from "./pages/AdminDashboard/AdminReportsPage";
 import AdminSettingsPage from "./pages/AdminDashboard/AdminSettingsPage";
 import ScrollToTop from "./components/ScrollToTop";
+import Layout from "./components/layout/Layout";
+import MessagePage from "./pages/Message/MessagePage";
 import StudioDetailPage from "./pages/Studio/StudioDetailPage";
 
 // === IMPORT PROTECTED ROUTES ===
@@ -54,12 +56,12 @@ import StaffSetDesignPage from "./pages/StaffDashboard/StaffSetDesignPage";
 import PaymentSuccessPage from "./pages/Payment/PaymentSuccessPage";
 import PaymentCancelPage from "./pages/Payment/PaymentCancelPage";
 import NotFoundPage from "./pages/Notfound/NotFoundPage";
-import SetDesignSection from "./pages/SetDesign/SetDesignDetailPage";
 import StaffTransactionPage from "./pages/StaffDashboard/StaffTransactionPage";
 import SetDesignDetail from "./pages/SetDesign/SetDesignDetailPage";
 import BookingSetDesignPage from "./pages/BookingSetDesign/BookingSetDesignPage";
 import ContactSetDesignRequestPage from "./pages/BookingSetDesign/ContactSetDesignPage";
 import StaffCustomRequestPage from "./pages/StaffDashboard/StaffCustomRequestPage";
+import UserCustomSetDesignPage from "./pages/UserDashboard/UserCustomSetDesignPage";
 
 const pageVariants = {
   initial: { opacity: 0, y: 10 },
@@ -138,7 +140,10 @@ const AppContent = () => {
               <Route path="bookings" element={<UserBookingsPage />} />
               <Route path="studios" element={<UserStudiosPage />} />
               <Route path="history" element={<UserHistoryPage />} />
-              {/* <Route path="custom-request" element={<UserCustom />} /> */}
+              <Route
+                path="custom-requests"
+                element={<UserCustomSetDesignPage />}
+              />
               <Route path="profile" element={<UserProfilePage />} />
             </Route>
             {/* CUSTOMER ONLY PAGES */}
@@ -173,7 +178,10 @@ const AppContent = () => {
               <Route path="schedule" element={<StaffSchedulePage />} />
               <Route path="studios" element={<StaffStudiosPage />} />
               <Route path="setdesign" element={<StaffSetDesignPage />} />
-              <Route path="custom-request" element={<StaffCustomRequestPage />} />
+              <Route
+                path="custom-request"
+                element={<StaffCustomRequestPage />}
+              />
               <Route path="user" element={<StaffUserPage />} />
               <Route path="equipment" element={<StaffEquipmentPage />} />
               <Route path="profile" element={<StaffProfilePage />} />

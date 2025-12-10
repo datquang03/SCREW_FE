@@ -9,18 +9,21 @@ const SDRelatedDesigns = React.memo(({ currentId }) => {
   }));
 
   return (
-    <div>
-      <h4 className="text-lg font-semibold">Gợi ý tương tự</h4>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
+    <div className="space-y-3">
+      <h4 className="text-lg font-semibold text-slate-900">Gợi ý tương tự</h4>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {dummy.map((d) => (
-          <div key={d.id} className="rounded-lg overflow-hidden cursor-pointer">
+          <div
+            key={d.id}
+            className="rounded-xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-md cursor-pointer bg-white transition"
+          >
             <img
               src={d.img}
               loading="lazy"
               alt={d.name}
               className="w-full h-32 object-cover"
             />
-            <div className="p-2 text-sm font-medium">{d.name}</div>
+            <div className="p-3 text-sm font-semibold text-slate-800">{d.name}</div>
           </div>
         ))}
       </div>

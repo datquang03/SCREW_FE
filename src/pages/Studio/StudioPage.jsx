@@ -20,6 +20,13 @@ const StudioPage = () => {
     dispatch(getActiveStudios({ page: 1, limit: 10 }));
   }, [dispatch]);
 
+  const formatPrice = (price) => {
+    if (price === null || price === undefined) return "—";
+    if (typeof price === "number") return price.toLocaleString();
+    const parsed = Number(price);
+    return Number.isNaN(parsed) ? "—" : parsed.toLocaleString();
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -37,7 +44,7 @@ const StudioPage = () => {
         title="Danh sách Studio cho thuê"
         subtitle="Chọn studio phù hợp với dự án của bạn - từ chụp ảnh sản phẩm đến quay phim chuyên nghiệp"
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           {studios.length === 0 ? (
             <div className="col-span-full text-center text-gray-500 py-20">
               Không có studio nào đang hoạt động
@@ -50,13 +57,13 @@ const StudioPage = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
                 whileHover={{
-                  scale: 1.03,
-                  boxShadow: "0px 20px 40px rgba(0,0,0,0.15)",
+                  scale: 1.02,
+                  boxShadow: "0px 16px 32px rgba(15,23,42,0.12)",
                 }}
-                className="bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer transition-all duration-300"
+                className="bg-white rounded-2xl shadow-md overflow-hidden cursor-pointer transition-all duration-300 h-full flex flex-col"
               >
                 {/* Hình ảnh + Carousel */}
-                <div className="relative h-64 overflow-hidden">
+                <div className="relative h-60 md:h-64 overflow-hidden">
                   {studio.images && studio.images.length > 0 ? (
                     <Carousel
                       autoplay
@@ -69,7 +76,7 @@ const StudioPage = () => {
                           key={idx}
                           src={img}
                           alt={studio.name}
-                          className="h-64 w-full object-cover transition-transform duration-500 hover:scale-110"
+                          className="h-60 md:h-64 w-full object-cover transition-transform duration-500 hover:scale-110"
                         />
                       ))}
                     </Carousel>
@@ -83,10 +90,12 @@ const StudioPage = () => {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
 
                   {/* Rating badge */}
-                  <div className="absolute top-4 right-4 flex items-center gap-1 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-md">
+                  <div className="absolute top-3 right-3 flex items-center gap-1 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
                     <FiStar className="text-yellow-500" />
                     <Text strong className="text-sm">
-                      {studio.rating || 5}
+                      {(studio.avgRating || studio.rating || 0).toFixed
+                        ? (studio.avgRating || studio.rating || 0).toFixed(1)
+                        : studio.avgRating || studio.rating || 0 || "—"}
                     </Text>
                   </div>
 
@@ -94,51 +103,54 @@ const StudioPage = () => {
                   <div className="absolute bottom-4 left-4 right-4">
                     <Title
                       level={3}
-                      className="text-white mb-2 text-2xl font-bold"
+                      className="mb-2 text-xl md:text-2xl font-bold line-clamp-1"
                     >
+                      <span className="bg-white/90 text-slate-900 px-2.5 py-1 rounded-lg shadow-sm">
                       {studio.name}
+                      </span>
                     </Title>
-                    <div className="flex items-center gap-4 text-white/90 text-sm">
+                    <div className="flex flex-wrap items-center gap-3 text-white/90 text-sm">
                       <div className="flex items-center gap-1">
                         <FiMapPin size={14} />
-                        <span>{studio.location || "Không xác định"}</span>
+                        <span className="line-clamp-1">
+                          {studio.location || "Không xác định"}
+                        </span>
                       </div>
                       <div className="flex items-center gap-1">
                         <FiUsers size={14} />
-                        <span>{studio.capacity} người</span>
+                        <span>{studio.capacity || "—"} người</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Card Content */}
-                <div className="p-6">
-                  <div className="mb-4">
-                    <Text className="text-gray-600 text-xl">Mô tả:</Text>
-                    <Paragraph className="text-gray-700 text-sm mt-1 line-clamp-3">
-                      {studio.description}
+                <div className="p-5 md:p-6 flex flex-col gap-4 flex-1">
+                  <div className="space-y-2">
+                    <Text className="text-gray-600 text-sm">Mô tả</Text>
+                    <Paragraph className="text-gray-800 text-sm mt-1 line-clamp-3">
+                      {studio.description || "Chưa có mô tả chi tiết."}
                     </Paragraph>
                   </div>
 
                   <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                     <div>
                       <Text className="text-gray-500 text-sm">Giá thuê</Text>
-                      <div className="flex items-baseline gap-1">
-                        <Text
-                          strong
-                          className="text-2xl text-yellow-600 font-bold"
-                        >
-                          {studio.basePricePerHour.toLocaleString()} VNĐ
-                        </Text>
-                        <Text className="text-gray-500 text-sm">/giờ</Text>
+                      <div className="flex items-baseline gap-2 flex-wrap text-slate-900">
+                        <span className="text-2xl font-bold whitespace-nowrap">
+                          {formatPrice(studio.basePricePerHour)}
+                        </span>
+                        <span className="text-sm text-gray-600 whitespace-nowrap">
+                          VNĐ /giờ
+                        </span>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap justify-end">
                       {/* Nút đặt lịch */}
                       <Button
                         size="large"
-                        className="bg-blue-500 text-white hover:bg-blue-600 border-none shadow-md"
+                        className="bg-blue-500 text-white hover:bg-blue-600 border-none shadow-md px-4"
                         onClick={() => navigate(`/booking/${studio._id}`)}
                       >
                         Đặt lịch
@@ -148,7 +160,7 @@ const StudioPage = () => {
                       <Button
                         type="primary"
                         size="large"
-                        className="bg-gradient-to-r from-yellow-400 to-yellow-500 border-none shadow-lg"
+                        className="bg-yellow-500 hover:bg-yellow-600 border-none shadow-md px-4 text-white"
                         onClick={() => navigate(`/studio/${studio._id}`)}
                       >
                         Xem chi tiết

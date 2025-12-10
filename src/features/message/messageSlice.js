@@ -127,11 +127,11 @@ export const deleteMessage = createAsyncThunk(
    INITIAL STATE
 ===================================================== */
 const initialState = {
-  conversations: [],           // danh sách các cuộc trò chuyện
-  messages: {},                 // { [conversationId]: [...] } – lưu tin nhắn theo conversation
-  loading: false,               // loading chung (send, delete, mark read...)
-  loadingConversations: false,  // loading danh sách conversations
-  loadingMessages: false,       // loading tin nhắn của 1 conversation
+  conversations: [], // danh sách các cuộc trò chuyện
+  messages: {}, // { [conversationId]: [...] } – lưu tin nhắn theo conversation
+  loading: false, // loading chung (send, delete, mark read...)
+  loadingConversations: false, // loading danh sách conversations
+  loadingMessages: false, // loading tin nhắn của 1 conversation
   error: null,
 };
 
@@ -180,7 +180,9 @@ const messageSlice = createSlice({
       })
       .addCase(getConversations.fulfilled, (state, action) => {
         state.loadingConversations = false;
-        state.conversations = Array.isArray(action.payload) ? action.payload : [];
+        state.conversations = Array.isArray(action.payload)
+          ? action.payload
+          : [];
       })
       .addCase(getConversations.rejected, (state, action) => {
         state.loadingConversations = false;

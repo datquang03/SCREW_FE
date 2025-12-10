@@ -1,11 +1,12 @@
 // src/pages/CustomSetDesignRequestPage.jsx
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Button, message } from "antd";
 import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { FiUser, FiMail, FiPhone, FiEdit, FiCheckCircle } from "react-icons/fi";
-import { customSetDesignRequest } from "../../features/setDesign/setDesignSlice";
+import { customSetDesignRequest } from "../../features/setdesign/setDesignSlice";
+// Upload ảnh tạm thời bỏ dùng theo yêu cầu
 
 const shakeVariant = {
   shake: {
@@ -17,17 +18,22 @@ const shakeVariant = {
 const CustomSetDesignRequestPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
+  const preset = location.state?.fromSetDesign;
 
   const [form, setForm] = useState({
     customerName: "",
     email: "",
     phoneNumber: "",
-    description: "",
+    description: preset?.name ? `Yêu cầu cho set design: ${preset.name}` : "",
+    preferredCategory: "",
+    budgetRange: "",
   });
 
   const [loading, setLoading] = useState(false);
   const [shake, setShake] = useState(false);
   const [successFly, setSuccessFly] = useState(false);
+  // Không dùng upload ảnh theo yêu cầu, referenceImages để trống
 
   const updateField = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -47,7 +53,15 @@ const CustomSetDesignRequestPage = () => {
 
     setLoading(true);
 
-    const res = await dispatch(customSetDesignRequest(form));
+    const payload = {
+      ...form,
+      setDesignId: preset?.id,
+      preferredCategory: form.preferredCategory,
+      budgetRange: form.budgetRange,
+      referenceImages: [],
+    };
+
+    const res = await dispatch(customSetDesignRequest(payload));
 
     setLoading(false);
 
@@ -58,7 +72,7 @@ const CustomSetDesignRequestPage = () => {
       setSuccessFly(true);
 
       setTimeout(() => {
-        navigate("/dashboard/customer/custom-request");
+        navigate("/dashboard/customer/custom-requests");
       }, 1500);
 
       setForm({
@@ -67,6 +81,7 @@ const CustomSetDesignRequestPage = () => {
         phoneNumber: "",
         description: "",
       });
+      setLocalFile(null);
     } else {
       message.error("Gửi yêu cầu thất bại!");
     }
@@ -152,6 +167,34 @@ const CustomSetDesignRequestPage = () => {
               onChange={(e) => updateField("description", e.target.value)}
               className="w-full bg-transparent outline-none text-gray-700 resize-none placeholder:text-gray-400"
             />
+          </div>
+
+          {/* PREFERRED CATEGORY */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="bg-white rounded-xl shadow-md p-4 border hover:shadow-xl transition">
+              <p className="text-sm text-gray-500">Loại set / phong cách</p>
+              <input
+                type="text"
+                placeholder="VD: Wedding, Vintage, Studio..."
+                value={form.preferredCategory}
+                onChange={(e) =>
+                  updateField("preferredCategory", e.target.value)
+                }
+                className="w-full mt-2 bg-transparent outline-none text-gray-700 placeholder:text-gray-400"
+              />
+            </div>
+
+            {/* BUDGET RANGE */}
+            <div className="bg-white rounded-xl shadow-md p-4 border hover:shadow-xl transition">
+              <p className="text-sm text-gray-500">Ngân sách dự kiến</p>
+              <input
+                type="text"
+                placeholder="VD: 5,000,000 - 10,000,000"
+                value={form.budgetRange}
+                onChange={(e) => updateField("budgetRange", e.target.value)}
+                className="w-full mt-2 bg-transparent outline-none text-gray-700 placeholder:text-gray-400"
+              />
+            </div>
           </div>
         </motion.div>
 

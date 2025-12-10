@@ -346,13 +346,34 @@ export const deleteUploadedFile = createAsyncThunk(
 // SEND CUSTOM SET DESIGN REQUEST
 export const customSetDesignRequest = createAsyncThunk(
   "setDesign/customSetDesignRequest",
-  async ({ customerName, email, phoneNumber, description }, { rejectWithValue, getState }) => {
+  async (
+    {
+      customerName,
+      email,
+      phoneNumber,
+      description,
+      preferredCategory,
+      budgetRange,
+      referenceImages = [],
+      setDesignId,
+    },
+    { rejectWithValue, getState }
+  ) => {
     try {
       const { token } = getState().auth || {};
 
       const res = await axiosInstance.post(
         "/set-designs/custom-request",
-        { customerName, email, phoneNumber, description },
+        {
+          customerName,
+          email,
+          phoneNumber,
+          description,
+          preferredCategory,
+          budgetRange,
+          referenceImages,
+          setDesignId,
+        },
         {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         }
@@ -367,6 +388,46 @@ export const customSetDesignRequest = createAsyncThunk(
   }
 );
 
+// GET MY CUSTOM REQUESTS (pagination)
+export const getMyCustomSetDesign = createAsyncThunk(
+  "setDesign/getMyCustomSetDesign",
+  async ({ page = 1, limit = 10 }, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth || {};
+      const res = await axiosInstance.get(
+        `/set-designs/custom-request?page=${page}&limit=${limit}`,
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        }
+      );
+      return res.data.data || res.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || {
+          message: "Không thể tải danh sách yêu cầu của bạn",
+        }
+      );
+    }
+  }
+);
+
+// DELETE MY CUSTOM REQUEST
+export const deleteMyCustomSetDesign = createAsyncThunk(
+  "setDesign/deleteMyCustomSetDesign",
+  async (requestId, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth || {};
+      await axiosInstance.delete(`/set-designs/custom-requests/${requestId}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      return requestId;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Xóa yêu cầu custom thất bại" }
+      );
+    }
+  }
+);
 
 /* =============================
    GET ALL CUSTOM REQUESTS
@@ -426,6 +487,8 @@ const initialState = {
   activeSetDesigns: [],
   total: 0,
   customRequests: [],
+  myCustomRequests: [],
+  myCustomPagination: { page: 1, limit: 10, total: 0, pages: 0 },
   currentCustomRequest: null,
   loading: false,
   uploadedImages: [], // last uploaded images info
@@ -653,6 +716,53 @@ const setDesignSlice = createSlice({
         state.customRequests = action.payload || [];
       })
       .addCase(getCustomRequestSetDesign.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // GET MY CUSTOM REQUESTS
+      .addCase(getMyCustomSetDesign.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getMyCustomSetDesign.fulfilled, (state, action) => {
+        state.loading = false;
+        const data = action.payload;
+        if (Array.isArray(data)) {
+          state.myCustomRequests = data;
+        } else if (data?.items) {
+          state.myCustomRequests = data.items;
+          state.myCustomPagination = {
+            page: data.page || 1,
+            limit: data.limit || 10,
+            total: data.total || data.items?.length || 0,
+            pages:
+              data.pages || Math.ceil((data.total || 0) / (data.limit || 10)),
+          };
+        }
+      })
+      .addCase(getMyCustomSetDesign.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // DELETE MY CUSTOM REQUEST
+      .addCase(deleteMyCustomSetDesign.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteMyCustomSetDesign.fulfilled, (state, action) => {
+        state.loading = false;
+        const id = action.payload;
+        state.myCustomRequests = state.myCustomRequests.filter(
+          (r) => r._id !== id
+        );
+        state.myCustomPagination = {
+          ...state.myCustomPagination,
+          total: Math.max(0, (state.myCustomPagination.total || 1) - 1),
+        };
+      })
+      .addCase(deleteMyCustomSetDesign.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

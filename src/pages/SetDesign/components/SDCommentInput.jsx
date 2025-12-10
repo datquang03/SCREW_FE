@@ -28,7 +28,13 @@ alert("Gửi thất bại");
 return (
 <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="mt-6">
 <div className="flex gap-4 items-start">
-<textarea value={value} onChange={(e) => setValue(e.target.value)} placeholder="Viết bình luận..." className="flex-1 p-3 rounded-2xl bg-white/90 dark:bg-gray-800 outline-none" rows={3} />
+<textarea
+value={value}
+onChange={(e) => setValue(e.target.value)}
+placeholder="Viết bình luận..."
+className="flex-1 p-3 rounded-2xl bg-white text-slate-900 border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-300"
+rows={3}
+/>
 <button onClick={handleSubmit} className="bg-indigo-600 text-white px-4 py-2 rounded-full">Gửi</button>
 </div>
 </motion.div>
