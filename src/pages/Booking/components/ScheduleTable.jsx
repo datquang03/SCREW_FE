@@ -1,6 +1,6 @@
 // src/pages/Booking/components/ScheduleTable.jsx (phiên bản đã tối ưu)
 import React from "react";
-import { Tag } from "antd";
+import { Tag, Badge } from "antd";
 import dayjs from "dayjs";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 
@@ -103,27 +103,32 @@ const ScheduleTable = ({
             )}
 
             {status === "booked" && (
-              <div className="space-y-1">
-                {/* Đèn báo trạng thái */}
-                <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-                  <span className="font-bold text-rose-700">
-                    {bookings.length} lịch
-                  </span>
+              <div className="space-y-1.5">
+                {/* Badge hiển thị số lượng slot đã đặt */}
+                <div className="flex flex-col items-center gap-1">
+                  <span className="text-[11px] text-gray-500 font-medium">Số lịch</span>
+                  <Badge
+                    count={bookings.length}
+                    style={{ backgroundColor: bookings.length > 0 ? "#f5222d" : "#d9d9d9" }}
+                    className="custom-badge"
+                  />
                 </div>
 
                 {/* Tên khách đầu tiên + số lượng còn lại */}
                 {bookings.length > 0 && (
-                  <div className="text-[10px] font-medium text-gray-700 leading-tight">
-                    <span className="truncate block max-w-20">
-                      {bookings[0]?.booking?.customer?.fullName
-                        ?.split(" ")
-                        .slice(-2)
-                        .join(" ") || "Khách"}
-                    </span>
+                  <div className="text-[10px] font-medium text-gray-700 leading-tight text-center">
+                    <div className="flex items-center justify-center gap-1">
+                      <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                      <span className="truncate max-w-20">
+                        {bookings[0]?.booking?.customer?.fullName
+                          ?.split(" ")
+                          .slice(-2)
+                          .join(" ") || "Khách"}
+                      </span>
+                    </div>
                     {bookings.length > 1 && (
-                      <span className="text-rose-600 font-bold">
-                        +{bookings.length - 1}
+                      <span className="text-rose-600 font-bold text-xs">
+                        +{bookings.length - 1} khác
                       </span>
                     )}
                   </div>

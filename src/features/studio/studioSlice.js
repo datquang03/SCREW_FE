@@ -308,9 +308,14 @@ const studioSlice = createSlice({
       })
       .addCase(getStudioSchedule.fulfilled, (state, action) => {
         state.loading = false;
-        // Lưu toàn bộ payload, nhưng ưu tiên mảng studios để dùng dễ hơn
+        // Lưu toàn bộ payload từ API (bao gồm studios, pagination, dateRange)
         const payload = action.payload || {};
-        state.studioSchedule = payload.studios || payload || [];
+        // API trả về: { studios: [...], pagination: {...}, dateRange: {...} }
+        state.studioSchedule = {
+          studios: payload.studios || payload.data?.studios || [],
+          pagination: payload.pagination || {},
+          dateRange: payload.dateRange || {},
+        };
       })
       .addCase(getStudioSchedule.rejected, (state, action) => {
         state.loading = false;
