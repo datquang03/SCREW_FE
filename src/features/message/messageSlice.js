@@ -6,12 +6,11 @@ import axiosInstance from "../../api/axiosInstance";
    ASYNC THUNKS
 ===================================================== */
 
-// CREATE MESSAGE
 export const createMessage = createAsyncThunk(
   "message/createMessage",
   async ({ toUserId, content }, { rejectWithValue, getState }) => {
     try {
-      const { token } = getState().auth;
+      const { token, user } = getState().auth;
       if (!token) throw new Error("No token found");
 
       const response = await axiosInstance.post(
@@ -22,17 +21,25 @@ export const createMessage = createAsyncThunk(
         }
       );
 
-      // attach conversationId from input if backend không trả
-      return { ...response.data.data, conversationId };
+      const messageData = response.data.data;
+
+      const currentUserId = user?._id || user?.id;
+      const conversationId =
+        messageData.conversationId ||
+        [currentUserId, toUserId].sort().join("_");
+
+      return {
+        ...messageData,
+        conversationId,
+      };
     } catch (err) {
       return rejectWithValue(
-        err.response?.data || { message: "Failed to send message" }
+        err.response?.data || { message: "Gửi tin nhắn thất bại" }
       );
     }
   }
 );
 
-// GET ALL CONVERSATIONS (danh sách cuộc trò chuyện)
 export const getConversations = createAsyncThunk(
   "message/getConversations",
   async (_, { rejectWithValue, getState }) => {
@@ -44,16 +51,15 @@ export const getConversations = createAsyncThunk(
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      return response.data.data;
+      return response.data.data || [];
     } catch (err) {
       return rejectWithValue(
-        err.response?.data || { message: "Failed to fetch conversations" }
+        err.response?.data || { message: "Không thể tải danh sách chat" }
       );
     }
   }
 );
 
-// GET MESSAGES OF A CONVERSATION
 export const getMessagesByConversation = createAsyncThunk(
   "message/getMessagesByConversation",
   async (conversationId, { rejectWithValue, getState }) => {
@@ -63,21 +69,21 @@ export const getMessagesByConversation = createAsyncThunk(
 
       const response = await axiosInstance.get(
         `/messages/conversation/${conversationId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      return { conversationId, messages: response.data.data };
+      return {
+        conversationId,
+        messages: response.data.data?.messages || response.data.data || [],
+      };
     } catch (err) {
       return rejectWithValue(
-        err.response?.data || { message: "Failed to fetch messages" }
+        err.response?.data || { message: "Không thể tải tin nhắn" }
       );
     }
   }
 );
 
-// MARK MESSAGE AS READ
 export const markMessageAsRead = createAsyncThunk(
   "message/markMessageAsRead",
   async (messageId, { rejectWithValue, getState }) => {
@@ -96,13 +102,12 @@ export const markMessageAsRead = createAsyncThunk(
       return { messageId, data: response.data.data };
     } catch (err) {
       return rejectWithValue(
-        err.response?.data || { message: "Failed to mark as read" }
+        err.response?.data || { message: "Không thể đánh dấu đã đọc" }
       );
     }
   }
 );
 
-// DELETE MESSAGE
 export const deleteMessage = createAsyncThunk(
   "message/deleteMessage",
   async (messageId, { rejectWithValue, getState }) => {
@@ -117,39 +122,31 @@ export const deleteMessage = createAsyncThunk(
       return messageId;
     } catch (err) {
       return rejectWithValue(
-        err.response?.data || { message: "Failed to delete message" }
+        err.response?.data || { message: "Không thể xóa tin nhắn" }
       );
     }
   }
 );
 
 /* =====================================================
-   INITIAL STATE
-===================================================== */
-const initialState = {
-  conversations: [],           // danh sách các cuộc trò chuyện
-  messages: {},                 // { [conversationId]: [...] } – lưu tin nhắn theo conversation
-  loading: false,               // loading chung (send, delete, mark read...)
-  loadingConversations: false,  // loading danh sách conversations
-  loadingMessages: false,       // loading tin nhắn của 1 conversation
-  error: null,
-};
-
-/* =====================================================
-   SLICE
+   SLICE – ĐÃ BỔ SUNG LẠI ĐỦ CASE
 ===================================================== */
 const messageSlice = createSlice({
   name: "message",
-  initialState,
+  initialState: {
+    conversations: [],
+    messages: {},
+    loading: false,
+    loadingConversations: false,
+    loadingMessages: false,
+    error: null,
+  },
   reducers: {
     clearMessageError: (state) => {
       state.error = null;
     },
     clearMessagesByConversation: (state, action) => {
-      const conversationId = action.payload;
-      if (conversationId) {
-        delete state.messages[conversationId];
-      }
+      delete state.messages[action.payload];
     },
   },
   extraReducers: (builder) => {
@@ -157,21 +154,34 @@ const messageSlice = createSlice({
       // CREATE MESSAGE
       .addCase(createMessage.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
       .addCase(createMessage.fulfilled, (state, action) => {
         state.loading = false;
         const message = action.payload;
-        const convId =
-          message.conversationId ||
-          message.receiverId ||
-          message.toUserId ||
-          "unknown";
+        const convId = message.conversationId || "unknown";
+
         if (!state.messages[convId]) state.messages[convId] = [];
         state.messages[convId].push(message);
+
+        const exists = state.conversations.some(
+          (c) => c._id === convId || c.conversationId === convId
+        );
+        if (!exists) {
+          state.conversations.unshift({
+            _id: convId,
+            conversationId: convId,
+            lastMessage: message,
+            participant:
+              message.fromUserId._id === action.meta.arg.toUserId
+                ? message.toUserId
+                : message.fromUserId,
+          });
+        }
       })
       .addCase(createMessage.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = action.payload?.message || "Gửi tin nhắn thất bại";
       })
 
       // GET CONVERSATIONS
@@ -180,11 +190,13 @@ const messageSlice = createSlice({
       })
       .addCase(getConversations.fulfilled, (state, action) => {
         state.loadingConversations = false;
-        state.conversations = Array.isArray(action.payload) ? action.payload : [];
+        state.conversations = Array.isArray(action.payload)
+          ? action.payload
+          : [];
       })
       .addCase(getConversations.rejected, (state, action) => {
         state.loadingConversations = false;
-        state.error = action.payload;
+        state.error = action.payload?.message;
       })
 
       // GET MESSAGES BY CONVERSATION
@@ -194,38 +206,33 @@ const messageSlice = createSlice({
       .addCase(getMessagesByConversation.fulfilled, (state, action) => {
         state.loadingMessages = false;
         const { conversationId, messages } = action.payload;
-        // API may return { messages: [...], pagination: {...} }
-        const list = Array.isArray(messages?.messages)
-          ? messages.messages
-          : Array.isArray(messages)
+        state.messages[conversationId] = Array.isArray(messages)
           ? messages
           : [];
-        state.messages[conversationId] = list;
       })
       .addCase(getMessagesByConversation.rejected, (state, action) => {
         state.loadingMessages = false;
-        state.error = action.payload;
+        state.error = action.payload?.message;
       })
 
-      // MARK AS READ
+      // MARK AS READ – ĐÃ CÓ LẠI
       .addCase(markMessageAsRead.pending, (state) => {
         state.loading = true;
       })
       .addCase(markMessageAsRead.fulfilled, (state, action) => {
         state.loading = false;
         const { messageId } = action.payload;
-        // Cập nhật trạng thái đã đọc trong tất cả conversation
-        Object.keys(state.messages).forEach((convId) => {
-          const msg = state.messages[convId].find((m) => m._id === messageId);
+        Object.values(state.messages).forEach((conv) => {
+          const msg = conv.find((m) => m._id === messageId);
           if (msg) msg.isRead = true;
         });
       })
       .addCase(markMessageAsRead.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = action.payload?.message;
       })
 
-      // DELETE MESSAGE
+      // DELETE MESSAGE – ĐÃ CÓ LẠI
       .addCase(deleteMessage.pending, (state) => {
         state.loading = true;
       })
@@ -240,7 +247,7 @@ const messageSlice = createSlice({
       })
       .addCase(deleteMessage.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = action.payload?.message;
       });
   },
 });

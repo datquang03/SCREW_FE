@@ -41,6 +41,22 @@ export const getTransactionById = createAsyncThunk(
     }
   }
 );
+export const getMyTransactions = createAsyncThunk(
+  "transaction/getMyTransactions",
+  async (_, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+      const res = await axiosInstance.get("/payments/transaction-history", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return res.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Không thể lấy lịch sử giao dịch" }
+      );
+    }
+  }
+);
 
 // ========================== INITIAL STATE ==========================
 const initialState = {
@@ -87,6 +103,19 @@ const transactionSlice = createSlice({
         state.transactionDetail = action.payload;
       })
       .addCase(getTransactionById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // getMyTransactions
+      .addCase(getMyTransactions.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getMyTransactions.fulfilled, (state, action) => {
+        state.loading = false;
+        state.transactions = action.payload || [];
+      })
+      .addCase(getMyTransactions.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

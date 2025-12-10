@@ -441,6 +441,36 @@ export const updateCustomRequestStatus = createAsyncThunk(
   }
 );
 /* =============================
+   CONVERT CUSTOM REQUEST → SET DESIGN
+   POST /api/set-designs/custom-requests/:id/convert
+   Body: { name, price, category, tags }
+============================= */
+export const convertCustomRequestToSetDesign = createAsyncThunk(
+  "setDesign/convertCustomRequestToSetDesign",
+  async ({ requestId, setDesignData }, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth || {};
+
+      const res = await axiosInstance.post(
+        `/set-designs/custom-requests/${requestId}/convert`,
+        setDesignData, // { name, price, category, tags }
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        }
+      );
+
+      // Backend thường trả về Set Design mới được tạo
+      return res.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || {
+          message: "Chuyển đổi yêu cầu thành Set Design thất bại",
+        }
+      );
+    }
+  }
+);
+/* =============================
    INITIAL
 ============================= */
 const initialState = {
@@ -712,6 +742,40 @@ const setDesignSlice = createSlice({
       .addCase(updateCustomRequestStatus.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      // CONVERT CUSTOM REQUEST → SET DESIGN
+      .addCase(convertCustomRequestToSetDesign.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(convertCustomRequestToSetDesign.fulfilled, (state, action) => {
+        state.loading = false;
+
+        const newSetDesign = action.payload;
+
+        // Thêm Set Design mới vào đầu danh sách (nếu cần hiển thị ngay)
+        state.setDesigns.unshift(newSetDesign);
+
+        // Cập nhật custom request: đánh dấu đã chuyển đổi (nếu backend có trả về)
+        if (state.currentCustomRequest?._id === action.meta.arg.requestId) {
+          state.currentCustomRequest.convertedToDesignId = newSetDesign._id;
+          state.currentCustomRequest.status = "completed"; // hoặc "converted"
+        }
+
+        // Cập nhật trong danh sách custom requests
+        const idx = state.customRequests.findIndex(
+          (r) => r._id === action.meta.arg.requestId
+        );
+        if (idx !== -1) {
+          state.customRequests[idx].convertedToDesignId = newSetDesign._id;
+          state.customRequests[idx].status = "completed";
+        }
+
+        // Tăng total set design (nếu dùng pagination)
+        state.total += 1;
+      })
+      .addCase(convertCustomRequestToSetDesign.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || "Chuyển đổi thất bại";
       });
   },
 });

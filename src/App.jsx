@@ -109,6 +109,7 @@ const AppContent = () => {
                 element={<ContactSetDesignRequestPage />}
               />
               <Route path="/studio/:id" element={<StudioDetailPage />} />
+              <Route path="/message/:userId" element={<MessagePage />} />
               <Route path="/booking/:id" element={<StudioBookingPage />} />
               <Route path="/set-design/:id" element={<SetDesignDetail />} />
               <Route
