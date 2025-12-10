@@ -69,9 +69,9 @@ const SDReplyItem = React.memo(({ reply, parent, targetId }) => {
           loading="lazy"
         />
       ) : (
-        <div className="w-8 h-8 rounded-full bg-indigo-200 flex items-center justify-center text-indigo-800 font-medium">
+      <div className="w-8 h-8 rounded-full bg-indigo-200 flex items-center justify-center text-indigo-800 font-medium">
           {name?.[0] || "R"}
-        </div>
+      </div>
       )}
       <div className="flex-1">
         <div className="bg-indigo-50 p-3 rounded-2xl">

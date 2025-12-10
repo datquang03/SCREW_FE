@@ -33,16 +33,17 @@ export const uploadImages = createAsyncThunk(
 // 1b. Upload 1 ảnh (đơn lẻ)
 export const uploadImage = createAsyncThunk(
   "upload/uploadImage",
-  async (file, { rejectWithValue, getState }) => {
+  async (fileOrFiles, { rejectWithValue, getState }) => {
     try {
       const { token } = getState().auth;
       const formData = new FormData();
-      formData.append("image", file);
+      const files = Array.isArray(fileOrFiles) ? fileOrFiles : [fileOrFiles];
+      files.forEach((f) => formData.append("images", f));
 
-      const res = await axiosInstance.post("/upload/image", formData, {
+      const res = await axiosInstance.post("/set-designs/upload-images", formData, {
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          "Content-Type": "multipart/form-data",
+          // Để axios tự set boundary cho multipart
         },
       });
 

@@ -2,13 +2,13 @@ import React from "react";
 import { motion } from "framer-motion";
 
 const SDHeader = React.memo(({ setDesign }) => {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: -8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45 }}
+return (
+<motion.div
+initial={{ opacity: 0, y: -8 }}
+animate={{ opacity: 1, y: 0 }}
+transition={{ duration: 0.45 }}
       className="space-y-3"
-    >
+>
       <div className="flex flex-wrap items-center gap-3">
         <span className="px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-sm font-semibold">
           {setDesign.category || "Thiết kế"}
@@ -39,8 +39,8 @@ const SDHeader = React.memo(({ setDesign }) => {
           ))}
         </div>
       )}
-    </motion.div>
-  );
+</motion.div>
+);
 });
 
 export default SDHeader;

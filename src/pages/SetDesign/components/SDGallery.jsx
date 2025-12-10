@@ -17,31 +17,31 @@ return (
 }
 
 
-  return (
+return (
     <div className="space-y-3">
       <motion.div
         className="grid grid-cols-1 sm:grid-cols-2 gap-3"
         initial="hidden"
         animate="visible"
       >
-        {images.slice(0, 6).map((src, i) => (
-          <motion.img
-            key={i}
-            src={src}
-            loading="lazy"
-            alt={`img-${i}`}
-            whileHover={{ scale: 1.03 }}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05 }}
+{images.slice(0, 6).map((src, i) => (
+<motion.img
+key={i}
+src={src}
+loading="lazy"
+alt={`img-${i}`}
+whileHover={{ scale: 1.03 }}
+initial={{ opacity: 0, y: 8 }}
+animate={{ opacity: 1, y: 0 }}
+transition={{ delay: i * 0.05 }}
             className="object-cover w-full h-48 sm:h-56 rounded-xl cursor-pointer shadow-sm"
-            onClick={() => {
-              setIndex(i);
-              setOpen(true);
-            }}
-          />
-        ))}
-      </motion.div>
+onClick={() => {
+setIndex(i);
+setOpen(true);
+}}
+/>
+))}
+</motion.div>
 
       <Modal
         open={open}
@@ -51,16 +51,16 @@ return (
         width={1000}
         bodyStyle={{ padding: 0, background: "#000" }}
       >
-        <div className="w-full h-[80vh] flex items-center justify-center bg-black">
+<div className="w-full h-[80vh] flex items-center justify-center bg-black">
           <img
             src={images[index]}
             alt="lightbox"
             className="max-h-[78vh] max-w-full object-contain"
           />
-        </div>
-      </Modal>
-    </div>
-  );
+</div>
+</Modal>
+</div>
+);
 });
 
 
