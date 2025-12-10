@@ -6,7 +6,7 @@ import { useDispatch } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { FiUser, FiMail, FiPhone, FiEdit, FiCheckCircle, FiImage, FiX } from "react-icons/fi";
 import { customSetDesignRequest } from "../../features/setDesign/setDesignSlice";
-import { uploadImage } from "../../features/upload/uploadSlice";
+import { uploadCustomerSetDesignImages, uploadImage } from "../../features/upload/uploadSlice";
 
 const shakeVariant = {
   shake: {
@@ -77,10 +77,10 @@ const CustomSetDesignRequestPage = () => {
     setLoading(true);
 
     try {
-      // Upload nhiều ảnh một lần (dùng uploadImage hỗ trợ mảng)
       let uploadedImageUrls = [];
       if (files.length > 0) {
-        const uploadRes = await dispatch(uploadImage(files)).unwrap();
+        console.log("files",files)
+        const uploadRes = await dispatch(uploadCustomerSetDesignImages(files)).unwrap();
         const images =
           uploadRes?.images ||
           uploadRes?.data?.images ||

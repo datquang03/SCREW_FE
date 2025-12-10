@@ -38,12 +38,11 @@ export const uploadImage = createAsyncThunk(
       const { token } = getState().auth;
       const formData = new FormData();
       const files = Array.isArray(fileOrFiles) ? fileOrFiles : [fileOrFiles];
-      files.forEach((f) => formData.append("images", f));
-
-      const res = await axiosInstance.post("/set-designs/upload-images", formData, {
+      files.forEach((f) => formData.append("image", f));
+      console.log([...formData.entries()]);
+      const res = await axiosInstance.post("/upload/image", formData, {
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          // Để axios tự set boundary cho multipart
         },
       });
 
@@ -168,6 +167,43 @@ export const uploadSetDesignImages = createAsyncThunk(
   }
 );
 
+// 5b. Upload nhiều ảnh set design cho khách hàng (endpoint: set-designs/upload-images)
+export const uploadCustomerSetDesignImages = createAsyncThunk(
+  "upload/uploadCustomerSetDesignImages",
+  async (files, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth || {};
+      const formData = new FormData();
+      files.forEach((file) => formData.append("images", file));
+      for (let pair of formData.entries()) {
+        console.log(
+          "FORMDATA:",
+          pair[0],
+          pair[1],
+          pair[1] instanceof File,
+          pair[1].name
+        );
+      }
+      const res = await axiosInstance.post(
+        "/set-designs/upload-images",
+        formData,
+        {
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      return res.data.data || res.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Upload ảnh set design thất bại" }
+      );
+    }
+  }
+);
+
 // 6. Upload video
 export const uploadVideo = createAsyncThunk(
   "upload/uploadVideo",
@@ -250,6 +286,7 @@ const uploadSlice = createSlice({
       uploadEquipmentImage,
       uploadReviewImages,
       uploadSetDesignImages,
+      uploadCustomerSetDesignImages,
       uploadVideo,
     ];
 
@@ -264,7 +301,7 @@ const uploadSlice = createSlice({
         .addCase(action.fulfilled, (state, action) => {
           state.uploading = false;
           // Lưu kết quả nếu cần dùng lại ngay (ví dụ preview)
-          if (action.meta.arg?.files) {
+          if (action.meta.arg?.files || Array.isArray(action.meta.arg)) {
             state.lastUploadedImages = Array.isArray(action.payload)
               ? action.payload
               : action.payload.images || [];
