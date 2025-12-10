@@ -1,471 +1,427 @@
-import React, { useEffect, useState, useMemo } from "react";
+// src/pages/StaffSchedulePage.jsx
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import {
   Card,
   Typography,
   Tag,
   Calendar,
-  Badge,
   Modal,
   Descriptions,
   Spin,
-  Button,
-  Form,
-  Select,
-  DatePicker,
-  TimePicker,
-  message,
-  Space,
+  Empty,
+  Avatar,
+  Badge,
+  Divider,
 } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import dayjs from "dayjs";
-import { FiClock, FiCalendar, FiPlus } from "react-icons/fi";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 import {
-  getAllSchedules,
-  getScheduleById,
-  createSchedule,
-} from "../../features/schedule/scheduleSlice";
+  FiUser,
+  FiClock,
+  FiMapPin,
+  FiPhone,
+  FiDollarSign,
+  FiAlertCircle,
+} from "react-icons/fi";
+
+import { getAllMyBookings } from "../../features/booking/bookingSlice";
 import { getAllStudios } from "../../features/studio/studioSlice";
+import { getScheduleById } from "../../features/schedule/scheduleSlice";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const { Title, Text } = Typography;
-const { RangePicker: TimeRangePicker } = TimePicker;
 
-const statusBadgeColor = (status) => {
-  switch (status) {
-    case "booked":
-      return "error";
-    case "available":
-      return "success";
-    default:
-      return "default";
-  }
-};
-
-const statusTagColor = (status) => {
-  switch (status) {
-    case "booked":
-      return "red";
-    case "available":
-      return "green";
-    default:
-      return "default";
-  }
-};
+const toVNTime = (iso) => (iso ? dayjs(iso).tz("Asia/Ho_Chi_Minh") : null);
 
 const StaffSchedulePage = () => {
   const dispatch = useDispatch();
-  const {
-    items: schedules,
-    current,
-    loading: scheduleLoading,
-  } = useSelector((state) => state.schedule);
-  const { studios, loading: studiosLoading } = useSelector(
-    (state) => state.studio
+
+  // ĐÚNG TÊN KEY: items chứ không phải bookings
+  const { items: rawBookings = [], loading: bookingLoading } = useSelector(
+    (state) => state.booking
+  );
+  const { studios = [] } = useSelector((state) => state.studio);
+  const { items: fetchedSchedules = [] } = useSelector(
+    (state) => state.schedule
   );
 
-  const [detailOpen, setDetailOpen] = useState(false);
-  const [detailLoading, setDetailLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState(dayjs());
-  const [createModalOpen, setCreateModalOpen] = useState(false);
-  const [form] = Form.useForm();
-  const [creating, setCreating] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState(null);
 
+  const fetchedScheduleIds = useRef(new Set());
+
+  // FETCH TỰ ĐỘNG SCHEDULE
   useEffect(() => {
-    dispatch(getAllSchedules());
+    if (!rawBookings || rawBookings.length === 0) return;
+
+    const scheduleIds = rawBookings.map((b) => b.scheduleId).filter(Boolean);
+
+    const missingIds = scheduleIds.filter(
+      (id) =>
+        !fetchedScheduleIds.current.has(id) &&
+        !fetchedSchedules.some((s) => s._id === id)
+    );
+
+    if (missingIds.length > 0) {
+      missingIds.forEach((id) => {
+        dispatch(getScheduleById(id));
+        fetchedScheduleIds.current.add(id);
+      });
+    }
+  }, [rawBookings, fetchedSchedules, dispatch]);
+
+  // GỘP DỮ LIỆU
+  const enrichedBookings = useMemo(() => {
+    const scheduleMap = Object.fromEntries(
+      fetchedSchedules.map((s) => [s._id, s])
+    );
+    const studioMap = Object.fromEntries(studios.map((s) => [s._id, s]));
+
+    return rawBookings
+      .map((booking) => {
+        const schedule = booking.scheduleId
+          ? scheduleMap[booking.scheduleId]
+          : null;
+        if (!schedule) {
+          return null; // chưa fetch xong → ẩn tạm
+        }
+
+        const studio = schedule.studioId ? studioMap[schedule.studioId] : null;
+
+        return {
+          ...booking,
+          startTime: schedule.startTime,
+          endTime: schedule.endTime,
+          studioId: schedule.studioId,
+          studioName: studio?.name || "Chưa xác định",
+          studioLocation: studio?.location || "Không có địa chỉ",
+          slotStatus: schedule.status,
+        };
+      })
+      .filter(Boolean);
+  }, [rawBookings, fetchedSchedules, studios]);
+
+  // Load lần đầu
+  useEffect(() => {
+    dispatch(getAllMyBookings());
     dispatch(getAllStudios({ page: 1, limit: 100 }));
   }, [dispatch]);
 
-  const getListData = (value) => {
-    const daySchedules = (schedules || []).filter((s) =>
-      dayjs(s.startTime).isSame(value, "day")
-    );
+  const todayBookings = enrichedBookings
+    .filter((b) => toVNTime(b.startTime).isSame(dayjs(), "day"))
+    .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
-    return daySchedules.map((s) => ({
-      id: s._id,
-      status: s.status,
-      type: statusBadgeColor(s.status),
-      timeRange: `${dayjs(s.startTime).format("HH:mm")}-${dayjs(
-        s.endTime
-      ).format("HH:mm")}`,
-      studioShort: s.studioId ? s.studioId.slice(-4) : "",
-    }));
-  };
+  const selectedDateBookings = enrichedBookings
+    .filter((b) => toVNTime(b.startTime).isSame(selectedDate, "day"))
+    .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
-  const cellRender = (currentDate, info) => {
-    if (info.type === "date") {
-      const listData = getListData(currentDate);
-      if (listData.length === 0) return null;
+  const dateCellRender = (date) => {
+    const count = enrichedBookings.filter((b) =>
+      toVNTime(b.startTime).isSame(date, "day")
+    ).length;
+    if (count === 0) return null;
     return (
-        <div className="flex flex-wrap gap-1 items-center justify-center">
-        {listData.map((item) => (
-            <div
-              key={item.id}
-              className="cursor-pointer hover:scale-110 transition-transform"
-              onClick={async () => {
-                try {
-                  setDetailLoading(true);
-                  await dispatch(getScheduleById(item.id)).unwrap();
-                  setDetailOpen(true);
-                } finally {
-                  setDetailLoading(false);
-                }
-              }}
-              title={`${
-                item.studioShort ? `Studio ${item.studioShort}` : "Studio"
-              } - ${item.timeRange}`}
-            >
-              <FiCalendar
-                className={`text-sm ${
-                  item.status === "booked"
-                    ? "text-red-500"
-                    : item.status === "available"
-                    ? "text-emerald-500"
-                    : "text-gray-400"
-                }`}
-            />
-            </div>
-        ))}
-        </div>
+      <div className="flex justify-center py-1">
+        <Badge count={count} style={{ backgroundColor: "#f5222d" }} />
+      </div>
     );
-    }
-    return info.originNode;
   };
 
-  const selectedDateSchedule = useMemo(() => {
-    return (schedules || [])
-      .filter((s) => dayjs(s.startTime).isSame(selectedDate, "day"))
-      .map((s) => ({
-        id: s._id,
-        time: `${dayjs(s.startTime).format("HH:mm")} - ${dayjs(
-          s.endTime
-        ).format("HH:mm")}`,
-        studio: s.studioId ? `Studio ${s.studioId.slice(-4)}` : "Studio",
-        status: s.status === "booked" ? "Đã đặt" : "Trống",
-        rawStatus: s.status,
-      }));
-  }, [schedules, selectedDate]);
-
-  const handleCreateSchedule = async (values) => {
-    try {
-      setCreating(true);
-      const { studioId, date, timeRange } = values;
-
-      // Convert timeRange từ TimePicker.RangePicker sang format "HH:00-HH:00"
-      if (!timeRange || timeRange.length !== 2) {
-        message.error("Vui lòng chọn khung giờ!");
-        return;
-      }
-
-      // TimePicker trả về dayjs object, format chỉ lấy giờ (chẵn, không có phút)
-      const startHour = dayjs(timeRange[0]).format("HH");
-      const endHour = dayjs(timeRange[1]).format("HH");
-      const timeSlot = `${startHour}:00-${endHour}:00`;
-
-      const payload = {
-        studioId,
-        date: dayjs(date).format("YYYY-MM-DD"),
-        timeSlot,
-      };
-
-      console.log("Payload gửi lên API:", payload);
-
-      await dispatch(createSchedule(payload)).unwrap();
-      message.success("Tạo lịch mới thành công!");
-      form.resetFields();
-      setCreateModalOpen(false);
-      // Refresh danh sách lịch
-      dispatch(getAllSchedules());
-    } catch (err) {
-      message.error(err?.message || "Tạo lịch thất bại, vui lòng thử lại.");
-    } finally {
-      setCreating(false);
-    }
+  const openDetail = (booking) => {
+    setSelectedBooking(booking);
+    setModalVisible(true);
   };
-
   return (
-    <div className="space-y-6">
-      <div className="relative overflow-hidden rounded-2xl p-6 md:p-8 bg-gradient-to-br from-emerald-100 via-teal-50 to-white shadow-lg border border-emerald-200/50">
-        <div className="absolute -top-10 -left-10 w-40 h-40 rounded-full bg-emerald-300/30 blur-2xl" />
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-      <div>
-            <Title level={2} className="mb-3 text-gray-900">
-          Lịch làm việc
-        </Title>
-            <Text className="text-base text-gray-700 font-medium">
-          Quản lý và theo dõi lịch làm việc của bạn
-        </Text>
-          </div>
-          <Button
-            type="primary"
-            size="large"
-            icon={<FiPlus />}
-            className="font-semibold shadow-lg bg-gradient-to-r from-emerald-500 to-teal-500 border-none hover:from-emerald-600 hover:to-teal-600"
-            onClick={() => setCreateModalOpen(true)}
-          >
-            Tạo lịch mới
-          </Button>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 py-8 px-4">
+      {/* Header */}
+      <div className="max-w-7xl mx-auto mb-10">
+        <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-3xl p-10 text-white shadow-2xl text-center">
+          <Title level={1} className="mb-3 text-white">
+            Chào mừng quay lại, Staff!
+          </Title>
+          <Text className="text-2xl opacity-95">
+            Hôm nay bạn có{" "}
+            <span className="text-5xl font-bold mx-3">
+              {todayBookings.length}
+            </span>{" "}
+            buổi đặt
+          </Text>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2 shadow-lg border border-gray-100 rounded-2xl">
-          <Title level={4} className="mb-4 text-gray-900">
-            Lịch tháng
-          </Title>
-          <Calendar
-            cellRender={cellRender}
-            className="staff-schedule-calendar"
-            onSelect={(date) => setSelectedDate(date)}
-            value={selectedDate}
-          />
-        </Card>
-        <Card className="shadow-lg border border-gray-100 rounded-2xl">
-          <Title level={4} className="mb-4 text-gray-900">
-            {selectedDate.format("DD/MM/YYYY")}
-          </Title>
-          <div className="space-y-3 max-h-[calc(100vh-300px)] overflow-y-auto pr-1">
-            {selectedDateSchedule.length === 0 ? (
-              <div className="text-center py-8 text-gray-500 text-sm">
-                Không có lịch nào trong ngày này
-              </div>
-            ) : (
-              selectedDateSchedule.map((item, idx) => (
-              <div
-                key={idx}
-                  className="p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-emerald-400 hover:bg-emerald-50 transition-all cursor-pointer"
-                  onClick={async () => {
-                    try {
-                      setDetailLoading(true);
-                      await dispatch(getScheduleById(item.id)).unwrap();
-                      setDetailOpen(true);
-                    } finally {
-                      setDetailLoading(false);
-                    }
-                  }}
-              >
-                <div className="flex justify-between items-start mb-2">
-                    <FiClock className="text-blue-500" />
-                  <Tag
-                    color={
-                        item.rawStatus === "booked"
-                          ? "red"
-                          : item.rawStatus === "available"
-                        ? "green"
-                        : "default"
-                    }
+      <div className="max-w-7xl mx-auto grid grid-cols-1 xl:grid-cols-3 gap-8">
+        {/* Cột trái */}
+        <div className="space-y-8">
+          {/* Lịch tháng */}
+          <Card className="shadow-2xl rounded-3xl overflow-hidden border-0">
+            <Title
+              level={4}
+              className="text-center py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white"
+            >
+              Lịch đặt trong tháng
+            </Title>
+            <Calendar
+              fullscreen={false}
+              value={selectedDate}
+              onSelect={setSelectedDate}
+              dateCellRender={dateCellRender}
+            />
+          </Card>
+
+          {/* Hôm nay */}
+          <Card className="shadow-2xl rounded-3xl border-0">
+            <div className="flex justify-between items-center mb-5">
+              <Title level={4} className="m-0 text-purple-700">
+                Hôm nay ({dayjs().format("DD/MM")})
+              </Title>
+              <Badge count={todayBookings.length} color="#f5222d" />
+            </div>
+
+            <div className="space-y-4 max-h-96 overflow-y-auto">
+              {todayBookings.length === 0 ? (
+                <Empty description="Hôm nay chưa có khách nào" />
+              ) : (
+                todayBookings.map((b) => (
+                  <div
+                    key={b._id}
+                    onClick={() => openDetail(b)}
+                    className="p-5 bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl border-l-4 border-purple-500 cursor-pointer hover:shadow-xl transition-all"
                   >
-                    {item.status}
-                  </Tag>
-                </div>
-                <div className="font-semibold">{item.time}</div>
-                <div className="text-gray-600 text-sm">{item.studio}</div>
+                    <div className="font-bold text-xl text-purple-800">
+                      {toVNTime(b.startTime).format("HH:mm")} →{" "}
+                      {toVNTime(b.endTime).format("HH:mm")}
+                    </div>
+                    <div className="mt-1 font-medium text-gray-800">
+                      {b.customer?.fullName || "Khách"}
+                    </div>
+                    <div className="text-sm text-gray-600">{b.studioName}</div>
+                  </div>
+                ))
+              )}
+            </div>
+          </Card>
+        </div>
+
+        {/* Cột phải: Chi tiết ngày */}
+        <div className="xl:col-span-2">
+          <Card className="shadow-2xl rounded-3xl border-0 h-full">
+            <div className="flex justify-between items-center mb-6">
+              <Title level={3} className="m-0 text-purple-700">
+                {selectedDate.format("dddd, DD/MM/YYYY")}
+              </Title>
+              <Badge
+                count={selectedDateBookings.length}
+                color="#f5222d"
+                className="text-xl"
+              />
+            </div>
+
+            {selectedDateBookings.length === 0 ? (
+              <Empty description="Không có buổi đặt nào" className="py-24" />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {selectedDateBookings.map((booking) => {
+                  const customer = booking.customer || {};
+                  const vnStart = toVNTime(booking.startTime);
+                  const vnEnd = toVNTime(booking.endTime);
+
+                  return (
+                    <div
+                      key={booking._id}
+                      onClick={() => openDetail(booking)}
+                      className="bg-white rounded-3xl shadow-xl border hover:border-purple-400 transition-all cursor-pointer p-6"
+                    >
+                      <div className="flex justify-between items-start mb-4">
+                        <Avatar
+                          size={60}
+                          className="bg-gradient-to-br from-purple-500 to-pink-500 text-2xl font-bold"
+                        >
+                          {customer.fullName?.[0] || "K"}
+                        </Avatar>
+                        <div className="text-right">
+                          <Tag
+                            color={
+                              booking.status === "completed"
+                                ? "green"
+                                : "volcano"
+                            }
+                            className="mb-2"
+                          >
+                            {booking.status === "completed"
+                              ? "HOÀN TẤT"
+                              : "ĐANG CHỜ"}
+                          </Tag>
+                          <div className="text-2xl font-bold text-purple-600">
+                            {booking.finalAmount?.toLocaleString()}đ
+                          </div>
+                        </div>
+                      </div>
+
+                      <Divider className="my-4" />
+
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                          <FiClock className="text-purple-600 text-xl" />
+                          <span className="font-bold text-lg">
+                            {vnStart.format("HH:mm")} → {vnEnd.format("HH:mm")}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <FiUser className="text-pink-600" />
+                          <span className="font-semibold text-gray-800">
+                            {customer.fullName || "Chưa có tên"}
+                          </span>
+                        </div>
+
+                        {customer.phone && (
+                          <div className="flex items-center gap-3">
+                            <FiPhone className="text-green-600" />
+                            <span>{customer.phone}</span>
+                          </div>
+                        )}
+
+                        <div className="flex items-center gap-3">
+                          <FiMapPin className="text-blue-600" />
+                          <span className="font-medium">
+                            {booking.studioName}
+                          </span>
+                        </div>
+
+                        {booking.payType === "deposit" && (
+                          <div className="p-3 bg-orange-50 rounded-xl border border-orange-300 text-orange-700 font-semibold flex items-center gap-2">
+                            <FiAlertCircle />
+                            Còn nợ{" "}
+                            {(
+                              booking.totalBeforeDiscount - booking.finalAmount
+                            ).toLocaleString()}
+                            đ
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-              ))
             )}
-          </div>
-        </Card>
+          </Card>
+        </div>
       </div>
 
+      {/* Modal chi tiết */}
       <Modal
-        open={detailOpen}
-        onCancel={() => setDetailOpen(false)}
+        open={modalVisible}
+        onCancel={() => setModalVisible(false)}
         footer={null}
+        width={800}
         centered
-        width={600}
-        className="rounded-2xl"
         title={null}
       >
-        {detailLoading || scheduleLoading || !current ? (
-          <div className="flex items-center justify-center py-10">
-            <Spin tip="Đang tải chi tiết lịch..." />
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {/* Header gradient */}
-            <div className="rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 px-5 py-4 text-white mb-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs uppercase tracking-widest opacity-80">
-                    Chi tiết lịch studio
-                  </p>
-                  <p className="text-lg font-semibold">
-                    {current.studioId
-                      ? `Studio ${current.studioId.slice(-6)}`
-                      : "Studio"}
-                  </p>
-                </div>
-                <Tag
-                  color={statusTagColor(current.status)}
-                  className="bg-white/10 border-none text-xs font-semibold"
-                >
-                  {current.status === "booked" ? "Đã đặt" : "Trống"}
-                </Tag>
-              </div>
-              <p className="mt-2 text-[11px] opacity-80">
-                ID: {current?._id || "--"}
-              </p>
+        {selectedBooking && (
+          <div className="space-y-6">
+            <div className="text-center py-6 bg-gradient-to-r from-purple-600 to-pink-600 rounded-3xl text-white">
+              <Title level={2} className="text-white mb-2">
+                {toVNTime(selectedBooking.startTime).format("HH:mm")} →{" "}
+                {toVNTime(selectedBooking.endTime).format("HH:mm")}
+              </Title>
+              <Text className="text-xl opacity-90">
+                {toVNTime(selectedBooking.startTime).format("dddd, DD/MM/YYYY")}
+              </Text>
             </div>
 
-            <div className="max-h-[60vh] overflow-y-auto pr-1 space-y-4">
-              <Descriptions
-                column={1}
-                colon={false}
-                size="small"
-                styles={{ label: { fontWeight: 600 } }}
-              >
-                <Descriptions.Item label="Studio">
-                  {current.studioId
-                    ? `Studio ${current.studioId.slice(-6)}`
-                    : "-"}
-                </Descriptions.Item>
-                <Descriptions.Item label="Trạng thái">
-                  <Tag color={statusTagColor(current.status)}>
-                    {current.status === "booked" ? "Đã đặt" : "Trống"}
-                  </Tag>
-                </Descriptions.Item>
-                <Descriptions.Item label="Thời gian bắt đầu">
-                  {current.startTime
-                    ? dayjs(current.startTime).format("HH:mm DD/MM/YYYY")
-                    : "-"}
-                </Descriptions.Item>
-                <Descriptions.Item label="Thời gian kết thúc">
-                  {current.endTime
-                    ? dayjs(current.endTime).format("HH:mm DD/MM/YYYY")
-                    : "-"}
-                </Descriptions.Item>
-                <Descriptions.Item label="Ngày tạo">
-                  {current.createdAt
-                    ? dayjs(current.createdAt).format("HH:mm DD/MM/YYYY")
-                    : "-"}
-                </Descriptions.Item>
-                <Descriptions.Item label="Booking liên kết">
-                  {current.bookingId || "Không có / slot trống"}
-                </Descriptions.Item>
-              </Descriptions>
+            <div className="grid grid-cols-2 gap-8">
+              <div>
+                <Title level={4} className="text-purple-700 mb-4">
+                  Khách hàng
+                </Title>
+                <div className="space-y-3 bg-gray-50 p-5 rounded-2xl">
+                  <div>
+                    <strong>Họ tên:</strong>{" "}
+                    {selectedBooking.customer?.fullName || "Không có"}
+                  </div>
+                  <div>
+                    <strong>SĐT:</strong>{" "}
+                    {selectedBooking.customer?.phone || "Không có"}
+                  </div>
+                  <div>
+                    <strong>Email:</strong>{" "}
+                    {selectedBooking.customer?.email || "Không có"}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <Title level={4} className="text-pink-700 mb-4">
+                  Studio & Slot
+                </Title>
+                <div className="space-y-3 bg-gray-50 p-5 rounded-2xl">
+                  <div>
+                    <strong>Tên studio:</strong> {selectedBooking.studioName}
+                  </div>
+                  <div>
+                    <strong>Địa chỉ:</strong> {selectedBooking.studioLocation}
+                  </div>
+                  <div>
+                    <strong>Slot ID:</strong>{" "}
+                    {selectedBooking.scheduleId || "Không có"}
+                  </div>
+                  <div>
+                    <strong>Trạng thái slot:</strong>
+                    <Tag
+                      color={
+                        selectedBooking.slotStatus === "booked"
+                          ? "red"
+                          : "green"
+                      }
+                    >
+                      {selectedBooking.slotStatus === "booked"
+                        ? "ĐÃ ĐẶT"
+                        : "TRỐNG"}
+                    </Tag>
+                  </div>
+                </div>
+              </div>
             </div>
+
+            <Descriptions bordered title="Thanh toán" column={2}>
+              <Descriptions.Item label="Tổng tiền">
+                {selectedBooking.totalBeforeDiscount?.toLocaleString()}đ
+              </Descriptions.Item>
+              <Descriptions.Item label="Đã thanh toán">
+                <span className="text-xl font-bold text-green-600">
+                  {selectedBooking.finalAmount?.toLocaleString()}đ
+                </span>
+              </Descriptions.Item>
+              <Descriptions.Item label="Hình thức">
+                <Tag
+                  color={
+                    selectedBooking.payType === "full" ? "green" : "orange"
+                  }
+                >
+                  {selectedBooking.payType === "full"
+                    ? "Thanh toán đủ"
+                    : "Chỉ đặt cọc"}
+                </Tag>
+              </Descriptions.Item>
+              <Descriptions.Item label="Trạng thái">
+                <Tag
+                  color={
+                    selectedBooking.status === "completed" ? "green" : "volcano"
+                  }
+                >
+                  {selectedBooking.status === "completed"
+                    ? "Hoàn tất"
+                    : "Chưa xong"}
+                </Tag>
+              </Descriptions.Item>
+            </Descriptions>
           </div>
         )}
-      </Modal>
-
-      {/* Create Schedule Modal */}
-      <Modal
-        open={createModalOpen}
-        onCancel={() => {
-          form.resetFields();
-          setCreateModalOpen(false);
-        }}
-        footer={null}
-        centered
-        width={600}
-        className="rounded-2xl"
-        title={null}
-      >
-        <div className="space-y-4">
-          {/* Header gradient */}
-          <div className="rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 px-5 py-4 text-white mb-4">
-            <div className="flex items-center gap-3">
-              <FiPlus className="text-2xl" />
-              <div>
-                <p className="text-xs uppercase tracking-widest opacity-80">
-                  Tạo lịch mới
-                </p>
-                <p className="text-lg font-semibold">Thêm slot lịch trống</p>
-              </div>
-            </div>
-          </div>
-
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={handleCreateSchedule}
-            className="space-y-4"
-          >
-            <Form.Item
-              label={
-                <span className="text-gray-700 font-semibold">Chọn Studio</span>
-              }
-              name="studioId"
-              rules={[{ required: true, message: "Vui lòng chọn studio!" }]}
-            >
-              <Select
-                placeholder="Chọn studio"
-                size="large"
-                loading={studiosLoading}
-                className="rounded-lg"
-                showSearch
-                filterOption={(input, option) =>
-                  (option?.label ?? "")
-                    .toLowerCase()
-                    .includes(input.toLowerCase())
-                }
-                options={studios.map((studio) => ({
-                  value: studio._id,
-                  label: `${studio.name}${
-                    studio.location ? ` - ${studio.location}` : ""
-                  }`,
-                }))}
-              />
-            </Form.Item>
-
-            <Form.Item
-              label={
-                <span className="text-gray-700 font-semibold">Chọn ngày</span>
-              }
-              name="date"
-              rules={[{ required: true, message: "Vui lòng chọn ngày!" }]}
-            >
-              <DatePicker
-                size="large"
-                className="w-full rounded-lg"
-                format="DD/MM/YYYY"
-                placeholder="Chọn ngày"
-                disabledDate={(current) =>
-                  current && current < dayjs().startOf("day")
-                }
-              />
-            </Form.Item>
-
-            <Form.Item
-              label={
-                <span className="text-gray-700 font-semibold">Khung giờ</span>
-              }
-              name="timeRange"
-              rules={[{ required: true, message: "Vui lòng chọn khung giờ!" }]}
-            >
-              <TimeRangePicker
-                size="large"
-                format="HH"
-                minuteStep={60}
-                className="w-full rounded-lg"
-                placeholder={["Giờ bắt đầu", "Giờ kết thúc"]}
-                suffixIcon={<FiClock />}
-              />
-            </Form.Item>
-
-            <Form.Item className="mb-0">
-              <Space className="w-full justify-end">
-                <Button
-                  size="large"
-                  onClick={() => {
-                    form.resetFields();
-                    setCreateModalOpen(false);
-                  }}
-                  disabled={creating}
-                >
-                  Hủy
-                </Button>
-                <Button
-                  type="primary"
-                  size="large"
-                  htmlType="submit"
-                  loading={creating}
-                  className="bg-gradient-to-r from-emerald-500 to-teal-500 border-none hover:from-emerald-600 hover:to-teal-600 font-semibold"
-                >
-                  Tạo lịch
-                </Button>
-              </Space>
-            </Form.Item>
-          </Form>
-        </div>
       </Modal>
     </div>
   );

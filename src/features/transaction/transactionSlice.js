@@ -49,7 +49,9 @@ export const getMyTransactions = createAsyncThunk(
       const res = await axiosInstance.get("/payments/transaction-history", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      return res.data.data;
+
+      // ⭐ Trả ra đúng mảng
+      return res.data?.data?.transactions || [];
     } catch (err) {
       return rejectWithValue(
         err.response?.data || { message: "Không thể lấy lịch sử giao dịch" }
@@ -113,8 +115,11 @@ const transactionSlice = createSlice({
       })
       .addCase(getMyTransactions.fulfilled, (state, action) => {
         state.loading = false;
-        state.transactions = action.payload || [];
+        state.transactions = Array.isArray(action.payload)
+          ? action.payload
+          : [];
       })
+
       .addCase(getMyTransactions.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
