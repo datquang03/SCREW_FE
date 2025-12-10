@@ -175,7 +175,7 @@ const BookingSchedulePage = ({ onNext }) => {
               </Title>
             }
             className="shadow-sm border border-slate-200 rounded-2xl"
-            bodyStyle={{ padding: "16px" }}
+            styles={{ body: { padding: "16px" } }}
           >
             <Spin spinning={scheduleLoading} tip="Đang tải lịch...">
               <div>

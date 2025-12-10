@@ -109,8 +109,8 @@ const UserHistoryPage = () => {
           )}`;
         },
       },
-      {
-        title: "Trạng thái",
+    {
+      title: "Trạng thái",
         render: () => (
           <Tag color="green" className="px-3 py-1 rounded-full">
             Hoàn tất
@@ -120,12 +120,12 @@ const UserHistoryPage = () => {
       {
         title: "Tổng phí",
         dataIndex: "finalAmount",
-        render: (v) => (
+      render: (v) => (
           <span className="font-semibold text-gray-900">
             {formatCurrency(v)}
           </span>
-        ),
-      },
+      ),
+    },
       {
         title: "Thao tác",
         render: (_, record) => (
@@ -144,6 +144,37 @@ const UserHistoryPage = () => {
       title: "Mã giao dịch",
       dataIndex: "_id",
       render: (id) => <span>#{id?.slice(-6)}</span>,
+    },
+    {
+      title: "Booking",
+      dataIndex: ["bookingId", "_id"],
+      render: (id) => <span>#{id?.slice(-6)}</span>,
+    },
+    {
+      title: "Studio",
+      dataIndex: ["bookingId", "scheduleId", "studioId", "name"],
+      render: (name) => name || "N/A",
+    },
+    {
+      title: "Loại thanh toán",
+      dataIndex: "payType",
+      render: (v) => {
+        const label =
+          v === "full"
+            ? "Thanh toán toàn bộ"
+            : v === "prepay_50"
+            ? "Cọc 50%"
+            : v === "prepay_30"
+            ? "Cọc 30%"
+            : v;
+        const color =
+          v === "full" ? "green" : v === "prepay_50" ? "purple" : "orange";
+        return (
+          <Tag color={color} className="px-3 py-1 rounded-full">
+            {label}
+          </Tag>
+        );
+      },
     },
     {
       title: "Mã booking",
@@ -211,7 +242,7 @@ const UserHistoryPage = () => {
         <Text className="text-gray-700">
           Xem lại toàn bộ lịch sử đặt studio & thanh toán của bạn.
         </Text>
-      </div>
+        </div>
 
       {/* ===================== THỐNG KÊ ===================== */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -237,70 +268,12 @@ const UserHistoryPage = () => {
       </div>
 
       {/* ===================== BẢNG BOOKING ===================== */}
-      <DataTable
-        title="Lịch sử đặt studio"
-        columns={historyColumns}
-        data={completedBookings}
-        loading={loading}
-      />
-
-      {/* ===================== BẢNG GIAO DỊCH ===================== */}
-      <DataTable
+          <DataTable
         title="Lịch sử giao dịch"
         columns={transactionColumns}
         data={transactions}
         loading={transactionLoading}
-      />
-
-      {/* ===================== CHI TIẾT BOOKING ===================== */}
-      <Modal
-        open={detailModalOpen}
-        onCancel={() => setDetailModalOpen(false)}
-        footer={null}
-        width={720}
-      >
-        {detailLoading || !currentBooking ? (
-          <div className="flex justify-center py-10">
-            <Spin tip="Đang tải chi tiết..." />
-          </div>
-        ) : (
-          <Card>
-            <Descriptions column={2} labelStyle={{ fontWeight: 600 }}>
-              <Descriptions.Item label="Trạng thái">
-                <Tag color="green">Hoàn tất</Tag>
-              </Descriptions.Item>
-
-              <Descriptions.Item label="Hình thức thanh toán">
-                <Tag color="blue">
-                  {currentBooking.payType === "full"
-                    ? "Thanh toán toàn bộ"
-                    : currentBooking.payType}
-                </Tag>
-              </Descriptions.Item>
-
-              <Descriptions.Item label="Studio">
-                {currentBooking.scheduleId?.studioId?.name}
-              </Descriptions.Item>
-
-              <Descriptions.Item label="Ngày đặt">
-                {dayjs(currentBooking.scheduleId?.date).format("DD/MM/YYYY")}
-              </Descriptions.Item>
-
-              <Descriptions.Item label="Khung giờ">
-                {`${dayjs(currentBooking.scheduleId?.timeRange[0]).format(
-                  "HH:mm"
-                )} - ${dayjs(currentBooking.scheduleId?.timeRange[1]).format(
-                  "HH:mm"
-                )}`}
-              </Descriptions.Item>
-
-              <Descriptions.Item label="Thành tiền">
-                {formatCurrency(currentBooking.finalAmount)}
-              </Descriptions.Item>
-            </Descriptions>
-          </Card>
-        )}
-      </Modal>
+          />
 
       {/* ===================== CHI TIẾT GIAO DỊCH ===================== */}
       <Modal
@@ -312,7 +285,7 @@ const UserHistoryPage = () => {
         {transactionDetailLoading || !currentTransaction ? (
           <div className="flex justify-center py-10">
             <Spin tip="Đang tải chi tiết..." />
-          </div>
+            </div>
         ) : (
           <Card>
             <Descriptions column={2} labelStyle={{ fontWeight: 600 }}>
@@ -350,7 +323,7 @@ const UserHistoryPage = () => {
                 {dayjs(currentTransaction.createdAt).format("DD/MM/YYYY HH:mm")}
               </Descriptions.Item>
             </Descriptions>
-          </Card>
+        </Card>
         )}
       </Modal>
     </div>

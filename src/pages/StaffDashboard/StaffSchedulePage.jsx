@@ -24,11 +24,15 @@ import {
   FiPhone,
   FiDollarSign,
   FiAlertCircle,
+  FiMail,
+  FiShield,
+  FiCheckCircle,
 } from "react-icons/fi";
 
 import { getAllMyBookings } from "../../features/booking/bookingSlice";
 import { getAllStudios } from "../../features/studio/studioSlice";
 import { getScheduleById } from "../../features/schedule/scheduleSlice";
+import axiosInstance from "../../api/axiosInstance";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -40,8 +44,8 @@ const toVNTime = (iso) => (iso ? dayjs(iso).tz("Asia/Ho_Chi_Minh") : null);
 const StaffSchedulePage = () => {
   const dispatch = useDispatch();
 
-  // ĐÚNG TÊN KEY: items chứ không phải bookings
-  const { items: rawBookings = [], loading: bookingLoading } = useSelector(
+  // Lấy danh sách booking của người dùng/staff
+  const { myBookings: rawBookings = [], loading: bookingLoading } = useSelector(
     (state) => state.booking
   );
   const { studios = [] } = useSelector((state) => state.studio);
@@ -52,8 +56,35 @@ const StaffSchedulePage = () => {
   const [selectedDate, setSelectedDate] = useState(dayjs());
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
+  const [customers, setCustomers] = useState({});
+  const [customerLoading, setCustomerLoading] = useState(false);
 
   const fetchedScheduleIds = useRef(new Set());
+
+  // Lazy fetch customer info by userId, cached locally
+  const fetchCustomers = async (ids) => {
+    if (!ids || ids.length === 0) return;
+    const uniqueIds = ids.filter((id) => id && !customers[id]);
+    if (uniqueIds.length === 0) return;
+    setCustomerLoading(true);
+    try {
+      const results = await Promise.all(
+        uniqueIds.map((id) =>
+          axiosInstance
+            .get(`/admin/customers/${id}`)
+            .then((res) => ({ id, data: res.data?.data || res.data }))
+            .catch(() => null)
+        )
+      );
+      const map = {};
+      results.forEach((item) => {
+        if (item?.id) map[item.id] = item.data;
+      });
+      setCustomers((prev) => ({ ...prev, ...map }));
+    } finally {
+      setCustomerLoading(false);
+    }
+  };
 
   // FETCH TỰ ĐỘNG SCHEDULE
   useEffect(() => {
@@ -106,12 +137,6 @@ const StaffSchedulePage = () => {
       .filter(Boolean);
   }, [rawBookings, fetchedSchedules, studios]);
 
-  // Load lần đầu
-  useEffect(() => {
-    dispatch(getAllMyBookings());
-    dispatch(getAllStudios({ page: 1, limit: 100 }));
-  }, [dispatch]);
-
   const todayBookings = enrichedBookings
     .filter((b) => toVNTime(b.startTime).isSame(dayjs(), "day"))
     .sort((a, b) => a.startTime.localeCompare(b.startTime));
@@ -120,14 +145,46 @@ const StaffSchedulePage = () => {
     .filter((b) => toVNTime(b.startTime).isSame(selectedDate, "day"))
     .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
-  const dateCellRender = (date) => {
+  // fetch customers for selected date bookings
+  useEffect(() => {
+    const ids = selectedDateBookings
+      .map((b) => b.userId || b.customer?._id)
+      .filter(Boolean);
+    fetchCustomers(ids);
+  }, [selectedDateBookings]);
+
+  // Load lần đầu
+  useEffect(() => {
+    dispatch(getAllMyBookings());
+    dispatch(getAllStudios({ page: 1, limit: 100 }));
+  }, [dispatch]);
+
+  const renderMonthCell = (date) => {
     const count = enrichedBookings.filter((b) =>
       toVNTime(b.startTime).isSame(date, "day")
     ).length;
-    if (count === 0) return null;
+    const isSelected = date.isSame(selectedDate, "day");
+    const isToday = date.isSame(dayjs(), "day");
+
     return (
-      <div className="flex justify-center py-1">
-        <Badge count={count} style={{ backgroundColor: "#f5222d" }} />
+      <div
+        className={`h-24 w-full px-2 py-2 border rounded-xl flex flex-col items-center justify-between text-sm transition-all ${
+          isSelected
+            ? "border-purple-500 bg-purple-50 shadow-md"
+            : "border-gray-200 bg-white"
+        } ${isToday ? "ring-2 ring-blue-400" : ""}`}
+      >
+        <div className="flex w-full items-center justify-between text-xs text-gray-600">
+          <span className="font-semibold text-gray-800">{date.date()}</span>
+          {isToday && <Tag color="blue">Hôm nay</Tag>}
+        </div>
+        <div className="flex flex-col items-center gap-1 mt-1">
+          <span className="text-[11px] text-gray-500">Số lịch</span>
+          <Badge
+            count={count}
+            style={{ backgroundColor: count > 0 ? "#f5222d" : "#d9d9d9" }}
+          />
+        </div>
       </div>
     );
   };
@@ -154,163 +211,29 @@ const StaffSchedulePage = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto grid grid-cols-1 xl:grid-cols-3 gap-8">
-        {/* Cột trái */}
-        <div className="space-y-8">
-          {/* Lịch tháng */}
-          <Card className="shadow-2xl rounded-3xl overflow-hidden border-0">
-            <Title
-              level={4}
-              className="text-center py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white"
-            >
-              Lịch đặt trong tháng
-            </Title>
-            <Calendar
-              fullscreen={false}
-              value={selectedDate}
-              onSelect={setSelectedDate}
-              dateCellRender={dateCellRender}
-            />
-          </Card>
-
-          {/* Hôm nay */}
-          <Card className="shadow-2xl rounded-3xl border-0">
-            <div className="flex justify-between items-center mb-5">
-              <Title level={4} className="m-0 text-purple-700">
-                Hôm nay ({dayjs().format("DD/MM")})
-              </Title>
-              <Badge count={todayBookings.length} color="#f5222d" />
-            </div>
-
-            <div className="space-y-4 max-h-96 overflow-y-auto">
-              {todayBookings.length === 0 ? (
-                <Empty description="Hôm nay chưa có khách nào" />
-              ) : (
-                todayBookings.map((b) => (
-                  <div
-                    key={b._id}
-                    onClick={() => openDetail(b)}
-                    className="p-5 bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl border-l-4 border-purple-500 cursor-pointer hover:shadow-xl transition-all"
-                  >
-                    <div className="font-bold text-xl text-purple-800">
-                      {toVNTime(b.startTime).format("HH:mm")} →{" "}
-                      {toVNTime(b.endTime).format("HH:mm")}
-                    </div>
-                    <div className="mt-1 font-medium text-gray-800">
-                      {b.customer?.fullName || "Khách"}
-                    </div>
-                    <div className="text-sm text-gray-600">{b.studioName}</div>
-                  </div>
-                ))
-              )}
-            </div>
-          </Card>
-        </div>
-
-        {/* Cột phải: Chi tiết ngày */}
-        <div className="xl:col-span-2">
-          <Card className="shadow-2xl rounded-3xl border-0 h-full">
-            <div className="flex justify-between items-center mb-6">
-              <Title level={3} className="m-0 text-purple-700">
-                {selectedDate.format("dddd, DD/MM/YYYY")}
-              </Title>
-              <Badge
-                count={selectedDateBookings.length}
-                color="#f5222d"
-                className="text-xl"
-              />
-            </div>
-
-            {selectedDateBookings.length === 0 ? (
-              <Empty description="Không có buổi đặt nào" className="py-24" />
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {selectedDateBookings.map((booking) => {
-                  const customer = booking.customer || {};
-                  const vnStart = toVNTime(booking.startTime);
-                  const vnEnd = toVNTime(booking.endTime);
-
-                  return (
-                    <div
-                      key={booking._id}
-                      onClick={() => openDetail(booking)}
-                      className="bg-white rounded-3xl shadow-xl border hover:border-purple-400 transition-all cursor-pointer p-6"
-                    >
-                      <div className="flex justify-between items-start mb-4">
-                        <Avatar
-                          size={60}
-                          className="bg-gradient-to-br from-purple-500 to-pink-500 text-2xl font-bold"
-                        >
-                          {customer.fullName?.[0] || "K"}
-                        </Avatar>
-                        <div className="text-right">
-                          <Tag
-                            color={
-                              booking.status === "completed"
-                                ? "green"
-                                : "volcano"
-                            }
-                            className="mb-2"
-                          >
-                            {booking.status === "completed"
-                              ? "HOÀN TẤT"
-                              : "ĐANG CHỜ"}
-                          </Tag>
-                          <div className="text-2xl font-bold text-purple-600">
-                            {booking.finalAmount?.toLocaleString()}đ
-                          </div>
-                        </div>
-                      </div>
-
-                      <Divider className="my-4" />
-
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-3">
-                          <FiClock className="text-purple-600 text-xl" />
-                          <span className="font-bold text-lg">
-                            {vnStart.format("HH:mm")} → {vnEnd.format("HH:mm")}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                          <FiUser className="text-pink-600" />
-                          <span className="font-semibold text-gray-800">
-                            {customer.fullName || "Chưa có tên"}
-                          </span>
-                        </div>
-
-                        {customer.phone && (
-                          <div className="flex items-center gap-3">
-                            <FiPhone className="text-green-600" />
-                            <span>{customer.phone}</span>
-                          </div>
-                        )}
-
-                        <div className="flex items-center gap-3">
-                          <FiMapPin className="text-blue-600" />
-                          <span className="font-medium">
-                            {booking.studioName}
-                          </span>
-                        </div>
-
-                        {booking.payType === "deposit" && (
-                          <div className="p-3 bg-orange-50 rounded-xl border border-orange-300 text-orange-700 font-semibold flex items-center gap-2">
-                            <FiAlertCircle />
-                            Còn nợ{" "}
-                            {(
-                              booking.totalBeforeDiscount - booking.finalAmount
-                            ).toLocaleString()}
-                            đ
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </Card>
-        </div>
+      <div className="max-w-5xl mx-auto">
+        <Card
+          className="shadow-xl rounded-3xl overflow-hidden border border-slate-200 bg-white"
+          style={{ minHeight: 620 }}
+          styles={{ body: { padding: 0 } }}
+        >
+          <Title
+            level={4}
+            className="text-center py-4 bg-slate-900 text-white"
+          >
+            Lịch đặt trong tháng
+          </Title>
+          <Calendar
+            fullscreen={false}
+            value={selectedDate}
+            onSelect={(date) => {
+              setSelectedDate(date);
+              setModalVisible(true);
+            }}
+            fullCellRender={renderMonthCell}
+            className="px-4 pb-4 text-base"
+          />
+        </Card>
       </div>
 
       {/* Modal chi tiết */}
@@ -318,108 +241,138 @@ const StaffSchedulePage = () => {
         open={modalVisible}
         onCancel={() => setModalVisible(false)}
         footer={null}
-        width={800}
+        width={900}
         centered
-        title={null}
+        title={
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm text-gray-500">Ngày</div>
+              <div className="text-xl font-bold text-gray-800">
+                {selectedDate.format("dddd, DD/MM/YYYY")}
+              </div>
+            </div>
+            <Tag color="purple" className="px-3 py-1 rounded-full">
+              {selectedDateBookings.length} lịch
+            </Tag>
+          </div>
+        }
       >
-        {selectedBooking && (
-          <div className="space-y-6">
-            <div className="text-center py-6 bg-gradient-to-r from-purple-600 to-pink-600 rounded-3xl text-white">
-              <Title level={2} className="text-white mb-2">
-                {toVNTime(selectedBooking.startTime).format("HH:mm")} →{" "}
-                {toVNTime(selectedBooking.endTime).format("HH:mm")}
-              </Title>
-              <Text className="text-xl opacity-90">
-                {toVNTime(selectedBooking.startTime).format("dddd, DD/MM/YYYY")}
-              </Text>
-            </div>
+        {selectedDateBookings.length === 0 ? (
+          <Empty description="Không có buổi đặt nào" className="py-16" />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {selectedDateBookings.map((booking) => {
+              const customer =
+                booking.customer ||
+                customers[booking.userId] ||
+                customers[booking.customer?._id] ||
+                {};
+              const vnStart = toVNTime(booking.startTime);
+              const vnEnd = toVNTime(booking.endTime);
 
-            <div className="grid grid-cols-2 gap-8">
-              <div>
-                <Title level={4} className="text-purple-700 mb-4">
-                  Khách hàng
-                </Title>
-                <div className="space-y-3 bg-gray-50 p-5 rounded-2xl">
-                  <div>
-                    <strong>Họ tên:</strong>{" "}
-                    {selectedBooking.customer?.fullName || "Không có"}
-                  </div>
-                  <div>
-                    <strong>SĐT:</strong>{" "}
-                    {selectedBooking.customer?.phone || "Không có"}
-                  </div>
-                  <div>
-                    <strong>Email:</strong>{" "}
-                    {selectedBooking.customer?.email || "Không có"}
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <Title level={4} className="text-pink-700 mb-4">
-                  Studio & Slot
-                </Title>
-                <div className="space-y-3 bg-gray-50 p-5 rounded-2xl">
-                  <div>
-                    <strong>Tên studio:</strong> {selectedBooking.studioName}
-                  </div>
-                  <div>
-                    <strong>Địa chỉ:</strong> {selectedBooking.studioLocation}
-                  </div>
-                  <div>
-                    <strong>Slot ID:</strong>{" "}
-                    {selectedBooking.scheduleId || "Không có"}
-                  </div>
-                  <div>
-                    <strong>Trạng thái slot:</strong>
-                    <Tag
-                      color={
-                        selectedBooking.slotStatus === "booked"
-                          ? "red"
-                          : "green"
-                      }
+              return (
+                <Card
+                  key={booking._id}
+                  className="border border-slate-200 rounded-2xl shadow-sm hover:shadow-lg transition"
+                  onClick={() => openDetail(booking)}
+                >
+                  <div className="flex items-start gap-3 mb-3">
+                    <Avatar
+                      src={customer.avatar}
+                      size={52}
+                      className="bg-slate-200"
                     >
-                      {selectedBooking.slotStatus === "booked"
-                        ? "ĐÃ ĐẶT"
-                        : "TRỐNG"}
-                    </Tag>
+                      {customer.fullName?.[0] || "K"}
+                    </Avatar>
+                    <div className="flex-1">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="font-semibold text-lg text-slate-800">
+                            {vnStart.format("HH:mm")} → {vnEnd.format("HH:mm")}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {vnStart.format("DD/MM/YYYY")}
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end gap-1">
+                          <Tag
+                            color={
+                              booking.status === "completed" ? "green" : "orange"
+                            }
+                            className="rounded-full"
+                          >
+                            {booking.status === "completed"
+                              ? "Hoàn tất"
+                              : "Đang chờ"}
+                          </Tag>
+                          <Tag color="blue" className="rounded-full">
+                            {booking.payType === "full"
+                              ? "Thanh toán đủ"
+                              : booking.payType === "prepay_50"
+                              ? "Cọc 50%"
+                              : booking.payType === "prepay_30"
+                              ? "Cọc 30%"
+                              : booking.payType || "Không rõ"}
+                          </Tag>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            </div>
 
-            <Descriptions bordered title="Thanh toán" column={2}>
-              <Descriptions.Item label="Tổng tiền">
-                {selectedBooking.totalBeforeDiscount?.toLocaleString()}đ
-              </Descriptions.Item>
-              <Descriptions.Item label="Đã thanh toán">
-                <span className="text-xl font-bold text-green-600">
-                  {selectedBooking.finalAmount?.toLocaleString()}đ
-                </span>
-              </Descriptions.Item>
-              <Descriptions.Item label="Hình thức">
-                <Tag
-                  color={
-                    selectedBooking.payType === "full" ? "green" : "orange"
-                  }
-                >
-                  {selectedBooking.payType === "full"
-                    ? "Thanh toán đủ"
-                    : "Chỉ đặt cọc"}
-                </Tag>
-              </Descriptions.Item>
-              <Descriptions.Item label="Trạng thái">
-                <Tag
-                  color={
-                    selectedBooking.status === "completed" ? "green" : "volcano"
-                  }
-                >
-                  {selectedBooking.status === "completed"
-                    ? "Hoàn tất"
-                    : "Chưa xong"}
-                </Tag>
-              </Descriptions.Item>
-            </Descriptions>
+                  <Divider className="my-2" />
+
+                  <div className="space-y-2 text-sm text-gray-700">
+                    <div className="flex items-center gap-2">
+                      <FiUser className="text-slate-600" />
+                      <span className="font-semibold">
+                        {customer.fullName || "Chưa có tên"}
+                      </span>
+                      {customer.isVerified && (
+                        <Tag color="cyan" icon={<FiCheckCircle />}>
+                          Đã xác minh
+                        </Tag>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <FiPhone className="text-slate-600" />
+                      <span>{customer.phone || "Chưa có SĐT"}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <FiMail className="text-slate-600" />
+                      <span className="truncate">
+                        {customer.email || "Chưa có email"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <FiShield className="text-slate-600" />
+                      <Tag color="purple" className="rounded-full">
+                        {customer.role || "customer"}
+                      </Tag>
+                      <Tag color={customer.isActive ? "green" : "red"}>
+                        {customer.isActive ? "Hoạt động" : "Đã khóa"}
+                      </Tag>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <FiMapPin className="text-slate-600 mt-0.5" />
+                      <div>
+                        <div className="font-semibold text-gray-800">
+                          {booking.studioName}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {booking.studioLocation || "Không có địa chỉ"}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <FiClock className="text-slate-600" />
+                      <span className="font-semibold text-gray-900">
+                        {booking.finalAmount?.toLocaleString()}đ
+                      </span>
+                    </div>
+                  </div>
+                </Card>
+              );
+            })}
           </div>
         )}
       </Modal>

@@ -2,13 +2,94 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../../api/axiosInstance";
 
+// Helpers ------------------------------------------------
+const extractIdsFromString = (str) => {
+  if (!str || typeof str !== "string") return [];
+  const ids = [];
+  // Tìm tất cả ObjectId trong string
+  const regex = /ObjectId\('([0-9a-fA-F]{24})'\)/g;
+  let m;
+  while ((m = regex.exec(str)) !== null) {
+    if (!ids.includes(m[1])) ids.push(m[1]);
+  }
+  // Nếu đã có đủ 2 ID, return
+  if (ids.length >= 2) return ids;
+  
+  // Fallback: tìm tất cả các chuỗi 24 ký tự hex
+  const fallback = str.match(/[0-9a-fA-F]{24}/g);
+  if (fallback) {
+    fallback.forEach((id) => {
+      if (!ids.includes(id)) ids.push(id);
+    });
+  }
+  return ids;
+};
+
+// Kiểm tra xem một string có phải là conversation ID hợp lệ không
+const isValidConversationId = (str) => {
+  if (!str || typeof str !== "string") return false;
+  // Conversation ID hợp lệ: 2 ObjectId (24 ký tự mỗi cái) được join bằng "_"
+  // Format: "6916b10ddd40e9e31c5c2a1d_6916bac2dd40e9e31c5c2b17" (49 ký tự)
+  const pattern = /^[0-9a-fA-F]{24}_[0-9a-fA-F]{24}$/;
+  return pattern.test(str);
+};
+
+const normalizeConversationId = (conv) => {
+  if (!conv) return "";
+
+  // Kiểm tra conversationId trước (nếu có và hợp lệ)
+  if (typeof conv.conversationId === "string" && isValidConversationId(conv.conversationId)) {
+    return conv.conversationId;
+  }
+
+  // Kiểm tra _id: chỉ return nếu nó là conversation ID hợp lệ
+  if (typeof conv._id === "string") {
+    // Nếu _id là conversation ID hợp lệ (format: id_id), return ngay
+    if (isValidConversationId(conv._id)) {
+      return conv._id;
+    }
+    
+    // Nếu _id là string dài chứa object (như backend đang trả về), parse nó
+    if (conv._id.length > 80 || conv._id.includes("ObjectId") || conv._id.includes("}-{")) {
+      const parsed = extractIdsFromString(conv._id);
+      if (parsed.length >= 2) {
+        return parsed.sort().join("_");
+      }
+    }
+  }
+
+  // Thử lấy từ participants
+  const participantIds =
+    conv.participants?.map((p) => p?._id || p).filter(Boolean) || [];
+  if (participantIds.length >= 2) {
+    const normalized = participantIds.map(id => String(id).trim()).filter(Boolean);
+    if (normalized.length >= 2) {
+      return normalized.sort().join("_");
+    }
+  }
+
+  // Thử lấy từ lastMessage
+  const last = conv.lastMessage || conv;
+  const from = last?.fromUserId?._id || last?.fromUserId;
+  const to = last?.toUserId?._id || last?.toUserId;
+  if (from && to) {
+    const fromId = String(from).trim();
+    const toId = String(to).trim();
+    if (fromId && toId) {
+      return [fromId, toId].sort().join("_");
+    }
+  }
+
+  return "";
+};
+
 /* =====================================================
    ASYNC THUNKS
 ===================================================== */
 
 export const createMessage = createAsyncThunk(
   "message/createMessage",
-  async ({ toUserId, content }, { rejectWithValue, getState }) => {
+  async ({ toUserId, content, conversationId: payloadConvId }, { rejectWithValue, getState }) => {
     try {
       const { token, user } = getState().auth;
       if (!token) throw new Error("No token found");
@@ -22,15 +103,18 @@ export const createMessage = createAsyncThunk(
       );
 
       const messageData = response.data.data;
-
       const currentUserId = user?._id || user?.id;
       const conversationId =
+        payloadConvId ||
         messageData.conversationId ||
-        [currentUserId, toUserId].sort().join("_");
+        [currentUserId, toUserId].filter(Boolean).sort().join("_");
 
+      // Chỉ return message data từ backend + conversationId (không thêm currentUserId vào message object)
       return {
         ...messageData,
         conversationId,
+        // Lưu currentUserId riêng để dùng trong reducer (không merge vào message)
+        _currentUserId: currentUserId,
       };
     } catch (err) {
       return rejectWithValue(
@@ -170,25 +254,69 @@ const messageSlice = createSlice({
       })
       .addCase(createMessage.fulfilled, (state, action) => {
         state.loading = false;
-        const message = action.payload;
-        const convId = message.conversationId || "unknown";
+        // Lấy message từ payload (backend trả về đầy đủ thông tin)
+        const payload = action.payload;
+        const currentUserId = payload._currentUserId; // Lấy từ payload riêng
+        // Tách message ra, loại bỏ _currentUserId
+        const { _currentUserId, ...message } = payload;
+        
+        // Đảm bảo conversationId được tính đúng
+        const fromId = message.fromUserId?._id || message.fromUserId;
+        const toId = message.toUserId?._id || message.toUserId;
+        const convId = 
+          message.conversationId || 
+          (fromId && toId ? [fromId, toId].filter(Boolean).sort().join("_") : normalizeConversationId(message));
 
+        // Lưu message vào state với đầy đủ thông tin từ backend (không có _currentUserId)
         if (!state.messages[convId]) state.messages[convId] = [];
-        state.messages[convId].push(message);
+        
+        // Kiểm tra xem message đã tồn tại chưa (tránh duplicate)
+        const existingIndex = state.messages[convId].findIndex(m => m._id === message._id);
+        if (existingIndex >= 0) {
+          // Update message nếu đã tồn tại
+          state.messages[convId][existingIndex] = message;
+        } else {
+          // Push message mới với đầy đủ thông tin từ backend (gọn gàng, không có thông tin thừa)
+          state.messages[convId].push(message);
+        }
 
-        const exists = state.conversations.some(
-          (c) => c._id === convId || c.conversationId === convId
+        // Cập nhật conversation trong danh sách
+        const from = message.fromUserId;
+        const to = message.toUserId;
+        const existsIdx = state.conversations.findIndex(
+          (c) => {
+            const cId = normalizeConversationId(c);
+            return cId === convId || c._id === convId || c.conversationId === convId;
+          }
         );
-        if (!exists) {
-          state.conversations.unshift({
-            _id: convId,
-            conversationId: convId,
-            lastMessage: message,
-            participant:
-              message.fromUserId._id === action.meta.arg.toUserId
-                ? message.toUserId
-                : message.fromUserId,
-          });
+        
+        // Xác định partner user (người không phải current user)
+        const partner = 
+          (fromId === currentUserId ? to : from) ||
+          (toId === currentUserId ? from : to) ||
+          to ||
+          from ||
+          {};
+        
+        const convPayload = {
+          _id: convId,
+          conversationId: convId,
+          lastMessage: message, // Message gọn gàng từ backend
+          participants: [from, to].filter(Boolean),
+          partnerUser: partner,
+          name: partner?.fullName || partner?.username || "Người dùng",
+          avatar: partner?.avatar,
+        };
+        
+        if (existsIdx >= 0) {
+          // Update conversation hiện có
+          state.conversations[existsIdx] = {
+            ...state.conversations[existsIdx],
+            ...convPayload,
+          };
+        } else {
+          // Thêm conversation mới
+          state.conversations.unshift(convPayload);
         }
       })
       .addCase(createMessage.rejected, (state, action) => {
@@ -202,9 +330,15 @@ const messageSlice = createSlice({
       })
       .addCase(getConversations.fulfilled, (state, action) => {
         state.loadingConversations = false;
-        state.conversations = Array.isArray(action.payload)
-          ? action.payload
-          : [];
+        const list = Array.isArray(action.payload) ? action.payload : [];
+        state.conversations = list.map((c) => {
+          const convId = normalizeConversationId(c);
+          return {
+            ...c,
+            _id: convId || c._id,
+            conversationId: convId || c.conversationId,
+          };
+        });
       })
       .addCase(getConversations.rejected, (state, action) => {
         state.loadingConversations = false;

@@ -49,7 +49,7 @@ setOpen(true);
         onCancel={() => setOpen(false)}
         centered
         width={1000}
-        bodyStyle={{ padding: 0, background: "#000" }}
+        styles={{ body: { padding: 0, background: "#000" } }}
       >
 <div className="w-full h-[80vh] flex items-center justify-center bg-black">
           <img

@@ -10,6 +10,7 @@ import {
   FiChevronDown,
   FiMenu,
 } from "react-icons/fi";
+import { MessageOutlined } from "@ant-design/icons";
 import { MdNotifications } from "react-icons/md";
 import { DeleteOutlined } from "@ant-design/icons";
 import { logout } from "../../features/auth/authSlice";
@@ -18,6 +19,7 @@ import {
   markNotificationRead,
   deleteNotification,
 } from "../../features/notification/notificationSlice";
+import { getConversations } from "../../features/message/messageSlice";
 import SPlusLogo from "../../assets/S+Logo.png";
 import notificationSound from "../../assets/notification.mp3";
 
@@ -59,6 +61,9 @@ const DashboardNavbar = ({ variant = "default" }) => {
   const { notifications, loading: notificationsLoading } = useSelector(
     (state) => state.notification || { notifications: [], loading: false }
   );
+  const { messages = {}, conversations = [] } = useSelector(
+    (state) => state.message || {}
+  );
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -83,10 +88,11 @@ const DashboardNavbar = ({ variant = "default" }) => {
     notificationAudioRef.current.volume = 0.5;
   }, []);
 
-  // Fetch notifications
+  // Fetch notifications & conversations for counts
   useEffect(() => {
     if (!user) return;
     dispatch(getNotifications());
+    dispatch(getConversations());
   }, [user, dispatch]);
 
   // Helper function để lấy avatar URL từ object hoặc string
@@ -98,7 +104,35 @@ const DashboardNavbar = ({ variant = "default" }) => {
   };
 
   const unreadCount = notifications.filter((n) => !n.isRead && !n.read).length;
+  const myId = user?._id || user?.id;
+  const unreadMessagesFromMessages = Object.values(messages).reduce(
+    (acc, list) => {
+      if (!Array.isArray(list)) return acc;
+      const unread = list.filter(
+        (m) =>
+          !m.isRead &&
+          !m.read &&
+          (m.fromUserId?._id || m.fromUserId) !== myId // chỉ đếm tin người khác gửi
+      );
+      return acc + unread.length;
+    },
+    0
+  );
+  const unreadMessagesFromConvs = conversations.reduce(
+    (sum, c) => sum + (c.unreadCount || 0),
+    0
+  );
+  const unreadMessagesCount =
+    unreadMessagesFromConvs > 0
+      ? unreadMessagesFromConvs
+      : unreadMessagesFromMessages;
   const dropdownNotifications = notifications.slice(0, visibleDropdownCount);
+  const handleMessageClick = () => {
+    if (!user) return navigate("/login");
+    dispatch(getConversations());
+    navigate("/message");
+  };
+
 
   // Play notification sound when new notification arrives
   useEffect(() => {
@@ -402,6 +436,30 @@ const DashboardNavbar = ({ variant = "default" }) => {
                   </motion.div>
                 )}
               </AnimatePresence>
+            </div>
+          )}
+
+          {user && (
+            <div className="relative">
+              <motion.button
+                type="button"
+                onClick={handleMessageClick}
+                initial={{ opacity: 1, scale: 1 }}
+                whileHover={{
+                  scale: 1.1,
+                  boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+                }}
+                whileTap={{ scale: 0.92 }}
+                transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                className="relative flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-lg hover:shadow-xl transition-shadow duration-300"
+              >
+                <MessageOutlined className="text-lg text-gray-900" />
+                {unreadMessagesCount > 0 && (
+                  <span className="absolute -top-1 -right-1 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-bold leading-none text-white bg-green-500 rounded-full">
+                    {unreadMessagesCount > 9 ? "9+" : unreadMessagesCount}
+                  </span>
+                )}
+              </motion.button>
             </div>
           )}
 

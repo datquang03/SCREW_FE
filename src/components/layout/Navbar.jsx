@@ -54,8 +54,8 @@ const Navbar = () => {
   const { notifications, loading: notificationsLoading } = useSelector(
     (state) => state.notification || { notifications: [], loading: false }
   );
-  const { messages = {} } = useSelector(
-    (state) => state.message || { messages: {} }
+  const { messages = {}, conversations = [] } = useSelector(
+    (state) => state.message || { messages: {}, conversations: [] }
   );
 
   const handleLogout = () => {
@@ -74,10 +74,11 @@ const Navbar = () => {
     notificationAudioRef.current.volume = 0.5; // Set volume to 50%
   }, []);
 
-  // Fetch notifications from Redux
+  // Fetch notifications & conversations from Redux
   useEffect(() => {
     if (!user) return;
     dispatch(getNotifications());
+    dispatch(getConversations());
   }, [user, dispatch]);
 
   // Helper function để lấy avatar URL từ object hoặc string
@@ -88,12 +89,27 @@ const Navbar = () => {
     return undefined;
   };
 
+  const myId = user?._id || user?.id;
   const unreadCount = notifications.filter((n) => !n.isRead && !n.read).length;
-  const unreadMessagesCount = Object.values(messages).reduce((acc, list) => {
-    if (!Array.isArray(list)) return acc;
-    const unread = list.filter((m) => !m.isRead && !m.read);
-    return acc + unread.length;
-  }, 0);
+  const unreadMessagesFromMessages = Object.values(messages).reduce(
+    (acc, list) => {
+      if (!Array.isArray(list)) return acc;
+      const unread = list.filter(
+        (m) =>
+          !m.isRead && !m.read && (m.fromUserId?._id || m.fromUserId) !== myId // only count messages from others
+      );
+      return acc + unread.length;
+    },
+    0
+  );
+  const unreadMessagesFromConvs = conversations.reduce(
+    (sum, c) => sum + (c.unreadCount || 0),
+    0
+  );
+  const unreadMessagesCount =
+    unreadMessagesFromConvs > 0
+      ? unreadMessagesFromConvs
+      : unreadMessagesFromMessages;
   const dropdownNotifications = notifications.slice(0, visibleDropdownCount);
 
   // Play notification sound when new notification arrives
@@ -121,7 +137,7 @@ const Navbar = () => {
   useEffect(() => {
     if (notifOpen) {
       setVisibleDropdownCount(4);
-      }
+    }
   }, [notifOpen]);
 
   // Auto mark read when visible or hovered in dropdown
@@ -550,62 +566,63 @@ const Navbar = () => {
           {user ? (
             <div className="flex items-center gap-2">
               <div className="relative avatar-dropdown">
-              <motion.button
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-                whileHover={{ scale: 1.05 }}
-                className="flex items-center gap-2 p-1 rounded-full bg-white/10 hover:bg-white/20 transition-all"
-              >
-                <img
-                  key={getAvatarUrl(user.avatar) || ""}
-                  src={
-                    getAvatarUrl(user.avatar) ||
-                    "https://png.pngtree.com/png-clipart/20191120/original/pngtree-outline-user-icon-png-image_5045523.jpg"
-                  }
-                  alt="User Avatar"
-                  className="w-12 h-12 rounded-full object-cover border-2 border-white/60 shadow-lg cursor-pointer"
-                  onError={(e) => {
-                    e.target.src = "https://png.pngtree.com/png-clipart/20191120/original/pngtree-outline-user-icon-png-image_5045523.jpg";
-                  }}
-                />
-              </motion.button>
+                <motion.button
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  whileHover={{ scale: 1.05 }}
+                  className="flex items-center gap-2 p-1 rounded-full bg-white/10 hover:bg-white/20 transition-all"
+                >
+                  <img
+                    key={getAvatarUrl(user.avatar) || ""}
+                    src={
+                      getAvatarUrl(user.avatar) ||
+                      "https://png.pngtree.com/png-clipart/20191120/original/pngtree-outline-user-icon-png-image_5045523.jpg"
+                    }
+                    alt="User Avatar"
+                    className="w-12 h-12 rounded-full object-cover border-2 border-white/60 shadow-lg cursor-pointer"
+                    onError={(e) => {
+                      e.target.src =
+                        "https://png.pngtree.com/png-clipart/20191120/original/pngtree-outline-user-icon-png-image_5045523.jpg";
+                    }}
+                  />
+                </motion.button>
 
-              <AnimatePresence>
-                {dropdownOpen && (
-                  <motion.div
+                <AnimatePresence>
+                  {dropdownOpen && (
+                    <motion.div
                       initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
+                      animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -20 }}
                       transition={{ duration: 0.25 }}
                       className="absolute right-0 mt-2 w-56 bg-gradient-to-b from-yellow-50 to-yellow-100 rounded-xl shadow-2xl border border-yellow-200 z-[110]"
-                  >
+                    >
                       <div className="p-4 border-b border-yellow-200">
                         <p className="text-sm font-bold text-gray-900">
-                        {user.fullName || user.username}
-                      </p>
+                          {user.fullName || user.username}
+                        </p>
                         <p className="text-xs text-gray-600">{user.email}</p>
-                    </div>
+                      </div>
 
                       <ul className="py-2">
                         {/* Dashboard */}
-                      <li>
-                        <button
-                          onClick={() => {
-                            setDropdownOpen(false);
-                            let dashboardPath = "/dashboard";
+                        <li>
+                          <button
+                            onClick={() => {
+                              setDropdownOpen(false);
+                              let dashboardPath = "/dashboard";
                               if (user.role === "customer")
                                 dashboardPath = "/dashboard/customer";
                               if (user.role === "staff")
                                 dashboardPath = "/dashboard/staff";
                               if (user.role === "admin")
                                 dashboardPath = "/dashboard/admin";
-                            navigate(dashboardPath);
-                          }}
+                              navigate(dashboardPath);
+                            }}
                             className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-gray-800 rounded-lg hover:bg-yellow-200 hover:text-yellow-700 transition-all cursor-pointer"
-                        >
+                          >
                             <MdOutlineSpaceDashboard className="text-lg" />{" "}
                             Dashboard
-                        </button>
-                      </li>
+                          </button>
+                        </li>
 
                         {/* Customer only */}
                         {user.role === "customer" && (
@@ -622,47 +639,47 @@ const Navbar = () => {
                                 thích
                               </button>
                             </li>
-                      <li>
-                        <button
-                          onClick={() => {
-                            setDropdownOpen(false);
+                            <li>
+                              <button
+                                onClick={() => {
+                                  setDropdownOpen(false);
                                   navigate("/studio/customer/reviews");
-                          }}
+                                }}
                                 className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-800 rounded-lg hover:bg-yellow-200 hover:text-yellow-700 transition-all cursor-pointer"
-                        >
+                              >
                                 <FileTextOutlined className="text-lg" /> Reviews
                                 đã thích
-                        </button>
-                      </li>
+                              </button>
+                            </li>
                           </>
                         )}
 
                         {/* Settings */}
-                      <li>
-                        <button
-                          onClick={() => {
-                            setDropdownOpen(false);
-                            navigate("/settings");
-                          }}
+                        <li>
+                          <button
+                            onClick={() => {
+                              setDropdownOpen(false);
+                              navigate("/settings");
+                            }}
                             className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-800 rounded-lg hover:bg-yellow-200 hover:text-yellow-700 transition-all"
-                        >
+                          >
                             <SettingOutlined className="text-lg" /> Cài đặt
-                        </button>
-                      </li>
+                          </button>
+                        </li>
 
                         {/* Logout */}
                         <li className="border-t border-yellow-200">
-                        <button
-                          onClick={handleLogout}
+                          <button
+                            onClick={handleLogout}
                             className="flex items-center gap-3 w-full px-4 py-3 text-sm text-red-600 rounded-lg hover:bg-red-100 hover:text-red-700 transition-all cursor-pointer"
-                        >
+                          >
                             <LogoutOutlined className="text-lg" /> Đăng xuất
-                        </button>
-                      </li>
-                    </ul>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                          </button>
+                        </li>
+                      </ul>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
           ) : (
@@ -729,20 +746,20 @@ const Navbar = () => {
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
               className="fixed top-0 right-0 w-72 h-screen bg-white shadow-2xl z-[60] flex flex-col p-6"
             >
-                  {NAV_LINKS.map(({ path, label, key: linkKey }) => (
-                      <NavLink
+              {NAV_LINKS.map(({ path, label, key: linkKey }) => (
+                <NavLink
                   key={linkKey}
-                        to={path}
-                        onClick={closeMobileMenu}
-                        className={({ isActive }) =>
+                  to={path}
+                  onClick={closeMobileMenu}
+                  className={({ isActive }) =>
                     `px-4 py-3 rounded-lg font-semibold text-gray-700 hover:bg-gray-100 transition-all ${
                       isActive ? "bg-yellow-100 text-yellow-600" : ""
-                          }`
-                        }
-                      >
-                        {label}
-                      </NavLink>
-                  ))}
+                    }`
+                  }
+                >
+                  {label}
+                </NavLink>
+              ))}
             </motion.nav>
           </>
         )}

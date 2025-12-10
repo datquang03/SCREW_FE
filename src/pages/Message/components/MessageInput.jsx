@@ -8,21 +8,71 @@ const MessageInput = ({ conversation, currentUserId }) => {
   const dispatch = useDispatch();
   const [content, setContent] = useState("");
 
-  const partnerId =
-    conversation.participants?.find((p) => (p._id || p) !== currentUserId)?._id ||
-    conversation.participant?._id;
+  // Lấy partnerId từ nhiều nguồn khác nhau
+  const getPartnerId = () => {
+    const myId = currentUserId;
+    
+    // Thử từ participants
+    if (conversation.participants?.length) {
+      const partner = conversation.participants.find(
+        (p) => (p?._id || p) !== myId
+      );
+      if (partner) return partner._id || partner;
+    }
+    
+    // Thử từ participant
+    if (conversation.participant) {
+      const pid = conversation.participant._id || conversation.participant;
+      if (pid !== myId) return pid;
+    }
+    
+    // Thử từ partnerUser
+    if (conversation.partnerUser) {
+      const pid = conversation.partnerUser._id || conversation.partnerUser;
+      if (pid !== myId) return pid;
+    }
+    
+    // Thử từ lastMessage
+    if (conversation.lastMessage) {
+      const fromId = conversation.lastMessage.fromUserId?._id || conversation.lastMessage.fromUserId;
+      const toId = conversation.lastMessage.toUserId?._id || conversation.lastMessage.toUserId;
+      if (fromId === myId && toId) return toId;
+      if (toId === myId && fromId) return fromId;
+    }
+    
+    // Thử parse từ conversationId (nếu có format id_id)
+    if (conversation.conversationId || conversation._id) {
+      const convId = conversation.conversationId || conversation._id;
+      if (typeof convId === "string" && convId.includes("_")) {
+        const ids = convId.split("_");
+        const otherId = ids.find(id => id !== myId);
+        if (otherId) return otherId;
+      }
+    }
+    
+    return null;
+  };
 
-  const handleSend = (e) => {
+  const partnerId = getPartnerId();
+
+  const handleSend = async (e) => {
     e.preventDefault();
-    if (!content.trim() || !partnerId) return;
+    if (!content.trim() || !partnerId) {
+      console.warn("Cannot send message: missing content or partnerId", { content, partnerId, conversation });
+      return;
+    }
 
-    dispatch(
-      createMessage({
-        toUserId: partnerId,
-        content: content.trim(),
-      })
-    );
-    setContent("");
+    try {
+      await dispatch(
+        createMessage({
+          toUserId: partnerId,
+          content: content.trim(),
+        })
+      ).unwrap();
+      setContent("");
+    } catch (err) {
+      console.error("Error sending message:", err);
+    }
   };
 
   return (

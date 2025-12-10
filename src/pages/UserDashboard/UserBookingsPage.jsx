@@ -82,8 +82,28 @@ const UserBookingsPage = () => {
       {
         title: "Ngày tạo",
         dataIndex: "createdAt",
-        render: (v) =>
-          v ? dayjs(v).format("DD/MM/YYYY HH:mm") : "-",
+        render: (v) => (v ? dayjs(v).format("DD/MM/YYYY HH:mm") : "-"),
+      },
+      {
+        title: "Hình thức",
+        dataIndex: "payType",
+        render: (v) => {
+          const label =
+            v === "full"
+              ? "Thanh toán toàn bộ"
+              : v === "prepay_50"
+              ? "Cọc 50%"
+              : v === "prepay_30"
+              ? "Cọc 30%"
+              : v || "-";
+          const color =
+            v === "full" ? "green" : v === "prepay_50" ? "purple" : "orange";
+          return (
+            <Tag color={color} className="px-3 py-1 rounded-full">
+              {label}
+            </Tag>
+          );
+        },
       },
     {
       title: "Trạng thái",
@@ -207,9 +227,21 @@ const UserBookingsPage = () => {
                   </Tag>
                 </Descriptions.Item>
                 <Descriptions.Item label="Hình thức thanh toán">
-                  <Tag color="blue">
+                  <Tag
+                    color={
+                      currentBooking.payType === "full"
+                        ? "green"
+                        : currentBooking.payType === "prepay_50"
+                        ? "purple"
+                        : "orange"
+                    }
+                  >
                     {currentBooking.payType === "full"
                       ? "Thanh toán toàn bộ"
+                      : currentBooking.payType === "prepay_50"
+                      ? "Cọc 50%"
+                      : currentBooking.payType === "prepay_30"
+                      ? "Cọc 30%"
                       : currentBooking.payType}
                   </Tag>
                 </Descriptions.Item>

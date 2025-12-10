@@ -1,6 +1,6 @@
 // src/pages/Message/components/MessageSidebar.jsx
 import React, { useState, useMemo } from "react";
-import { SearchOutlined, MessageOutlined } from "@ant-design/icons";
+import { SearchOutlined, MessageOutlined, EyeOutlined } from "@ant-design/icons";
 
 const formatTime = (date) =>
   date ? new Date(date).toLocaleString("vi-VN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" }) : "";
@@ -50,33 +50,53 @@ const MessageSidebar = ({ conversations, activeConversation, onSelect, loading }
           <p className="text-center text-gray-400 py-8">Không có cuộc trò chuyện</p>
         ) : (
           filtered.map((conv) => {
-            const isActive = activeConversation?._id === conv._id;
+            const convId = conv._id || conv.conversationId || "";
+            const isActive = activeConversation?._id === convId;
             const name = conv.name || conv.receiverName || "Người dùng";
+            const avatar = conv.avatar || conv.partnerUser?.avatar;
             const lastMsg = conv.lastMessage?.content || "Chưa có tin nhắn";
             const unread = conv.unreadCount || 0;
 
             return (
               <button
                 key={conv._id}
-                onClick={() => onSelect(conv)}
-                className={`w-full text-left p-4 rounded-2xl transition mb-2 ${
-                  isActive ? "bg-amber-50 border border-amber-200" : "hover:bg-gray-50"
+                onClick={() => onSelect({ ...conv, _id: convId })}
+                className={`w-full text-left p-4 rounded-2xl transition mb-2 border ${
+                  isActive
+                    ? "bg-amber-50 border-amber-200"
+                    : unread > 0
+                    ? "bg-blue-50 border-blue-100 hover:bg-blue-100"
+                    : "border-gray-100 hover:bg-gray-50"
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 text-white font-bold flex-center">
-                    {name[0]}
-                  </div>
+                  {avatar ? (
+                    <img
+                      src={avatar}
+                      alt={name}
+                      className="w-10 h-10 rounded-full object-cover border"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 text-white font-bold flex-center">
+                      {name[0]}
+                    </div>
+                  )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <p className="font-semibold truncate">{name}</p>
                       {unread > 0 && (
-                        <span className="text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full">
-                          {unread}
+                        <span className="text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <EyeOutlined className="text-[10px]" /> {unread}
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-gray-500 truncate">{lastMsg}</p>
+                    <p
+                      className={`text-xs truncate ${
+                        unread > 0 ? "text-gray-700 font-semibold" : "text-gray-500"
+                      }`}
+                    >
+                      {lastMsg}
+                    </p>
                   </div>
                   <span className="text-xs text-gray-400">
                     {formatTime(conv.lastMessage?.createdAt)}

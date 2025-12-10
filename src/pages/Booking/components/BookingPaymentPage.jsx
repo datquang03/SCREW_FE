@@ -300,7 +300,7 @@ export default function BookingPaymentPage({
         okText="Xác nhận thanh toán"
         cancelText="Hủy"
         width={560}
-        bodyStyle={{ paddingTop: 8, paddingBottom: 16 }}
+        styles={{ body: { paddingTop: 8, paddingBottom: 16 } }}
       >
         <Radio.Group
           value={selectedPercent}

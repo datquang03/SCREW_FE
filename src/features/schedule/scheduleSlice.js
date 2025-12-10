@@ -140,7 +140,17 @@ const scheduleSlice = createSlice({
       })
       .addCase(getScheduleById.fulfilled, (state, action) => {
         state.loading = false;
-        state.current = action.payload;
+        const schedule = action.payload;
+        state.current = schedule;
+
+        if (schedule && schedule._id) {
+          const idx = state.items.findIndex((s) => s._id === schedule._id);
+          if (idx >= 0) {
+            state.items[idx] = schedule;
+          } else {
+            state.items = [...state.items, schedule];
+          }
+        }
       })
       .addCase(getScheduleById.rejected, (state, action) => {
         state.loading = false;

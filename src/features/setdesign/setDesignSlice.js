@@ -529,6 +529,119 @@ export const convertCustomRequestToSetDesign = createAsyncThunk(
     }
   }
 );
+
+/* =============================
+   CONVERTED CUSTOM DESIGNS (STAFF/CUSTOMER)
+============================= */
+export const getConvertedCustomDesigns = createAsyncThunk(
+  "setDesign/getConvertedCustomDesigns",
+  async ({ page = 1, limit = 10 } = {}, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth || {};
+      const res = await axiosInstance.get(
+        `/set-designs/converted-custom-designs?page=${page}&limit=${limit}`,
+        { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+      );
+      return res.data?.data || res.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Không thể tải danh sách thiết kế đã chuyển đổi" }
+      );
+    }
+  }
+);
+
+// Staff get by ID
+export const getConvertedCustomDesignById = createAsyncThunk(
+  "setDesign/getConvertedCustomDesignById",
+  async (designId, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth || {};
+      const res = await axiosInstance.get(
+        `/set-designs/converted-custom-designs/${designId}`,
+        { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+      );
+      return res.data?.data || res.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Không thể tải thiết kế đã chuyển đổi" }
+      );
+    }
+  }
+);
+
+// Customer get by ID (same endpoint, no token required)
+export const getConvertedCustomDesignByIdPublic = createAsyncThunk(
+  "setDesign/getConvertedCustomDesignByIdPublic",
+  async (designId, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth || {};
+      const res = await axiosInstance.get(
+        `/set-designs/converted-custom-designs/${designId}`,
+        { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+      );
+      return res.data?.data || res.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Không thể tải thiết kế đã chuyển đổi" }
+      );
+    }
+  }
+);
+
+export const updateConvertedCustomDesign = createAsyncThunk(
+  "setDesign/updateConvertedCustomDesign",
+  async ({ designId, payload }, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth || {};
+      const res = await axiosInstance.put(
+        `/set-designs/converted-custom-designs/${designId}`,
+        payload,
+        { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+      );
+      return res.data?.data || res.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Không thể cập nhật thiết kế đã chuyển đổi" }
+      );
+    }
+  }
+);
+
+export const deleteConvertedCustomDesign = createAsyncThunk(
+  "setDesign/deleteConvertedCustomDesign",
+  async (designId, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth || {};
+      await axiosInstance.delete(
+        `/set-designs/converted-custom-designs/${designId}`,
+        { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+      );
+      return designId;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Không thể xóa thiết kế đã chuyển đổi" }
+      );
+    }
+  }
+);
+
+// Public (customer) list converted designs
+export const getConvertedCustomDesignsPublic = createAsyncThunk(
+  "setDesign/getConvertedCustomDesignsPublic",
+  async ({ page = 1, limit = 10 } = {}, { rejectWithValue }) => {
+    try {
+      const res = await axiosInstance.get(
+        `/set-designs/converted-custom-designs?page=${page}&limit=${limit}`
+      );
+      return res.data?.data || res.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Không thể tải danh sách thiết kế chuyển đổi" }
+      );
+    }
+  }
+);
 /* =============================
    INITIAL
 ============================= */
@@ -537,6 +650,12 @@ const initialState = {
   currentSetDesign: null,
   activeSetDesigns: [],
   total: 0,
+  convertedDesigns: [],
+  convertedDesignPagination: { page: 1, limit: 10, total: 0, pages: 0 },
+  currentConvertedDesign: null,
+  convertedDesignsPublic: [],
+  convertedDesignPaginationPublic: { page: 1, limit: 10, total: 0, pages: 0 },
+  currentConvertedDesignPublic: null,
   customRequests: [],
   myCustomRequests: [],
   myCustomPagination: { page: 1, limit: 10, total: 0, pages: 0 },
@@ -884,6 +1003,123 @@ const setDesignSlice = createSlice({
       .addCase(convertCustomRequestToSetDesign.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.message || "Chuyển đổi thất bại";
+      })
+
+      // ================= CONVERTED CUSTOM DESIGNS =================
+      .addCase(getConvertedCustomDesigns.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getConvertedCustomDesigns.fulfilled, (state, action) => {
+        state.loading = false;
+        const data = action.payload;
+        if (Array.isArray(data)) {
+          state.convertedDesigns = data;
+        } else if (data?.items) {
+          state.convertedDesigns = data.items;
+          state.convertedDesignPagination = {
+            page: data.page || 1,
+            limit: data.limit || 10,
+            total: data.total || data.items?.length || 0,
+            pages: data.pages || Math.ceil((data.total || 0) / (data.limit || 10)),
+          };
+        } else {
+          state.convertedDesigns = data?.data || [];
+        }
+      })
+      .addCase(getConvertedCustomDesigns.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      .addCase(getConvertedCustomDesignById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getConvertedCustomDesignById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentConvertedDesign = action.payload;
+      })
+      .addCase(getConvertedCustomDesignById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      .addCase(getConvertedCustomDesignByIdPublic.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getConvertedCustomDesignByIdPublic.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentConvertedDesign = action.payload;
+      })
+      .addCase(getConvertedCustomDesignByIdPublic.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      .addCase(updateConvertedCustomDesign.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateConvertedCustomDesign.fulfilled, (state, action) => {
+        state.loading = false;
+        const updated = action.payload;
+        // update list
+        state.convertedDesigns = state.convertedDesigns.map((d) =>
+          d._id === updated._id ? updated : d
+        );
+        if (state.currentConvertedDesign?._id === updated._id) {
+          state.currentConvertedDesign = updated;
+        }
+      })
+      .addCase(updateConvertedCustomDesign.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      .addCase(deleteConvertedCustomDesign.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteConvertedCustomDesign.fulfilled, (state, action) => {
+        state.loading = false;
+        const id = action.payload;
+        state.convertedDesigns = state.convertedDesigns.filter((d) => d._id !== id);
+        if (state.currentConvertedDesign?._id === id) {
+          state.currentConvertedDesign = null;
+        }
+      })
+      .addCase(deleteConvertedCustomDesign.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // Public converted designs list
+      .addCase(getConvertedCustomDesignsPublic.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getConvertedCustomDesignsPublic.fulfilled, (state, action) => {
+        state.loading = false;
+        const data = action.payload;
+        if (Array.isArray(data)) {
+          state.convertedDesignsPublic = data;
+        } else if (data?.items) {
+          state.convertedDesignsPublic = data.items;
+          state.convertedDesignPaginationPublic = {
+            page: data.page || 1,
+            limit: data.limit || 10,
+            total: data.total || data.items?.length || 0,
+            pages: data.pages || Math.ceil((data.total || 0) / (data.limit || 10)),
+          };
+        } else {
+          state.convertedDesignsPublic = data?.data || [];
+        }
+      })
+      .addCase(getConvertedCustomDesignsPublic.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });

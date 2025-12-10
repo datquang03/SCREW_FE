@@ -6,7 +6,7 @@ import { useDispatch } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { FiUser, FiMail, FiPhone, FiEdit, FiCheckCircle, FiImage, FiX } from "react-icons/fi";
 import { customSetDesignRequest } from "../../features/setDesign/setDesignSlice";
-import { uploadImage } from "../../features/upload/uploadSlice";
+import { uploadSetDesignImagesforCustomer } from "../../features/upload/uploadSlice";
 
 const shakeVariant = {
   shake: {
@@ -43,12 +43,17 @@ const CustomSetDesignRequestPage = () => {
 
   const handleFileChange = (e) => {
     const selectedFiles = Array.from(e.target.files);
-    const newFiles = [...files, ...selectedFiles];
-    setFiles(newFiles);
+    if (!selectedFiles.length) return;
 
-    // Tạo preview URLs
+    // Append mới (giữ những file đã có)
+    setFiles((prev) => [...prev, ...selectedFiles]);
+
+    // Tạo preview URLs và append
     const newPreviewUrls = selectedFiles.map((file) => URL.createObjectURL(file));
-    setPreviewUrls([...previewUrls, ...newPreviewUrls]);
+    setPreviewUrls((prev) => [...prev, ...newPreviewUrls]);
+
+    // Reset input value để chọn lại cùng file cũng trigger được
+    e.target.value = "";
   };
 
   const handleRemoveImage = (index) => {
@@ -77,10 +82,12 @@ const CustomSetDesignRequestPage = () => {
     setLoading(true);
 
     try {
-      // Upload nhiều ảnh một lần (dùng uploadImage hỗ trợ mảng)
+      // Upload nhiều ảnh một lần
       let uploadedImageUrls = [];
       if (files.length > 0) {
-        const uploadRes = await dispatch(uploadImage(files)).unwrap();
+        const uploadRes = await dispatch(
+          uploadSetDesignImagesforCustomer({ images: files })
+        ).unwrap();
         const images =
           uploadRes?.images ||
           uploadRes?.data?.images ||
@@ -100,30 +107,30 @@ const CustomSetDesignRequestPage = () => {
 
       const res = await dispatch(customSetDesignRequest(payload));
 
-      if (res?.meta?.requestStatus === "fulfilled") {
-        message.success("Gửi yêu cầu thành công!");
+    if (res?.meta?.requestStatus === "fulfilled") {
+      message.success("Gửi yêu cầu thành công!");
 
-        // ICON BAY LÊN
-        setSuccessFly(true);
+      // ICON BAY LÊN
+      setSuccessFly(true);
 
-        setTimeout(() => {
+      setTimeout(() => {
           navigate("/dashboard/customer/custom-requests");
-        }, 1500);
+      }, 1500);
 
         // Reset form và files
-        setForm({
-          customerName: "",
-          email: "",
-          phoneNumber: "",
-          description: "",
+      setForm({
+        customerName: "",
+        email: "",
+        phoneNumber: "",
+        description: "",
           preferredCategory: "",
           budgetRange: "",
-        });
+      });
         setFiles([]);
         previewUrls.forEach((url) => URL.revokeObjectURL(url));
         setPreviewUrls([]);
-      } else {
-        message.error("Gửi yêu cầu thất bại!");
+    } else {
+      message.error("Gửi yêu cầu thất bại!");
       }
     } catch (err) {
       message.error(err?.message || "Có lỗi xảy ra khi gửi yêu cầu!");
@@ -173,13 +180,13 @@ const CustomSetDesignRequestPage = () => {
             </label>
             <div className="flex items-center gap-3 bg-white rounded-lg p-4 border-2 border-gray-200 hover:border-indigo-400 focus-within:border-indigo-500 transition-colors">
               <FiUser className="text-indigo-500 text-xl flex-shrink-0" />
-              <input
-                type="text"
+            <input
+              type="text"
                 placeholder="Nhập họ và tên của bạn"
-                value={form.customerName}
-                onChange={(e) => updateField("customerName", e.target.value)}
-                className="w-full bg-transparent outline-none text-gray-700 placeholder:text-gray-400"
-              />
+              value={form.customerName}
+              onChange={(e) => updateField("customerName", e.target.value)}
+              className="w-full bg-transparent outline-none text-gray-700 placeholder:text-gray-400"
+            />
             </div>
           </div>
 
@@ -190,13 +197,13 @@ const CustomSetDesignRequestPage = () => {
             </label>
             <div className="flex items-center gap-3 bg-white rounded-lg p-4 border-2 border-gray-200 hover:border-indigo-400 focus-within:border-indigo-500 transition-colors">
               <FiMail className="text-indigo-500 text-xl flex-shrink-0" />
-              <input
-                type="email"
+            <input
+              type="email"
                 placeholder="Nhập địa chỉ email của bạn"
-                value={form.email}
-                onChange={(e) => updateField("email", e.target.value)}
-                className="w-full bg-transparent outline-none text-gray-700 placeholder:text-gray-400"
-              />
+              value={form.email}
+              onChange={(e) => updateField("email", e.target.value)}
+              className="w-full bg-transparent outline-none text-gray-700 placeholder:text-gray-400"
+            />
             </div>
           </div>
 
@@ -207,13 +214,13 @@ const CustomSetDesignRequestPage = () => {
             </label>
             <div className="flex items-center gap-3 bg-white rounded-lg p-4 border-2 border-gray-200 hover:border-indigo-400 focus-within:border-indigo-500 transition-colors">
               <FiPhone className="text-indigo-500 text-xl flex-shrink-0" />
-              <input
-                type="text"
+            <input
+              type="text"
                 placeholder="Nhập số điện thoại của bạn"
-                value={form.phoneNumber}
-                onChange={(e) => updateField("phoneNumber", e.target.value)}
-                className="w-full bg-transparent outline-none text-gray-700 placeholder:text-gray-400"
-              />
+              value={form.phoneNumber}
+              onChange={(e) => updateField("phoneNumber", e.target.value)}
+              className="w-full bg-transparent outline-none text-gray-700 placeholder:text-gray-400"
+            />
             </div>
           </div>
 
@@ -224,13 +231,13 @@ const CustomSetDesignRequestPage = () => {
             </label>
             <div className="flex items-start gap-3 bg-white rounded-lg p-4 border-2 border-gray-200 hover:border-indigo-400 focus-within:border-indigo-500 transition-colors">
               <FiEdit className="text-indigo-500 text-xl mt-1 flex-shrink-0" />
-              <textarea
-                rows={6}
+            <textarea
+              rows={6}
                 placeholder="Mô tả chi tiết yêu cầu set design của bạn..."
-                value={form.description}
-                onChange={(e) => updateField("description", e.target.value)}
-                className="w-full bg-transparent outline-none text-gray-700 resize-none placeholder:text-gray-400"
-              />
+              value={form.description}
+              onChange={(e) => updateField("description", e.target.value)}
+              className="w-full bg-transparent outline-none text-gray-700 resize-none placeholder:text-gray-400"
+            />
             </div>
           </div>
 
@@ -328,10 +335,10 @@ const CustomSetDesignRequestPage = () => {
 
         {/* BUTTON */}
         <div className="mt-24 mb-4">
-          <motion.button
-            onClick={handleSubmit}
-            disabled={loading}
-            whileTap={{ scale: 0.95 }}
+        <motion.button
+          onClick={handleSubmit}
+          disabled={loading}
+          whileTap={{ scale: 0.95 }}
             className="w-full py-5 text-lg rounded-xl font-bold shadow-lg 
             bg-gradient-to-r from-indigo-600 to-pink-500 hover:opacity-95 transition
             disabled:opacity-50 disabled:cursor-not-allowed"
@@ -341,9 +348,9 @@ const CustomSetDesignRequestPage = () => {
               letterSpacing: '0.5px',
               fontWeight: '700'
             }}
-          >
-            {loading ? "Đang gửi..." : "Gửi yêu cầu"}
-          </motion.button>
+        >
+          {loading ? "Đang gửi..." : "Gửi yêu cầu"}
+        </motion.button>
         </div>
       </motion.div>
     </div>

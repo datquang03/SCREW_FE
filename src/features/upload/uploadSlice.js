@@ -24,7 +24,7 @@ export const uploadImages = createAsyncThunk(
       return res.data.data; // mong đợi: { images: [{ url, publicId, ... }] }
     } catch (err) {
       return rejectWithValue(
-        err.response?.data || { message: "Upload ảnh thất bại" }
+        err.response?.data || { message: err?.message || "Upload ảnh thất bại" }
       );
     }
   }
@@ -40,14 +40,60 @@ export const uploadImage = createAsyncThunk(
       const files = Array.isArray(fileOrFiles) ? fileOrFiles : [fileOrFiles];
       files.forEach((f) => formData.append("images", f));
 
-      const res = await axiosInstance.post("/set-designs/upload-images", formData, {
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          // Để axios tự set boundary cho multipart
-        },
-      });
+      const res = await axiosInstance.post(
+        "/set-designs/upload-images",
+        formData,
+        {
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            // Để axios tự set boundary cho multipart
+          },
+        }
+      );
 
       return res.data.data || res.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Upload ảnh thất bại" }
+      );
+    }
+  }
+);
+
+// 1c. Upload nhiều ảnh dành cho customer set-design request
+export const uploadSetDesignImagesforCustomer = createAsyncThunk(
+  "upload/uploadSetDesignImagesforCustomer",
+  async ({ images }, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth || {};
+      const files = (images || []).filter((f) => f instanceof File);
+      if (!files.length) {
+        throw { message: "Không có file ảnh để upload" };
+      }
+
+      const formData = new FormData();
+      files.forEach((f) => formData.append("images", f));
+
+      const res = await axiosInstance.post(
+        "/set-designs/upload-images",
+        formData,
+        {
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            // để axios tự set boundary
+          },
+        }
+      );
+
+      // chuẩn hóa trả về: luôn có mảng images
+      const data = res.data?.data || res.data || {};
+      const imagesResp =
+        data.images ||
+        data.imageUrls ||
+        data.data?.images ||
+        data.data?.imageUrls ||
+        (Array.isArray(data) ? data : []);
+      return { images: imagesResp };
     } catch (err) {
       return rejectWithValue(
         err.response?.data || { message: "Upload ảnh thất bại" }
