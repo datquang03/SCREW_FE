@@ -1,6 +1,6 @@
 // src/components/ToastNotification.jsx
 import React, { useEffect } from 'react';
-import { FiCheckCircle, FiXCircle, FiAlertCircle } from 'react-icons/fi';
+import { FiCheckCircle, FiXCircle, FiAlertCircle, FiInfo } from 'react-icons/fi';
 import { gsap } from 'gsap';
 
 const ToastNotification = ({ type = 'success', message, onClose, duration = 4000 }) => {
@@ -8,6 +8,7 @@ const ToastNotification = ({ type = 'success', message, onClose, duration = 4000
     success: <FiCheckCircle className="w-6 h-6 text-green-600" />,
     error: <FiXCircle className="w-6 h-6 text-red-600" />,
     warning: <FiAlertCircle className="w-6 h-6 text-yellow-600" />,
+    info: <FiInfo className="w-6 h-6 text-blue-600" />,
   };
 
   useEffect(() => {
@@ -26,18 +27,19 @@ const ToastNotification = ({ type = 'success', message, onClose, duration = 4000
   }, [onClose, duration]);
 
   return (
-    <div className="fixed top-6 right-6 z-100  ">
+    <div className="fixed top-6 right-6" style={{ zIndex: 9999 }}>
       <div
         className={`toast flex items-center gap-3 p-4 rounded-2xl shadow-xl border backdrop-blur-xl text-white min-w-80
           ${type === 'success' ? 'bg-green-600/95 border-green-500' : ''}
           ${type === 'error' ? 'bg-red-600/95 border-red-500' : ''}
           ${type === 'warning' ? 'bg-yellow-600/95 border-yellow-500' : ''}
+          ${type === 'info' ? 'bg-blue-600/95 border-blue-500' : ''}
         `}
       >
         {icons[type]}
         <div>
           <p className="font-semibold">
-            {type === 'success' ? 'Thành công' : type === 'error' ? 'Lỗi' : 'Cảnh báo'}
+            {type === 'success' ? 'Thành công' : type === 'error' ? 'Lỗi' : type === 'warning' ? 'Cảnh báo' : 'Thông báo'}
           </p>
           <p className="text-sm opacity-90">{message}</p>
         </div>

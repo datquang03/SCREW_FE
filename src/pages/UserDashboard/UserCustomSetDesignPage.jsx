@@ -10,13 +10,14 @@ import {
   Spin,
   Modal,
   Button,
-  message,
   Descriptions,
   Typography,
 } from "antd";
 import dayjs from "dayjs";
 import DataTable from "../../components/dashboard/DataTable";
 import { FiPackage, FiClock, FiCheckCircle, FiXCircle } from "react-icons/fi";
+import useToast from "../../hooks/useToast";
+import ToastNotification from "../../components/ToastNotification";
 
 const { Title, Text } = Typography;
 
@@ -25,6 +26,7 @@ const UserCustomSetDesignPage = () => {
   const { myCustomRequests = [], loading } = useSelector((s) => s.setDesign || {});
   const [detail, setDetail] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const { toast, success, error, closeToast } = useToast();
 
   const formatBudget = (budget) => {
     if (!budget) return "Không rõ";
@@ -121,9 +123,9 @@ const UserCustomSetDesignPage = () => {
                 setDeletingId(record._id);
                 try {
                   await dispatch(deleteMyCustomSetDesign(record._id)).unwrap();
-                  message.success("Đã xóa yêu cầu");
+                  success("Đã xóa yêu cầu");
                 } catch (err) {
-                  message.error(err?.message || "Xóa thất bại");
+                  error(err?.message || "Xóa thất bại");
                 } finally {
                   setDeletingId(null);
                 }
@@ -145,6 +147,14 @@ const UserCustomSetDesignPage = () => {
 
   return (
     <div className="space-y-6">
+      {toast && (
+        <ToastNotification
+          type={toast.type}
+          message={toast.message}
+          onClose={closeToast}
+          duration={toast.duration}
+        />
+      )}
       <div className="relative overflow-hidden rounded-2xl p-6 md:p-8 bg-gradient-to-br from-blue-100 via-indigo-50 to-white shadow-lg border border-blue-200/50">
         <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-blue-300/30 blur-2xl" />
         <div className="relative z-10">
