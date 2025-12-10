@@ -1,3 +1,4 @@
+// src/pages/Staff/StaffProfilePage.jsx
 import React, { useEffect, useState, useRef } from "react";
 import {
   Card,
@@ -11,6 +12,7 @@ import {
   Avatar,
   Spin,
   message,
+  Modal,
 } from "antd";
 import {
   FiUser,
@@ -37,16 +39,16 @@ const StaffProfilePage = () => {
   const [editing, setEditing] = useState(false);
   const [form] = Form.useForm();
   const [passwordForm] = Form.useForm();
+
+  const [passwordModalVisible, setPasswordModalVisible] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState(null);
 
-  // === GỌI GET CURRENT USER ===
   useEffect(() => {
     dispatch(getCurrentUser());
   }, [dispatch]);
 
-  // === UPDATE FORM SAU KHI LẤY XONG USER ===
   useEffect(() => {
     if (user) {
       form.setFieldsValue({
@@ -58,56 +60,63 @@ const StaffProfilePage = () => {
     }
   }, [user, form]);
 
-  // Không cần sync avatarPreview với user avatar
-  // avatarPreview chỉ dùng cho base64 preview khi đang upload
-
-  // === HANDLE AVATAR CLICK ===
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
   };
 
-  // === HANDLE FILE SELECT ===
   const handleFileSelect = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     if (!file.type.startsWith("image/")) {
       message.error("Vui lòng chọn file ảnh");
       return;
     }
 
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       message.error("Kích thước ảnh không được vượt quá 5MB");
       return;
     }
 
-    // Tạo preview
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setAvatarPreview(reader.result);
-    };
+    reader.onloadend = () => setAvatarPreview(reader.result);
     reader.readAsDataURL(file);
 
-    // Upload avatar
     setUploadingAvatar(true);
     try {
       await dispatch(uploadAvatar({ avatar: file })).unwrap();
       message.success("Cập nhật avatar thành công");
-
-      // Refresh user data từ server để lấy avatar URL mới
       await dispatch(getCurrentUser()).unwrap();
-
-      // Clear preview để dùng URL từ server
       setAvatarPreview(null);
     } catch (err) {
       message.error(err?.message || "Upload avatar thất bại");
-      // Giữ preview nếu upload thất bại
     } finally {
       setUploadingAvatar(false);
-      // Reset input để có thể chọn lại file giống nhau
       e.target.value = null;
+    }
+  };
+
+  const handleChangePassword = async (values) => {
+    if (values.newPassword !== values.confirmPassword) {
+      message.warning("Mật khẩu mới và xác nhận không khớp");
+      return;
+    }
+
+    setChangingPassword(true);
+    try {
+      await dispatch(
+        changePassword({
+          oldPassword: values.oldPassword,
+          newPassword: values.newPassword,
+        })
+      ).unwrap();
+      message.success("Đổi mật khẩu thành công!");
+      passwordForm.resetFields();
+      setPasswordModalVisible(false);
+    } catch (err) {
+      message.error(err?.message || "Đổi mật khẩu thất bại");
+    } finally {
+      setChangingPassword(false);
     }
   };
 
@@ -134,12 +143,11 @@ const StaffProfilePage = () => {
       </div>
 
       <Row gutter={24}>
-        {/* LEFT COLUMN */}
+        {/* LEFT COLUMN - AVATAR & INFO */}
         <Col xs={24} md={8}>
           <Card className="text-center shadow-lg border border-gray-100 rounded-2xl">
             <div className="relative inline-block">
               <Avatar
-                key={user?.avatar}
                 size={120}
                 src={
                   avatarPreview &&
@@ -151,9 +159,6 @@ const StaffProfilePage = () => {
                 icon={<FiUser />}
                 className="mb-4 cursor-pointer hover:opacity-80 transition-opacity"
                 onClick={handleAvatarClick}
-                onError={(e) => {
-                  e.target.src = undefined;
-                }}
               />
               {uploadingAvatar && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
@@ -168,6 +173,7 @@ const StaffProfilePage = () => {
               style={{ display: "none" }}
               onChange={handleFileSelect}
             />
+
             <Title level={4} className="mb-1">
               {user.fullName}
             </Title>
@@ -175,21 +181,19 @@ const StaffProfilePage = () => {
               {user.role === "staff" ? "Nhân viên Studio" : user.role}
             </Tag>
 
-            <div className="mt-4 space-y-2 text-left">
+            <div className="mt-6 space-y-3 text-left">
               <div className="flex justify-between">
                 <Text className="text-gray-500">Trạng thái</Text>
                 <Tag color={user.isActive ? "green" : "red"}>
                   {user.isActive ? "Đang hoạt động" : "Không hoạt động"}
                 </Tag>
               </div>
-
               <div className="flex justify-between">
                 <Text className="text-gray-500">Email xác thực</Text>
                 <Tag color={user.isVerified ? "green" : "red"}>
                   {user.isVerified ? "Đã xác thực" : "Chưa xác thực"}
                 </Tag>
               </div>
-
               <div className="flex justify-between">
                 <Text className="text-gray-500">Ngày tạo</Text>
                 <Text strong>
@@ -202,6 +206,7 @@ const StaffProfilePage = () => {
 
         {/* RIGHT COLUMN */}
         <Col xs={24} md={16}>
+          {/* Thông tin liên hệ */}
           <Card
             title="Thông tin liên hệ"
             className="shadow-lg border border-gray-100 rounded-2xl"
@@ -210,11 +215,8 @@ const StaffProfilePage = () => {
                 type={editing ? "default" : "primary"}
                 icon={editing ? <FiSave /> : <FiEdit />}
                 onClick={() => {
-                  if (editing) {
-                    form.submit();
-                  } else {
-                    setEditing(true);
-                  }
+                  if (editing) form.submit();
+                  else setEditing(true);
                 }}
               >
                 {editing ? "Lưu" : "Chỉnh sửa"}
@@ -229,7 +231,6 @@ const StaffProfilePage = () => {
                   className="rounded-lg"
                 />
               </Form.Item>
-
               <Form.Item label="Email" name="email">
                 <Input
                   prefix={<FiMail />}
@@ -237,7 +238,6 @@ const StaffProfilePage = () => {
                   className="rounded-lg"
                 />
               </Form.Item>
-
               <Form.Item label="Số điện thoại" name="phone">
                 <Input
                   prefix={<FiPhone />}
@@ -245,7 +245,6 @@ const StaffProfilePage = () => {
                   className="rounded-lg"
                 />
               </Form.Item>
-
               <Form.Item label="Ghi chú" name="note">
                 <Input.TextArea
                   rows={4}
@@ -256,6 +255,7 @@ const StaffProfilePage = () => {
             </Form>
           </Card>
 
+          {/* Thông tin tài khoản */}
           <Card
             title="Thông tin tài khoản"
             className="mt-6 shadow-lg border border-gray-100 rounded-2xl"
@@ -265,12 +265,10 @@ const StaffProfilePage = () => {
                 <Text>Tên đăng nhập</Text>
                 <Text strong>{user.username}</Text>
               </div>
-
               <div className="flex justify-between">
                 <Text>Mã ID</Text>
                 <Text strong>{user._id}</Text>
               </div>
-
               <div className="flex justify-between">
                 <Text>Cập nhật gần nhất</Text>
                 <Text strong>
@@ -280,118 +278,110 @@ const StaffProfilePage = () => {
             </div>
           </Card>
 
-          {/* ĐỔI MẬT KHẨU */}
-          <Card
-            className="mt-6 shadow-lg border border-gray-100 rounded-2xl bg-gradient-to-br from-indigo-50 via-white to-slate-50"
-            title={
-              <div className="flex items-center gap-2">
-                <FiLock className="text-indigo-600" />
-                <span>Đổi mật khẩu</span>
+          {/* NÚT ĐỔI MẬT KHẨU */}
+          <Card className="mt-6 shadow-lg border border-gray-100 rounded-2xl bg-gradient-to-br from-indigo-50 via-white to-slate-50">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <FiLock className="text-indigo-600 text-xl" />
+                <Title level={5} className="!mb-0">
+                  Đổi mật khẩu
+                </Title>
               </div>
-            }
-          >
-            <Form
-              layout="vertical"
-              form={passwordForm}
-              onFinish={async (values) => {
-                const { oldPassword, newPassword, confirmPassword } = values;
-                if (newPassword !== confirmPassword) {
-                  message.warning("Mật khẩu mới và xác nhận không khớp");
-                  return;
-                }
-                setChangingPassword(true);
-                try {
-                  await dispatch(
-                    changePassword({ oldPassword, newPassword })
-                  ).unwrap();
-                  message.success("Đổi mật khẩu thành công");
-                  passwordForm.resetFields();
-                } catch (err) {
-                  message.error(
-                    err?.message ||
-                      err?.data?.message ||
-                      "Đổi mật khẩu thất bại"
-                  );
-                } finally {
-                  setChangingPassword(false);
-                }
-              }}
-            >
-              <Row gutter={16}>
-                <Col xs={24} md={12}>
-                  <Form.Item
-                    label="Mật khẩu hiện tại"
-                    name="oldPassword"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Vui lòng nhập mật khẩu hiện tại",
-                      },
-                    ]}
-                  >
-                    <Input.Password
-                      prefix={<FiLock />}
-                      className="rounded-lg"
-                      placeholder="Nhập mật khẩu hiện tại"
-                    />
-                  </Form.Item>
-                </Col>
-                <Col xs={24} md={12}>
-                  <Form.Item
-                    label="Mật khẩu mới"
-                    name="newPassword"
-                    rules={[
-                      { required: true, message: "Vui lòng nhập mật khẩu mới" },
-                      {
-                        min: 6,
-                        message: "Mật khẩu phải có ít nhất 6 ký tự",
-                      },
-                    ]}
-                  >
-                    <Input.Password
-                      prefix={<FiLock />}
-                      className="rounded-lg"
-                      placeholder="Nhập mật khẩu mới"
-                    />
-                  </Form.Item>
-                </Col>
-              </Row>
-
-              <Row gutter={16}>
-                <Col xs={24} md={12}>
-                  <Form.Item
-                    label="Xác nhận mật khẩu mới"
-                    name="confirmPassword"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Vui lòng xác nhận mật khẩu mới",
-                      },
-                    ]}
-                  >
-                    <Input.Password
-                      prefix={<FiLock />}
-                      className="rounded-lg"
-                      placeholder="Nhập lại mật khẩu mới"
-                    />
-                  </Form.Item>
-                </Col>
-              </Row>
-
-              <div className="flex justify-end">
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  loading={changingPassword}
-                  className="bg-indigo-600 hover:bg-indigo-700 px-6 rounded-lg"
-                >
-                  Cập nhật mật khẩu
-                </Button>
-              </div>
-            </Form>
+              <Button
+                type="primary"
+                icon={<FiLock />}
+                className="bg-indigo-600 hover:bg-indigo-700"
+                onClick={() => setPasswordModalVisible(true)}
+              >
+                Đổi mật khẩu
+              </Button>
+            </div>
           </Card>
         </Col>
       </Row>
+
+      {/* MODAL ĐỔI MẬT KHẨU */}
+      <Modal
+        title={
+          <div className="flex items-center gap-2">
+            <FiLock className="text-indigo-600" />
+            Đổi mật khẩu
+          </div>
+        }
+        open={passwordModalVisible}
+        onCancel={() => {
+          setPasswordModalVisible(false);
+          passwordForm.resetFields();
+        }}
+        footer={null}
+        width={520}
+        centered
+      >
+        <Form
+          layout="vertical"
+          form={passwordForm}
+          onFinish={handleChangePassword}
+        >
+          <Form.Item
+            label="Mật khẩu hiện tại"
+            name="oldPassword"
+            rules={[
+              { required: true, message: "Vui lòng nhập mật khẩu hiện tại" },
+            ]}
+          >
+            <Input.Password
+              prefix={<FiLock />}
+              placeholder="Nhập mật khẩu hiện tại"
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="Mật khẩu mới"
+            name="newPassword"
+            rules={[
+              { required: true, message: "Vui lòng nhập mật khẩu mới" },
+              { min: 6, message: "Mật khẩu phải có ít nhất 6 ký tự" },
+            ]}
+          >
+            <Input.Password
+              prefix={<FiLock />}
+              placeholder="Nhập mật khẩu mới"
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="Xác nhận mật khẩu mới"
+            name="confirmPassword"
+            rules={[
+              { required: true, message: "Vui lòng xác nhận mật khẩu mới" },
+            ]}
+          >
+            <Input.Password
+              prefix={<FiLock />}
+              placeholder="Nhập lại mật khẩu mới"
+            />
+          </Form.Item>
+
+          <div className="flex justify-end gap-3 mt-6">
+            <Button
+              onClick={() => {
+                setPasswordModalVisible(false);
+                passwordForm.resetFields();
+              }}
+            >
+              Hủy
+            </Button>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={changingPassword}
+              className="bg-indigo-600 hover:bg-indigo-700"
+            >
+              Cập nhật mật khẩu
+            </Button>
+          </div>
+        </Form>
+      </Modal>
     </div>
   );
 };

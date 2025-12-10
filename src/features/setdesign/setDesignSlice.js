@@ -477,7 +477,28 @@ export const getCustomRequestSetDesignById = createAsyncThunk(
     }
   }
 );
+export const updateCustomRequestStatus = createAsyncThunk(
+  "setDesign/updateCustomRequestStatus",
+  async ({ requestId, status }, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth || {};
 
+      const res = await axiosInstance.patch(
+        `/set-designs/custom-requests/${requestId}/status`,
+        { status }, // chỉ gửi đúng 1 field status → đúng chuẩn API
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        }
+      );
+
+      return res.data.data; // backend trả về custom request đã được update
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Cập nhật trạng thái thất bại" }
+      );
+    }
+  }
+);
 /* =============================
    INITIAL
 ============================= */
@@ -775,6 +796,28 @@ const setDesignSlice = createSlice({
         state.currentCustomRequest = action.payload;
       })
       .addCase(getCustomRequestSetDesignById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(updateCustomRequestStatus.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(updateCustomRequestStatus.fulfilled, (state, action) => {
+        state.loading = false;
+        const updated = action.payload;
+
+        // Cập nhật trong danh sách
+        const idx = state.customRequests.findIndex(
+          (r) => r._id === updated._id
+        );
+        if (idx !== -1) state.customRequests[idx] = updated;
+
+        // Cập nhật chi tiết nếu đang xem
+        if (state.currentCustomRequest?._id === updated._id) {
+          state.currentCustomRequest = updated;
+        }
+      })
+      .addCase(updateCustomRequestStatus.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

@@ -12,72 +12,74 @@ import {
   Table,
   Badge,
   Avatar,
-  Timeline,
-  Form,
-
 } from "antd";
 import {
-    FiClock,
-    FiUser,
-    FiMail,
-    FiPhone,
-    FiMessageSquare,
-    FiImage,
-    FiCheckCircle,
-    FiXCircle,
-    FiDollarSign,
-    FiSearch,
-    FiFilter,
-    FiEye,
-    FiEdit3,
-    FiPackage,
+  FiClock,
+  FiUser,
+  FiMail,
+  FiPhone,
+  FiMessageSquare,
+  FiImage,
+  FiCheckCircle,
+  FiXCircle,
+  FiDollarSign,
+  FiSearch,
+  FiEye,
+  FiEdit3,
+  FiPackage,
 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import ToastNotification from "../../components/ToastNotification";
 import { gsap } from "gsap";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { getCustomRequestSetDesign, getCustomRequestSetDesignById } from "../../features/setdesign/setDesignSlice";
+import {
+  getCustomRequestSetDesign,
+  getCustomRequestSetDesignById,
+  updateCustomRequestStatus,
+} from "../../features/setDesign/setDesignSlice";
+import { createMessage } from "../../features/message/messageSlice";
+
 dayjs.extend(relativeTime);
 
 const { Title, Text, Paragraph } = Typography;
-const { Option } = Select;
 
-const { TextArea } = Input; // Đúng cách trong Antd v5
 const statusConfig = {
-    pending: { color: "orange", label: "Chờ xử lý", icon: FiClock },
-    processing: { color: "blue", label: "Đang xử lý", icon: FiEdit3 },
-    completed: { color: "green", label: "Hoàn thành", icon: FiCheckCircle },
-    rejected: { color: "red", label: "Từ chối", icon: FiXCircle },
+  pending: { color: "orange", label: "Chờ xử lý", icon: FiClock },
+  processing: { color: "blue", label: "Đang xử lý", icon: FiEdit3 },
+  completed: { color: "green", label: "Hoàn thành", icon: FiCheckCircle },
+  rejected: { color: "red", label: "Từ chối", icon: FiXCircle },
 };
 
 const StaffCustomRequestPage = () => {
   const dispatch = useDispatch();
-  const { customRequests = [], loading } = useSelector((state) => state.setDesign || {});
+  const navigate = useNavigate();
+
+  const { customRequests = [], loading: setDesignLoading } = useSelector(
+    (state) => state.setDesign || {}
+  );
+  const { loading: msgLoading } = useSelector((state) => state.message || {});
+  const loading = setDesignLoading || msgLoading;
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [toast, setToast] = useState(null);
-
-  // Modal chi tiết
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
 
-  // Lấy danh sách
   useEffect(() => {
     dispatch(getCustomRequestSetDesign());
   }, [dispatch]);
 
-  const showToast = (type, message) => {
-    setToast({ type, message });
-    setTimeout(() => setToast(null), 3500);
+  const showToast = (type, msg) => {
+    setToast({ type, message: msg });
+    setTimeout(() => setToast(null), 4000);
   };
 
-  // Filter & Search client-side
   const filteredRequests = useMemo(() => {
     let result = [...customRequests];
-
     if (search) {
       const lower = search.toLowerCase();
       result = result.filter(
@@ -88,14 +90,8 @@ const StaffCustomRequestPage = () => {
           r.description?.toLowerCase().includes(lower)
       );
     }
-
-    if (statusFilter) {
-      result = result.filter((r) => r.status === statusFilter);
-    }
-
-    // Sắp xếp mới nhất trước
+    if (statusFilter) result = result.filter((r) => r.status === statusFilter);
     result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
     return result;
   }, [customRequests, search, statusFilter]);
 
@@ -114,11 +110,70 @@ const StaffCustomRequestPage = () => {
     }
   };
 
+  const handleStatusChange = async (newStatus) => {
+    if (!selectedRequest) return;
+    try {
+      await dispatch(
+        updateCustomRequestStatus({
+          requestId: selectedRequest._id,
+          status: newStatus,
+        })
+      ).unwrap();
+
+      dispatch(getCustomRequestSetDesign());
+      const updated = await dispatch(
+        getCustomRequestSetDesignById(selectedRequest._id)
+      ).unwrap();
+      setSelectedRequest(updated);
+
+      const msgMap = {
+        processing: "đã nhận xử lý",
+        rejected: "đã từ chối",
+        completed: "đánh dấu hoàn thành",
+      };
+      showToast("success", `Yêu cầu đã được ${msgMap[newStatus]}!`);
+    } catch (err) {
+      showToast("error", err?.message || "Cập nhật thất bại");
+    }
+  };
+
+  // Gửi tin nhắn + chuyển sang trang message và tự động mở đúng người
+  const handleSendMessage = async () => {
+    if (!selectedRequest?.userId) {
+      showToast("error", "Không tìm thấy ID khách hàng");
+      return;
+    }
+
+    try {
+      const greeting = `Chào bạn ${
+        selectedRequest.customerName
+      }!\nMình là staff phụ trách yêu cầu thiết kế tùy chỉnh (mã #${selectedRequest._id
+        .slice(-8)
+        .toUpperCase()}).\nMình đã nhận yêu cầu và sẽ hỗ trợ bạn ngay nhé!`;
+
+      await dispatch(
+        createMessage({
+          toUserId: selectedRequest.userId,
+          content: greeting,
+        })
+      ).unwrap();
+
+      showToast("success", "Đã mở cuộc trò chuyện với khách!");
+      setDetailModalVisible(false);
+      navigate(`/message?user=${selectedRequest.userId}`);
+    } catch (err) {
+      showToast("error", err?.message || "Gửi tin nhắn thất bại");
+    }
+  };
+
   const getStatusTag = (status) => {
     const config = statusConfig[status] || statusConfig.pending;
     const Icon = config.icon;
     return (
-      <Tag color={config.color} className="flex items-center gap-1 text-xs font-medium px-3 py-1">
+      <Tag
+        color={config.color}
+        className="flex items-center gap-1 text-xs font-medium px-3 py-1"
+      >
         <Icon className="text-base" />
         {config.label}
       </Tag>
@@ -169,9 +224,12 @@ const StaffCustomRequestPage = () => {
       dataIndex: "description",
       key: "description",
       render: (text) => (
-        <Paragraph ellipsis={{ rows: 2, expandable: false }} className="text-sm max-w-xs">
+        <Typography.Paragraph
+          ellipsis={{ rows: 2 }}
+          className="text-sm max-w-xs m-0"
+        >
           {text || "Không có mô tả"}
-        </Paragraph>
+        </Typography.Paragraph>
       ),
     },
     {
@@ -218,13 +276,13 @@ const StaffCustomRequestPage = () => {
               Quản lý và xử lý yêu cầu thiết kế riêng từ khách hàng
             </Text>
           </div>
-          <div className="flex items-center gap-3">
-            <Badge count={customRequests.filter((r) => r.status === "pending").length} overflowCount={99}>
-              <Tag color="orange" className="px-4 py-2 text-sm font-medium">
-                Chờ xử lý
-              </Tag>
-            </Badge>
-          </div>
+          <Badge
+            count={customRequests.filter((r) => r.status === "pending").length}
+          >
+            <Tag color="orange" className="px-4 py-2 text-sm font-medium">
+              Chờ xử lý
+            </Tag>
+          </Badge>
         </div>
       </div>
 
@@ -233,7 +291,9 @@ const StaffCustomRequestPage = () => {
         <Card className="rounded-2xl border border-white/60 bg-white shadow-lg">
           <div className="flex items-center justify-between">
             <div>
-              <Text className="text-sm uppercase text-gray-500">Tổng yêu cầu</Text>
+              <Text className="text-sm uppercase text-gray-500">
+                Tổng yêu cầu
+              </Text>
               <Title level={3} className="mt-1 !mb-0 text-purple-600">
                 {customRequests.length}
               </Title>
@@ -255,7 +315,9 @@ const StaffCustomRequestPage = () => {
         <Card className="rounded-2xl border border-white/60 bg-white shadow-lg">
           <div className="flex items-center justify-between">
             <div>
-              <Text className="text-sm uppercase text-gray-500">Đang xử lý</Text>
+              <Text className="text-sm uppercase text-gray-500">
+                Đang xử lý
+              </Text>
               <Title level={3} className="mt-1 !mb-0 text-blue-600">
                 {customRequests.filter((r) => r.status === "processing").length}
               </Title>
@@ -266,7 +328,9 @@ const StaffCustomRequestPage = () => {
         <Card className="rounded-2xl border border-white/60 bg-white shadow-lg">
           <div className="flex items-center justify-between">
             <div>
-              <Text className="text-sm uppercase text-gray-500">Hoàn thành</Text>
+              <Text className="text-sm uppercase text-gray-500">
+                Hoàn thành
+              </Text>
               <Title level={3} className="mt-1 !mb-0 text-green-600">
                 {customRequests.filter((r) => r.status === "completed").length}
               </Title>
@@ -299,10 +363,10 @@ const StaffCustomRequestPage = () => {
             setCurrentPage(1);
           }}
         >
-          <Option value="pending">Chờ xử lý</Option>
-          <Option value="processing">Đang xử lý</Option>
-          <Option value="completed">Hoàn thành</Option>
-          <Option value="rejected">Từ chối</Option>
+          <Select.Option value="pending">Chờ xử lý</Select.Option>
+          <Select.Option value="processing">Đang xử lý</Select.Option>
+          <Select.Option value="completed">Hoàn thành</Select.Option>
+          <Select.Option value="rejected">Từ chối</Select.Option>
         </Select>
       </div>
 
@@ -328,243 +392,339 @@ const StaffCustomRequestPage = () => {
         </Card>
       )}
 
-      {/* Modal Chi Tiết */}
-     {/* MODAL CHI TIẾT - PHIÊN BẢN SIÊU XỊN 2025 */}
-<Modal
-  open={detailModalVisible}
-  onCancel={() => setDetailModalVisible(false)}
-  footer={null}
-  width={900}
-  centered
-  maskClosable
-  closeIcon={null}
-  className="custom-request-detail-modal"
-  afterOpenChange={(open) => {
-    if (open) {
-      gsap.fromTo(
-        ".detail-content",
-        { y: -60, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.7, ease: "power4.out", stagger: 0.1 }
-      );
-    }
-  }}
->
-  {selectedRequest && (
-    <div className="detail-content">
-      {/* Header đẹp mắt */}
-      <div className="text-center mb-10">
-        <div className="relative inline-block">
-          <div className="mx-auto mb-5 flex h-28 w-28 items-center justify-center rounded-full bg-gradient-to-br from-purple-600 via-pink-500 to-rose-500 p-1 shadow-2xl">
-            <div className="flex h-full w-full items-center justify-center rounded-full bg-white text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-purple-600 to-pink-600">
-              {selectedRequest.customerName.charAt(0).toUpperCase()}
-            </div>
-          </div>
-          <div className="absolute -bottom-2 -right-2 rounded-full bg-orange-500 px-3 py-1 text-xs font-bold text-white shadow-lg">
-            MỚI
-          </div>
-        </div>
-
-        <Title level={2} className="mt-4 !mb-1 text-gray-800">
-          {selectedRequest.customerName}
-        </Title>
-        <Text type="secondary" className="text-lg">
-          Yêu cầu thiết kế #{selectedRequest._id.slice(-8).toUpperCase()}
-        </Text>
-        <div className="mt-3">
-          {getStatusTag(selectedRequest.status)}
-        </div>
-      </div>
-
-      {/* Grid thông tin chính */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3 mb-8">
-        {/* Cột 1: Thông tin liên hệ */}
-        <Card className="rounded-2xl border-purple-100 bg-gradient-to-br from-purple-50 to-white shadow-md">
-          <Title level={5} className="mb-4 flex items-center gap-2 text-purple-700">
-            <FiUser /> Thông tin khách hàng
-          </Title>
-          <div className="space-y-4">
-            <div>
-              <Text type="secondary" className="text-xs">Họ tên</Text>
-              <Text strong className="block">{selectedRequest.customerName}</Text>
-            </div>
-            <div>
-              <Text type="secondary" className="text-xs">Email</Text>
-              <Text strong className="flex items-center gap-2">
-                <FiMail className="text-purple-500" />
-                {selectedRequest.email}
-              </Text>
-            </div>
-            <div>
-              <Text type="secondary" className="text-xs">Số điện thoại</Text>
-              <Text strong className="flex items-center gap-2">
-                <FiPhone className="text-purple-500" />
-                {selectedRequest.phoneNumber}
-              </Text>
-            </div>
-          </div>
-        </Card>
-
-        {/* Cột 2: Thời gian & AI */}
-        <Card className="rounded-2xl border-indigo-100 bg-gradient-to-br from-indigo-50 to-white shadow-md">
-          <Title level={5} className="mb-4 flex items-center gap-2 text-indigo-700">
-            <FiClock /> Thời gian & AI
-          </Title>
-          <div className="space-y-4">
-            <div>
-              <Text type="secondary" className="text-xs">Thời gian gửi</Text>
-              <Text strong className="block">
-                {dayjs(selectedRequest.createdAt).format("DD/MM/YYYY HH:mm")}
-              </Text>
-              <Text type="success" className="text-sm">
-                {dayjs(selectedRequest.createdAt).fromNow()}
-              </Text>
-            </div>
-            <div>
-              <Text type="secondary" className="text-xs">Mô hình AI sử dụng</Text>
-              <Tag color="purple" className="mt-1">
-                {selectedRequest.aiModel || "gemini-1.5-flash"}
-              </Tag>
-            </div>
-            <div>
-              <Text type="secondary" className="text-xs">Số lần thử tạo</Text>
-              <Text strong>{selectedRequest.aiGenerationAttempts || 0} lần</Text>
-            </div>
-          </div>
-        </Card>
-
-        {/* Cột 3: Trạng thái xử lý */}
-        <Card className="rounded-2xl border-green-100 bg-gradient-to-br from-emerald-50 to-white shadow-md">
-          <Title level={5} className="mb-4 flex items-center gap-2 text-emerald-700">
-            <FiPackage /> Tình trạng xử lý
-          </Title>
-          <div className="space-y-4">
-            {selectedRequest.processedBy ? (
-              <>
-                <div>
-                  <Text type="secondary" className="text-xs">Đang xử lý bởi</Text>
-                  <Text strong className="block text-emerald-600">
-                    {selectedRequest.processedBy.email}
-                  </Text>
+      {/* MODAL CHI TIẾT */}
+      <Modal
+        open={detailModalVisible}
+        onCancel={() => setDetailModalVisible(false)}
+        footer={null}
+        width={1000}
+        centered
+        maskClosable={false}
+        closeIcon={null}
+        className="custom-request-detail-modal"
+        afterOpenChange={(open) => {
+          if (open) {
+            gsap.fromTo(
+              ".detail-content",
+              { y: -60, opacity: 0 },
+              {
+                y: 0,
+                opacity: 1,
+                duration: 0.7,
+                ease: "power4.out",
+                stagger: 0.1,
+              }
+            );
+          }
+        }}
+      >
+        {selectedRequest && (
+          <div className="detail-content">
+            {/* Header */}
+            <div className="text-center mb-10">
+              <div className="relative inline-block">
+                <div className="mx-auto mb-5 flex h-28 w-28 items-center justify-center rounded-full bg-gradient-to-br from-purple-600 via-pink-500 to-rose-500 p-1 shadow-2xl">
+                  <div className="flex h-full w-full items-center justify-center rounded-full bg-white text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-purple-600 to-pink-600">
+                    {selectedRequest.customerName.charAt(0).toUpperCase()}
+                  </div>
                 </div>
-                {selectedRequest.staffNotes && (
+                <div className="absolute -bottom-2 -right-2 rounded-full bg-orange-500 px-3 py-1 text-xs font-bold text-white shadow-lg">
+                  MỚI
+                </div>
+              </div>
+
+              <Title level={2} className="mt-4 !mb-1 text-gray-800">
+                {selectedRequest.customerName}
+              </Title>
+              <Text type="secondary" className="text-lg">
+                Yêu cầu thiết kế #{selectedRequest._id.slice(-8).toUpperCase()}
+              </Text>
+              <div className="mt-3">{getStatusTag(selectedRequest.status)}</div>
+            </div>
+
+            {/* Grid thông tin */}
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3 mb-8">
+              {/* Cột 1 */}
+              <Card className="rounded-2xl border-purple-100 bg-gradient-to-br from-purple-50 to-white shadow-md">
+                <Title
+                  level={5}
+                  className="mb-4 flex items-center gap-2 text-purple-700"
+                >
+                  <FiUser /> Thông tin khách hàng
+                </Title>
+                <div className="space-y-4">
                   <div>
-                    <Text type="secondary" className="text-xs">Ghi chú nhân viên</Text>
-                    <Text italic className="block text-gray-700">
-                      "{selectedRequest.staffNotes}"
+                    <Text type="secondary" className="text-xs">
+                      Họ tên
+                    </Text>
+                    <Text strong className="block">
+                      {selectedRequest.customerName}
                     </Text>
                   </div>
+                  <div>
+                    <Text type="secondary" className="text-xs">
+                      Email
+                    </Text>
+                    <Text strong className="flex items-center gap-2">
+                      <FiMail className="text-purple-500" />
+                      {selectedRequest.email}
+                    </Text>
+                  </div>
+                  <div>
+                    <Text type="secondary" className="text-xs">
+                      Số điện thoại
+                    </Text>
+                    <Text strong className="flex items-center gap-2">
+                      <FiPhone className="text-purple-500" />
+                      {selectedRequest.phoneNumber}
+                    </Text>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Cột 2 */}
+              <Card className="rounded-2xl border-indigo-100 bg-gradient-to-br from-indigo-50 to-white shadow-md">
+                <Title
+                  level={5}
+                  className="mb-4 flex items-center gap-2 text-indigo-700"
+                >
+                  <FiClock /> Thời gian & AI
+                </Title>
+                <div className="space-y-4">
+                  <div>
+                    <Text type="secondary" className="text-xs">
+                      Thời gian gửi
+                    </Text>
+                    <Text strong className="block">
+                      {dayjs(selectedRequest.createdAt).format(
+                        "DD/MM/YYYY HH:mm"
+                      )}
+                    </Text>
+                    <Text type="success" className="text-sm">
+                      {dayjs(selectedRequest.createdAt).fromNow()}
+                    </Text>
+                  </div>
+                  <div>
+                    <Text type="secondary" className="text-xs">
+                      Mô hình AI
+                    </Text>
+                    <Tag color="purple" className="mt-1">
+                      {selectedRequest.aiModel || "gemini-1.5-flash"}
+                    </Tag>
+                  </div>
+                  <div>
+                    <Text type="secondary" className="text-xs">
+                      Số lần thử
+                    </Text>
+                    <Text strong>
+                      {selectedRequest.aiGenerationAttempts || 0} lần
+                    </Text>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Cột 3 */}
+              <Card className="rounded-2xl border-green-100 bg-gradient-to-br from-emerald-50 to-white shadow-md">
+                <Title
+                  level={5}
+                  className="mb-4 flex items-center gap-2 text-emerald-700"
+                >
+                  <FiPackage /> Tình trạng xử lý
+                </Title>
+                {selectedRequest.processedBy ? (
+                  <>
+                    <div>
+                      <Text type="secondary" className="text-xs">
+                        Đang xử lý bởi
+                      </Text>
+                      <Text strong className="block text-emerald-600">
+                        {selectedRequest.processedBy.email}
+                      </Text>
+                    </div>
+                    {selectedRequest.staffNotes && (
+                      <div>
+                        <Text type="secondary" className="text-xs">
+                          Ghi chú
+                        </Text>
+                        <Text italic className="block text-gray-700">
+                          "{selectedRequest.staffNotes}"
+                        </Text>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <Text type="warning" strong>
+                    Chưa có nhân viên xử lý
+                  </Text>
                 )}
-              </>
-            ) : (
-              <Text type="warning" strong>Chưa có nhân viên xử lý</Text>
+
+                {selectedRequest.convertedToDesignId ? (
+                  <div className="mt-4 rounded-lg bg-green-100 p-3 text-center">
+                    <FiCheckCircle className="mx-auto text-2xl text-green-600 mb-2" />
+                    <Text strong className="block text-green-700">
+                      ĐÃ CHUYỂN THÀNH SẢN PHẨM
+                    </Text>
+                    <Tag color="success" className="mt-2">
+                      {selectedRequest.convertedToDesignId.name}
+                    </Tag>
+                  </div>
+                ) : (
+                  <Text type="secondary">Chưa chuyển thành thiết kế</Text>
+                )}
+              </Card>
+            </div>
+
+            {/* Mô tả yêu cầu */}
+            <Card
+              title={
+                <span className="flex items-center gap-3 text-lg font-semibold">
+                  <FiMessageSquare className="text-purple-600" />
+                  Mô tả yêu cầu từ khách
+                </span>
+              }
+              className="mb-6 rounded-2xl border-purple-200 bg-purple-50/50"
+            >
+              <Typography.Paragraph className="text-base leading-relaxed text-gray-800 whitespace-pre-wrap">
+                {selectedRequest.description || "Không có nội dung mô tả"}
+              </Typography.Paragraph>
+            </Card>
+
+            {/* Hình ảnh tham khảo */}
+            {selectedRequest.referenceImages &&
+              selectedRequest.referenceImages.length > 0 && (
+                <Card
+                  title={
+                    <span className="flex items-center gap-2">
+                      <FiImage /> Hình ảnh tham khảo (
+                      {selectedRequest.referenceImages.length})
+                    </span>
+                  }
+                  className="mb-6"
+                >
+                  <div className="grid grid-cols-3 gap-3">
+                    {selectedRequest.referenceImages.map((img, idx) => (
+                      <img
+                        key={idx}
+                        src={img}
+                        alt={`Tham khảo ${idx + 1}`}
+                        className="rounded-lg border-2 border-dashed border-purple-200 object-cover w-full h-32 hover:border-purple-400 transition-all"
+                      />
+                    ))}
+                  </div>
+                </Card>
+              )}
+
+            {/* Hình ảnh AI tạo */}
+            {selectedRequest.generatedImage && (
+              <Card title="Kết quả AI đã tạo" className="mb-6">
+                <img
+                  src={selectedRequest.generatedImage}
+                  alt="AI Generated"
+                  className="rounded-xl shadow-lg max-w-full mx-auto"
+                />
+              </Card>
             )}
 
-            {selectedRequest.convertedToDesignId ? (
-              <div className="mt-4 rounded-lg bg-green-100 p-3 text-center">
-                <FiCheckCircle className="mx-auto text-2xl text-green-600 mb-2" />
-                <Text strong className="block text-green-700">
-                  ĐÃ CHUYỂN THÀNH SẢN PHẨM
+            {/* Ngân sách */}
+            {(selectedRequest.budgetRange?.min ||
+              selectedRequest.budgetRange?.max) && (
+              <Card className="rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200">
+                <Title
+                  level={5}
+                  className="flex items-center gap-2 text-amber-700"
+                >
+                  <FiDollarSign /> Ngân sách mong muốn
+                </Title>
+                <Text strong className="text-xl">
+                  {selectedRequest.budgetRange.min
+                    ? `${selectedRequest.budgetRange.min.toLocaleString(
+                        "vi-VN"
+                      )}₫`
+                    : "Không giới hạn"}{" "}
+                  →{" "}
+                  {selectedRequest.budgetRange.max
+                    ? `${selectedRequest.budgetRange.max.toLocaleString(
+                        "vi-VN"
+                      )}₫`
+                    : "Không giới hạn"}
                 </Text>
-                <Tag color="success" className="mt-2">
-                  {selectedRequest.convertedToDesignId.name}
-                </Tag>
-              </div>
-            ) : (
-              <Text type="secondary">Chưa chuyển thành thiết kế</Text>
+              </Card>
             )}
+
+            {/* FOOTER - NÚT HÀNH ĐỘNG */}
+            <div className="flex flex-col sm:flex-row justify-between items-center mt-12 pt-8 border-t-2 border-gray-100 gap-4">
+              <Text type="secondary" className="text-sm">
+                Tạo lúc:{" "}
+                {dayjs(selectedRequest.createdAt).format(
+                  "HH:mm, ngày DD/MM/YYYY"
+                )}
+              </Text>
+
+              <div className="flex flex-wrap justify-end gap-3">
+                {/* PENDING */}
+                {selectedRequest.status === "pending" && (
+                  <>
+                    <Button
+                      size="large"
+                      danger
+                      icon={<FiXCircle />}
+                      loading={loading}
+                      onClick={() => handleStatusChange("rejected")}
+                    >
+                      Từ chối
+                    </Button>
+                    <Button
+                      size="large"
+                      type="primary"
+                      icon={<FiCheckCircle />}
+                      className="bg-blue-600 hover:bg-blue-700 border-blue-600"
+                      loading={loading}
+                      onClick={() => handleStatusChange("processing")}
+                    >
+                      Nhận xử lý
+                    </Button>
+                  </>
+                )}
+
+                {/* PROCESSING */}
+                {selectedRequest.status === "processing" && (
+                  <>
+                    <Button
+                      size="large"
+                      icon={<FiMessageSquare />}
+                      type="default"
+                      className="border-purple-600 text-purple-600 hover:bg-purple-50"
+                      onClick={handleSendMessage}
+                    >
+                      Gửi tin nhắn
+                    </Button>
+                    <Button
+                      size="large"
+                      type="primary"
+                      icon={<FiCheckCircle />}
+                      className="bg-emerald-600 hover:bg-emerald-700"
+                      loading={loading}
+                      onClick={() => handleStatusChange("completed")}
+                    >
+                      Hoàn thành
+                    </Button>
+                  </>
+                )}
+
+                {/* COMPLETED / REJECTED */}
+                {["completed", "rejected"].includes(selectedRequest.status) && (
+                  <Button
+                    size="large"
+                    onClick={() => setDetailModalVisible(false)}
+                  >
+                    Đóng
+                  </Button>
+                )}
+              </div>
+            </div>
           </div>
-        </Card>
-      </div>
-
-      {/* Mô tả yêu cầu - nổi bật */}
-      <Card
-        title={
-          <span className="flex items-center gap-3 text-lg font-semibold">
-            <FiMessageSquare className="text-purple-600" />
-            Mô tả yêu cầu từ khách
-          </span>
-        }
-        className="mb-6 rounded-2xl border-purple-200 bg-purple-50/50"
-      >
-        <Paragraph className="text-base leading-relaxed text-gray-800 whitespace-pre-wrap">
-          {selectedRequest.description || "Không có nội dung mô tả"}
-        </Paragraph>
-      </Card>
-
-      {/* Hình ảnh tham khảo */}
-      {selectedRequest.referenceImages && selectedRequest.referenceImages.length > 0 && (
-        <Card
-          title={
-            <span className="flex items-center gap-2">
-              <FiImage /> Hình ảnh tham khảo ({selectedRequest.referenceImages.length})
-            </span>
-          }
-          className="mb-6"
-        >
-          <div className="grid grid-cols-3 gap-3">
-            {selectedRequest.referenceImages.map((img, idx) => (
-              <img
-                key={idx}
-                src={img}
-                alt={`Tham khảo ${idx + 1}`}
-                className="rounded-lg border-2 border-dashed border-purple-200 object-cover w-full h-32 hover:border-purple-400 transition-all"
-              />
-            ))}
-          </div>
-        </Card>
-      )}
-
-      {/* Hình ảnh AI đã tạo (nếu có) */}
-      {selectedRequest.generatedImage && (
-        <Card title="Kết quả AI đã tạo" className="mb-6">
-          <img
-            src={selectedRequest.generatedImage}
-            alt="AI Generated"
-            className="rounded-xl shadow-lg max-w-full mx-auto"
-          />
-        </Card>
-      )}
-
-      {/* Ngân sách */}
-      {(selectedRequest.budgetRange?.min || selectedRequest.budgetRange?.max) && (
-        <Card className="rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200">
-          <Title level={5} className="flex items-center gap-2 text-amber-700">
-            <FiDollarSign /> Ngân sách mong muốn
-          </Title>
-          <Text strong className="text-xl">
-            {selectedRequest.budgetRange.min
-              ? `${selectedRequest.budgetRange.min.toLocaleString("vi-VN")}₫`
-              : "Không giới hạn"}{" "}
-            →{" "}
-            {selectedRequest.budgetRange.max
-              ? `${selectedRequest.budgetRange.max.toLocaleString("vi-VN")}₫`
-              : "Không giới hạn"}
-          </Text>
-        </Card>
-      )}
-
-      {/* Footer */}
-      <div className="flex justify-between items-center mt-10 pt-6 border-t border-gray-200">
-        <Text type="secondary">
-          Yêu cầu được tạo {dayjs(selectedRequest.createdAt).format("HH:mm, ngày DD/MM/YYYY")}
-        </Text>
-        <div className="flex gap-3">
-          <Button size="large" onClick={() => setDetailModalVisible(false)}>
-            Đóng
-          </Button>
-          <Button
-            type="primary"
-            size="large"
-            className="bg-gradient-to-r from-purple-600 to-pink-600 border-0 font-semibold px-8"
-            icon={<FiEdit3 />}
-          >
-            Xử lý yêu cầu này
-          </Button>
-        </div>
-      </div>
-    </div>
-  )}
-</Modal>
+        )}
+      </Modal>
     </div>
   );
 };
