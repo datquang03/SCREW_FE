@@ -129,7 +129,19 @@ export const deleteMessage = createAsyncThunk(
 );
 
 /* =====================================================
-   SLICE – ĐÃ BỔ SUNG LẠI ĐỦ CASE
+   INITIAL STATE
+===================================================== */
+const initialState = {
+  conversations: [], // danh sách các cuộc trò chuyện
+  messages: {}, // { [conversationId]: [...] } – lưu tin nhắn theo conversation
+  loading: false, // loading chung (send, delete, mark read...)
+  loadingConversations: false, // loading danh sách conversations
+  loadingMessages: false, // loading tin nhắn của 1 conversation
+  error: null,
+};
+
+/* =====================================================
+   SLICE
 ===================================================== */
 const messageSlice = createSlice({
   name: "message",

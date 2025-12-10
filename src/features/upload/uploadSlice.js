@@ -30,6 +30,32 @@ export const uploadImages = createAsyncThunk(
   }
 );
 
+// 1b. Upload 1 ảnh (đơn lẻ)
+export const uploadImage = createAsyncThunk(
+  "upload/uploadImage",
+  async (fileOrFiles, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+      const formData = new FormData();
+      const files = Array.isArray(fileOrFiles) ? fileOrFiles : [fileOrFiles];
+      files.forEach((f) => formData.append("images", f));
+
+      const res = await axiosInstance.post("/set-designs/upload-images", formData, {
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          // Để axios tự set boundary cho multipart
+        },
+      });
+
+      return res.data.data || res.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Upload ảnh thất bại" }
+      );
+    }
+  }
+);
+
 // 2. Upload media trong studio (có thể là video ngắn, ảnh RAW, v.v.)
 export const uploadStudioMedia = createAsyncThunk(
   "upload/uploadStudioMedia",
@@ -219,6 +245,7 @@ const uploadSlice = createSlice({
   extraReducers: (builder) => {
     const uploadActions = [
       uploadImages,
+      uploadImage,
       uploadStudioMedia,
       uploadEquipmentImage,
       uploadReviewImages,
@@ -237,11 +264,21 @@ const uploadSlice = createSlice({
         .addCase(action.fulfilled, (state, action) => {
           state.uploading = false;
           // Lưu kết quả nếu cần dùng lại ngay (ví dụ preview)
-          if (action.meta.arg.files) {
+          if (action.meta.arg?.files) {
             state.lastUploadedImages = Array.isArray(action.payload)
               ? action.payload
               : action.payload.images || [];
-          } else if (action.meta.arg.file && action.type.includes("Video")) {
+          } else if (
+            action.meta.arg &&
+            action.type.includes("upload/uploadImage")
+          ) {
+            const img =
+              action.payload?.image ||
+              action.payload?.url ||
+              action.payload?.secure_url ||
+              action.payload;
+            state.lastUploadedImages = img ? [img] : [];
+          } else if (action.meta.arg?.file && action.type.includes("Video")) {
             state.lastUploadedVideo = action.payload;
           }
         })

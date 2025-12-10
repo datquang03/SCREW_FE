@@ -3,9 +3,20 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Button, Input, Tag, Spin } from "antd";
 import { useParams, useNavigate } from "react-router-dom";
-import { FiUser, FiPhone, FiMail, FiStar, FiMessageSquare } from "react-icons/fi";
+import {
+  FiUser,
+  FiPhone,
+  FiMail,
+  FiStar,
+  FiMessageSquare,
+} from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
-import { getSetDesignById } from "../../features/setDesign/setDesignSlice";
+import {
+  getSetDesignById,
+  customSetDesignRequest,
+} from "../../features/setDesign/setDesignSlice";
+import { uploadImage } from "../../features/upload/uploadSlice";
+import { message } from "antd";
 
 const BookingSetDesignPage = () => {
   const { id } = useParams();
@@ -13,6 +24,8 @@ const BookingSetDesignPage = () => {
   const navigate = useNavigate();
 
   const { currentSetDesign, loading } = useSelector((state) => state.setDesign);
+  const { uploading } = useSelector((s) => s.upload || {});
+  const [localFile, setLocalFile] = useState(null);
 
   // FORM CUSTOM REQUEST
   const [form, setForm] = useState({
@@ -21,6 +34,7 @@ const BookingSetDesignPage = () => {
     phoneNumber: "",
     description: "",
   });
+  const [submitting, setSubmitting] = useState(false);
 
   const updateField = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -109,7 +123,6 @@ const BookingSetDesignPage = () => {
             </h2>
 
             <div className="space-y-6">
-
               {/* FULL NAME */}
               <div className="flex items-center gap-3 bg-white rounded-xl shadow p-4 border border-gray-100">
                 <FiUser className="text-indigo-500 text-xl" />
@@ -157,14 +170,105 @@ const BookingSetDesignPage = () => {
                   className="w-full bg-transparent outline-none text-gray-700 resize-none placeholder-gradient"
                 />
               </div>
+
+              {/* UPLOAD IMAGES */}
+              <div className="bg-white rounded-xl shadow p-4 border border-dashed border-indigo-200 hover:border-indigo-300 transition">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <p className="font-semibold text-gray-800">
+                      Hình ảnh tham khảo
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Tải lên 1-5 ảnh (jpg, png). Ảnh sẽ gửi kèm yêu cầu.
+                    </p>
+                  </div>
+                  <label className="px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm cursor-pointer hover:bg-indigo-700">
+                    Chọn ảnh
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setLocalFile(file);
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
+
+                {uploading && (
+                  <p className="text-sm text-indigo-600">Đang tải ảnh...</p>
+                )}
+
+                {localFile && (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 mt-3">
+                    <img
+                      src={URL.createObjectURL(localFile)}
+                      alt="upload"
+                      className="w-full h-24 object-cover rounded-lg border"
+                    />
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* BUTTON SEND REQUEST */}
             <motion.button
               className="w-full py-5 mt-10 rounded-xl text-white font-semibold text-lg shadow-lg bg-gradient-to-r from-indigo-600 to-pink-500 hover:opacity-95 transition-all"
               whileTap={{ scale: 0.97 }}
+              disabled={submitting}
+              onClick={async () => {
+                if (
+                  !form.customerName ||
+                  !form.email ||
+                  !form.phoneNumber ||
+                  !form.description
+                ) {
+                  return message.error("Vui lòng nhập đầy đủ thông tin");
+                }
+                setSubmitting(true);
+                try {
+                  let uploaded = [];
+                  if (localFile) {
+                    const resUp = await dispatch(
+                      uploadImage(localFile)
+                    ).unwrap();
+                    const img =
+                      resUp?.image ||
+                      resUp?.url ||
+                      resUp?.secure_url ||
+                      resUp?.data?.image ||
+                      resUp;
+                    uploaded = img ? [img] : [];
+                  }
+                  const payload = {
+                    ...form,
+                    setDesignId: id,
+                    images: uploaded,
+                  };
+                  const res = await dispatch(
+                    customSetDesignRequest(payload)
+                  ).unwrap();
+                  message.success("Gửi yêu cầu thiết kế thành công");
+                  setForm({
+                    customerName: "",
+                    email: "",
+                    phoneNumber: "",
+                    description: "",
+                  });
+                  setLocalFile(null);
+                  navigate("/dashboard/customer/custom-request");
+                } catch (err) {
+                  message.error(err?.message || "Gửi yêu cầu thất bại");
+                } finally {
+                  setSubmitting(false);
+                }
+              }}
             >
-              Gửi yêu cầu thiết kế
+              {submitting ? "Đang gửi..." : "Gửi yêu cầu thiết kế"}
             </motion.button>
 
             {/* BUTTON TO BOOK NORMAL SET DESIGN */}

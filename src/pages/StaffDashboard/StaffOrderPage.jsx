@@ -158,20 +158,21 @@ const StaffOrderPage = () => {
         render: (_, r) => r.customer?.fullName || "Khách lẻ",
       },
       {
-        title: "Studio",
-        width: 150,
-        render: (_, r) => r.studio?.name || "-",
-      },
-      {
         title: "Lịch đặt",
         width: 180,
         render: (_, r) => (
           <div className="text-sm">
-            <div className="font-medium">{r.schedule?.timeRange || "-"}</div>
-            <div className="text-xs text-gray-500">
+            <div className="font-medium">
               {r.schedule?.date
                 ? dayjs(r.schedule.date).format("DD/MM/YYYY")
+                : r.createdAt
+                ? dayjs(r.createdAt).format("DD/MM/YYYY")
+                : r.scheduleId
+                ? `#${r.scheduleId.slice(-6).toUpperCase()}`
                 : "-"}
+            </div>
+            <div className="text-xs text-gray-500">
+              {r.schedule?.timeRange || "-"}
             </div>
           </div>
         ),
@@ -184,6 +185,48 @@ const StaffOrderPage = () => {
             {formatCurrency(r.finalAmount)}
           </span>
         ),
+      },
+      {
+        title: "Giảm giá",
+        width: 120,
+        render: (_, r) =>
+          r.discountAmount > 0 ? (
+            <span className="text-orange-600 font-semibold">
+              -{formatCurrency(r.discountAmount)}
+            </span>
+          ) : (
+            <span className="text-gray-500">0₫</span>
+          ),
+      },
+      {
+        title: "Thanh toán",
+        width: 130,
+        render: (_, r) => (
+          <div className="text-sm space-y-1">
+            <div className="font-medium">Loại: {r.payType || "-"}</div>
+            <div className="text-gray-500">
+              Gốc: {formatCurrency(r.totalBeforeDiscount || r.financials?.originalAmount)}
+            </div>
+          </div>
+        ),
+      },
+      {
+        title: "Sự kiện",
+        width: 170,
+        render: (_, r) => {
+          if (!r.events || r.events.length === 0) return <span className="text-gray-500">Không có</span>;
+          const latest = r.events[r.events.length - 1];
+          return (
+            <div className="text-sm space-y-1">
+              <span className="font-semibold">{latest.type}</span>
+              {latest.timestamp && (
+                <div className="text-gray-500 text-xs">
+                  {dayjs(latest.timestamp).format("HH:mm DD/MM/YYYY")}
+                </div>
+              )}
+            </div>
+          );
+        },
       },
       {
         title: "Trạng thái",
@@ -250,7 +293,7 @@ const StaffOrderPage = () => {
         columns={columns}
         data={staffBookings}
         loading={loading}
-        scroll={{ x: 1200 }}
+        scroll={{ x: 1400 }}
         rowKey="_id"
       />
 

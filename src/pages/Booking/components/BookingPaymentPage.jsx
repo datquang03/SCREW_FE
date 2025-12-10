@@ -282,9 +282,14 @@ export default function BookingPaymentPage({
       {/* Modal chọn % */}
       <Modal
         title={
-          <Title level={4} className="text-center">
-            Chọn mức thanh toán trước
-          </Title>
+          <div className="text-center space-y-1">
+            <Title level={4} className="mb-0">
+              Chọn mức thanh toán trước
+            </Title>
+            <Text className="text-gray-500 text-sm">
+              Số tiền sẽ được tính trên tổng giá trị đơn hiện tại.
+            </Text>
+          </div>
         }
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
@@ -294,28 +299,51 @@ export default function BookingPaymentPage({
         }}
         okText="Xác nhận thanh toán"
         cancelText="Hủy"
-        width={500}
+        width={560}
+        bodyStyle={{ paddingTop: 8, paddingBottom: 16 }}
       >
         <Radio.Group
           value={selectedPercent}
           onChange={(e) => setSelectedPercent(e.target.value)}
           className="w-full"
         >
-          {[30, 50, 100].map((p) => (
-            <Radio
-              key={p}
-              value={p}
-              className="flex justify-between items-center py-5 px-6 border-2 rounded-xl my-4 hover:border-purple-500 transition-all bg-gradient-to-r from-purple-50 to-pink-50"
-            >
-              <span className="text-xl font-semibold">
-                Thanh toán trước{" "}
-                <strong className="text-purple-700">{p}%</strong>
-              </span>
-              <span className="text-2xl font-bold text-purple-700">
-                {formatted((finalAmount * p) / 100)}
-              </span>
-            </Radio>
-          ))}
+          {[30, 50, 100].map((p) => {
+            const isActive = selectedPercent === p;
+            const amount = (finalAmount * p) / 100;
+            return (
+              <Radio
+                key={p}
+                value={p}
+                className={`flex justify-between items-center py-5 px-6 border-2 rounded-xl my-3 transition-all bg-white ${
+                  isActive
+                    ? "border-slate-900 shadow-md"
+                    : "border-slate-200 hover:border-slate-400"
+                }`}
+              >
+                <div className="flex flex-col gap-1">
+                  <span className="text-base text-slate-600">
+                    Thanh toán trước
+                  </span>
+                  <span className="text-xl font-semibold text-slate-900">
+                    {p}% giá trị đơn
+                  </span>
+                  {p === 30 && (
+                    <Tag color="blue" className="w-fit mt-1">
+                      Phổ biến
+                    </Tag>
+                  )}
+                </div>
+                <div className="text-right">
+                  <span className="block text-xs text-slate-500">
+                    Số tiền tạm tính
+                  </span>
+                  <span className="text-2xl font-bold text-slate-900">
+                    {formatted(amount)}
+                  </span>
+                </div>
+              </Radio>
+            );
+          })}
         </Radio.Group>
       </Modal>
     </div>
