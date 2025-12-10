@@ -1,5 +1,7 @@
+// src/pages/Message/MessagePage.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   getConversations,
   getMessagesByConversation,
@@ -28,6 +30,9 @@ const formatTime = (dateString) => {
 
 const MessagePage = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
   const { user } = useSelector((state) => state.auth || {});
   const {
     conversations = [],
@@ -40,44 +45,69 @@ const MessagePage = () => {
   const [content, setContent] = useState("");
   const [search, setSearch] = useState("");
 
+  // Lấy userId từ query string: /message?user=123abc
+  const targetUserIdFromUrl = searchParams.get("user");
+
   useEffect(() => {
     if (user) dispatch(getConversations());
   }, [dispatch, user]);
 
-  // Auto pick first conversation when list loads
+  // TỰ ĐỘNG CHỌN CUỘC TRÒ CHUYỆN KHI CÓ ?user=...
   useEffect(() => {
-    if (!activeConversation && conversations.length > 0) {
+    if (
+      !targetUserIdFromUrl ||
+      conversations.length === 0 ||
+      activeConversation
+    )
+      return;
+
+    const foundConv = conversations.find((conv) => {
+      const participants = conv.participants || [];
+      return participants.some((p) => (p._id || p) === targetUserIdFromUrl);
+    });
+
+    if (foundConv) {
+      setActiveConversation(foundConv);
+      navigate("/message", { replace: true }); // Xóa query sau khi chọn
+    }
+  }, [conversations, targetUserIdFromUrl, activeConversation, navigate]);
+
+  // Auto chọn conversation đầu tiên nếu không có query
+  useEffect(() => {
+    if (
+      !activeConversation &&
+      conversations.length > 0 &&
+      !targetUserIdFromUrl
+    ) {
       setActiveConversation(conversations[0]);
     }
-  }, [conversations, activeConversation]);
+  }, [conversations, activeConversation, targetUserIdFromUrl]);
 
   useEffect(() => {
-    if (activeConversation) {
+    if (activeConversation?._id) {
       dispatch(getMessagesByConversation(activeConversation._id));
     }
-  }, [dispatch, activeConversation]);
+  }, [activeConversation, dispatch]);
 
   const handleSelectConversation = (conv) => {
     setActiveConversation(conv);
+    if (targetUserIdFromUrl) {
+      navigate("/message", { replace: true });
+    }
   };
 
   const conversationMessages =
-    (activeConversation &&
-      (messages[activeConversation._id]?.messages ||
-        messages[activeConversation._id] ||
-        activeConversation.messages)) ||
-    [];
+    activeConversation && (messages[activeConversation._id] || []);
 
   const myId = user?._id;
 
-  // Mark unread messages (not mine) as read when viewing a conversation
+  // Đánh dấu đã đọc
   useEffect(() => {
-    if (!activeConversation) return;
-    if (!conversationMessages || conversationMessages.length === 0) return;
+    if (!activeConversation || !conversationMessages.length) return;
     conversationMessages.forEach((m) => {
       const fromId = m.fromUserId?._id || m.fromUserId || m.senderId;
       const isMine = myId && fromId === myId;
-      if (!isMine && m._id && !m.isRead && !m.read) {
+      if (!isMine && m._id && !m.isRead) {
         dispatch(markMessageAsRead(m._id));
       }
     });
@@ -85,18 +115,11 @@ const MessagePage = () => {
 
   const getPartnerId = () => {
     if (!activeConversation) return null;
-    if (activeConversation.participantId)
-      return activeConversation.participantId;
-    if (activeConversation.receiverId) return activeConversation.receiverId;
-    if (activeConversation.toUserId) return activeConversation.toUserId;
-    if (conversationMessages.length > 0) {
-      const m = conversationMessages[0];
-      const from = m.fromUserId?._id || m.fromUserId;
-      const to = m.toUserId?._id || m.toUserId;
-      if (myId && from === myId) return to;
-      return from || to;
-    }
-    return null;
+    const participants = activeConversation.participants || [];
+    return (
+      participants.find((p) => (p._id || p) !== myId)?._id ||
+      participants.find((p) => (p._id || p) !== myId)
+    );
   };
 
   const handleSend = (e) => {
@@ -104,6 +127,7 @@ const MessagePage = () => {
     if (!content.trim() || !activeConversation) return;
     const toUserId = getPartnerId();
     if (!toUserId) return;
+
     dispatch(
       createMessage({
         toUserId,
@@ -115,27 +139,21 @@ const MessagePage = () => {
   };
 
   const filteredConversations = useMemo(() => {
-    const keyword = search.trim().toLowerCase();
-    if (!keyword) return conversations;
+    if (!search.trim()) return conversations;
+    const keyword = search.toLowerCase();
     return conversations.filter((c) => {
-      const name =
-        c.name || c.receiverName || c.title || c._id || "Cuộc trò chuyện";
+      const name = c.name || c.receiverName || "Cuộc trò chuyện";
       return name.toLowerCase().includes(keyword);
     });
   }, [conversations, search]);
 
   if (!user) {
     return (
-      <div className="max-w-6xl mx-auto px-4 py-10">
-        <div className="rounded-2xl bg-white/80 backdrop-blur shadow-xl border border-amber-100 px-6 py-10 text-center">
-          <MessageOutlined className="text-3xl text-amber-500 mb-3" />
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">
-            Đăng nhập để xem tin nhắn
-          </h2>
-          <p className="text-gray-500">
-            Vui lòng đăng nhập để tiếp tục cuộc trò chuyện của bạn.
-          </p>
-        </div>
+      <div className="max-w-6xl mx-auto px-4 py-10 text-center">
+        <MessageOutlined className="text-5xl text-amber-500 mb-4" />
+        <h2 className="text-2xl font-bold">
+          Vui lòng đăng nhập để xem tin nhắn
+        </h2>
       </div>
     );
   }
@@ -201,7 +219,6 @@ const MessagePage = () => {
                 const lastContent =
                   conv.lastMessage?.content ||
                   conv.lastMessageText ||
-                  conv.lastMessage ||
                   "Chưa có tin nhắn";
                 const lastTime = formatTime(conv.lastMessage?.createdAt);
                 return (
@@ -288,7 +305,6 @@ const MessagePage = () => {
                     msg.fromUserId?.fullName ||
                     msg.fromUserId?.username ||
                     msg.senderName ||
-                    msg.senderId ||
                     "Người dùng";
                   const isMine = myId && fromId === myId;
                   return (

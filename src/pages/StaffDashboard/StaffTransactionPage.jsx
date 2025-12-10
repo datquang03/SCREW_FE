@@ -12,6 +12,7 @@ import {
   Table,
   Tag,
   Tabs,
+  Divider,
 } from "antd";
 import {
   FiEye,
@@ -465,36 +466,234 @@ const StaffTransactionPage = () => {
         />
       </Card>
 
-      {/* MODAL CHI TIẾT */}
+      {/* ============= MODAL CHI TIẾT GIAO DỊCH ============= */}
       <Modal
         open={detailModalVisible}
-        footer={null}
         onCancel={() => setDetailModalVisible(false)}
-        width={800}
-        centered
+        footer={null}
+        width={900}
+        title={null}
+        className="rounded-2xl"
       >
-        {currentTransaction && (
-          <div className="flex flex-col gap-6">
-            <div className="text-center">
-              <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-xl">
-                <FiTag className="text-3xl" />
+        {currentTransaction ? (
+          <div className="space-y-6">
+            {/* HEADER */}
+            <div className="p-6 rounded-xl bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white shadow-lg">
+              <h2 className="text-2xl font-bold mb-1">Chi tiết giao dịch</h2>
+              <p className="text-blue-100">
+                Mã giao dịch: {currentTransaction.transactionId}
+              </p>
+            </div>
+
+            {/* GIAO DỊCH */}
+            <Card className="rounded-2xl border-blue-200 shadow-md">
+              <h3 className="text-lg font-semibold mb-4 text-blue-700">
+                Thông tin giao dịch
+              </h3>
+
+              <div className="grid grid-cols-2 gap-4">
+                <p>
+                  <strong>Số tiền:</strong>{" "}
+                  {currentTransaction.amount.toLocaleString("vi-VN")}₫
+                </p>
+                <p>
+                  <strong>Trạng thái:</strong>{" "}
+                  <Tag
+                    color={
+                      currentTransaction.status === "paid"
+                        ? "green"
+                        : currentTransaction.status === "pending"
+                        ? "orange"
+                        : "red"
+                    }
+                  >
+                    {currentTransaction.status === "paid"
+                      ? "Đã thanh toán"
+                      : currentTransaction.status === "pending"
+                      ? "Chờ thanh toán"
+                      : "Hết hạn"}
+                  </Tag>
+                </p>
+
+                <p>
+                  <strong>Loại thanh toán:</strong> {currentTransaction.payType}
+                </p>
+                <p>
+                  <strong>Tạo lúc:</strong>{" "}
+                  {new Date(currentTransaction.createdAt).toLocaleString(
+                    "vi-VN"
+                  )}
+                </p>
+
+                {currentTransaction.expiresAt && (
+                  <p>
+                    <strong>Hết hạn lúc:</strong>{" "}
+                    {new Date(currentTransaction.expiresAt).toLocaleString(
+                      "vi-VN"
+                    )}
+                  </p>
+                )}
               </div>
-              <Title level={3}>
-                {currentTransaction.transactionId || currentTransaction._id}
-              </Title>
-              <Text type="secondary">
-                Mã thanh toán: {currentTransaction.paymentCode}
-              </Text>
-            </div>
-            <div className="flex justify-end">
-              <Button
-                type="primary"
-                size="large"
-                onClick={() => setDetailModalVisible(false)}
-              >
-                Đóng
-              </Button>
-            </div>
+            </Card>
+
+            {/* BOOKING */}
+            <Card className="rounded-2xl border-purple-200 shadow-md">
+              <h3 className="text-lg font-semibold mb-4 text-purple-700">
+                Thông tin booking
+              </h3>
+
+              <div className="grid grid-cols-2 gap-4">
+                <p>
+                  <strong>Mã booking:</strong>{" "}
+                  {currentTransaction.bookingId?._id}
+                </p>
+                <p>
+                  <strong>Tổng trước giảm:</strong>{" "}
+                  {currentTransaction.bookingId?.totalBeforeDiscount.toLocaleString(
+                    "vi-VN"
+                  )}
+                  ₫
+                </p>
+
+                <p>
+                  <strong>Giảm giá:</strong>{" "}
+                  {currentTransaction.bookingId?.discountAmount.toLocaleString(
+                    "vi-VN"
+                  )}
+                  ₫
+                </p>
+                <p>
+                  <strong>Thanh toán cuối:</strong>{" "}
+                  {currentTransaction.bookingId?.finalAmount.toLocaleString(
+                    "vi-VN"
+                  )}
+                  ₫
+                </p>
+
+                <p>
+                  <strong>Bắt đầu:</strong>{" "}
+                  {new Date(
+                    currentTransaction.bookingId?.scheduleId?.startTime
+                  ).toLocaleString("vi-VN")}
+                </p>
+                <p>
+                  <strong>Kết thúc:</strong>{" "}
+                  {new Date(
+                    currentTransaction.bookingId?.scheduleId?.endTime
+                  ).toLocaleString("vi-VN")}
+                </p>
+              </div>
+            </Card>
+
+            {/* STUDIO */}
+            <Card className="rounded-2xl border-green-200 shadow-md">
+              <h3 className="text-lg font-semibold mb-4 text-green-700">
+                Studio đặt lịch
+              </h3>
+
+              <div className="grid grid-cols-2 gap-4">
+                <p>
+                  <strong>Tên studio:</strong>{" "}
+                  {currentTransaction.bookingId?.scheduleId?.studioId?.name}
+                </p>
+                <p>
+                  <strong>Diện tích:</strong>{" "}
+                  {currentTransaction.bookingId?.scheduleId?.studioId?.area} m²
+                </p>
+
+                <p>
+                  <strong>Giá gốc/giờ:</strong>{" "}
+                  {currentTransaction.bookingId?.scheduleId?.studioId?.basePricePerHour.toLocaleString(
+                    "vi-VN"
+                  )}
+                  ₫
+                </p>
+                <p>
+                  <strong>Địa điểm:</strong>{" "}
+                  {currentTransaction.bookingId?.scheduleId?.studioId?.location}
+                </p>
+              </div>
+            </Card>
+
+            {/* KHÁCH HÀNG */}
+            <Card className="rounded-2xl border-rose-200 shadow-md">
+              <h3 className="text-lg font-semibold mb-4 text-rose-700">
+                Khách hàng
+              </h3>
+
+              <div className="grid grid-cols-2 gap-4">
+                <p>
+                  <strong>Tên:</strong>{" "}
+                  {currentTransaction.bookingId?.userId?.fullName}
+                </p>
+                <p>
+                  <strong>Email:</strong>{" "}
+                  {currentTransaction.bookingId?.userId?.email}
+                </p>
+                <p>
+                  <strong>SĐT:</strong>{" "}
+                  {currentTransaction.bookingId?.userId?.phone}
+                </p>
+                <p>
+                  <strong>Username:</strong>{" "}
+                  {currentTransaction.bookingId?.userId?.username}
+                </p>
+              </div>
+            </Card>
+
+            {/* CHÍNH SÁCH */}
+            <Card className="rounded-2xl border-orange-200 shadow-md">
+              <h3 className="text-lg font-semibold mb-4 text-orange-700">
+                Chính sách áp dụng
+              </h3>
+
+              <div className="space-y-3">
+                <p className="font-semibold text-orange-600">Hủy lịch</p>
+                {currentTransaction.bookingId?.policySnapshots?.cancellation?.refundTiers?.map(
+                  (t) => (
+                    <div
+                      key={t._id}
+                      className="p-3 rounded-xl bg-orange-50 border border-orange-200"
+                    >
+                      <strong>{t.refundPercentage}%</strong> – {t.description}
+                    </div>
+                  )
+                )}
+
+                <Divider />
+
+                <p className="font-semibold text-orange-600">No-Show</p>
+                <div className="p-3 rounded-xl bg-orange-50 border border-orange-200">
+                  <p>
+                    <strong>Loại phạt:</strong>{" "}
+                    {
+                      currentTransaction.bookingId?.policySnapshots?.noShow
+                        ?.noShowRules?.chargeType
+                    }
+                  </p>
+                  <p>
+                    <strong>Phần trăm phạt:</strong>{" "}
+                    {
+                      currentTransaction.bookingId?.policySnapshots?.noShow
+                        ?.noShowRules?.chargePercentage
+                    }
+                    %
+                  </p>
+                  <p>
+                    <strong>Thời gian trễ:</strong>{" "}
+                    {
+                      currentTransaction.bookingId?.policySnapshots?.noShow
+                        ?.noShowRules?.graceMinutes
+                    }{" "}
+                    phút
+                  </p>
+                </div>
+              </div>
+            </Card>
+          </div>
+        ) : (
+          <div className="flex justify-center py-10">
+            <Spin size="large" />
           </div>
         )}
       </Modal>

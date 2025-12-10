@@ -1,7 +1,7 @@
 import React, { useEffect, Suspense } from "react";
 import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { getSetDesignById } from "../../features/setdesign/setDesignSlice";
+import { getSetDesignById } from "../../features/setDesign/setDesignSlice";
 import { getComments } from "../../features/comment/commentSlice";
 import SDHeader from "./components/SDHeader";
 import SDGallery from "./components/SDGallery";

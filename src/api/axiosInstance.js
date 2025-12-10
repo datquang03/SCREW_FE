@@ -1,7 +1,7 @@
 // src/api/axiosInstance.js
 import axios from 'axios';
 
-const apiUrl = 'http://3.1.8.74/api';
+const apiUrl = 'https://screwbe.duckdns.org/api';
 
 const axiosInstance = axios.create({
   baseURL: apiUrl,

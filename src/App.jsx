@@ -54,14 +54,13 @@ import StaffSetDesignPage from "./pages/StaffDashboard/StaffSetDesignPage";
 import PaymentSuccessPage from "./pages/Payment/PaymentSuccessPage";
 import PaymentCancelPage from "./pages/Payment/PaymentCancelPage";
 import NotFoundPage from "./pages/Notfound/NotFoundPage";
-import SetDesignSection from "./pages/SetDesign/SetDesignDetailPage";
 import StaffTransactionPage from "./pages/StaffDashboard/StaffTransactionPage";
 import SetDesignDetail from "./pages/SetDesign/SetDesignDetailPage";
 import BookingSetDesignPage from "./pages/BookingSetDesign/BookingSetDesignPage";
 import ContactSetDesignRequestPage from "./pages/BookingSetDesign/ContactSetDesignPage";
 import MessagePage from "./pages/Message/MessagePage";
+import StaffCustomRequestPage from "./pages/StaffDashboard/StaffCustomRequestPage";
 import Layout from "./components/layout/Layout";
-
 const pageVariants = {
   initial: { opacity: 0, y: 10 },
   in: { opacity: 1, y: 0 },
@@ -70,7 +69,7 @@ const pageVariants = {
 
 const pageTransition = {
   type: "tween",
-  ease: [0.25, 0.1, 0.25, 1], // Custom easing cho mượt mà hơn
+  ease: [0.25, 0.1, 0.25, 1], 
   duration: 0.3,
 };
 
