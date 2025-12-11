@@ -5,6 +5,22 @@ import { SearchOutlined, MessageOutlined, EyeOutlined } from "@ant-design/icons"
 const formatTime = (date) =>
   date ? new Date(date).toLocaleString("vi-VN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" }) : "";
 
+// Skeleton cho conversation item
+const ConversationSkeleton = () => (
+  <div className="w-full p-4 rounded-2xl border border-gray-100 mb-2 animate-pulse">
+    <div className="flex items-center gap-3">
+      <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0" />
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between mb-2">
+          <div className="h-4 bg-gray-200 rounded w-24" />
+          <div className="h-3 bg-gray-200 rounded w-12" />
+        </div>
+        <div className="h-3 bg-gray-200 rounded w-full" />
+      </div>
+    </div>
+  </div>
+);
+
 const MessageSidebar = ({ conversations, activeConversation, onSelect, loading }) => {
   const [search, setSearch] = useState("");
 
@@ -26,7 +42,13 @@ const MessageSidebar = ({ conversations, activeConversation, onSelect, loading }
           </div>
           <div>
             <p className="text-sm text-gray-500">Danh sách chat</p>
-            <p className="font-bold">{conversations.length} cuộc trò chuyện</p>
+            <p className="font-bold">
+              {loading ? (
+                <span className="inline-block h-4 w-16 bg-gray-200 rounded animate-pulse" />
+              ) : (
+                `${conversations.length} cuộc trò chuyện`
+              )}
+            </p>
           </div>
         </div>
       </div>
@@ -39,13 +61,18 @@ const MessageSidebar = ({ conversations, activeConversation, onSelect, loading }
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Tìm kiếm..."
             className="flex-1 outline-none text-sm"
+            disabled={loading}
           />
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto custom-scrollbar px-2">
         {loading ? (
-          <p className="text-center text-gray-400 py-8">Đang tải...</p>
+          <div className="py-2">
+            {[...Array(5)].map((_, i) => (
+              <ConversationSkeleton key={i} />
+            ))}
+          </div>
         ) : filtered.length === 0 ? (
           <p className="text-center text-gray-400 py-8">Không có cuộc trò chuyện</p>
         ) : (

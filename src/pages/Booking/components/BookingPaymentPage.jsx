@@ -7,7 +7,7 @@ import {
   Typography,
   Tag,
   Divider,
-  Spin,
+  Skeleton,
   message,
   Modal,
   Radio,
@@ -69,10 +69,20 @@ export default function BookingPaymentPage({
 
   if (!booking || !currentStudio) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <Spin size="large" tip="Đang tải hóa đơn...">
-          <div className="w-0 h-0" />
-        </Spin>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <Skeleton active paragraph={{ rows: 2 }} />
+          <Card className="mt-6">
+            <Skeleton active paragraph={{ rows: 6 }} />
+          </Card>
+          <Card className="mt-6">
+            <Skeleton active paragraph={{ rows: 4 }} />
+          </Card>
+          <div className="mt-6 flex gap-4">
+            <Skeleton.Button active size="large" style={{ width: 150, height: 48 }} />
+            <Skeleton.Button active size="large" style={{ width: 200, height: 48 }} />
+          </div>
+        </div>
       </div>
     );
   }

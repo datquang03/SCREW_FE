@@ -13,7 +13,7 @@ import {
   FiImage,
   FiX,
 } from "react-icons/fi";
-import { customSetDesignRequest } from "../../features/setDesign/setDesignSlice";
+import { customSetDesignRequest } from "../../features/setdesign/setDesignSlice";
 import {
   uploadCustomerSetDesignImages,
   uploadImage,
@@ -41,7 +41,7 @@ const CustomSetDesignRequestPage = () => {
     phoneNumber: "",
     description: preset?.name ? `Yêu cầu cho set design: ${preset.name}` : "",
     preferredCategory: "",
-    budgetRange: "",
+    budget: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -117,7 +117,7 @@ const CustomSetDesignRequestPage = () => {
         ...form,
         setDesignId: preset?.id,
         preferredCategory: form.preferredCategory,
-        budgetRange: form.budgetRange,
+        budget: form.budget,
         referenceImages: uploadedImageUrls,
       };
 
@@ -290,7 +290,7 @@ const CustomSetDesignRequestPage = () => {
             </div>
           </div>
 
-          {/* BUDGET RANGE */}
+          {/* BUDGET */}
           <div className="w-full">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Ngân sách dự kiến
@@ -299,8 +299,8 @@ const CustomSetDesignRequestPage = () => {
               <input
                 type="text"
                 placeholder="VD: 5,000,000 - 10,000,000"
-                value={form.budgetRange}
-                onChange={(e) => updateField("budgetRange", e.target.value)}
+                value={form.budget}
+                onChange={(e) => updateField("budget", e.target.value)}
                 className="w-full bg-transparent outline-none text-gray-700 placeholder:text-gray-400"
               />
             </div>

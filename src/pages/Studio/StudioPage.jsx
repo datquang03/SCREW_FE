@@ -1,6 +1,5 @@
 // src/pages/Studio/StudioPage.jsx
 import React, { useEffect } from "react";
-import Layout from "../../components/layout/Layout";
 import { Typography, Button, Spin, Carousel } from "antd";
 import { FiStar, FiMapPin, FiUsers } from "react-icons/fi";
 import { motion } from "framer-motion";
@@ -36,7 +35,7 @@ const StudioPage = () => {
   }
 
   return (
-    <Layout>
+    <>
       {/* Studios List */}
       <Section
         className="bg-gradient-to-b from-white via-gray-50 to-white py-12 md:py-16 px-4 md:px-6 lg:px-16"
@@ -60,7 +59,8 @@ const StudioPage = () => {
                   scale: 1.02,
                   boxShadow: "0px 16px 32px rgba(15,23,42,0.12)",
                 }}
-                className="bg-white rounded-2xl shadow-md overflow-hidden cursor-pointer transition-all duration-300 h-full flex flex-col"
+                onClick={() => navigate(`/studio/${studio._id}`)}
+                className="bg-white rounded-2xl shadow-md overflow-hidden cursor-pointer transition-all duration-300 h-full flex flex-col border border-amber-100 hover:border-amber-200 hover:shadow-[0_20px_50px_-15px_rgba(0,0,0,0.2)]"
               >
                 {/* Hình ảnh + Carousel */}
                 <div className="relative h-60 md:h-64 overflow-hidden">
@@ -151,7 +151,10 @@ const StudioPage = () => {
                       <Button
                         size="large"
                         className="bg-blue-500 text-white hover:bg-blue-600 border-none shadow-md px-4"
-                        onClick={() => navigate(`/booking/${studio._id}`)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/booking/${studio._id}`);
+                        }}
                       >
                         Đặt lịch
                       </Button>
@@ -160,8 +163,11 @@ const StudioPage = () => {
                       <Button
                         type="primary"
                         size="large"
-                        className="bg-yellow-500 hover:bg-yellow-600 border-none shadow-md px-4 text-white"
-                        onClick={() => navigate(`/studio/${studio._id}`)}
+                        className="bg-amber-500 hover:bg-amber-600 border-none shadow-md px-4 text-white"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/studio/${studio._id}`);
+                        }}
                       >
                         Xem chi tiết
                       </Button>
@@ -173,7 +179,7 @@ const StudioPage = () => {
           )}
         </div>
       </Section>
-    </Layout>
+    </>
   );
 };
 

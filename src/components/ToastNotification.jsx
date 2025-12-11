@@ -1,9 +1,10 @@
 // src/components/ToastNotification.jsx
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { FiCheckCircle, FiXCircle, FiAlertCircle, FiInfo } from 'react-icons/fi';
 import { gsap } from 'gsap';
 
-const ToastNotification = ({ type = 'success', message, onClose, duration = 4000 }) => {
+const ToastNotification = ({ type = 'success', message, suggestion = null, onClose, duration = 4000 }) => {
   const icons = {
     success: <FiCheckCircle className="w-6 h-6 text-green-600" />,
     error: <FiXCircle className="w-6 h-6 text-red-600" />,
@@ -26,22 +27,38 @@ const ToastNotification = ({ type = 'success', message, onClose, duration = 4000
     return () => clearTimeout(timer);
   }, [onClose, duration]);
 
-  return (
-    <div className="fixed top-6 right-6" style={{ zIndex: 9999 }}>
+  const toastContent = (
+    <div 
+      className="fixed top-6 right-6" 
+      style={{ 
+        zIndex: 999999,
+        position: 'fixed',
+        pointerEvents: 'none'
+      }}
+    >
       <div
-        className={`toast flex items-center gap-3 p-4 rounded-2xl shadow-xl border backdrop-blur-xl text-white min-w-80
+        className={`toast flex items-center gap-3 p-4 rounded-2xl shadow-2xl border backdrop-blur-xl text-white min-w-80 max-w-md pointer-events-auto
           ${type === 'success' ? 'bg-green-600/95 border-green-500' : ''}
           ${type === 'error' ? 'bg-red-600/95 border-red-500' : ''}
           ${type === 'warning' ? 'bg-yellow-600/95 border-yellow-500' : ''}
           ${type === 'info' ? 'bg-blue-600/95 border-blue-500' : ''}
         `}
+        style={{ 
+          zIndex: 999999,
+          position: 'relative'
+        }}
       >
         {icons[type]}
-        <div>
+        <div className="flex-1">
           <p className="font-semibold">
             {type === 'success' ? 'Thành công' : type === 'error' ? 'Lỗi' : type === 'warning' ? 'Cảnh báo' : 'Thông báo'}
           </p>
           <p className="text-sm opacity-90">{message}</p>
+          {suggestion && (
+            <p className="text-xs opacity-75 mt-1 italic border-t border-white/20 pt-1">
+              💡 {suggestion}
+            </p>
+          )}
         </div>
         <button
           onClick={onClose}
@@ -54,6 +71,11 @@ const ToastNotification = ({ type = 'success', message, onClose, duration = 4000
       </div>
     </div>
   );
+
+  // Sử dụng Portal để render toast ra ngoài DOM tree, đảm bảo z-index cao nhất
+  return typeof document !== 'undefined' 
+    ? createPortal(toastContent, document.body)
+    : toastContent;
 };
 
 export default ToastNotification;

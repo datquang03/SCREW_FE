@@ -1,6 +1,6 @@
 // src/pages/Payment/PaymentCancelPage.jsx
 import React from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { Card, Typography, Button } from "antd";
 import { motion } from "framer-motion";
 import { FiXCircle } from "react-icons/fi";
@@ -10,13 +10,24 @@ const { Title, Text } = Typography;
 const PaymentCancelPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const bookingId = searchParams.get("bookingId");
+  // PayOS trả về cho set-design: orderId, orderCode, status, cancel, code, id
+  const orderId = searchParams.get("orderId") || searchParams.get("bookingId");
   const orderCode = searchParams.get("orderCode");
-  const status = searchParams.get("status");
+  const status = searchParams.get("status") || "cancelled";
+  const cancel = searchParams.get("cancel");
+  const code = searchParams.get("code");
+  const txId = searchParams.get("id");
+  const amount = searchParams.get("amount");
+  const isSetDesign = location.pathname.includes("set-design");
 
   const handleGoDashboard = () => {
-    navigate("/dashboard/customer/history"); // redirect về trang booking của user
+    navigate(
+      isSetDesign
+        ? "/dashboard/customer/set-designs/bookings"
+        : "/dashboard/customer/history"
+    ); // redirect về trang booking của user
   };
 
   return (
@@ -48,13 +59,32 @@ const PaymentCancelPage = () => {
 
           <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
             <Text strong className="block mb-1">
-              Mã đơn: <span className="text-red-700">{bookingId}</span>
+              Mã đơn: <span className="text-red-700">{orderId || "—"}</span>
             </Text>
             <Text strong className="block">
               Mã giao dịch: <span className="text-red-700">{orderCode}</span>
             </Text>
+            {txId && (
+              <Text className="block">
+                Transaction ID: <span className="text-red-700">{txId}</span>
+              </Text>
+            )}
+            {code && (
+              <Text className="block">
+                Code: <span className="text-red-700">{code}</span>
+              </Text>
+            )}
+            {amount && (
+              <Text className="block">
+                Số tiền:{" "}
+                <span className="text-red-700">
+                  {Number(amount).toLocaleString("vi-VN")}₫
+                </span>
+              </Text>
+            )}
             <Text className="block mt-2">
-              Trạng thái: <span className="text-red-600">{status}</span>
+              Trạng thái:{" "}
+              <span className="text-red-600">{status || (cancel && "cancelled")}</span>
             </Text>
           </div>
 

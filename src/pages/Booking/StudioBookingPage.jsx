@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { Steps, Button, message, Spin } from "antd";
+import { Steps, Button, message, Skeleton, Card } from "antd";
 import {
   CalendarOutlined,
   CameraOutlined,
@@ -212,11 +212,21 @@ const StudioBookingPage = () => {
 
       {/* Loading overlay */}
       {loading && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-10 shadow-2xl flex flex-col items-center">
-            <Spin size="large" />
-            <p className="mt-6 text-xl font-medium">Đang xử lý đặt phòng...</p>
-          </div>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <Card className="max-w-md w-full mx-4 shadow-2xl">
+            <div className="flex flex-col items-center space-y-6">
+              <div className="relative">
+                <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+              </div>
+              <div className="text-center space-y-2">
+                <p className="text-xl font-semibold text-gray-900">Đang xử lý đặt phòng...</p>
+                <p className="text-sm text-gray-600">Vui lòng đợi trong giây lát</p>
+              </div>
+              <div className="w-full space-y-2">
+                <Skeleton active paragraph={{ rows: 2 }} />
+              </div>
+            </div>
+          </Card>
         </div>
       )}
     </Layout>

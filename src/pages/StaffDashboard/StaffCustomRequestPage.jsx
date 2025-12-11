@@ -10,6 +10,7 @@ import {
   Button,
   Table,
   Avatar,
+  Select,
 } from "antd";
 import {
   FiClock,
@@ -25,6 +26,8 @@ import {
   FiEdit3,
   FiPackage,
   FiSend,
+  FiTrash2,
+  FiEdit,
 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -38,7 +41,9 @@ import {
   updateCustomRequestStatus,
   convertCustomRequestToSetDesign,
   getConvertedCustomDesigns,
-} from "../../features/setDesign/setDesignSlice";
+  updateConvertedCustomDesign,
+  deleteSetDesign,
+} from "../../features/setdesign/setDesignSlice";
 import { createMessage } from "../../features/message/messageSlice";
 import StaffPageHeader from "./components/StaffPageHeader";
 import StaffStatCard from "./components/StaffStatCard";
@@ -89,6 +94,17 @@ const StaffCustomRequestPage = () => {
   });
   const [sendAfterConvert, setSendAfterConvert] = useState(true);
   const [convertResult, setConvertResult] = useState(null);
+  const [updateModalOpen, setUpdateModalOpen] = useState(false);
+  const [updatingDesign, setUpdatingDesign] = useState(null);
+  const [updateForm, setUpdateForm] = useState({
+    name: "",
+    price: "",
+    category: "",
+    tagsText: "",
+  });
+  const [updateLoading, setUpdateLoading] = useState(false);
+  const [selectedSetDesignForMessage, setSelectedSetDesignForMessage] =
+    useState(null);
 
   useEffect(() => {
     dispatch(getCustomRequestSetDesign());
@@ -101,9 +117,33 @@ const StaffCustomRequestPage = () => {
       });
   }, [dispatch]);
 
-  const showToast = (type, content) => {
-    setToast({ type, message: content });
-    setTimeout(() => setToast(null), 4000);
+  const showToast = (type, content, suggestion = null) => {
+    setToast({ type, message: content, suggestion });
+    setTimeout(() => setToast(null), 5000); // Tăng thời gian để đọc suggestion
+  };
+
+  // Helper để parse error từ API response
+  const parseError = (err) => {
+    // Nếu err là object có message và suggestion
+    if (err?.message && err?.suggestion) {
+      return {
+        message: err.message,
+        suggestion: err.suggestion,
+      };
+    }
+    // Nếu err.response?.data có format như API trả về
+    if (err?.response?.data) {
+      const errorData = err.response.data;
+      return {
+        message: errorData.message || errorData.errorCode || "Đã xảy ra lỗi",
+        suggestion: errorData.suggestion || null,
+      };
+    }
+    // Fallback
+    return {
+      message: err?.message || "Đã xảy ra lỗi",
+      suggestion: null,
+    };
   };
 
   const filteredRequests = useMemo(() => {
@@ -163,7 +203,9 @@ const StaffCustomRequestPage = () => {
       };
       showToast("success", `Yêu cầu đã được ${msgMap[newStatus]}!`);
     } catch (err) {
-      showToast("error", err?.message || "Cập nhật trạng thái thất bại");
+      console.error("Status change error:", err);
+      const errorInfo = parseError(err);
+      showToast("error", errorInfo.message, errorInfo.suggestion);
     }
   };
 
@@ -189,7 +231,26 @@ const StaffCustomRequestPage = () => {
 
     try {
       setSendLoading(true);
-      const contentToSend = overrideContent?.trim?.() || messageContent.trim();
+      let contentToSend = overrideContent?.trim?.() || messageContent.trim();
+
+      // Nếu có chọn Set Design, thêm thông tin Set Design vào content với format chuẩn
+      if (selectedSetDesignForMessage) {
+        const design = selectedSetDesignForMessage;
+        const designInfo =
+          `\n\n📦 Set Design được gửi kèm:\n` +
+          `Tên: ${design.name || "Chưa có tên"}\n` +
+          `Giá: ${
+            design.price
+              ? Number(design.price).toLocaleString("vi-VN") + "₫"
+              : "Chưa có giá"
+          }\n` +
+          `Danh mục: ${design.category || "Chưa có"}\n` +
+          (design._id ? `ID: ${design._id}\n` : "") +
+          (Array.isArray(design.tags) && design.tags.length > 0
+            ? `Tags: ${design.tags.join(", ")}\n`
+            : "");
+        contentToSend += designInfo;
+      }
 
       if (!contentToSend) {
         showToast("error", "Nội dung tin nhắn không được để trống");
@@ -206,12 +267,12 @@ const StaffCustomRequestPage = () => {
 
       showToast("success", "Đã gửi tin nhắn cho khách!");
       setMessageModalOpen(false);
+      setSelectedSetDesignForMessage(null); // Reset sau khi gửi
       navigate(`/message?user=${userIdStr}`);
     } catch (err) {
       console.error("Lỗi gửi tin nhắn:", err);
-      const errorMsg =
-        err?.message || err?.errorCode || "Gửi tin nhắn thất bại";
-      showToast("error", errorMsg);
+      const errorInfo = parseError(err);
+      showToast("error", errorInfo.message, errorInfo.suggestion);
     } finally {
       setSendLoading(false);
     }
@@ -232,6 +293,7 @@ Mình đã xem mô tả và hình ảnh tham khảo. Bạn cho mình biết thê
 
 Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay.`;
     setMessageContent(template);
+    setSelectedSetDesignForMessage(null); // Reset khi mở modal
     setMessageModalOpen(true);
   };
 
@@ -300,13 +362,100 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
       setConvertModalOpen(false);
     } catch (err) {
       console.error("Convert error:", err);
-      showToast(
-        "error",
-        err?.message || "Chuyển yêu cầu thành Set Design thất bại"
-      );
+      const errorInfo = parseError(err);
+      showToast("error", errorInfo.message, errorInfo.suggestion);
     } finally {
       setConvertLoading(false);
     }
+  };
+
+  const handleUpdateDesign = async () => {
+    if (!updatingDesign?._id) return;
+
+    const tags = updateForm.tagsText
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
+    const payload = {
+      name: updateForm.name.trim(),
+      price: Number(updateForm.price) || 0,
+      category: updateForm.category.trim() || "Other",
+      tags,
+    };
+
+    try {
+      setUpdateLoading(true);
+      await dispatch(
+        updateConvertedCustomDesign({
+          designId: updatingDesign._id,
+          payload,
+        })
+      ).unwrap();
+
+      // Refresh converted designs
+      dispatch(getConvertedCustomDesigns({ page: 1, limit: 10 }))
+        .unwrap()
+        .catch((err) => console.warn("Could not refresh:", err));
+
+      showToast("success", "Đã cập nhật Set Design!");
+      setUpdateModalOpen(false);
+      setUpdatingDesign(null);
+      setUpdateForm({ name: "", price: "", category: "", tagsText: "" });
+    } catch (err) {
+      console.error("Update error:", err);
+      const errorInfo = parseError(err);
+      showToast("error", errorInfo.message, errorInfo.suggestion);
+    } finally {
+      setUpdateLoading(false);
+    }
+  };
+
+  const handleDeleteDesign = async (designId) => {
+    if (!designId) return;
+
+    Modal.confirm({
+      title: "Xóa Set Design?",
+      content:
+        "Bạn có chắc chắn muốn xóa Set Design này? Hành động này không thể hoàn tác.",
+      okText: "Xóa",
+      okType: "danger",
+      cancelText: "Hủy",
+      onOk: async () => {
+        try {
+          await dispatch(deleteSetDesign(designId)).unwrap();
+
+          // Refresh converted designs
+          dispatch(getConvertedCustomDesigns({ page: 1, limit: 10 }))
+            .unwrap()
+            .catch((err) => console.warn("Could not refresh:", err));
+
+          // Clear convertResult if it matches
+          if (convertResult?._id === designId) {
+            setConvertResult(null);
+          }
+
+          showToast("success", "Đã xóa Set Design!");
+        } catch (err) {
+          console.error("Delete error:", err);
+          const errorInfo = parseError(err);
+          showToast("error", errorInfo.message, errorInfo.suggestion);
+        }
+      },
+    });
+  };
+
+  const openUpdateModal = (design) => {
+    if (!design) return;
+    setUpdatingDesign(design);
+    setUpdateForm({
+      name: design.name || "",
+      price: design.price || "",
+      category: design.category || "",
+      tagsText: Array.isArray(design.tags)
+        ? design.tags.join(", ")
+        : design.tags || "",
+    });
+    setUpdateModalOpen(true);
   };
   const getStatusTag = (status) => {
     const config = statusConfig[status] || statusConfig.pending;
@@ -402,6 +551,7 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
         <ToastNotification
           type={toast.type}
           message={toast.message}
+          suggestion={toast.suggestion}
           onClose={() => setToast(null)}
         />
       )}
@@ -495,7 +645,7 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
         footer={null}
         width={1100}
         centered
-        maskClosable={false}
+        maskClosable={true}
         closeIcon={null}
         className="custom-request-detail-modal"
         styles={{ body: { padding: 0, background: "transparent" } }}
@@ -788,10 +938,14 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
       {/* MODAL SOẠN TIN NHẮN */}
       <Modal
         open={messageModalOpen}
-        onCancel={() => setMessageModalOpen(false)}
+        onCancel={() => {
+          setMessageModalOpen(false);
+          setSelectedSetDesignForMessage(null); // Reset khi đóng modal
+        }}
         footer={null}
         width={800}
         centered
+        maskClosable={true}
         styles={{ body: { padding: 0, background: "transparent" } }}
       >
         <div className="bg-white rounded-3xl border border-purple-100 shadow-2xl overflow-hidden">
@@ -850,102 +1004,258 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
 
             {/* Preview Set Design */}
             <div className="p-6 bg-gradient-to-br from-purple-50 via-white to-amber-50 border-l border-purple-100 space-y-4">
-              <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-                <FiPackage /> Xem trước Set Design (nếu có)
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                  <FiPackage /> Chọn Set Design gửi kèm
+                </div>
               </div>
-              <Card className="border-dashed border-purple-200 bg-white rounded-2xl">
-                {(() => {
-                  // Tìm set design đã convert từ convertedDesigns
-                  // Cấu trúc: { requestId, setDesign: { _id, name, price, category, tags, ... }, ... }
-                  let matchedSetDesign = null;
 
+              {/* Select Set Design */}
+              <Select
+                placeholder="Chọn Set Design để gửi kèm tin nhắn..."
+                value={selectedSetDesignForMessage?._id}
+                onChange={(value) => {
+                  if (!value) {
+                    setSelectedSetDesignForMessage(null);
+                    return;
+                  }
+
+                  // Tìm trong convertedDesigns
+                  let foundDesign = null;
+                  for (const item of convertedDesigns) {
+                    const design = item.setDesign || item;
+                    if (design._id === value) {
+                      foundDesign = design;
+                      break;
+                    }
+                  }
+
+                  // Nếu không tìm thấy, kiểm tra convertResult
+                  if (
+                    !foundDesign &&
+                    convertResult &&
+                    convertResult._id === value
+                  ) {
+                    foundDesign = convertResult;
+                  }
+
+                  setSelectedSetDesignForMessage(foundDesign);
+                }}
+                allowClear
+                showSearch
+                optionFilterProp="children"
+                className="w-full"
+                size="large"
+                filterOption={(input, option) =>
+                  (option?.label ?? "")
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
+                }
+              >
+                {/* Thêm convertResult vào danh sách nếu có */}
+                {convertResult && (
+                  <Select.Option
+                    key={convertResult._id}
+                    value={convertResult._id}
+                    label={convertResult.name || "Chưa có tên"}
+                  >
+                    {convertResult.name || "Chưa có tên"} -{" "}
+                    {convertResult.price
+                      ? `${Number(convertResult.price).toLocaleString(
+                          "vi-VN"
+                        )}₫`
+                      : "Chưa có giá"}{" "}
+                    <Tag color="green" className="ml-2">
+                      Mới tạo
+                    </Tag>
+                  </Select.Option>
+                )}
+                {convertedDesigns.map((item) => {
+                  const design = item.setDesign || item;
+                  const designId = design._id;
+                  if (!designId) return null;
+
+                  // Bỏ qua nếu đã có trong convertResult
+                  if (convertResult && convertResult._id === designId) {
+                    return null;
+                  }
+
+                  const designName = design.name || "Chưa có tên";
+                  const designPrice = design.price
+                    ? `${Number(design.price).toLocaleString("vi-VN")}₫`
+                    : "Chưa có giá";
+                  return (
+                    <Select.Option
+                      key={designId}
+                      value={designId}
+                      label={designName}
+                    >
+                      {designName} - {designPrice}
+                    </Select.Option>
+                  );
+                })}
+              </Select>
+
+              {(() => {
+                // Hiển thị Set Design đã chọn hoặc Set Design mặc định từ request
+                let displayDesign = selectedSetDesignForMessage;
+
+                // Nếu chưa chọn, tìm set design đã convert từ convertedDesigns
+                if (!displayDesign) {
                   if (convertResult) {
-                    // Nếu vừa tạo xong, dùng convertResult
-                    matchedSetDesign = convertResult;
+                    displayDesign = convertResult;
                   } else if (selectedRequest?._id) {
-                    // Tìm trong convertedDesigns theo requestId
                     const matched = convertedDesigns.find(
                       (d) => d.requestId === selectedRequest._id
                     );
                     if (matched?.setDesign) {
-                      matchedSetDesign = matched.setDesign;
+                      displayDesign = matched.setDesign;
                     } else if (matched?._id) {
-                      // Nếu matched là setDesign trực tiếp (fallback)
-                      matchedSetDesign = matched;
+                      displayDesign = matched;
                     }
                   }
+                }
 
-                  if (!matchedSetDesign) {
-                    return (
-                      <div className="text-gray-500 text-sm">
+                if (!displayDesign) {
+                  return (
+                    <Card className="border-dashed border-purple-200 bg-white rounded-2xl">
+                      <div className="text-gray-500 text-sm text-center py-8">
                         Chưa có Set Design được tạo. Bấm "Tạo Set Design" để
                         thêm.
                       </div>
-                    );
-                  }
-
-                  return (
-                    <div className="space-y-3 text-sm">
-                      <div className="flex justify-between items-center">
-                        <Text type="secondary">Tên: </Text>
-                        <Text strong className="text-right">
-                          {matchedSetDesign.name || "-"}
-                        </Text>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <Text type="secondary">Giá: </Text>
-                        <Text strong className="text-right">
-                          {matchedSetDesign.price
-                            ? `${Number(matchedSetDesign.price).toLocaleString(
-                                "vi-VN"
-                              )}₫`
-                            : "-"}
-                        </Text>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <Text type="secondary">Danh mục: </Text>
-                        <Tag color="blue">
-                          {matchedSetDesign.category || "-"}
-                        </Tag>
-                      </div>
-                      {matchedSetDesign.description && (
-                        <div className="flex flex-col gap-1">
-                          <Text type="secondary">Mô tả: </Text>
-                          <Text className="text-xs text-gray-600 line-clamp-2">
-                            {matchedSetDesign.description}
-                          </Text>
-                        </div>
-                      )}
-                      <div className="flex items-start justify-between gap-3">
-                        <Text type="secondary">Tags: </Text>
-                        <div className="flex flex-wrap gap-2 justify-end">
-                          {(Array.isArray(matchedSetDesign.tags)
-                            ? matchedSetDesign.tags
-                            : []
-                          )
-                            .filter(Boolean)
-                            .map((t, idx) => (
-                              <Tag
-                                key={idx}
-                                color="purple"
-                                className="rounded-full"
-                              >
-                                {t}
-                              </Tag>
-                            ))}
-                        </div>
-                      </div>
-                      {matchedSetDesign._id && (
-                        <div className="pt-2 border-t border-gray-100">
-                          <Text type="secondary" className="text-xs">
-                            ID: {matchedSetDesign._id.slice(-8)}
-                          </Text>
-                        </div>
-                      )}
-                    </div>
+                    </Card>
                   );
-                })()}
-              </Card>
+                }
+
+                return (
+                  <div className="group relative">
+                    <Card
+                      className={`border-2 ${
+                        selectedSetDesignForMessage?._id === displayDesign._id
+                          ? "border-green-400 bg-green-50"
+                          : "border-purple-200 bg-white"
+                      } rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden`}
+                    >
+                      {/* Hover Actions */}
+                      <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+                        <button
+                          onClick={() => openUpdateModal(displayDesign)}
+                          className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center hover:bg-blue-600 shadow-md transition-colors"
+                          title="Sửa Set Design"
+                        >
+                          <FiEdit size={14} />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteDesign(displayDesign._id)}
+                          className="w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 shadow-md transition-colors"
+                          title="Xóa Set Design"
+                        >
+                          <FiTrash2 size={14} />
+                        </button>
+                      </div>
+
+                      {/* Selected Badge */}
+                      {selectedSetDesignForMessage?._id ===
+                        displayDesign._id && (
+                        <div className="absolute top-3 left-3 z-10">
+                          <Tag
+                            color="green"
+                            className="px-3 py-1 rounded-full shadow-md"
+                          >
+                            <FiCheckCircle className="inline mr-1" />
+                            Đã chọn để gửi
+                          </Tag>
+                        </div>
+                      )}
+
+                      {/* Card Content */}
+                      <div className="space-y-4">
+                        {/* Header */}
+                        <div className="pb-3 border-b border-purple-100">
+                          <Title level={5} className="mb-1 text-purple-700">
+                            {displayDesign.name || "Chưa có tên"}
+                          </Title>
+                          {displayDesign._id && (
+                            <Text type="secondary" className="text-xs">
+                              ID: {displayDesign._id.slice(-8)}
+                            </Text>
+                          )}
+                        </div>
+
+                        {/* Price */}
+                        <div className="flex items-center justify-between">
+                          <Text type="secondary" className="text-sm">
+                            Giá:
+                          </Text>
+                          <Text strong className="text-lg text-green-600">
+                            {displayDesign.price
+                              ? `${Number(displayDesign.price).toLocaleString(
+                                  "vi-VN"
+                                )}₫`
+                              : "-"}
+                          </Text>
+                        </div>
+
+                        {/* Category */}
+                        <div className="flex items-center justify-between">
+                          <Text type="secondary" className="text-sm">
+                            Danh mục:
+                          </Text>
+                          <Tag color="blue" className="px-3 py-1">
+                            {displayDesign.category || "-"}
+                          </Tag>
+                        </div>
+
+                        {/* Description */}
+                        {displayDesign.description && (
+                          <div className="pt-2 border-t border-gray-100">
+                            <Text
+                              type="secondary"
+                              className="text-xs block mb-1"
+                            >
+                              Mô tả:
+                            </Text>
+                            <Text className="text-xs text-gray-600 line-clamp-2">
+                              {displayDesign.description}
+                            </Text>
+                          </div>
+                        )}
+
+                        {/* Tags */}
+                        {(Array.isArray(displayDesign.tags)
+                          ? displayDesign.tags
+                          : []
+                        ).filter(Boolean).length > 0 && (
+                          <div className="pt-2 border-t border-gray-100">
+                            <Text
+                              type="secondary"
+                              className="text-xs block mb-2"
+                            >
+                              Tags:
+                            </Text>
+                            <div className="flex flex-wrap gap-2">
+                              {(Array.isArray(displayDesign.tags)
+                                ? displayDesign.tags
+                                : []
+                              )
+                                .filter(Boolean)
+                                .map((t, idx) => (
+                                  <Tag
+                                    key={idx}
+                                    color="purple"
+                                    className="rounded-full text-xs"
+                                  >
+                                    {t}
+                                  </Tag>
+                                ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </Card>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </div>
@@ -960,6 +1270,7 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
         confirmLoading={convertLoading}
         width={720}
         centered
+        maskClosable={true}
         styles={{ body: { padding: 0, background: "transparent" } }}
       >
         <div className="bg-white rounded-3xl border border-amber-100 shadow-2xl overflow-hidden">
@@ -1103,6 +1414,154 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
                   >
                     Gửi luôn tin nhắn hiện tại cho khách sau khi tạo Set Design
                   </label>
+                </div>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      {/* MODAL CẬP NHẬT SET DESIGN */}
+      <Modal
+        open={updateModalOpen}
+        onCancel={() => {
+          setUpdateModalOpen(false);
+          setUpdatingDesign(null);
+          setUpdateForm({ name: "", price: "", category: "", tagsText: "" });
+        }}
+        onOk={handleUpdateDesign}
+        okText="Cập nhật"
+        confirmLoading={updateLoading}
+        width={720}
+        centered
+        maskClosable={true}
+        styles={{ body: { padding: 0, background: "transparent" } }}
+      >
+        <div className="bg-white rounded-3xl border border-blue-100 shadow-2xl overflow-hidden">
+          <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-blue-500 via-indigo-400 to-purple-400 text-white">
+            <div>
+              <p className="text-xs uppercase tracking-widest opacity-80">
+                Cập nhật Set Design
+              </p>
+              <h3 className="text-xl font-semibold">Chỉnh sửa thông tin</h3>
+            </div>
+            <Tag
+              color="gold"
+              className="px-3 py-1 rounded-full bg-white/20 border-white/30"
+            >
+              Sửa & Lưu
+            </Tag>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-0">
+            {/* Form nhập */}
+            <div className="p-6 space-y-4 bg-white">
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <Text className="text-xs text-gray-500">Tên Set Design</Text>
+                  <Input
+                    placeholder="Ví dụ: Vintage Wedding Set Design"
+                    value={updateForm.name}
+                    onChange={(e) =>
+                      setUpdateForm((p) => ({ ...p, name: e.target.value }))
+                    }
+                    className="rounded-2xl"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Text className="text-xs text-gray-500">Giá (VND)</Text>
+                  <Input
+                    placeholder="8500000"
+                    type="number"
+                    value={updateForm.price}
+                    onChange={(e) =>
+                      setUpdateForm((p) => ({ ...p, price: e.target.value }))
+                    }
+                    className="rounded-2xl"
+                    addonAfter="₫"
+                  />
+                  <Text className="text-[11px] text-gray-400">
+                    Nhập số, không cần dấu chấm. Hệ thống sẽ tự format.
+                  </Text>
+                </div>
+                <div className="space-y-1">
+                  <Text className="text-xs text-gray-500">Danh mục</Text>
+                  <Input
+                    placeholder="VD: Wedding, Studio, Fashion"
+                    value={updateForm.category}
+                    onChange={(e) =>
+                      setUpdateForm((p) => ({
+                        ...p,
+                        category: e.target.value,
+                      }))
+                    }
+                    className="rounded-2xl"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Text className="text-xs text-gray-500">Tags</Text>
+                  <Input.TextArea
+                    rows={2}
+                    placeholder="vintage, wedding, pastel, romantic"
+                    value={updateForm.tagsText}
+                    onChange={(e) =>
+                      setUpdateForm((p) => ({
+                        ...p,
+                        tagsText: e.target.value,
+                      }))
+                    }
+                    className="rounded-2xl"
+                  />
+                  <Text className="text-[11px] text-gray-400">
+                    Ngăn cách bằng dấu phẩy để tự động tách tag.
+                  </Text>
+                </div>
+              </div>
+            </div>
+
+            {/* Preview */}
+            <div className="p-6 bg-gradient-to-br from-blue-50 via-white to-purple-50 border-l border-blue-100 space-y-4">
+              <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                <FiPackage /> Xem trước
+              </div>
+              <Card className="border-dashed border-blue-200 bg-white rounded-2xl">
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <Text type="secondary">Tên</Text>
+                    <Text strong>{updateForm.name || "..."}</Text>
+                  </div>
+                  <div className="flex justify-between">
+                    <Text type="secondary">Giá</Text>
+                    <Text strong>
+                      {updateForm.price
+                        ? `${Number(updateForm.price).toLocaleString("vi-VN")}₫`
+                        : "..."}
+                    </Text>
+                  </div>
+                  <div className="flex justify-between">
+                    <Text type="secondary">Danh mục</Text>
+                    <Text>{updateForm.category || "..."}</Text>
+                  </div>
+                  <div className="flex items-start justify-between gap-3">
+                    <Text type="secondary">Tags</Text>
+                    <div className="flex flex-wrap gap-2">
+                      {updateForm.tagsText
+                        ? updateForm.tagsText
+                            .split(",")
+                            .map((t) => t.trim())
+                            .filter(Boolean)
+                            .map((t, idx) => (
+                              <Tag
+                                key={idx}
+                                color="purple"
+                                className="rounded-full"
+                              >
+                                {t}
+                              </Tag>
+                            ))
+                        : "..."}
+                    </div>
+                  </div>
                 </div>
               </Card>
             </div>

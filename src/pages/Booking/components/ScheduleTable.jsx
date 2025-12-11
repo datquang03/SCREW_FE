@@ -64,8 +64,8 @@ const ScheduleTable = ({
           relative border border-gray-300 cursor-pointer transition-all duration-200
           hover:shadow-md hover:z-10
           ${!isCurrentMonth ? "opacity-40" : ""}
-          ${isSelected ? "ring-2 ring-blue-500 ring-inset z-10" : ""}
-          ${isToday ? "ring-2 ring-blue-400 ring-inset" : ""}
+          ${isSelected ? "ring-4 ring-blue-500 ring-inset z-10 shadow-lg" : ""}
+          ${isToday && !isSelected ? "ring-2 ring-blue-400 ring-inset" : ""}
         `}
         style={{ height: "110px" }}
       >
@@ -76,7 +76,9 @@ const ScheduleTable = ({
               className={`
                 font-bold text-sm leading-none
                 ${
-                  isToday
+                  isSelected
+                    ? "text-blue-700 font-extrabold"
+                    : isToday
                     ? "text-blue-700"
                     : isCurrentMonth
                     ? "text-gray-900"
@@ -86,6 +88,9 @@ const ScheduleTable = ({
             >
               {date.date()}
             </span>
+            {isSelected && (
+              <div className="absolute top-1 right-1 w-3 h-3 bg-blue-500 rounded-full animate-pulse" />
+            )}
             {isToday && (
               <Tag
                 color="blue"
@@ -103,7 +108,7 @@ const ScheduleTable = ({
             )}
 
             {status === "booked" && (
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 w-full">
                 {/* Badge hiển thị số lượng slot đã đặt */}
                 <div className="flex flex-col items-center gap-1">
                   <span className="text-[11px] text-gray-500 font-medium">Số lịch</span>
@@ -114,20 +119,47 @@ const ScheduleTable = ({
                   />
                 </div>
 
-                {/* Tên khách đầu tiên + số lượng còn lại */}
+                {/* Thông tin booking */}
                 {bookings.length > 0 && (
-                  <div className="text-[10px] font-medium text-gray-700 leading-tight text-center">
+                  <div className="text-[10px] font-medium text-gray-700 leading-tight text-center space-y-0.5">
+                    {/* Tên khách hàng */}
                     <div className="flex items-center justify-center gap-1">
-                      <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-                      <span className="truncate max-w-20">
+                      <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse flex-shrink-0" />
+                      <span className="truncate max-w-[90px] font-semibold">
                         {bookings[0]?.booking?.customer?.fullName
                           ?.split(" ")
                           .slice(-2)
                           .join(" ") || "Khách"}
                       </span>
                     </div>
+                    
+                    {/* Time range của booking đầu tiên */}
+                    {bookings[0]?.timeRange && (
+                      <div className="text-[9px] text-rose-600 font-bold">
+                        {bookings[0].timeRange}
+                      </div>
+                    )}
+                    
+                    {/* Status của booking đầu tiên */}
+                    {bookings[0]?.booking?.status && (
+                      <Tag 
+                        color={
+                          bookings[0].booking.status === "completed" ? "green" :
+                          bookings[0].booking.status === "confirmed" ? "blue" :
+                          bookings[0].booking.status === "pending" ? "orange" : "default"
+                        }
+                        className="text-[8px] px-1 py-0 h-4 leading-tight"
+                      >
+                        {bookings[0].booking.status === "completed" ? "Hoàn thành" :
+                         bookings[0].booking.status === "confirmed" ? "Đã xác nhận" :
+                         bookings[0].booking.status === "pending" ? "Chờ xác nhận" :
+                         bookings[0].booking.status}
+                      </Tag>
+                    )}
+                    
+                    {/* Số lượng booking còn lại */}
                     {bookings.length > 1 && (
-                      <span className="text-rose-600 font-bold text-xs">
+                      <span className="text-rose-600 font-bold text-xs block">
                         +{bookings.length - 1} khác
                       </span>
                     )}
@@ -149,12 +181,18 @@ const ScheduleTable = ({
         <div
           className={`
             absolute inset-0 -z-10 transition-colors
-            ${status === "booked" ? "bg-rose-50" : ""}
-            ${status === "available" ? "bg-emerald-50" : ""}
-            ${status === "past" ? "bg-gray-100" : ""}
-            ${isToday && status !== "booked" ? "bg-blue-50" : ""}
+            ${isSelected ? "bg-blue-100/80 backdrop-blur-sm" : ""}
+            ${status === "booked" && !isSelected ? "bg-rose-50" : ""}
+            ${status === "available" && !isSelected ? "bg-emerald-50" : ""}
+            ${status === "past" && !isSelected ? "bg-gray-100" : ""}
+            ${isToday && status !== "booked" && !isSelected ? "bg-blue-50" : ""}
           `}
         />
+        
+        {/* Overlay khi được chọn */}
+        {isSelected && (
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-blue-600/20 pointer-events-none" />
+        )}
       </td>
     );
   };

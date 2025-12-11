@@ -1,6 +1,7 @@
 // src/features/message/messageSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../../api/axiosInstance";
+import { initSocket, getSocket } from "../../api/socketInstance";
 
 // Helpers ------------------------------------------------
 const extractIdsFromString = (str) => {
@@ -28,10 +29,17 @@ const extractIdsFromString = (str) => {
 // Kiểm tra xem một string có phải là conversation ID hợp lệ không
 const isValidConversationId = (str) => {
   if (!str || typeof str !== "string") return false;
-  // Conversation ID hợp lệ: 2 ObjectId (24 ký tự mỗi cái) được join bằng "_"
-  // Format: "6916b10ddd40e9e31c5c2a1d_6916bac2dd40e9e31c5c2b17" (49 ký tự)
-  const pattern = /^[0-9a-fA-F]{24}_[0-9a-fA-F]{24}$/;
+  // Conversation ID hợp lệ: 2 ObjectId (24 ký tự mỗi cái) được join bằng "_" hoặc "-"
+  // Format: "6916b10ddd40e9e31c5c2a1d_6916bac2dd40e9e31c5c2b17" hoặc "6916b10ddd40e9e31c5c2a1d-6916bac2dd40e9e31c5c2b17"
+  const pattern = /^[0-9a-fA-F]{24}[_-][0-9a-fA-F]{24}$/;
   return pattern.test(str);
+};
+
+// Normalize conversation ID về format nhất quán (dùng "-" vì backend trả về format này)
+const normalizeIdFormat = (id) => {
+  if (!id || typeof id !== "string") return id;
+  // Chuyển từ format "_" sang "-" để nhất quán với backend
+  return id.replace(/_/g, "-");
 };
 
 const normalizeConversationId = (conv) => {
@@ -39,21 +47,21 @@ const normalizeConversationId = (conv) => {
 
   // Kiểm tra conversationId trước (nếu có và hợp lệ)
   if (typeof conv.conversationId === "string" && isValidConversationId(conv.conversationId)) {
-    return conv.conversationId;
+    return normalizeIdFormat(conv.conversationId);
   }
 
   // Kiểm tra _id: chỉ return nếu nó là conversation ID hợp lệ
   if (typeof conv._id === "string") {
-    // Nếu _id là conversation ID hợp lệ (format: id_id), return ngay
+    // Nếu _id là conversation ID hợp lệ (format: id_id hoặc id-id), normalize và return
     if (isValidConversationId(conv._id)) {
-      return conv._id;
+      return normalizeIdFormat(conv._id);
     }
     
     // Nếu _id là string dài chứa object (như backend đang trả về), parse nó
     if (conv._id.length > 80 || conv._id.includes("ObjectId") || conv._id.includes("}-{")) {
       const parsed = extractIdsFromString(conv._id);
       if (parsed.length >= 2) {
-        return parsed.sort().join("_");
+        return parsed.sort().join("-"); // Dùng "-" để nhất quán với backend
       }
     }
   }
@@ -64,7 +72,7 @@ const normalizeConversationId = (conv) => {
   if (participantIds.length >= 2) {
     const normalized = participantIds.map(id => String(id).trim()).filter(Boolean);
     if (normalized.length >= 2) {
-      return normalized.sort().join("_");
+      return normalized.sort().join("-"); // Dùng "-" để nhất quán với backend
     }
   }
 
@@ -76,7 +84,7 @@ const normalizeConversationId = (conv) => {
     const fromId = String(from).trim();
     const toId = String(to).trim();
     if (fromId && toId) {
-      return [fromId, toId].sort().join("_");
+      return [fromId, toId].sort().join("-"); // Dùng "-" để nhất quán với backend
     }
   }
 
@@ -104,10 +112,20 @@ export const createMessage = createAsyncThunk(
 
       const messageData = response.data.data;
       const currentUserId = user?._id || user?.id;
-      const conversationId =
-        payloadConvId ||
-        messageData.conversationId ||
-        [currentUserId, toUserId].filter(Boolean).sort().join("_");
+      
+      // Tạo conversationId từ fromUserId và toUserId nếu chưa có
+      let conversationId = payloadConvId || messageData.conversationId;
+      if (!conversationId && messageData.fromUserId && messageData.toUserId) {
+        const fromId = messageData.fromUserId._id || messageData.fromUserId;
+        const toId = messageData.toUserId._id || messageData.toUserId;
+        if (fromId && toId) {
+          conversationId = [String(fromId).trim(), String(toId).trim()].sort().join("-");
+        }
+      }
+      // Fallback: dùng currentUserId và toUserId nếu không có từ messageData
+      if (!conversationId) {
+        conversationId = [currentUserId, toUserId].filter(Boolean).map(id => String(id).trim()).sort().join("-");
+      }
 
       // Chỉ return message data từ backend + conversationId (không thêm currentUserId vào message object)
       return {
@@ -244,6 +262,77 @@ const messageSlice = createSlice({
     clearMessagesByConversation: (state, action) => {
       delete state.messages[action.payload];
     },
+    // Socket actions
+    addMessageFromSocket: (state, action) => {
+      const message = action.payload;
+      const fromId = message.fromUserId?._id || message.fromUserId;
+      const toId = message.toUserId?._id || message.toUserId;
+      const convId = 
+        normalizeIdFormat(message.conversationId) ||
+        (fromId && toId ? [String(fromId).trim(), String(toId).trim()].filter(Boolean).sort().join("-") : "");
+
+      if (!convId) return;
+
+      // Thêm message vào conversation
+      if (!state.messages[convId]) {
+        state.messages[convId] = [];
+      }
+      
+      // Kiểm tra xem message đã tồn tại chưa (tránh duplicate)
+      const existingIndex = state.messages[convId].findIndex(m => m._id === message._id);
+      if (existingIndex >= 0) {
+        state.messages[convId][existingIndex] = message;
+      } else {
+        state.messages[convId].push(message);
+      }
+
+      // Cập nhật conversation trong danh sách
+      const existsIdx = state.conversations.findIndex(
+        (c) => {
+          const cId = normalizeConversationId(c);
+          return cId === convId || c._id === convId || c.conversationId === convId;
+        }
+      );
+
+      const convPayload = {
+        _id: convId,
+        conversationId: convId,
+        lastMessage: message,
+        participants: [message.fromUserId, message.toUserId].filter(Boolean),
+      };
+
+      if (existsIdx >= 0) {
+        state.conversations[existsIdx] = {
+          ...state.conversations[existsIdx],
+          ...convPayload,
+        };
+        // Di chuyển conversation lên đầu
+        const updated = state.conversations.splice(existsIdx, 1)[0];
+        state.conversations.unshift(updated);
+      } else {
+        state.conversations.unshift(convPayload);
+      }
+    },
+    updateMessageFromSocket: (state, action) => {
+      const { messageId, updates } = action.payload;
+      Object.keys(state.messages).forEach((convId) => {
+        const msgIndex = state.messages[convId].findIndex(m => m._id === messageId);
+        if (msgIndex >= 0) {
+          state.messages[convId][msgIndex] = {
+            ...state.messages[convId][msgIndex],
+            ...updates,
+          };
+        }
+      });
+    },
+    removeMessageFromSocket: (state, action) => {
+      const messageId = action.payload;
+      Object.keys(state.messages).forEach((convId) => {
+        state.messages[convId] = state.messages[convId].filter(
+          (m) => m._id !== messageId
+        );
+      });
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -260,12 +349,12 @@ const messageSlice = createSlice({
         // Tách message ra, loại bỏ _currentUserId
         const { _currentUserId, ...message } = payload;
         
-        // Đảm bảo conversationId được tính đúng
+        // Đảm bảo conversationId được tính đúng (dùng format "-" để nhất quán với backend)
         const fromId = message.fromUserId?._id || message.fromUserId;
         const toId = message.toUserId?._id || message.toUserId;
         const convId = 
-          message.conversationId || 
-          (fromId && toId ? [fromId, toId].filter(Boolean).sort().join("_") : normalizeConversationId(message));
+          normalizeIdFormat(message.conversationId) || 
+          (fromId && toId ? [String(fromId).trim(), String(toId).trim()].filter(Boolean).sort().join("-") : normalizeConversationId(message));
 
         // Lưu message vào state với đầy đủ thông tin từ backend (không có _currentUserId)
         if (!state.messages[convId]) state.messages[convId] = [];
@@ -278,6 +367,12 @@ const messageSlice = createSlice({
         } else {
           // Push message mới với đầy đủ thông tin từ backend (gọn gàng, không có thông tin thừa)
           state.messages[convId].push(message);
+        }
+
+        // Emit qua socket để bên kia nhận ngay
+        const socket = getSocket();
+        if (socket?.connected) {
+          socket.emit("sendMessage", message);
         }
 
         // Cập nhật conversation trong danh sách
@@ -398,7 +493,59 @@ const messageSlice = createSlice({
   },
 });
 
-export const { clearMessageError, clearMessagesByConversation } =
-  messageSlice.actions;
+export const { 
+  clearMessageError, 
+  clearMessagesByConversation,
+  addMessageFromSocket,
+  updateMessageFromSocket,
+  removeMessageFromSocket,
+} = messageSlice.actions;
+
+// Socket middleware để lắng nghe events
+export const setupSocketListeners = (dispatch) => {
+  const socket = getSocket();
+  if (!socket) {
+    console.warn("Socket not initialized");
+    return;
+  }
+
+  // Remove old listeners để tránh duplicate
+  socket.off("newMessage");
+  socket.off("messageUpdated");
+  socket.off("messageDeleted");
+  socket.off("conversationUpdated");
+
+  // Lắng nghe message mới
+  socket.on("newMessage", (message) => {
+    console.log("Received new message via socket:", message);
+    dispatch(addMessageFromSocket(message));
+  });
+
+  // Lắng nghe message được cập nhật (ví dụ: đã đọc)
+  socket.on("messageUpdated", ({ messageId, updates }) => {
+    console.log("Message updated via socket:", messageId, updates);
+    dispatch(updateMessageFromSocket({ messageId, updates }));
+  });
+
+  // Lắng nghe message bị xóa
+  socket.on("messageDeleted", (messageId) => {
+    console.log("Message deleted via socket:", messageId);
+    dispatch(removeMessageFromSocket(messageId));
+  });
+
+  // Lắng nghe conversation được cập nhật
+  socket.on("conversationUpdated", (conversation) => {
+    console.log("Conversation updated via socket:", conversation);
+    // Refresh conversations list
+    dispatch(getConversations());
+  });
+};
+
+// Initialize socket connection
+export const initializeSocket = (token) => {
+  if (!token) return;
+  const socket = initSocket(token);
+  return socket;
+};
 
 export default messageSlice.reducer;

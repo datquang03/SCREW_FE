@@ -11,15 +11,15 @@ import {
   Button,
   Select,
   Spin,
+  Dropdown,
 } from "antd";
-import { FiVideo, FiEdit, FiTrash2, FiEye } from "react-icons/fi";
+import { FiVideo, FiEdit, FiEye, FiMoreVertical } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import {
   createStudio,
   getAllStudios,
   getStudioById,
   updateStudio,
-  deleteStudio,
   setActivate,
   setDeactivate,
   setMaintenance,
@@ -97,8 +97,30 @@ const StaffStudiosPage = () => {
   const handleCreateStudio = async () => {
     try {
       const values = await createForm.validateFields();
+      
+      // Đảm bảo các trường số là number, không phải string
+      const studioData = {
+        name: values.name?.trim(),
+        description: values.description?.trim(),
+        area: Number(values.area) || 0,
+        capacity: Number(values.capacity) || 0,
+        basePricePerHour: Number(values.basePricePerHour) || 0,
+        location: values.location?.trim() || "",
+      };
+      
+      // Kiểm tra các trường bắt buộc
+      if (!studioData.name || !studioData.description || !studioData.location) {
+        displayToast("error", "Vui lòng điền đầy đủ thông tin bắt buộc!");
+        return;
+      }
+      
+      if (studioData.area <= 0 || studioData.capacity <= 0 || studioData.basePricePerHour <= 0) {
+        displayToast("error", "Vui lòng nhập giá trị hợp lệ cho diện tích, sức chứa và giá!");
+        return;
+      }
+      
       // Tạo studio không có ảnh (ảnh sẽ được thêm sau khi sửa)
-      await dispatch(createStudio(values)).unwrap();
+      await dispatch(createStudio(studioData)).unwrap();
 
       displayToast("success", "Tạo studio thành công!");
       setIsCreateModalOpen(false);
@@ -113,7 +135,23 @@ const StaffStudiosPage = () => {
   const handleUpdateStudio = async () => {
     try {
       const values = await editForm.validateFields();
-      const { images, ...updateData } = values;
+      const { images, ...restData } = values;
+
+      // Format dữ liệu trước khi gửi
+      const updateData = {
+        name: restData.name?.trim(),
+        description: restData.description?.trim(),
+        area: Number(restData.area) || 0,
+        capacity: Number(restData.capacity) || 0,
+        basePricePerHour: Number(restData.basePricePerHour) || 0,
+        location: restData.location?.trim() || "",
+      };
+
+      // Kiểm tra các trường bắt buộc
+      if (!updateData.name || !updateData.description || !updateData.location) {
+        displayToast("error", "Vui lòng điền đầy đủ thông tin bắt buộc!");
+        return;
+      }
 
       // Update studio info (KHÔNG gửi images để tránh replace)
       await dispatch(
@@ -150,6 +188,7 @@ const StaffStudiosPage = () => {
         area: result.area,
         capacity: result.capacity,
         basePricePerHour: result.basePricePerHour,
+        location: result.location || "",
         images: [], // Ảnh mới sẽ được thêm vào đây
       });
       // Lưu ảnh cũ (URLs từ server) riêng
@@ -182,27 +221,6 @@ const StaffStudiosPage = () => {
     }
   };
 
-  // --- DELETE STUDIO ---
-  const handleDeleteStudio = (studioId, studioName) => {
-    Modal.confirm({
-      title: "Xác nhận xóa",
-      content: `Bạn có chắc muốn xóa studio "${studioName}" không?`,
-      okText: "Xóa",
-      cancelText: "Hủy",
-      okButtonProps: { className: "bg-red-500 text-white hover:bg-red-400" },
-      centered: true,
-      onOk: async () => {
-        try {
-          await dispatch(deleteStudio(studioId)).unwrap();
-          displayToast("success", "Xóa studio thành công!");
-          dispatch(getAllStudios({ page: 1, limit: 10 }));
-        } catch (err) {
-          displayToast("error", err?.message || "Xóa studio thất bại!");
-        }
-      },
-    });
-  };
-
   // --- STATUS CHANGE ---
   const handleStatusChange = async (studioId, value) => {
     try {
@@ -221,83 +239,93 @@ const StaffStudiosPage = () => {
 
   // --- TABLE COLUMNS ---
   const studiosColumns = [
-    { title: "Tên Studio", dataIndex: "name", key: "name" },
+    { 
+      title: "Tên Studio", 
+      dataIndex: "name", 
+      key: "name",
+      render: (text) => (
+        <div className="font-semibold text-gray-900 max-w-[150px] md:max-w-[200px] truncate" title={text}>
+          {text}
+        </div>
+      ),
+    },
     {
       title: "Mô tả",
       dataIndex: "description",
       key: "description",
-      render: (text) => <div className="max-w-[250px] break-words">{text}</div>,
+      render: (text) => (
+        <div 
+          className="max-w-[200px] md:max-w-[300px] lg:max-w-[400px] truncate" 
+          title={text}
+        >
+          {text || "-"}
+        </div>
+      ),
+      responsive: ["md"],
     },
-    { title: "Diện tích (m²)", dataIndex: "area", key: "area" },
-    { title: "Sức chứa", dataIndex: "capacity", key: "capacity" },
+    { 
+      title: "Diện tích (m²)", 
+      dataIndex: "area", 
+      key: "area",
+      responsive: ["md"],
+    },
+    { 
+      title: "Sức chứa", 
+      dataIndex: "capacity", 
+      key: "capacity",
+      responsive: ["sm"],
+    },
     {
-      title: "Giá cơ bản / giờ",
+      title: "Giá / giờ",
       dataIndex: "basePricePerHour",
       key: "basePricePerHour",
-      render: (price) =>
-        new Intl.NumberFormat("vi-VN", {
-          style: "currency",
-          currency: "VND",
-        }).format(price),
+      render: (price) => (
+        <div className="font-semibold text-gray-700 whitespace-nowrap">
+          {new Intl.NumberFormat("vi-VN", {
+            style: "currency",
+            currency: "VND",
+          }).format(price)}
+        </div>
+      ),
+      responsive: ["md"],
     },
     {
       title: "Hình ảnh",
       dataIndex: "images",
       key: "images",
+      responsive: ["lg"],
+      width: 120,
       render: (images) => {
-        const defaultImage = "https://via.placeholder.com/64x64?text=No+Image";
+        const defaultImage = "https://via.placeholder.com/48x48?text=No+Image";
         const hasImages = Array.isArray(images) && images.length > 0;
         const imageCount = hasImages ? images.length : 0;
 
         if (!hasImages) {
           return (
-            <div className="w-14 h-14 flex items-center justify-center bg-gray-100 rounded-lg border border-gray-200">
-              <img
-                src={defaultImage}
-                alt="No Image"
-                className="w-full h-full object-cover rounded-lg"
-                loading="lazy"
-              />
+            <div className="w-12 h-12 flex items-center justify-center bg-gray-100 rounded-lg border border-gray-200">
+              <span className="text-xs text-gray-400">No Image</span>
             </div>
           );
         }
 
-        // Hiển thị logic:
-        // - 1 ảnh: hiển thị 1 ảnh
-        // - 2 ảnh: hiển thị 2 ảnh nằm ngang
-        // - 3+ ảnh: hiển thị 2 ảnh đầu + "+ số còn lại" với badge rõ ràng
+        // Hiển thị gọn gàng: chỉ 1 ảnh đầu tiên + badge số lượng
         return (
-          <div className="flex items-center gap-1.5">
-            {images.slice(0, 2).map((url, idx) => (
-              <div
-                key={idx}
-                className="relative w-14 h-14 flex-shrink-0 rounded-lg overflow-hidden border border-gray-200 shadow-sm"
-              >
-                <img
-              src={url}
-                  alt={`Studio ${idx + 1}`}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                  onError={(e) => {
-                    e.target.src = defaultImage;
-                  }}
-                />
-              </div>
-            ))}
-            {imageCount > 2 && (
-              <div className="relative w-14 h-14 flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg border-2 border-blue-400 shadow-md cursor-pointer group hover:from-blue-600 hover:to-blue-700 transition-all">
-                <div className="text-center">
-                  <div className="text-white font-bold text-xs leading-tight">
-                    +{imageCount - 2}
-                  </div>
-                  <div className="text-white/90 text-[10px] leading-tight mt-0.5">
-                    ảnh
-                  </div>
-                </div>
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 rounded-lg transition-colors"></div>
+          <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+            <img
+              src={images[0]}
+              alt="Studio"
+              className="w-full h-full object-cover"
+              loading="lazy"
+              onError={(e) => {
+                e.target.src = defaultImage;
+              }}
+            />
+            {imageCount > 1 && (
+              <div className="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-white">
+                {imageCount}
               </div>
             )}
-        </div>
+          </div>
         );
       },
     },
@@ -319,30 +347,47 @@ const StaffStudiosPage = () => {
       ),
     },
     {
-      title: "Thao tác",
+      title: "",
       key: "actions",
-      render: (_, record) => (
-        <div className="flex flex-wrap gap-2">
-          <button
-            className="flex items-center gap-1 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-400 transition-colors"
-            onClick={() => handleViewDetail(record._id)}
+      width: 70,
+      fixed: "right",
+      render: (_, record) => {
+        const menuItems = [
+          {
+            key: "view",
+            label: (
+              <div className="flex items-center gap-2 text-blue-600 font-medium">
+                <FiEye /> Xem chi tiết
+              </div>
+            ),
+            onClick: () => handleViewDetail(record._id),
+          },
+          {
+            key: "edit",
+            label: (
+              <div className="flex items-center gap-2 text-green-600 font-medium">
+                <FiEdit /> Sửa studio
+              </div>
+            ),
+            onClick: () => handleEditStudio(record._id),
+          },
+        ];
+
+        return (
+          <Dropdown
+            menu={{ items: menuItems }}
+            trigger={["click"]}
+            placement="bottomRight"
           >
-            <FiEye /> Xem
-          </button>
-          <button
-            className="flex items-center gap-1 px-3 py-1 bg-green-500 text-white rounded hover:bg-green-400 transition-colors"
-            onClick={() => handleEditStudio(record._id)}
-          >
-            <FiEdit /> Sửa
-          </button>
-          <button
-            className="flex items-center gap-1 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-400 transition-colors"
-            onClick={() => handleDeleteStudio(record._id, record.name)}
-          >
-            <FiTrash2 /> Xóa
-          </button>
-        </div>
-      ),
+            <Button
+              type="text"
+              size="small"
+              icon={<FiMoreVertical className="text-xl text-gray-600" />}
+              className="hover:bg-gray-100 rounded-full w-10 h-10 flex items-center justify-center"
+            />
+          </Dropdown>
+        );
+      },
     },
   ];
 
@@ -374,9 +419,14 @@ const StaffStudiosPage = () => {
           <Table
           columns={studiosColumns}
           dataSource={studios.map((s) => ({ key: s._id, ...s }))}
-          pagination={{ pageSize: 10 }}
+          pagination={{ 
+            pageSize: 10,
+            responsive: true,
+            showSizeChanger: false,
+          }}
             loading={loading}
-            scroll={{ x: true }}
+            scroll={{ x: 800 }}
+            className="responsive-table"
           />
       </Card>
 
@@ -429,6 +479,13 @@ const StaffStudiosPage = () => {
             >
               <InputNumber min={1} className="w-full" />
             </Form.Item>
+            <Form.Item
+              name="location"
+              label="Địa chỉ"
+              rules={[{ required: true, message: "Vui lòng nhập địa chỉ" }]}
+            >
+              <Input placeholder="VD: 123 Đường ABC, Quận XYZ, TP.HCM" />
+            </Form.Item>
 
             <Form.Item
               name="description"
@@ -436,7 +493,7 @@ const StaffStudiosPage = () => {
               className="sm:col-span-2"
               rules={[{ required: true }]}
             >
-              <TextArea rows={3} />
+              <TextArea rows={3} placeholder="Mô tả chi tiết về studio..." />
             </Form.Item>
           </div>
         </Form>
@@ -498,6 +555,13 @@ const StaffStudiosPage = () => {
                 rules={[{ required: true }]}
               >
                 <InputNumber min={1} className="w-full" />
+              </Form.Item>
+              <Form.Item
+                name="location"
+                label="Địa chỉ"
+                rules={[{ required: true, message: "Vui lòng nhập địa chỉ" }]}
+              >
+                <Input placeholder="VD: 123 Đường ABC, Quận XYZ, TP.HCM" />
               </Form.Item>
 
               {/* Images */}

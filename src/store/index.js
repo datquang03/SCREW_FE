@@ -13,6 +13,7 @@ import bookingReducer from "../features/booking/bookingSlice";
 import paymentReducer from "../features/payment/paymentSlice";
 import scheduleReducer from "../features/schedule/scheduleSlice";
 import setDesignReducer from "../features/setDesign/setDesignSlice";
+import setDesignPaymentReducer from "../features/setDesignPayment/setDesignPayment";
 import commentReducer from "../features/comment/commentSlice";
 import transactionReducer from "../features/transaction/transactionSlice";
 import notificationReducer from "../features/notification/notificationSlice";
@@ -33,6 +34,7 @@ const store = configureStore({
     booking: bookingReducer,
     payment: paymentReducer,
     setDesign: setDesignReducer,
+    setDesignPayment: setDesignPaymentReducer,
     schedule: scheduleReducer,
     comment: commentReducer,
     transaction: transactionReducer,

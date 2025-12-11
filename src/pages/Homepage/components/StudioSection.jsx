@@ -78,7 +78,7 @@ const StudioSection = () => {
     <Section
       title="Studio Nổi Bật"
       subtitle="Không gian được khách hàng yêu thích nhất"
-      className="py-12 md:py-20 bg-gradient-to-b from-white to-gray-50"
+      className="py-12 md:py-20 bg-gradient-to-br from-amber-50 via-white to-blue-50"
     >
       <div className="relative max-w-7xl mx-auto px-4">
         {/* Carousel - chỉ thấy đúng 3 card */}
@@ -100,103 +100,90 @@ const StudioSection = () => {
                   className="flex-shrink-0 px-4"
                   style={{ width: `${100 / itemsPerView}%` }}
                 >
-                  {/* CARD ẢNH + OVERLAY DETAIL KHI HOVER */}
+                  {/* CARD ĐƠN GIẢN GIỐNG DETAIL PAGE */}
                   <motion.div
-                    whileHover={{ y: -8 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 22 }}
-                    className="group cursor-pointer h-full"
+                    whileHover={{ y: -4 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                    className="h-full"
                   >
                     <Card
                       hoverable
-                      className="overflow-hidden rounded-2xl md:rounded-3xl border border-gray-200/70 group-hover:border-gray-300 shadow-md group-hover:shadow-xl transition-all duration-500 h-full bg-transparent"
-                      style={{padding: 0, boxShadow: 'none' }}
+                      className="overflow-hidden rounded-2xl border border-amber-100 shadow-[0_12px_35px_-18px_rgba(0,0,0,0.25)] h-full bg-white cursor-pointer"
+                      onClick={() => window.location.href = `/studio/${studio._id}`}
                     >
-                      <div className="relative w-full h-72 md:h-80">
-                        {/* Ảnh nền */}
+                      {/* Ảnh */}
+                      <div className="relative w-full h-64 mb-4 rounded-xl overflow-hidden">
                           {studio.images?.[0] ? (
                             <img
                               src={studio.images[0]}
                               alt={studio.name}
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                            className="w-full h-full object-cover"
                             />
                           ) : (
-                          <div className="w-full h-full bg-gray-200 flex items-center justify-center text-3xl md:text-4xl font-bold text-gray-400">
+                          <div className="w-full h-full bg-gradient-to-br from-amber-50 to-orange-50 flex items-center justify-center text-2xl font-bold text-amber-600">
                               {studio.name}
                             </div>
                           )}
 
                         {/* Badge rating */}
-                        <div className="absolute top-4 left-4 bg-black/70 text-white px-4 py-2 rounded-full flex items-center gap-2 shadow-lg backdrop-blur-sm">
-                          <FiStar className="text-yellow-400" size={18} />
-                          <span className="font-semibold text-sm md:text-base">
+                        <div className="absolute top-3 left-3 bg-white/95 border border-amber-100 px-3 py-1 rounded-full flex items-center gap-1.5 shadow-sm">
+                          <FiStar className="text-amber-500" size={16} />
+                          <span className="font-bold text-sm text-amber-700">
                               {studio.rating?.toFixed(1) || "5.0"}
                             </span>
                         </div>
+                        </div>
 
-                        {/* Icon info dẫn tới trang chi tiết */}
-                        <button
-                          className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/70 hover:bg-black text-white flex items-center justify-center shadow-lg backdrop-blur-sm transition-colors pointer-events-auto"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            window.location.href = `/studio/${studio._id}`;
-                          }}
-                        >
-                          <FiInfo size={18} />
-                        </button>
-
-                        {/* OVERLAY DETAIL KHI HOVER - NỀN ĐEN ĐẬM, CHE FULL ẢNH */}
-                        <div className="absolute inset-0 bg-black/85 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                        {/* Nội dung chỉ hiện khi hover */}
-                        <div className="absolute inset-0 flex flex-col justify-between p-6 md:p-7 text-white pointer-events-none opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-                          <div className="space-y-2.5 md:space-y-3.5">
-                            <div className="inline-flex items-center gap-2 bg-black/60 border border-white/25 backdrop-blur px-3 py-1 rounded-full text-xs md:text-sm font-medium shadow-md">
-                              <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                      {/* Nội dung */}
+                      <div className="space-y-3">
+                        {/* Header với badge */}
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1">
+                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 border border-amber-100 rounded-full text-xs font-semibold text-amber-700 mb-2">
                               Studio nổi bật
                             </div>
-
-                            <div className="border-l-4 border-orange-400 pl-3 md:pl-4">
-                              <h3 className="text-lg md:text-2xl font-bold line-clamp-2 drop-shadow">
+                            <h3 className="text-lg font-bold text-gray-900 line-clamp-2">
                               {studio.name}
                               </h3>
-                              <p className="mt-1.5 text-xs md:text-sm text-gray-100/95 line-clamp-2 drop-shadow-sm">
+                          </div>
+                        </div>
+
+                        {/* Mô tả */}
+                        <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
                                 {studio.description ||
                                   "Studio hiện đại, ánh sáng đẹp, phù hợp chụp lookbook, cưới, profile cá nhân."}
                             </p>
-                            </div>
 
-                            <div className="flex flex-wrap gap-2 md:gap-3">
+                        {/* Tags */}
+                        <div className="flex flex-wrap gap-2">
                               {studio.area && (
-                                <span className="inline-flex items-center gap-1.5 bg-black/55 border border-white/20 backdrop-blur px-3 py-1 rounded-full text-[11px] md:text-xs font-medium shadow-sm">
-                                  <FiMapPin size={14} />
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs bg-amber-50 text-amber-700 border border-amber-100 rounded-full font-medium">
+                              <FiMapPin size={12} />
                                   {studio.area} m²
                                 </span>
                               )}
                               {studio.capacity && (
-                                <span className="inline-flex items-center gap-1.5 bg-black/55 border border-white/20 backdrop-blur px-3 py-1 rounded-full text-[11px] md:text-xs font-medium shadow-sm">
-                                  <FiUsers size={14} />
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs bg-amber-50 text-amber-700 border border-amber-100 rounded-full font-medium">
+                              <FiUsers size={12} />
                                   {studio.capacity} người
                                 </span>
                               )}
-                            </div>
                           </div>
 
-                          {/* Giá + nút hành động */}
-                          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
-                            <div>
-                              <p className="text-xs md:text-sm text-gray-200">Giá từ</p>
-                              <p className="text-xl md:text-3xl font-extrabold text-orange-300 drop-shadow">
-                                {studio.basePricePerHour?.toLocaleString("vi-VN")}đ
-                              </p>
-                              <p className="text-[11px] md:text-xs text-gray-200">
-                                / giờ • đã bao gồm setup cơ bản
+                        {/* Giá */}
+                        <div className="pt-2 border-t border-amber-100">
+                          <p className="text-xs text-gray-500 mb-1">Giá từ</p>
+                          <p className="text-2xl font-extrabold text-amber-600">
+                            {studio.basePricePerHour?.toLocaleString("vi-VN")}₫
+                            <span className="text-sm font-semibold text-gray-500 ml-1">/ giờ</span>
                               </p>
                               </div>
 
-                            <div className="flex flex-wrap gap-3 md:gap-4 justify-end">
+                        {/* Buttons */}
+                        <div className="flex gap-2 pt-2">
                               <Button
-                                size="middle"
-                                className="pointer-events-auto border-none bg-white/90 hover:bg-white text-gray-900 font-semibold rounded-full px-4 shadow-md flex items-center gap-1.5 text-xs md:text-sm"
+                            size="small"
+                            className="flex-1 border border-amber-200 text-amber-700 hover:bg-amber-50 hover:border-amber-300 rounded-full font-semibold"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   window.location.href = `/studio/${studio._id}`;
@@ -206,18 +193,16 @@ const StudioSection = () => {
                               </Button>
                               <Button
                                 type="primary"
-                                size="middle"
-                                className="pointer-events-auto bg-orange-500 hover:bg-orange-600 border-none font-semibold rounded-full px-4 shadow-md flex items-center gap-1.5 text-xs md:text-sm"
+                            size="small"
+                            className="flex-1 bg-amber-500 hover:bg-amber-600 border-none rounded-full font-semibold"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   window.location.href = `/booking/${studio._id}`;
                                 }}
-                                icon={<FiShoppingCart size={16} />}
+                            icon={<FiShoppingCart size={14} />}
                               >
                                 Đặt ngay
                               </Button>
-                            </div>
-                          </div>
                         </div>
                       </div>
                     </Card>
@@ -232,15 +217,15 @@ const StudioSection = () => {
             <>
               <button
                 onClick={goPrev}
-                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white shadow-2xl rounded-full p-4 z-10 hover:scale-110 transition-all"
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm border border-amber-100 shadow-[0_12px_35px_-18px_rgba(0,0,0,0.25)] rounded-full p-4 z-10 hover:scale-110 hover:bg-white transition-all hover:border-amber-200"
               >
-                <FiChevronLeft size={36} className="text-gray-800" />
+                <FiChevronLeft size={36} className="text-amber-700" />
               </button>
               <button
                 onClick={goNext}
-                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white shadow-2xl rounded-full p-4 z-10 hover:scale-110 transition-all"
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm border border-amber-100 shadow-[0_12px_35px_-18px_rgba(0,0,0,0.25)] rounded-full p-4 z-10 hover:scale-110 hover:bg-white transition-all hover:border-amber-200"
               >
-                <FiChevronRight size={36} className="text-gray-800" />
+                <FiChevronRight size={36} className="text-amber-700" />
               </button>
             </>
           )}
@@ -255,8 +240,8 @@ const StudioSection = () => {
                 onClick={() => setCurrentIndex(i)}
                 className={`transition-all duration-300 ${
                   i === currentIndex
-                    ? "w-12 h-3 bg-black rounded-full"
-                    : "w-3 h-3 bg-gray-400 rounded-full hover:bg-gray-600"
+                    ? "w-12 h-3 bg-amber-500 rounded-full shadow-[0_4px_12px_-4px_rgba(251,191,36,0.5)]"
+                    : "w-3 h-3 bg-amber-200 rounded-full hover:bg-amber-300 border border-amber-100"
                 }`}
               />
             ))}
@@ -269,7 +254,7 @@ const StudioSection = () => {
             type="primary"
             size="large"
             href="/studio"
-            className="bg-black hover:bg-gray-900 text-white font-bold text-lg px-14 py-7 rounded-2xl shadow-2xl hover:scale-105 transition-all"
+            className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold text-lg px-14 py-7 rounded-2xl shadow-[0_12px_35px_-18px_rgba(251,191,36,0.4)] hover:shadow-[0_20px_50px_-15px_rgba(251,191,36,0.5)] hover:scale-105 transition-all border border-amber-400"
             icon={<FiArrowRight size={24} className="ml-3" />}
           >
             Xem tất cả Studio

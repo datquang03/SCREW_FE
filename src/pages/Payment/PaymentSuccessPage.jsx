@@ -1,7 +1,7 @@
 // src/pages/Payment/PaymentSuccessPage.jsx
 import React from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
-import { Card, Typography, Button, Result } from "antd";
+import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
+import { Card, Typography, Button } from "antd";
 import { motion } from "framer-motion";
 import { FiCheckCircle } from "react-icons/fi";
 
@@ -10,13 +10,22 @@ const { Title, Text } = Typography;
 const PaymentSuccessPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const bookingId = searchParams.get("bookingId");
+  // PayOS trả về các query param cho set-design
+  const orderId = searchParams.get("orderId") || searchParams.get("bookingId");
   const orderCode = searchParams.get("orderCode");
-  const status = searchParams.get("status");
+  const status = searchParams.get("status") || "success";
+  const amount = searchParams.get("amount");
+  const paymentCode = searchParams.get("paymentCode");
+  const isSetDesign = location.pathname.includes("set-design");
 
   const handleGoDashboard = () => {
-    navigate("/dashboard/customer/history");
+    navigate(
+      isSetDesign
+        ? "/dashboard/customer/set-designs/bookings"
+        : "/dashboard/customer/history"
+    );
   };
 
   return (
@@ -48,11 +57,24 @@ const PaymentSuccessPage = () => {
 
           <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
             <Text strong className="block mb-1">
-              Mã đơn: <span className="text-green-700">{bookingId}</span>
+              Mã đơn: <span className="text-green-700">{orderId || "—"}</span>
             </Text>
             <Text strong className="block">
               Mã giao dịch: <span className="text-green-700">{orderCode}</span>
             </Text>
+            {paymentCode && (
+              <Text className="block">
+                Payment code: <span className="text-green-700">{paymentCode}</span>
+              </Text>
+            )}
+            {amount && (
+              <Text className="block">
+                Số tiền:{" "}
+                <span className="text-green-700">
+                  {Number(amount).toLocaleString("vi-VN")}₫
+                </span>
+              </Text>
+            )}
             <Text className="block mt-2">
               Trạng thái: <span className="text-green-600">{status}</span>
             </Text>

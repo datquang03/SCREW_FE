@@ -12,6 +12,7 @@ import StudioCommentList from "./components/StudioCommentList";
 import StudioBookingButton from "./components/StudioBookingButton";
 import StudioMap from "./components/StudioMap";
 import StudioAmenities from "./components/StudioAmenities";
+import { getComments } from "../../features/comment/commentSlice";
 import { getStudioById } from "../../features/studio/studioSlice";
 
 export default function StudioDetailPage({ studio }) {
@@ -24,6 +25,9 @@ export default function StudioDetailPage({ studio }) {
   useEffect(() => {
     if (!studio && id) {
       dispatch(getStudioById(id));
+    }
+    if (id) {
+      dispatch(getComments({ targetType: "Studio", targetId: id }));
     }
   }, [studio, id, dispatch]);
 
@@ -38,11 +42,11 @@ export default function StudioDetailPage({ studio }) {
   }
 
   return (
-    <div className="min-h-screen bg-[#fafafa] pb-32">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-blue-50 pb-32">
       <Suspense fallback={<div className="p-10">Đang tải...</div>}>
         <StudioHeader studio={safeStudio} />
         <StudioGallery images={safeStudio?.images || []} />
-        <div className="max-w-6xl mx-auto px-4 space-y-12 mt-10">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8 space-y-8 md:space-y-12 mt-8 md:mt-10">
           <StudioInfo studio={safeStudio} />
           <StudioServices services={safeStudio?.services || []} />
           <StudioAmenities amenities={safeStudio?.amenities || []} />

@@ -19,7 +19,6 @@ import {
 } from "antd";
 import { motion } from "framer-motion";
 import { FiSearch } from "react-icons/fi";
-import Layout from "../../components/layout/Layout";
 import Section from "../../components/common/Section";
 import {
   getAvailableEquipment,
@@ -119,8 +118,8 @@ export default function EquipmentListPage() {
   };
 
   return (
-    <Layout>
-      <Section className="bg-gradient-to-br from-indigo-50 via-white to-blue-50 py-20">
+    <>
+      <Section className="bg-gradient-to-br from-indigo-50 via-white to-blue-50 py-20 pb-32">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -139,7 +138,7 @@ export default function EquipmentListPage() {
             transition={{ delay: 0.2 }}
             className="max-w-4xl mx-auto mb-12"
           >
-            <Space className="w-full" size={16} direction="vertical" md-direction="horizontal">
+            <div className="flex flex-col sm:flex-row gap-4 w-full">
               <Input
                 placeholder="Tìm kiếm thiết bị..."
                 prefix={<FiSearch className="text-gray-400" />}
@@ -150,7 +149,7 @@ export default function EquipmentListPage() {
                   setSearchTerm(e.target.value);
                   setVisibleCount(6);
                 }}
-                className="rounded-xl shadow-sm"
+                className="flex-1 rounded-xl shadow-sm border-amber-100 focus:border-amber-400"
               />
               <Select
                 placeholder="Sắp xếp"
@@ -160,23 +159,23 @@ export default function EquipmentListPage() {
                   setSortBy(v);
                   setVisibleCount(6);
                 }}
-                className="min-w-[180px]"
+                className="w-full sm:w-[200px] rounded-xl border-amber-100"
               >
                 <Option value="default">Mặc định</Option>
                 <Option value="price-asc">Giá thấp nhất</Option>
                 <Option value="price-desc">Giá cao nhất</Option>
                 <Option value="name-asc">Tên A → Z</Option>
               </Select>
-            </Space>
+            </div>
           </motion.div>
 
           {/* Loading */}
           {loading ? (
-            <Row gutter={[24, 32]}>
+            <Row gutter={[16, 24]} className="!mx-0">
               {[...Array(6)].map((_, i) => (
-                <Col xs={24} sm={12} lg={8} key={i}>
-                  <Card className="rounded-2xl overflow-hidden shadow-lg">
-                    <Skeleton.Image className="w-full h-56" />
+                <Col xs={24} sm={12} md={12} lg={8} xl={8} key={i} className="!px-2">
+                  <Card className="rounded-2xl overflow-hidden shadow-[0_12px_35px_-18px_rgba(0,0,0,0.25)] border border-amber-100 h-full">
+                    <Skeleton.Image className="w-full h-64" />
                     <Skeleton active paragraph={{ rows: 3 }} className="p-5" />
                   </Card>
                 </Col>
@@ -186,23 +185,25 @@ export default function EquipmentListPage() {
             <Empty description="Không tìm thấy thiết bị nào" className="py-20" />
           ) : (
             <>
-              <Row gutter={[24, 32]}>
+              <Row gutter={[16, 24]} className="!mx-0">
                 {visibleEquipments.map((equip, index) => {
                   const stock = getStockStatus(equip.availableQty || 0);
 
                   return (
-                    <Col xs={24} sm={12} lg={8} key={equip._id}>
+                    <Col xs={24} sm={12} md={12} lg={8} xl={8} key={equip._id} className="!px-2">
                       <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.1 }}
+                        className="h-full"
                       >
                         <Card
                           hoverable
                           onClick={() => handleCardClick(equip)}
-                          className="h-full rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer group"
+                          className="h-full rounded-2xl overflow-hidden shadow-[0_12px_35px_-18px_rgba(0,0,0,0.25)] hover:shadow-[0_20px_50px_-15px_rgba(0,0,0,0.3)] transition-all duration-300 cursor-pointer group border border-amber-100 bg-white flex flex-col"
+                          styles={{ body: { flex: 1, display: 'flex', flexDirection: 'column', padding: '20px' } }}
                           cover={
-                            <div className="relative h-64 bg-gray-100 overflow-hidden">
+                            <div className="relative h-64 bg-gray-100 overflow-hidden flex-shrink-0">
                               {equip.image ? (
                                 <img
                                   src={equip.image}
@@ -210,41 +211,45 @@ export default function EquipmentListPage() {
                                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                 />
                               ) : (
-                                <div className="flex items-center justify-center h-full bg-gray-200">
-                                  <div className="w-24 h-24 bg-gray-300 border-2 border-dashed rounded-xl" />
+                                <div className="flex items-center justify-center h-full bg-gradient-to-br from-amber-50 to-orange-50">
+                                  <div className="w-24 h-24 bg-amber-200 border-2 border-amber-300 border-dashed rounded-xl" />
                                 </div>
                               )}
                               <div className="absolute top-3 right-3">
-                                <span className="px-3 py-1 rounded-full text-xs font-bold text-white bg-black/60">
+                                <span className="px-3 py-1.5 rounded-full text-xs font-bold text-white bg-black/70 backdrop-blur-sm border border-white/20">
                                   Còn {equip.availableQty}
                                 </span>
                               </div>
                             </div>
                           }
                         >
-                          <div className="p-5">
-                            <Title level={4} className="mb-2 line-clamp-1 font-bold">
+                          <div className="flex flex-col h-full">
+                            <Title level={4} className="!mb-2 !text-lg line-clamp-2 font-bold text-gray-900 min-h-[56px]">
                               {equip.name}
                             </Title>
-                            <Text className="text-gray-600 text-sm line-clamp-2 block mb-4">
+                            <Text className="text-gray-600 text-sm line-clamp-2 block mb-4 flex-shrink-0 min-h-[40px]">
                               {equip.description || "Không có mô tả"}
                             </Text>
 
-                            <div className="mb-4">
+                            <div className="mb-4 flex-shrink-0">
                               <Progress
                                 percent={stock.percent}
                                 strokeColor={stock.color}
                                 showInfo={false}
                                 size="small"
+                                className="!mb-1"
                               />
+                              <Text className="text-xs text-gray-500">{stock.text}</Text>
                             </div>
 
-                            <div className="flex justify-between items-end">
-                              <div>
-                                <Text className="text-2xl font-bold text-blue-600">
-                                  {formatPrice(equip.pricePerHour)}
-                                </Text>
-                                <Text className="text-gray-500 text-sm block">/ giờ</Text>
+                            <div className="mt-auto pt-4 border-t border-gray-100">
+                              <div className="flex justify-between items-end">
+                                <div>
+                                  <Text className="text-2xl font-bold text-amber-600">
+                                    {formatPrice(equip.pricePerHour)}
+                                  </Text>
+                                  <Text className="text-gray-500 text-sm block">/ giờ</Text>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -279,7 +284,8 @@ export default function EquipmentListPage() {
         footer={null}
         width={900}
         centered
-        destroyOnHidden
+        destroyOnClose
+        maskClosable={true}
         className="rounded-2xl"
       >
         {selectedEquipment && (
@@ -300,62 +306,65 @@ export default function EquipmentListPage() {
             </div>
 
             {/* Nội dung */}
-            <div className="lg:w-1/2 flex flex-col justify-between">
-              <div>
-                <Title level={2} className="mb-4">
-                  {selectedEquipment.name}
-                </Title>
-                <Text className="text-gray-600 text-lg leading-relaxed block mb-6">
-                  {selectedEquipment.description || "Không có mô tả chi tiết."}
-                </Text>
+            <div className="lg:w-1/2 flex flex-col">
+              <div className="space-y-6">
+                <div>
+                  <Title level={2} className="!mb-2 !text-3xl font-bold text-gray-900">
+                    {selectedEquipment.name}
+                  </Title>
+                  <Text className="text-gray-600 text-base leading-relaxed block">
+                    {selectedEquipment.description || "Không có mô tả chi tiết."}
+                  </Text>
+                </div>
 
-                <Divider />
+                <Divider className="!my-6" />
 
                 <div className="space-y-6">
-                  <div>
-                    <Text className="text-gray-500">Số lượng còn lại</Text>
-                    <Title level={3} className="text-3xl font-bold text-green-600">
+                  <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200">
+                    <Text className="text-sm font-semibold text-gray-600 block mb-2">
+                      Số lượng còn lại
+                    </Text>
+                    <Title level={3} className="!mb-0 !text-4xl font-extrabold text-green-600">
                       {selectedEquipment.availableQty} thiết bị
                     </Title>
                   </div>
 
-                  <div>
-                    <Text className="text-gray-500 block mb-2">Tình trạng tồn kho</Text>
+                  <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
+                    <Text className="text-sm font-semibold text-gray-600 block mb-3">
+                      Tình trạng tồn kho
+                    </Text>
                     <Progress
                       percent={getStockStatus(selectedEquipment.availableQty).percent}
                       strokeColor={getStockStatus(selectedEquipment.availableQty).color}
                       size="large"
+                      className="!mb-2"
                     />
+                    <Text className="text-sm font-medium text-gray-700">
+                      {getStockStatus(selectedEquipment.availableQty).text}
+                    </Text>
                   </div>
 
-                  <div>
-                    <Text className="text-gray-500">Giá thuê</Text>
-                    <Title level={1} className="text-5xl font-bold text-blue-600">
-                      {formatPrice(selectedEquipment.pricePerHour)}
-                      <span className="text-2xl text-gray-500 font-normal"> / giờ</span>
-                    </Title>
+                  {/* Highlight giá */}
+                  <div className="p-6 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 rounded-2xl border-4 border-amber-300 shadow-[0_8px_30px_rgba(251,191,36,0.3)]">
+                    <Text className="text-sm font-semibold text-amber-700 block mb-2 uppercase tracking-wide">
+                      Giá thuê
+                    </Text>
+                    <div className="flex items-baseline gap-2">
+                      <Title level={1} className="!mb-0 !text-5xl font-extrabold bg-gradient-to-r from-amber-600 to-orange-600 text-transparent bg-clip-text">
+                        {formatPrice(selectedEquipment.pricePerHour)}
+                      </Title>
+                      <Text className="text-xl text-amber-700 font-semibold">/ giờ</Text>
+                    </div>
+                    <Text className="text-xs text-amber-600 mt-2 block">
+                      Giá cơ bản, chưa bao gồm phụ phí (nếu có)
+                    </Text>
                   </div>
                 </div>
-              </div>
-
-              <div className="mt-10">
-                <Button
-                  type="primary"
-                  size="large"
-                  block
-                  className="h-14 text-xl font-bold rounded-xl shadow-lg"
-                  onClick={() => {
-                    alert(`Đã chọn thuê: ${selectedEquipment.name}`);
-                    // Sau này tích hợp đặt thuê thật
-                  }}
-                >
-                  Đặt thuê ngay
-                </Button>
               </div>
             </div>
           </div>
         )}
       </Modal>
-    </Layout>
+    </>
   );
 }

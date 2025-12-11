@@ -7,7 +7,7 @@ export default function StudioHeader({ studio }) {
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
-      className="py-16 px-6 bg-gradient-to-br from-amber-50 via-white to-blue-50 text-gray-900 border-b border-amber-100"
+      className="py-12 md:py-16 px-4 md:px-6 bg-gradient-to-br from-amber-50 via-white to-blue-50 text-gray-900 border-b border-amber-100"
     >
       <div className="max-w-6xl mx-auto flex flex-col gap-4">
         <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/70 border border-amber-100 rounded-full text-sm font-semibold text-amber-700 w-fit shadow-sm">
@@ -27,12 +27,17 @@ export default function StudioHeader({ studio }) {
           )}
           {studio.basePricePerHour && (
             <span className="px-3 py-1 rounded-full bg-white/80 border border-amber-100 text-amber-700 font-semibold shadow-sm">
-              💰 {studio.basePricePerHour} VND/giờ
+              💰 {Number(studio.basePricePerHour).toLocaleString("vi-VN")} VND/giờ
             </span>
           )}
           {studio.capacity && (
             <span className="px-3 py-1 rounded-full bg-white/80 border border-amber-100 text-gray-700 shadow-sm">
               👥 Tối đa {studio.capacity} người
+            </span>
+          )}
+          {studio.area && (
+            <span className="px-3 py-1 rounded-full bg-white/80 border border-amber-100 text-gray-700 shadow-sm">
+              📐 {studio.area} m²
             </span>
           )}
         </div>

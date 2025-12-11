@@ -1,7 +1,7 @@
 // src/pages/Booking/components/BookingStudioInfo.jsx
 import React from "react";
 import { useSelector } from "react-redux";
-import { Typography, Button, Tag, Carousel, Spin, Card } from "antd";
+import { Typography, Button, Tag, Carousel, Card, Skeleton } from "antd";
 import { FiMapPin, FiUsers, FiCheckCircle } from "react-icons/fi";
 import { motion } from "framer-motion";
 
@@ -12,10 +12,44 @@ const BookingStudioInfo = ({ onNext }) => {
 
   if (loading || !currentStudio) {
     return (
-      <div className="flex justify-center items-center py-20">
-        <Spin size="large" tip="Đang tải thông tin studio...">
-          <div className="w-0 h-0" />
-        </Spin>
+      <div className="space-y-8">
+        {/* Header Skeleton */}
+        <div className="text-center space-y-4">
+          <Skeleton.Input active size="large" style={{ width: 300, height: 40 }} />
+          <Skeleton.Input active size="default" style={{ width: 500, height: 24 }} />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Image Carousel Skeleton */}
+          <div className="space-y-4">
+            <Skeleton.Image 
+              active 
+              style={{ width: '100%', height: 500, borderRadius: '16px' }} 
+            />
+            <div className="flex gap-2 justify-center">
+              <Skeleton.Button active size="small" shape="circle" />
+              <Skeleton.Button active size="small" shape="circle" />
+              <Skeleton.Button active size="small" shape="circle" />
+            </div>
+          </div>
+
+          {/* Info Card Skeleton */}
+          <div className="space-y-6">
+            <Card className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+              <Skeleton active paragraph={{ rows: 2 }} />
+              <div className="mt-4 space-y-3">
+                <Skeleton.Input active size="default" style={{ width: '60%' }} />
+                <Skeleton.Input active size="default" style={{ width: '40%' }} />
+                <Skeleton.Input active size="default" style={{ width: '50%' }} />
+              </div>
+              <div className="mt-6 space-y-4">
+                <Skeleton.Input active size="large" style={{ width: '100%', height: 60 }} />
+                <Skeleton.Input active size="large" style={{ width: '80%', height: 40 }} />
+              </div>
+            </Card>
+            <Skeleton.Button active size="large" block style={{ height: 56 }} />
+          </div>
+        </div>
       </div>
     );
   }

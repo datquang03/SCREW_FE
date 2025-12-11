@@ -39,6 +39,41 @@ const { Title, Text } = Typography;
 const formatCurrency = (v) =>
   typeof v === "number" ? v.toLocaleString("vi-VN") + "₫" : v || "-";
 
+// Tính số tiền đã trả và còn lại cho prepay
+const calculatePaymentInfo = (booking) => {
+  const finalAmount = booking.finalAmount || 0;
+  const payType = booking.payType || "";
+
+  if (payType === "full") {
+    return {
+      paidAmount: finalAmount,
+      remainingAmount: 0,
+      paidPercentage: 100,
+      remainingPercentage: 0,
+    };
+  }
+
+  if (payType.startsWith("prepay_")) {
+    const percentage = parseInt(payType.split("_")[1]) || 0;
+    const paidAmount = Math.round((finalAmount * percentage) / 100);
+    const remainingAmount = finalAmount - paidAmount;
+
+    return {
+      paidAmount,
+      remainingAmount,
+      paidPercentage: percentage,
+      remainingPercentage: 100 - percentage,
+    };
+  }
+
+  return {
+    paidAmount: 0,
+    remainingAmount: finalAmount,
+    paidPercentage: 0,
+    remainingPercentage: 100,
+  };
+};
+
 // Xác định trạng thái hiển thị
 const getStatusDisplay = (booking) => {
   const hasNoShow = booking.events?.some((e) => e.type === "NO_SHOW");
@@ -46,8 +81,15 @@ const getStatusDisplay = (booking) => {
     return { label: "Không đến (No-Show)", color: "red", icon: <FiUserX /> };
   if (booking.checkOutAt)
     return { label: "Đã check-out", color: "green", icon: <FiLogOut /> };
-  if (booking.checkInAt)
+
+  // Kiểm tra status "checked_in" hoặc có event CHECK_IN
+  const hasCheckIn =
+    booking.status === "checked_in" ||
+    booking.events?.some((e) => e.type === "CHECK_IN") ||
+    booking.checkInAt;
+  if (hasCheckIn)
     return { label: "Đã check-in", color: "purple", icon: <FiLogIn /> };
+
   if (booking.status === "pending")
     return { label: "Đang chờ", color: "orange" };
   if (booking.status === "confirmed")
@@ -105,6 +147,12 @@ const StaffOrderPage = () => {
   // Dropdown menu
   const getDropdownMenu = (record) => {
     const { _id, status, checkInAt, checkOutAt } = record;
+    // Kiểm tra đã check-in: status === "checked_in" hoặc có event CHECK_IN hoặc có checkInAt
+    const hasCheckIn =
+      status === "checked_in" ||
+      record.events?.some((e) => e.type === "CHECK_IN") ||
+      checkInAt;
+
     const items = [
       {
         key: "view",
@@ -116,8 +164,8 @@ const StaffOrderPage = () => {
         label: <span className="text-blue-600 font-medium">Xác nhận đơn</span>,
         onClick: () => handleAction(confirmBooking, _id),
       },
-      status === "confirmed" &&
-        !checkInAt && {
+      (status === "confirmed" || status === "checked_in") &&
+        !hasCheckIn && {
           key: "checkin",
           label: (
             <div className="flex items-center gap-2 text-green-600 font-medium">
@@ -126,7 +174,7 @@ const StaffOrderPage = () => {
           ),
           onClick: () => handleAction(checkInBooking, _id),
         },
-      checkInAt &&
+      hasCheckIn &&
         !checkOutAt && {
           key: "checkout",
           label: (
@@ -200,21 +248,63 @@ const StaffOrderPage = () => {
       },
       {
         title: "Thanh toán",
-        width: 130,
-        render: (_, r) => (
-          <div className="text-sm space-y-1">
-            <div className="font-medium">Loại: {r.payType || "-"}</div>
-            <div className="text-gray-500">
-              Gốc: {formatCurrency(r.totalBeforeDiscount || r.financials?.originalAmount)}
+        width: 200,
+        render: (_, r) => {
+          const paymentInfo = calculatePaymentInfo(r);
+          const isPrepay = r.payType?.startsWith("prepay_");
+
+          return (
+            <div className="text-sm space-y-2">
+              <div className="font-medium">
+                {r.payType === "full"
+                  ? "Thanh toán đủ"
+                  : r.payType === "prepay_50"
+                  ? "Cọc 50%"
+                  : r.payType === "prepay_30"
+                  ? "Cọc 30%"
+                  : r.payType || "-"}
+              </div>
+              {isPrepay ? (
+                <div className="space-y-1">
+                  {/* Progress bar */}
+                  <div className="relative w-full h-4 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      className="absolute top-0 left-0 h-full bg-gradient-to-r from-green-500 to-green-600 transition-all duration-300"
+                      style={{ width: `${paymentInfo.paidPercentage}%` }}
+                    />
+                    <div
+                      className="absolute top-0 right-0 h-full bg-gradient-to-r from-orange-400 to-orange-500 transition-all duration-300"
+                      style={{ width: `${paymentInfo.remainingPercentage}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-green-600 font-semibold">
+                      {paymentInfo.paidPercentage}%
+                    </span>
+                    <span className="text-orange-600 font-semibold">
+                      {paymentInfo.remainingPercentage}%
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-600">
+                    <span>{formatCurrency(paymentInfo.paidAmount)}</span>
+                    <span>{formatCurrency(paymentInfo.remainingAmount)}</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-gray-500 text-xs">
+                  {formatCurrency(r.finalAmount)}
+                </div>
+              )}
             </div>
-          </div>
-        ),
+          );
+        },
       },
       {
         title: "Sự kiện",
         width: 170,
         render: (_, r) => {
-          if (!r.events || r.events.length === 0) return <span className="text-gray-500">Không có</span>;
+          if (!r.events || r.events.length === 0)
+            return <span className="text-gray-500">Không có</span>;
           const latest = r.events[r.events.length - 1];
           return (
             <div className="text-sm space-y-1">
@@ -371,42 +461,55 @@ const StaffOrderPage = () => {
             )}
 
             {/* CHECK-IN / CHECK-OUT STATUS */}
-            {(currentBooking.checkInAt || currentBooking.checkOutAt) && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {currentBooking.checkInAt && (
-                  <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border-4 border-emerald-300 rounded-3xl p-10 text-center shadow-2xl">
-                    <FiLogIn className="text-8xl text-emerald-600 mx-auto mb-5" />
-                    <h4 className="text-3xl font-extrabold text-emerald-800">
-                      ĐÃ CHECK-IN
-                    </h4>
-                    <p className="text-5xl font-black text-emerald-700 mt-4">
-                      {dayjs(currentBooking.checkInAt).format("HH:mm")}
-                    </p>
-                    <p className="text-xl text-gray-700 mt-2">
-                      {dayjs(currentBooking.checkInAt).format(
-                        "dddd, DD/MM/YYYY"
-                      )}
-                    </p>
+            {(() => {
+              // Lấy thông tin check-in từ checkInAt hoặc từ event CHECK_IN
+              const checkInEvent = currentBooking.events?.find(
+                (e) => e.type === "CHECK_IN"
+              );
+              const checkInTime =
+                currentBooking.checkInAt || checkInEvent?.timestamp;
+              const hasCheckIn =
+                checkInTime || currentBooking.status === "checked_in";
+              const hasCheckOut = currentBooking.checkOutAt;
+
+              if (hasCheckIn || hasCheckOut) {
+                return (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {hasCheckIn && (
+                      <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border-4 border-emerald-300 rounded-3xl p-10 text-center shadow-2xl">
+                        <FiLogIn className="text-8xl text-emerald-600 mx-auto mb-5" />
+                        <h4 className="text-3xl font-extrabold text-emerald-800">
+                          ĐÃ CHECK-IN
+                        </h4>
+                        <p className="text-5xl font-black text-emerald-700 mt-4">
+                          {dayjs(checkInTime).format("HH:mm")}
+                        </p>
+                        <p className="text-xl text-gray-700 mt-2">
+                          {dayjs(checkInTime).format("dddd, DD/MM/YYYY")}
+                        </p>
+                      </div>
+                    )}
+                    {hasCheckOut && (
+                      <div className="bg-gradient-to-br from-purple-50 to-violet-50 border-4 border-purple-300 rounded-3xl p-10 text-center shadow-2xl">
+                        <FiLogOut className="text-8xl text-purple-600 mx-auto mb-5" />
+                        <h4 className="text-3xl font-extrabold text-purple-800">
+                          ĐÃ CHECK-OUT
+                        </h4>
+                        <p className="text-5xl font-black text-purple-700 mt-4">
+                          {dayjs(currentBooking.checkOutAt).format("HH:mm")}
+                        </p>
+                        <p className="text-xl text-gray-700 mt-2">
+                          {dayjs(currentBooking.checkOutAt).format(
+                            "dddd, DD/MM/YYYY"
+                          )}
+                        </p>
+                      </div>
+                    )}
                   </div>
-                )}
-                {currentBooking.checkOutAt && (
-                  <div className="bg-gradient-to-br from-purple-50 to-violet-50 border-4 border-purple-300 rounded-3xl p-10 text-center shadow-2xl">
-                    <FiLogOut className="text-8xl text-purple-600 mx-auto mb-5" />
-                    <h4 className="text-3xl font-extrabold text-purple-800">
-                      ĐÃ CHECK-OUT
-                    </h4>
-                    <p className="text-5xl font-black text-purple-700 mt-4">
-                      {dayjs(currentBooking.checkOutAt).format("HH:mm")}
-                    </p>
-                    <p className="text-xl text-gray-700 mt-2">
-                      {dayjs(currentBooking.checkOutAt).format(
-                        "dddd, DD/MM/YYYY"
-                      )}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
+                );
+              }
+              return null;
+            })()}
 
             {/* THÔNG TIN CHÍNH - 2 CỘT */}
             <div className="grid lg:grid-cols-2 gap-10">
@@ -507,12 +610,89 @@ const StaffOrderPage = () => {
                         {formatCurrency(currentBooking.finalAmount)}
                       </span>
                     </div>
+
+                    {/* Hiển thị progress bar cho prepay */}
+                    {(() => {
+                      const paymentInfo = calculatePaymentInfo(currentBooking);
+                      const isPrepay =
+                        currentBooking.payType?.startsWith("prepay_");
+
+                      if (isPrepay) {
+                        return (
+                          <>
+                            <Divider className="my-4 border-green-300" />
+                            <div className="space-y-3">
+                              <div className="text-center">
+                                <div className="text-sm font-semibold text-gray-700 mb-2">
+                                  Tiến độ thanh toán
+                                </div>
+                                {/* Progress bar lớn */}
+                                <div className="relative w-full h-6 bg-gray-200 rounded-full overflow-hidden shadow-inner">
+                                  <div
+                                    className="absolute top-0 left-0 h-full bg-gradient-to-r from-green-500 via-green-500 to-green-600 transition-all duration-500 flex items-center justify-end pr-2"
+                                    style={{
+                                      width: `${paymentInfo.paidPercentage}%`,
+                                    }}
+                                  >
+                                    {paymentInfo.paidPercentage > 15 && (
+                                      <span className="text-white text-xs font-bold">
+                                        {paymentInfo.paidPercentage}%
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div
+                                    className="absolute top-0 right-0 h-full bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 transition-all duration-500 flex items-center justify-start pl-2"
+                                    style={{
+                                      width: `${paymentInfo.remainingPercentage}%`,
+                                    }}
+                                  >
+                                    {paymentInfo.remainingPercentage > 15 && (
+                                      <span className="text-white text-xs font-bold">
+                                        {paymentInfo.remainingPercentage}%
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="flex justify-between mt-2 text-sm">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                                    <span className="text-gray-700">
+                                      Đã trả:
+                                    </span>
+                                    <span className="text-green-600 font-bold">
+                                      {formatCurrency(paymentInfo.paidAmount)}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full bg-orange-500"></div>
+                                    <span className="text-gray-700">
+                                      Còn lại:
+                                    </span>
+                                    <span className="text-orange-600 font-bold">
+                                      {formatCurrency(
+                                        paymentInfo.remainingAmount
+                                      )}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </>
+                        );
+                      }
+                      return null;
+                    })()}
+
                     <div className="text-center mt-6">
                       <Tag color="blue" className="text-lg px-6 py-2 font-bold">
                         Thanh toán:{" "}
                         {currentBooking.payType === "full"
                           ? "Toàn bộ"
-                          : currentBooking.payType}
+                          : currentBooking.payType === "prepay_50"
+                          ? "Cọc 50%"
+                          : currentBooking.payType === "prepay_30"
+                          ? "Cọc 30%"
+                          : currentBooking.payType || "Không rõ"}
                       </Tag>
                     </div>
                   </div>
@@ -554,53 +734,80 @@ const StaffOrderPage = () => {
 
             {/* NÚT HÀNH ĐỘNG */}
             <div className="flex justify-center gap-8 pt-10 border-t-4 border-gray-200">
-              {currentBooking.status === "pending" && (
-                <Button
-                  type="primary"
-                  size="large"
-                  className="px-20 py-8 text-2xl font-bold"
-                  onClick={() =>
-                    handleAction(confirmBooking, currentBooking._id)
-                  }
-                >
-                  XÁC NHẬN ĐƠN
-                </Button>
-              )}
-              {currentBooking.status === "confirmed" &&
-                !currentBooking.checkInAt && (
-                  <Button
-                    type="primary"
-                    size="large"
-                    className="bg-emerald-600 px-24 py-10 text-3xl font-extrabold flex items-center gap-5"
-                    icon={<FiLogIn className="text-5xl" />}
-                    onClick={() =>
-                      handleAction(checkInBooking, currentBooking._id)
-                    }
-                  >
-                    CHECK-IN NGAY
-                  </Button>
-                )}
-              {currentBooking.checkInAt && !currentBooking.checkOutAt && (
-                <Button
-                  type="primary"
-                  danger
-                  size="large"
-                  className="bg-purple-600 px-24 py-10 text-3xl font-extrabold flex items-center gap-5"
-                  icon={<FiLogOut className="text-5xl" />}
-                  onClick={() =>
-                    handleAction(checkOutBooking, currentBooking._id)
-                  }
-                >
-                  CHECK-OUT HOÀN TẤT
-                </Button>
-              )}
-              {(currentBooking.checkOutAt ||
-                currentBooking.events?.some((e) => e.type === "NO_SHOW")) && (
-                <div className="flex items-center gap-6 text-4xl font-extrabold text-green-600">
-                  <FiCheckCircle className="text-8xl" />
-                  ĐÃ XỬ LÝ XONG ĐƠN
-                </div>
-              )}
+              {(() => {
+                // Kiểm tra đã check-in: status === "checked_in" hoặc có event CHECK_IN hoặc có checkInAt
+                const hasCheckIn =
+                  currentBooking.status === "checked_in" ||
+                  currentBooking.events?.some((e) => e.type === "CHECK_IN") ||
+                  currentBooking.checkInAt;
+                const hasCheckOut = currentBooking.checkOutAt;
+                const hasNoShow = currentBooking.events?.some(
+                  (e) => e.type === "NO_SHOW"
+                );
+
+                if (currentBooking.status === "pending") {
+                  return (
+                    <Button
+                      type="primary"
+                      size="large"
+                      className="px-20 py-8 text-2xl font-bold"
+                      onClick={() =>
+                        handleAction(confirmBooking, currentBooking._id)
+                      }
+                    >
+                      XÁC NHẬN ĐƠN
+                    </Button>
+                  );
+                }
+
+                if (
+                  (currentBooking.status === "confirmed" ||
+                    currentBooking.status === "checked_in") &&
+                  !hasCheckIn
+                ) {
+                  return (
+                    <Button
+                      type="primary"
+                      size="large"
+                      className="bg-emerald-600 px-24 py-10 text-3xl font-extrabold flex items-center gap-5"
+                      icon={<FiLogIn className="text-5xl" />}
+                      onClick={() =>
+                        handleAction(checkInBooking, currentBooking._id)
+                      }
+                    >
+                      CHECK-IN NGAY
+                    </Button>
+                  );
+                }
+
+                if (hasCheckIn && !hasCheckOut) {
+                  return (
+                    <Button
+                      type="primary"
+                      danger
+                      size="large"
+                      className="bg-purple-600 px-24 py-10 text-3xl font-extrabold flex items-center gap-5"
+                      icon={<FiLogOut className="text-5xl" />}
+                      onClick={() =>
+                        handleAction(checkOutBooking, currentBooking._id)
+                      }
+                    >
+                      CHECK-OUT HOÀN TẤT
+                    </Button>
+                  );
+                }
+
+                if (hasCheckOut || hasNoShow) {
+                  return (
+                    <div className="flex items-center gap-6 text-4xl font-extrabold text-green-600">
+                      <FiCheckCircle className="text-8xl" />
+                      ĐÃ XỬ LÝ XONG ĐƠN
+                    </div>
+                  );
+                }
+
+                return null;
+              })()}
             </div>
 
             {/* Footer */}

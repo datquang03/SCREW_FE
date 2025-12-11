@@ -11,7 +11,7 @@ import {
   Row,
   Col,
   Empty,
-  Spin,
+  Skeleton,
   Modal,
   Divider,
   Checkbox,
@@ -329,8 +329,21 @@ export default function BookingStudioDetails({ onNext, onBack }) {
       {/* THIẾT BỊ - CUSTOM HORIZONTAL SLIDER */}
       <Card title="Chọn thiết bị bổ sung" className="shadow-xl border-0">
         {equipmentLoading ? (
-          <div className="text-center py-20">
-            <Spin size="large" />
+          <div className="relative">
+            <div className="flex gap-6 overflow-x-hidden px-14 py-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="flex-shrink-0 w-[260px] sm:w-[280px] md:w-[300px]">
+                  <Skeleton.Image 
+                    active 
+                    style={{ width: '100%', height: 260, borderRadius: '16px' }} 
+                  />
+                  <div className="mt-4 space-y-2">
+                    <Skeleton.Input active size="default" block />
+                    <Skeleton.Input active size="small" style={{ width: '60%' }} />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         ) : availableEquipments.length === 0 ? (
           <Empty description="Không có thiết bị nào khả dụng" />
@@ -350,7 +363,10 @@ export default function BookingStudioDetails({ onNext, onBack }) {
               ref={scrollRef}
               id="equipScroll"
               className="flex gap-6 overflow-x-auto px-14 py-4 scrollbar-hide touch-pan-x"
-              style={{ scrollBehavior: "smooth" }}
+              style={{ 
+                scrollBehavior: "smooth",
+                scrollSnapType: "x mandatory"
+              }}
             >
               {availableEquipments.map((eq) => {
                 const isSelected = details.some(
@@ -362,20 +378,32 @@ export default function BookingStudioDetails({ onNext, onBack }) {
                   <div
                     key={eq._id}
                     onClick={() => setSelectedEquipment(eq)}
-                    className={`min-w-[260px] max-w-[320px] h-full bg-white rounded-2xl overflow-hidden border-2 cursor-pointer transition-all group ${
+                    className={`flex-shrink-0 w-[260px] sm:w-[280px] md:w-[300px] bg-white rounded-2xl overflow-hidden border-2 cursor-pointer transition-all group flex flex-col ${
                       isSelected
                         ? "border-blue-500 shadow-2xl ring-4 ring-blue-100"
                         : "border-gray-200 hover:border-gray-400 hover:shadow-xl"
                     }`}
+                    style={{ scrollSnapAlign: "start" }}
                   >
-                    <div className="relative aspect-square bg-gray-50">
+                    {/* Image container - Fixed height để tất cả hình ảnh cùng kích thước */}
+                    <div className="relative w-full bg-gray-50 overflow-hidden" style={{ height: '260px' }}>
                       <img
                         src={eq.image || "/placeholder-equipment.jpg"}
                         alt={eq.name}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform"
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        style={{ 
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          objectPosition: 'center',
+                          display: 'block'
+                        }}
+                        onError={(e) => {
+                          e.target.src = "/placeholder-equipment.jpg";
+                        }}
                       />
                       {isSelected && (
-                        <div className="absolute inset-0 bg-blue-600/30 flex items-center justify-center">
+                        <div className="absolute inset-0 bg-blue-600/30 flex items-center justify-center z-10">
                           <div className="bg-white rounded-full p-4 shadow-2xl">
                             <CheckOutlined className="text-5xl text-blue-600" />
                           </div>
@@ -383,18 +411,19 @@ export default function BookingStudioDetails({ onNext, onBack }) {
                       )}
                       <Tag
                         color={eq.availableQty > 0 ? "green" : "red"}
-                        className="absolute bottom-3 left-3 font-bold"
+                        className="absolute bottom-3 left-3 font-bold z-10"
                       >
                         Còn {eq.availableQty}
                       </Tag>
                     </div>
 
-                    <div className="p-5">
-                      <Text strong className="block text-center text-lg">
+                    {/* Content - Fixed height để cards cùng chiều cao */}
+                    <div className="p-5 flex-1 flex flex-col justify-between min-h-[140px]">
+                      <Text strong className="block text-center text-lg mb-4 line-clamp-2">
                         {eq.name}
                       </Text>
-                      <div className="mt-4 flex justify-between items-center">
-                        <Tag color="green" icon={<ClockCircleOutlined />}>
+                      <div className="mt-auto flex justify-between items-center">
+                        <Tag color="green" icon={<ClockCircleOutlined />} className="text-sm">
                           {(eq.pricePerHour / 1000).toLocaleString()}k/giờ
                         </Tag>
                         <Text strong className="text-blue-600 text-lg">
@@ -422,7 +451,13 @@ export default function BookingStudioDetails({ onNext, onBack }) {
       {/* DỊCH VỤ */}
       <Card title="Dịch vụ bổ sung" className="shadow-xl border-0">
         {serviceLoading ? (
-          <Spin className="block my-10" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <Card key={i} className="border border-gray-200">
+                <Skeleton active avatar paragraph={{ rows: 2 }} />
+              </Card>
+            ))}
+          </div>
         ) : services.length === 0 ? (
           <Empty description="Không có dịch vụ nào" />
         ) : (

@@ -22,6 +22,7 @@ import UserBookingsPage from "./pages/UserDashboard/UserBookingsPage";
 import UserStudiosPage from "./pages/UserDashboard/UserStudiosPage";
 import UserHistoryPage from "./pages/UserDashboard/UserHistoryPage";
 import UserProfilePage from "./pages/UserDashboard/UserProfilePage";
+import UserSetDesignBookingsPage from "./pages/UserDashboard/UserSetDesignBookingsPage";
 import StaffDashboardPage from "./pages/StaffDashboard/StaffDashboardPage";
 import StaffOrderPage from "./pages/StaffDashboard/StaffOrderPage";
 import StaffSchedulePage from "./pages/StaffDashboard/StaffSchedulePage";
@@ -104,14 +105,12 @@ const AppContent = () => {
               <Route path="/about" element={<AboutUsPage />} />
               <Route path="/equipment" element={<EquipmentListPage />} />
               <Route path="/contact" element={<ContactPage />} />
-              <Route path="/message" element={<MessagePage />} />
               <Route path="/studio" element={<StudioPage />} />
               <Route
                 path="/set-design-request"
                 element={<ContactSetDesignRequestPage />}
               />
               <Route path="/studio/:id" element={<StudioDetailPage />} />
-              <Route path="/message/:userId" element={<MessagePage />} />
               <Route path="/booking/:id" element={<StudioBookingPage />} />
               <Route path="/set-design/:id" element={<SetDesignDetail />} />
               <Route
@@ -120,7 +119,20 @@ const AppContent = () => {
               />
               <Route path="/payment/success" element={<PaymentSuccessPage />} />
               <Route path="/payment/cancel" element={<PaymentCancelPage />} />
+              {/* Set Design payment callbacks */}
+              <Route
+                path="/set-design/payment/success"
+                element={<PaymentSuccessPage />}
+              />
+              <Route
+                path="/set-design/payment/cancel"
+                element={<PaymentCancelPage />}
+              />
             </Route>
+
+            {/* Message standalone (không dùng Layout để bỏ navbar/footer) */}
+            <Route path="/message" element={<MessagePage />} />
+            <Route path="/message/:userId" element={<MessagePage />} />
 
             {/* AUTH */}
             <Route path="/login" element={<LoginPage />} />
@@ -144,6 +156,10 @@ const AppContent = () => {
               <Route
                 path="custom-requests"
                 element={<UserCustomSetDesignPage />}
+              />
+              <Route
+                path="set-designs/bookings"
+                element={<UserSetDesignBookingsPage />}
               />
               <Route path="profile" element={<UserProfilePage />} />
             </Route>

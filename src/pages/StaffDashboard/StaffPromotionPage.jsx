@@ -464,110 +464,286 @@ const StaffPromotionPage = () => {
         </Spin>
       </Card>
 
-      {/* Modal Tạo / Sửa – KHÔNG CÓ VALIDATE */}
+      {/* Modal Tạo / Sửa – ĐƯỢC TỐI ƯU ĐỂ DỄ HIỂU */}
       <Modal
         open={editModalVisible}
-        title={editingPromotion ? "Chỉnh sửa khuyến mãi" : "Tạo khuyến mãi mới"}
+        title={
+          <div className="flex items-center gap-2">
+            <FiTag className="text-xl" />
+            <span>{editingPromotion ? "Chỉnh sửa khuyến mãi" : "Tạo khuyến mãi mới"}</span>
+          </div>
+        }
         onCancel={() => {
           setEditModalVisible(false);
           setEditingPromotion(null);
           form.resetFields();
         }}
-        onOk={handleSave}
-        okText="Lưu"
-        cancelText="Hủy"
+        footer={[
+          <Button key="cancel" onClick={() => {
+            setEditModalVisible(false);
+            setEditingPromotion(null);
+            form.resetFields();
+          }}>
+            Hủy
+          </Button>,
+          <Button key="submit" type="primary" onClick={handleSave} loading={loading}>
+            {editingPromotion ? "Cập nhật" : "Tạo mới"}
+          </Button>,
+        ]}
         width={900}
-        confirmLoading={loading}
         destroyOnClose
       >
-        <Form form={form} layout="vertical">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Form.Item label="Tên chương trình" name="name">
-              <Input prefix={<FiTag />} placeholder="Black Friday 2025" />
-            </Form.Item>
-            <Form.Item label="Mã code" name="code">
-              <Input prefix={<FiPercent />} placeholder="BLACK2025" />
-            </Form.Item>
-          </div>
-
-          <Form.Item label="Mô tả chương trình" name="description">
-            <Input.TextArea rows={2} placeholder="Giảm 30% tối đa 200k..." />
-          </Form.Item>
-
-          <Form.Item
-            label="Loại giảm giá"
-            name="discountType"
-            initialValue="percentage"
+        <Form form={form} layout="vertical" className="space-y-6">
+          {/* PHẦN 1: THÔNG TIN CƠ BẢN */}
+          <Card 
+            title={<span className="text-base font-semibold">📋 Thông tin cơ bản</span>} 
+            className="border-blue-200"
+            size="small"
           >
-            <Select>
-              <Select.Option value="percentage">Giảm theo %</Select.Option>
-              <Select.Option value="fixed">Giảm cố định (VNĐ)</Select.Option>
-            </Select>
-          </Form.Item>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Form.Item 
+                  label={
+                    <span className="font-semibold">
+                      Tên chương trình <span className="text-red-500">*</span>
+                    </span>
+                  } 
+                  name="name"
+                  tooltip="Tên hiển thị cho chương trình khuyến mãi"
+                >
+                  <Input 
+                    prefix={<FiTag className="text-gray-400" />} 
+                    placeholder="VD: Black Friday 2025, Giảm giá mùa hè..."
+                    size="large"
+                  />
+                </Form.Item>
+                <Form.Item 
+                  label={
+                    <span className="font-semibold">
+                      Mã khuyến mãi <span className="text-red-500">*</span>
+                    </span>
+                  } 
+                  name="code"
+                  tooltip="Mã code khách hàng sẽ nhập khi thanh toán (VD: BLACK2025)"
+                >
+                  <Input 
+                    prefix={<FiPercent className="text-gray-400" />} 
+                    placeholder="VD: BLACK2025, SUMMER50..."
+                    size="large"
+                    onChange={(e) => {
+                      const upperValue = e.target.value.toUpperCase();
+                      form.setFieldValue("code", upperValue);
+                    }}
+                  />
+                </Form.Item>
+              </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Form.Item label="Giá trị giảm" name="discountValue">
-              <InputNumber
-                min={0}
-                style={{ width: "100%" }}
-                prefix={<FiDollarSign />}
-              />
-            </Form.Item>
-            <Form.Item label="Tối đa giảm (VNĐ)" name="maxDiscount">
-              <InputNumber
-                min={0}
-                style={{ width: "100%" }}
-                prefix={<FiDollarSign />}
-              />
-            </Form.Item>
-          </div>
+              <Form.Item 
+                label={<span className="font-semibold">Mô tả chương trình</span>} 
+                name="description"
+                tooltip="Mô tả chi tiết về chương trình (tùy chọn)"
+              >
+                <Input.TextArea 
+                  rows={3} 
+                  placeholder="VD: Giảm 30% cho tất cả đơn hàng, tối đa 200.000₫. Áp dụng từ ngày..."
+                  showCount
+                  maxLength={500}
+                />
+              </Form.Item>
+            </div>
+          </Card>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Form.Item label="Đơn hàng tối thiểu" name="minOrderValue">
-              <InputNumber
-                min={0}
-                style={{ width: "100%" }}
-                prefix={<FiDollarSign />}
-              />
-            </Form.Item>
-            <Form.Item label="Giới hạn sử dụng" name="usageLimit">
-              <InputNumber
-                min={1}
-                style={{ width: "100%" }}
-                placeholder="Để trống = không giới hạn"
-              />
-            </Form.Item>
-          </div>
+          {/* PHẦN 2: THIẾT LẬP GIẢM GIÁ */}
+          <Card 
+            title={<span className="text-base font-semibold">💰 Thiết lập giảm giá</span>} 
+            className="border-green-200"
+            size="small"
+          >
+            <div className="space-y-4">
+              <Form.Item
+                label={<span className="font-semibold">Loại giảm giá <span className="text-red-500">*</span></span>}
+                name="discountType"
+                initialValue="percentage"
+                tooltip="Chọn cách tính giảm giá: theo phần trăm hoặc số tiền cố định"
+              >
+                <Select size="large">
+                  <Select.Option value="percentage">
+                    <div className="flex items-center gap-2">
+                      <FiPercent /> Giảm theo phần trăm (%)
+                    </div>
+                  </Select.Option>
+                  <Select.Option value="fixed">
+                    <div className="flex items-center gap-2">
+                      <FiDollarSign /> Giảm cố định (VNĐ)
+                    </div>
+                  </Select.Option>
+                </Select>
+              </Form.Item>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Form.Item
-              label="Áp dụng cho"
-              name="applicableFor"
-              initialValue="all"
-            >
-              <Select>
-                <Select.Option value="all">Tất cả khách hàng</Select.Option>
-                <Select.Option value="first_time">Chỉ khách mới</Select.Option>
-                <Select.Option value="return">Khách cũ</Select.Option>
-              </Select>
-            </Form.Item>
-            <Form.Item label="Trạng thái" name="isActive" initialValue={true}>
-              <Select>
-                <Select.Option value={true}>Bật (Đang chạy)</Select.Option>
-                <Select.Option value={false}>Tắt</Select.Option>
-              </Select>
-            </Form.Item>
-          </div>
+              <Form.Item shouldUpdate={(prev, curr) => prev.discountType !== curr.discountType}>
+                {({ getFieldValue }) => {
+                  const discountType = getFieldValue("discountType") || "percentage";
+                  return (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Form.Item 
+                        label={
+                          <span className="font-semibold">
+                            Giá trị giảm <span className="text-red-500">*</span>
+                          </span>
+                        } 
+                        name="discountValue"
+                        tooltip={
+                          discountType === "percentage" 
+                            ? "Nhập số phần trăm (VD: 30 = giảm 30%)"
+                            : "Nhập số tiền giảm (VD: 50000 = giảm 50.000₫)"
+                        }
+                      >
+                        <InputNumber
+                          min={0}
+                          max={discountType === "percentage" ? 100 : undefined}
+                          style={{ width: "100%" }}
+                          size="large"
+                          placeholder={discountType === "percentage" ? "VD: 30" : "VD: 50000"}
+                          formatter={(value) => {
+                            if (!value) return "";
+                            return discountType === "percentage" 
+                              ? `${value}%`
+                              : `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                          }}
+                          parser={(value) => value.replace(/%|,/g, "")}
+                        />
+                      </Form.Item>
+                      <Form.Item 
+                        label={<span className="font-semibold">Tối đa giảm (VNĐ)</span>} 
+                        name="maxDiscount"
+                        tooltip={
+                          discountType === "percentage"
+                            ? "Giới hạn số tiền tối đa được giảm (chỉ áp dụng khi giảm theo %). Để trống = không giới hạn"
+                            : "Không áp dụng cho giảm cố định"
+                        }
+                        extra={
+                          discountType === "percentage" 
+                            ? "Chỉ áp dụng khi giảm theo %" 
+                            : "Không áp dụng cho giảm cố định"
+                        }
+                      >
+                        <InputNumber
+                          min={0}
+                          style={{ width: "100%" }}
+                          size="large"
+                          placeholder="VD: 200000 (tối đa 200.000₫)"
+                          disabled={discountType === "fixed"}
+                          formatter={(value) => value ? `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",") : ""}
+                          parser={(value) => value.replace(/,/g, "")}
+                        />
+                      </Form.Item>
+                    </div>
+                  );
+                }}
+              </Form.Item>
+            </div>
+          </Card>
 
-          <Form.Item label="Thời gian hiệu lực" name="dateRange">
-            <RangePicker
-              showTime
-              format="DD/MM/YYYY HH:mm"
-              className="w-full"
-              placeholder={["Ngày bắt đầu", "Ngày kết thúc"]}
-              suffixIcon={<FiCalendar />}
-            />
-          </Form.Item>
+          {/* PHẦN 3: ĐIỀU KIỆN ÁP DỤNG */}
+          <Card 
+            title={<span className="text-base font-semibold">⚙️ Điều kiện áp dụng</span>} 
+            className="border-purple-200"
+            size="small"
+          >
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Form.Item 
+                  label={<span className="font-semibold">Đơn hàng tối thiểu</span>} 
+                  name="minOrderValue"
+                  tooltip="Khách hàng phải đặt đơn tối thiểu bao nhiêu để được áp dụng mã. Để 0 = không yêu cầu"
+                >
+                  <InputNumber
+                    min={0}
+                    style={{ width: "100%" }}
+                    size="large"
+                    placeholder="VD: 100000 (tối thiểu 100.000₫)"
+                    formatter={(value) => value ? `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",") : ""}
+                    parser={(value) => value.replace(/,/g, "")}
+                  />
+                </Form.Item>
+                <Form.Item 
+                  label={<span className="font-semibold">Giới hạn sử dụng</span>} 
+                  name="usageLimit"
+                  tooltip="Số lần tối đa mã có thể được sử dụng. Để trống = không giới hạn"
+                >
+                  <InputNumber
+                    min={1}
+                    style={{ width: "100%" }}
+                    size="large"
+                    placeholder="VD: 100 (tối đa 100 lần)"
+                  />
+                </Form.Item>
+              </div>
+
+              <Form.Item
+                label={<span className="font-semibold">Áp dụng cho</span>}
+                name="applicableFor"
+                initialValue="all"
+                tooltip="Chọn đối tượng khách hàng được áp dụng mã khuyến mãi"
+              >
+                <Select size="large">
+                  <Select.Option value="all">🌍 Tất cả khách hàng</Select.Option>
+                  <Select.Option value="first_time">🆕 Chỉ khách hàng mới</Select.Option>
+                  <Select.Option value="return">🔄 Chỉ khách hàng cũ</Select.Option>
+                </Select>
+              </Form.Item>
+            </div>
+          </Card>
+
+          {/* PHẦN 4: THỜI GIAN & TRẠNG THÁI */}
+          <Card 
+            title={<span className="text-base font-semibold">📅 Thời gian & Trạng thái</span>} 
+            className="border-orange-200"
+            size="small"
+          >
+            <div className="space-y-4">
+              <Form.Item 
+                label={
+                  <span className="font-semibold">
+                    Thời gian hiệu lực <span className="text-red-500">*</span>
+                  </span>
+                } 
+                name="dateRange"
+                tooltip="Chọn khoảng thời gian mã khuyến mãi có hiệu lực"
+              >
+                <RangePicker
+                  showTime
+                  format="DD/MM/YYYY HH:mm"
+                  className="w-full"
+                  size="large"
+                  placeholder={["Ngày bắt đầu", "Ngày kết thúc"]}
+                  suffixIcon={<FiCalendar />}
+                />
+              </Form.Item>
+
+              <Form.Item 
+                label={<span className="font-semibold">Trạng thái</span>} 
+                name="isActive" 
+                initialValue={true}
+                tooltip="Bật/tắt mã khuyến mãi. Mã tắt sẽ không thể sử dụng"
+              >
+                <Select size="large">
+                  <Select.Option value={true}>
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                      Bật (Đang hoạt động)
+                    </div>
+                  </Select.Option>
+                  <Select.Option value={false}>
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-gray-400"></span>
+                      Tắt (Tạm ngưng)
+                    </div>
+                  </Select.Option>
+                </Select>
+              </Form.Item>
+            </div>
+          </Card>
         </Form>
       </Modal>
 

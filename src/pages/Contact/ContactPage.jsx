@@ -1,5 +1,4 @@
 import React, { useRef } from "react";
-import Layout from "../../components/layout/Layout";
 import { Typography, Row, Col, Form, Input, Button, Card } from "antd";
 import {
   FiMail,
@@ -43,8 +42,7 @@ const ContactPage = () => {
   ];
 
   return (
-    <Layout>
-      <div className="relative bg-gradient-to-b from-gray-50 via-white to-gray-50 min-h-screen">
+    <div className="relative bg-gradient-to-b from-gray-50 via-white to-gray-50 min-h-screen">
         {/* Background decoration */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <motion.div
@@ -322,7 +320,6 @@ const ContactPage = () => {
           </Row>
         </div>
       </div>
-    </Layout>
   );
 };
 

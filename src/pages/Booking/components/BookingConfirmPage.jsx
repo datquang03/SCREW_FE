@@ -1,6 +1,6 @@
 // src/pages/Booking/components/BookingConfirmPage.jsx
 import React, { useRef } from "react";
-import { Button, message, Spin } from "antd";
+import { Button, message, Skeleton, Card } from "antd";
 import { useReactToPrint } from "react-to-print";
 import { useDispatch, useSelector } from "react-redux";
 import dayjs from "dayjs";
@@ -106,10 +106,20 @@ export default function BookingConfirmPage({ onBack, onSuccess }) {
 
   if (studioLoading || !studio) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Spin size="large" tip="Đang chuẩn bị hóa đơn...">
-          <div className="w-0 h-0" />
-        </Spin>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+        <div className="max-w-4xl mx-auto px-4 pt-6 pb-4">
+          <Skeleton active paragraph={{ rows: 2 }} />
+          <Card className="mt-6">
+            <Skeleton active paragraph={{ rows: 8 }} />
+          </Card>
+          <Card className="mt-6">
+            <Skeleton active paragraph={{ rows: 6 }} />
+          </Card>
+          <div className="mt-6 flex gap-4">
+            <Skeleton.Button active size="large" style={{ width: 150, height: 48 }} />
+            <Skeleton.Button active size="large" style={{ width: 200, height: 48 }} />
+          </div>
+        </div>
       </div>
     );
   }

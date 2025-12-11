@@ -353,7 +353,7 @@ export const customSetDesignRequest = createAsyncThunk(
       phoneNumber,
       description,
       preferredCategory,
-      budgetRange,
+      budget,
       referenceImages = [],
       setDesignId,
     },
@@ -370,7 +370,7 @@ export const customSetDesignRequest = createAsyncThunk(
           phoneNumber,
           description,
           preferredCategory,
-          budgetRange,
+        budget,
           referenceImages,
           setDesignId,
         },
@@ -642,6 +642,7 @@ export const getConvertedCustomDesignsPublic = createAsyncThunk(
     }
   }
 );
+
 /* =============================
    INITIAL
 ============================= */

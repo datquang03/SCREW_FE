@@ -1,0 +1,56 @@
+/* Animation cho số buổi đặt với 12 màu gradient 3D */
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes glow3D {
+  0%, 100% {
+    filter: drop-shadow(0 4px 12px rgba(239, 68, 68, 0.6)) 
+            drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3))
+            drop-shadow(0 0 20px rgba(239, 68, 68, 0.4));
+    transform: perspective(500px) rotateX(5deg) scale(1);
+  }
+  50% {
+    filter: drop-shadow(0 6px 16px rgba(236, 72, 153, 0.7)) 
+            drop-shadow(0 3px 8px rgba(0, 0, 0, 0.4))
+            drop-shadow(0 0 30px rgba(236, 72, 153, 0.6));
+    transform: perspective(500px) rotateX(8deg) scale(1.05);
+  }
+}
+
+.booking-count-3d {
+  display: inline-block;
+  background: linear-gradient(
+    90deg,
+    #ef4444 0%,
+    #f97316 8.33%,
+    #eab308 16.66%,
+    #22c55e 25%,
+    #06b6d4 33.33%,
+    #3b82f6 41.66%,
+    #6366f1 50%,
+    #8b5cf6 58.33%,
+    #a855f7 66.66%,
+    #d946ef 75%,
+    #ec4899 83.33%,
+    #f43f5e 91.66%,
+    #ef4444 100%
+  );
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 3s ease infinite, glow3D 2s ease-in-out infinite;
+  text-shadow: 0 0 30px rgba(239, 68, 68, 0.5);
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+}
+

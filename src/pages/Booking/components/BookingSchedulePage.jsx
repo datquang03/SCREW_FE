@@ -1,6 +1,6 @@
 // src/pages/Booking/components/BookingSchedulePage.jsx
 import React, { useState, useEffect, useMemo } from "react";
-import { TimePicker, Button, Card, Typography, Tag, message, Spin } from "antd";
+import { TimePicker, Button, Card, Typography, Tag, message, Skeleton } from "antd";
 import { ArrowRightOutlined } from "@ant-design/icons";
 import { useSelector, useDispatch } from "react-redux";
 import dayjs from "dayjs";
@@ -147,23 +147,23 @@ const BookingSchedulePage = ({ onNext }) => {
       <div className="grid lg:grid-cols-5 gap-6">
         {/* Lịch - chiếm 3/5 không gian */}
         <div className="lg:col-span-3">
-        <Card
-          title={
+          <Card
+            title={
               <Title level={4} className="font-bold mb-0">
-              Chọn ngày đặt phòng
-            </Title>
-          }
-            className="shadow-sm border border-slate-200 rounded-2xl"
-        >
-            <ScheduleTable
-            value={selectedDate}
-            onChange={setSelectedDate}
-              scheduleByDate={currentStudioSchedule?.scheduleByDate || {}}
-            disabledDate={(current) =>
-              current && current < dayjs().startOf("day")
+                Chọn ngày đặt phòng
+              </Title>
             }
-          />
-        </Card>
+            className="shadow-sm border border-slate-200 rounded-2xl"
+          >
+            <ScheduleTable
+              value={selectedDate}
+              onChange={setSelectedDate}
+              scheduleByDate={currentStudioSchedule?.scheduleByDate || {}}
+              disabledDate={(current) =>
+                current && current < dayjs().startOf("day")
+              }
+            />
+          </Card>
         </div>
 
         {/* Chọn giờ + Tóm tắt - chiếm 2/5 không gian */}
@@ -177,7 +177,12 @@ const BookingSchedulePage = ({ onNext }) => {
             className="shadow-sm border border-slate-200 rounded-2xl"
             styles={{ body: { padding: "16px" } }}
           >
-            <Spin spinning={scheduleLoading} tip="Đang tải lịch...">
+            {scheduleLoading ? (
+              <div className="space-y-4">
+                <Skeleton.Input active size="large" block style={{ height: 56 }} />
+                <Skeleton active paragraph={{ rows: 3 }} />
+              </div>
+            ) : (
               <div>
                 <RangePicker
                   format="HH:mm"
@@ -192,7 +197,7 @@ const BookingSchedulePage = ({ onNext }) => {
                   style={{ height: 56 }}
                 />
               </div>
-            </Spin>
+            )}
 
             {/* Các khung giờ đã được đặt trong ngày */}
             {selectedDate && bookedSlots.length > 0 && (
@@ -218,52 +223,108 @@ const BookingSchedulePage = ({ onNext }) => {
                     >
                       <div className="flex items-center justify-between mb-2">
                         <Text className="text-lg font-bold text-red-600">
-                          {slot.timeRange}
+                          {slot.timeRange ||
+                            `${dayjs(slot.startTime).format("HH:mm")} - ${dayjs(
+                              slot.endTime
+                            ).format("HH:mm")}`}
                         </Text>
                         <Tag color="red" className="text-[10px] font-semibold">
                           ĐÃ ĐẶT
                         </Tag>
                       </div>
-                      {slot.booking?.customer?.fullName && (
-                        <div className="mb-1">
-                          <Text className="text-xs text-gray-600 font-medium">
-                            Khách hàng:
-                          </Text>
-                          <Text className="text-xs text-gray-700 ml-1">
-                            {slot.booking.customer.fullName}
-                          </Text>
+
+                      {/* Thông tin khách hàng */}
+                      {slot.booking?.customer && (
+                        <div className="mb-2 space-y-1">
+                          <div>
+                            <Text className="text-xs text-gray-600 font-medium">
+                              Khách hàng:
+                            </Text>
+                            <Text className="text-xs text-gray-700 ml-1 font-semibold">
+                              {slot.booking.customer.fullName ||
+                                slot.booking.customer.username ||
+                                "Khách"}
+                            </Text>
+                          </div>
+                          {slot.booking.customer.phone && (
+                            <div>
+                              <Text className="text-xs text-gray-500">
+                                SĐT: {slot.booking.customer.phone}
+                              </Text>
+                            </div>
+                          )}
                         </div>
                       )}
+
+                      {/* Trạng thái booking */}
                       {slot.booking?.status && (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 mb-1">
                           <Text className="text-xs text-gray-500">
                             Trạng thái:
                           </Text>
                           <Tag
                             color={
-                              slot.booking.status === "confirmed"
+                              slot.booking.status === "completed"
                                 ? "green"
-                                : slot.booking.status === "completed"
+                                : slot.booking.status === "confirmed"
                                 ? "blue"
-                                : "orange"
+                                : slot.booking.status === "pending"
+                                ? "orange"
+                                : "default"
                             }
                             className="text-[10px]"
                           >
-                            {slot.booking.status === "confirmed"
-                              ? "Đã xác nhận"
-                              : slot.booking.status === "completed"
+                            {slot.booking.status === "completed"
                               ? "Hoàn thành"
-                              : "Chờ xác nhận"}
+                              : slot.booking.status === "confirmed"
+                              ? "Đã xác nhận"
+                              : slot.booking.status === "pending"
+                              ? "Chờ xác nhận"
+                              : slot.booking.status}
                           </Tag>
                         </div>
                       )}
-                      {slot.duration && (
-                        <div className="mt-1">
+
+                      {/* Phương thức thanh toán */}
+                      {slot.booking?.payType && (
+                        <div className="flex items-center gap-2 mb-1">
+                          <Text className="text-xs text-gray-500">
+                            Thanh toán:
+                          </Text>
+                          <Tag
+                            color={
+                              slot.booking.payType === "full"
+                                ? "green"
+                                : slot.booking.payType.startsWith("prepay")
+                                ? "orange"
+                                : "default"
+                            }
+                            className="text-[10px]"
+                          >
+                            {slot.booking.payType === "full"
+                              ? "Thanh toán đủ"
+                              : slot.booking.payType === "prepay_50"
+                              ? "Cọc 50%"
+                              : slot.booking.payType === "prepay_30"
+                              ? "Cọc 30%"
+                              : slot.booking.payType}
+                          </Tag>
+                        </div>
+                      )}
+
+                      {/* Thông tin giá và thời lượng */}
+                      <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
+                        {slot.duration && (
                           <Text className="text-xs text-gray-500">
                             Thời lượng: {slot.duration} giờ
                           </Text>
-                        </div>
-                      )}
+                        )}
+                        {slot.booking?.finalAmount && (
+                          <Text className="text-xs font-semibold text-gray-700">
+                            {slot.booking.finalAmount.toLocaleString()}₫
+                          </Text>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -277,6 +338,34 @@ const BookingSchedulePage = ({ onNext }) => {
               </div>
             )}
           </Card>
+
+          {/* Hiển thị ngày đã chọn */}
+          {selectedDate && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="w-full"
+            >
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-xl px-6 py-4 shadow-md">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
+                    <span className="text-white font-bold text-xl">
+                      {selectedDate.date()}
+                    </span>
+                  </div>
+                  <div className="flex-1">
+                    <Text className="text-xs text-gray-600 block mb-1">Ngày đã chọn:</Text>
+                    <Text className="text-base md:text-lg font-bold text-blue-700">
+                      {selectedDate.format("DD/MM/YYYY")}
+                    </Text>
+                    <Text className="text-xs text-gray-600 block mt-1">
+                      {selectedDate.format("dddd")}
+                    </Text>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
 
           <Button
             type="primary"

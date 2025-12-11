@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   getMyCustomSetDesign,
   deleteMyCustomSetDesign,
-} from "../../features/setdesign/setDesignSlice";
+} from "../../features/setDesign/setDesignSlice";
 import {
   Card,
   Tag,
