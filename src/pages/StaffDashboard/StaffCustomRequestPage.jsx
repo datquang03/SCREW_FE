@@ -1005,9 +1005,9 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
             {/* Preview Set Design */}
             <div className="p-6 bg-gradient-to-br from-purple-50 via-white to-amber-50 border-l border-purple-100 space-y-4">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+              <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
                   <FiPackage /> Chọn Set Design gửi kèm
-                </div>
+              </div>
               </div>
 
               {/* Select Set Design */}
@@ -1102,15 +1102,15 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
 
                 // Nếu chưa chọn, tìm set design đã convert từ convertedDesigns
                 if (!displayDesign) {
-                  if (convertResult) {
+                if (convertResult) {
                     displayDesign = convertResult;
-                  } else if (selectedRequest?._id) {
-                    const matched = convertedDesigns.find(
-                      (d) => d.requestId === selectedRequest._id
-                    );
-                    if (matched?.setDesign) {
+                } else if (selectedRequest?._id) {
+                  const matched = convertedDesigns.find(
+                    (d) => d.requestId === selectedRequest._id
+                  );
+                  if (matched?.setDesign) {
                       displayDesign = matched.setDesign;
-                    } else if (matched?._id) {
+                  } else if (matched?._id) {
                       displayDesign = matched;
                     }
                   }

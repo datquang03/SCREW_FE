@@ -37,8 +37,8 @@ const MessageSidebar = ({ conversations, activeConversation, onSelect, loading }
     <div className="bg-white/90 backdrop-blur rounded-3xl shadow-xl border border-gray-100 flex flex-col overflow-hidden">
       <div className="p-5 border-b border-gray-100">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-amber-100 flex-center">
-            <MessageOutlined className="text-amber-600" />
+          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-lg shadow-amber-200/60 border border-white/60 flex items-center justify-center">
+            <MessageOutlined className="text-xl" />
           </div>
           <div>
             <p className="text-sm text-gray-500">Danh sách chat</p>
