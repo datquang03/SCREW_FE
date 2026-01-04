@@ -32,13 +32,13 @@ export default function StudioMap({ location }) {
   };
 
   return (
-    <div className="bg-white border border-amber-100 rounded-2xl p-6 md:p-8 shadow-[0_12px_35px_-18px_rgba(0,0,0,0.25)] hover:shadow-[0_20px_50px_-15px_rgba(0,0,0,0.3)] transition-all">
+    <div className="studio-panel studio-map-card rounded-2xl p-6 md:p-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div className="flex items-center gap-3">
-          <div className="h-12 w-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 font-bold text-xl shadow-sm">
+          <div className="h-12 w-12 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-white font-bold text-xl shadow-sm">
             🗺️
           </div>
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Bản đồ</h2>
+          <h2 className="text-2xl md:text-3xl font-bold text-white">Bản đồ</h2>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button
@@ -61,8 +61,8 @@ export default function StudioMap({ location }) {
       </div>
       
       {/* Location Info */}
-      <div className="mb-4 flex items-center gap-2 text-gray-700 bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
-        <FiMapPin className="text-emerald-600 text-lg flex-shrink-0" />
+      <div className="mb-4 flex items-center gap-2 text-slate-100 bg-white/5 p-4 rounded-xl border border-white/10">
+        <FiMapPin className="text-emerald-300 text-lg flex-shrink-0" />
         <span className="text-sm md:text-base font-medium">{locationString}</span>
       </div>
 

@@ -12,12 +12,12 @@ const IntroSection = () => {
   const opacity = useTransform(scrollY, [0, 300], [1, 0]);
 
   return (
-    <div className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-black overflow-hidden min-h-[70vh] flex items-center -mt-16 md:-mt-20 isolate">
+    <div className="relative bg-gradient-to-br from-gray-950 via-slate-900 to-black overflow-hidden min-h-[75vh] flex items-center -mt-16 md:-mt-20 lg:-mt-24 isolate">
       {/* Animated background elements - Simplified */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* Subtle animated gradient orbs only */}
         <motion.div
-          className="absolute top-20 left-10 w-72 h-72 bg-yellow-400/3 rounded-full blur-3xl opacity-40"
+          className="absolute top-20 left-10 w-80 h-80 bg-yellow-400/4 rounded-full blur-3xl opacity-50"
           animate={{
             x: [0, 100, 0],
             y: [0, 50, 0],
@@ -30,7 +30,7 @@ const IntroSection = () => {
           }}
         />
         <motion.div
-          className="absolute bottom-20 right-10 w-96 h-96 bg-yellow-500/3 rounded-full blur-3xl opacity-40"
+          className="absolute bottom-20 right-10 w-96 h-96 bg-yellow-500/4 rounded-full blur-3xl opacity-50"
           animate={{
             x: [0, -100, 0],
             y: [0, -50, 0],
@@ -62,7 +62,7 @@ const IntroSection = () => {
 
       <motion.div
         style={{ y, opacity }}
-        className="relative container mx-auto px-4 md:px-6 lg:px-16 py-12 md:py-16 lg:py-24 text-center z-10 pt-16 md:pt-20"
+        className="relative container mx-auto px-4 md:px-6 lg:px-16 py-16 md:py-20 lg:py-32 text-center z-10 pt-20 md:pt-28"
       >
         {/* Decorative corner elements - Hidden on mobile */}
         <div className="hidden md:block absolute top-10 left-10 w-20 h-20 border-t-2 border-l-2 border-yellow-400/20 opacity-30" />
@@ -83,9 +83,9 @@ const IntroSection = () => {
           >
             <Title
               level={1}
-              className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-white mb-6"
+              className="text-3xl md:text-5xl lg:text-7xl font-black text-white mb-6 md:mb-8"
               style={{
-                textShadow: "0 10px 40px rgba(0,0,0,0.5), 0 0 20px rgba(234,179,8,0.3)",
+                textShadow: "0 15px 50px rgba(0,0,0,0.6), 0 0 30px rgba(234,179,8,0.4)",
                 transformStyle: "preserve-3d",
               }}
             >
@@ -112,15 +112,15 @@ const IntroSection = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.5 }}
           >
-            <Paragraph className="text-lg md:text-xl mt-6 max-w-3xl mx-auto leading-relaxed">
-              <span className="text-yellow-400 font-bold text-xl md:text-2xl drop-shadow-[0_0_10px_rgba(234,179,8,0.5)]">S+ Studio</span>{" "}
-              <span className="text-white font-semibold drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]">- Dịch vụ cho thuê studio chuyên nghiệp hàng đầu tại TP.HCM</span>
+            <Paragraph className="text-lg md:text-2xl lg:text-3xl mt-6 md:mt-8 max-w-4xl mx-auto leading-relaxed">
+              <span className="text-yellow-300 font-black text-2xl md:text-3xl lg:text-4xl drop-shadow-[0_0_15px_rgba(234,179,8,0.6)]">S+ Studio</span>{" "}
+              <span className="text-white/95 font-bold drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]">- Dịch vụ cho thuê studio chuyên nghiệp hàng đầu tại TP.HCM</span>
               <br />
-              <span className="text-white font-semibold text-base md:text-lg drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]">
-                Cho thuê studio với đầy đủ thiết bị: <span className="text-yellow-300">máy ảnh</span>, <span className="text-blue-300">ánh sáng LED</span>, <span className="text-green-300">phòng xanh</span>, <span className="text-purple-300">hệ thống âm thanh</span>
+              <span className="text-white/85 font-semibold text-lg md:text-xl lg:text-2xl drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
+                Cho thuê studio với đầy đủ thiết bị: <span className="text-yellow-300 font-bold">máy ảnh</span>, <span className="text-blue-300 font-bold">ánh sáng LED</span>, <span className="text-green-300 font-bold">phòng xanh</span>, <span className="text-purple-300 font-bold">hệ thống âm thanh</span>
               </span>
               <br />
-              <span className="text-gray-200 font-medium drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)]">
+              <span className="text-gray-300 font-semibold text-base md:text-lg lg:text-xl drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]">
                 Phục vụ: <span className="text-yellow-300">Quay phim</span> • <span className="text-blue-300">Chụp ảnh sản phẩm</span> • <span className="text-green-300">Livestream</span> • <span className="text-purple-300">Sản xuất nội dung</span> • <span className="text-pink-300">Chụp ảnh cưới</span>
               </span>
           </Paragraph>
@@ -140,7 +140,7 @@ const IntroSection = () => {
               type="primary"
               size="large"
               href="/studio"
-                className="bg-gradient-to-r from-yellow-400 to-yellow-500 border-none shadow-2xl shadow-yellow-500/50 hover:shadow-yellow-500/70 font-semibold text-base px-8 py-6 h-auto rounded-xl"
+                className="bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-500 border-none shadow-2xl shadow-yellow-500/60 hover:shadow-yellow-500/80 font-black text-lg md:text-xl px-10 py-7 h-auto rounded-xl transition-all"
                 icon={<ArrowRightOutlined />}
                 iconPosition="end"
             >
@@ -154,7 +154,7 @@ const IntroSection = () => {
               <Button
                 size="large"
                 href="/contact"
-                className="bg-white/10 backdrop-blur-md border-2 border-white/30 text-white hover:bg-white/20 hover:border-white/50 font-semibold text-base px-8 py-6 h-auto rounded-xl"
+                className="bg-white/15 backdrop-blur-md border-2 border-white/40 text-white hover:bg-white/25 hover:border-white/60 font-black text-lg md:text-xl px-10 py-7 h-auto rounded-xl transition-all"
                 icon={<PlayCircleOutlined />}
               >
                 Liên hệ ngay

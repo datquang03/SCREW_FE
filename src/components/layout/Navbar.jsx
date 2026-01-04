@@ -236,9 +236,7 @@ const Navbar = () => {
     }
   };
 
-  const headerClass = scrolled
-    ? "fixed top-0 left-0 w-full bg-white/95 border-b border-white/60 shadow-xl backdrop-blur-xl"
-    : "absolute top-0 left-0 w-full bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900";
+  const headerClass = `navbar-professional ${scrolled ? "scrolled" : "top"}`;
 
   // Click outside dropdown/search
   useEffect(() => {
@@ -280,21 +278,20 @@ const Navbar = () => {
       transition={{ duration: 0.5, ease: "easeOut" }}
       className={`${headerClass} z-[100] transition-all duration-300`}
     >
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-6 py-3">
+      <div className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-8 py-4 md:py-6">
         {/* ===== LOGO ===== */}
-        <Link to="/" className="flex items-center group">
+        <Link to="/" className="navbar-logo">
           <motion.img
             src={SPlusLogo}
             alt="S+ Studio Logo"
-            className="h-20 md:h-24 w-auto object-contain drop-shadow-[0_20px_45px_rgba(248,197,89,0.5)]"
-            style={{ imageRendering: "crisp-edges", minWidth: "80px" }}
+            className="h-16 md:h-24 lg:h-28 w-auto object-contain"
             whileHover={{ rotate: [0, -10, 10, -10, 0], scale: 1.05 }}
             transition={{ duration: 0.45 }}
           />
         </Link>
 
         {/* ===== DESKTOP NAV ===== */}
-        <nav className="hidden lg:flex items-center gap-1">
+        <nav className="hidden lg:flex items-center gap-2">
           {NAV_LINKS.map(({ path, label, key: linkKey }, i) => (
             <motion.div
               key={linkKey}
@@ -305,14 +302,14 @@ const Navbar = () => {
               <NavLink
                 to={path}
                 className={({ isActive }) =>
-                  `px-4 py-2 rounded-md text-base font-semibold transition-all duration-300 ${
-                    isActive
-                      ? scrolled
-                        ? "text-yellow-600 bg-yellow-100"
-                        : "text-yellow-400 bg-white/20"
-                      : scrolled
-                      ? "text-gray-700 hover:bg-gray-100"
-                      : "text-gray-300 hover:text-white hover:bg-white/10"
+                  `navbar-nav-link ${
+                    scrolled
+                      ? isActive
+                        ? "active text-amber-600"
+                        : "text-gray-700 hover:text-gray-900"
+                      : isActive
+                      ? "active text-amber-300"
+                      : "text-gray-200 hover:text-white"
                   }`
                 }
               >
@@ -330,18 +327,15 @@ const Navbar = () => {
               <motion.button
                 type="button"
                 onClick={handleMessageClick}
-                initial={{ opacity: 1, scale: 1 }}
-                whileHover={{
-                  scale: 1.1,
-                  boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
-                }}
+                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.92 }}
-                transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                className="relative flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-lg hover:shadow-xl transition-shadow duration-300"
+                className={`navbar-action-btn ${
+                  scrolled ? "scrolled-light" : ""
+                } ${scrolled ? "text-gray-900" : "text-white/80"}`}
               >
-                <MessageOutlined className="text-lg text-gray-900" />
+                <MessageOutlined className="text-lg" />
                 {unreadMessagesCount > 0 && (
-                  <span className="absolute -top-1 -right-1 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-bold leading-none text-white bg-green-500 rounded-full">
+                  <span className="navbar-badge">
                     {unreadMessagesCount > 9 ? "9+" : unreadMessagesCount}
                   </span>
                 )}
@@ -357,17 +351,13 @@ const Navbar = () => {
                   key="search-button"
                   type="button"
                   onClick={() => setSearchOpen(true)}
-                  initial={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  whileHover={{
-                    scale: 1.1,
-                    boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
-                  }}
+                  whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.92 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                  className="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-lg hover:shadow-xl transition-shadow duration-300"
+                  className={`navbar-action-btn ${
+                    scrolled ? "scrolled-light" : ""
+                  } ${scrolled ? "text-gray-900" : "text-white/80"}`}
                 >
-                  <SearchOutlined className="text-lg text-gray-900" />
+                  <SearchOutlined className="text-lg" />
                 </motion.button>
               ) : (
                 <motion.div
@@ -384,7 +374,7 @@ const Navbar = () => {
                   className="origin-right w-64"
                   style={{ transformOrigin: "100% 50%" }}
                 >
-                  <motion.div className="flex items-center gap-2 rounded-full px-4 py-2.5 bg-white shadow-xl shadow-gray-900/20 border border-gray-100">
+                  <motion.div className="flex items-center gap-2 rounded-lg px-4 py-2.5 bg-white shadow-lg border border-gray-200">
                     <SearchOutlined className="text-base text-amber-500" />
                     <input
                       ref={searchInputRef}
@@ -414,18 +404,15 @@ const Navbar = () => {
               <motion.button
                 type="button"
                 onClick={() => setNotifOpen((prev) => !prev)}
-                initial={{ opacity: 1, scale: 1 }}
-                whileHover={{
-                  scale: 1.1,
-                  boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
-                }}
+                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.92 }}
-                transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                className="relative flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-lg hover:shadow-xl transition-shadow duration-300"
+                className={`navbar-action-btn ${
+                  scrolled ? "scrolled-light" : ""
+                } ${scrolled ? "text-gray-900" : "text-white/80"}`}
               >
-                <MdNotifications className="text-lg text-gray-900" />
+                <MdNotifications className="text-lg" />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-bold leading-none text-white bg-red-500 rounded-full">
+                  <span className="navbar-badge">
                     {unreadCount > 9 ? "9+" : unreadCount}
                   </span>
                 )}
@@ -439,11 +426,11 @@ const Navbar = () => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                     transition={{ duration: 0.2 }}
-                    className="notif-dropdown-panel absolute left-1/2 -translate-x-1/2 mt-3 w-80 max-h-[430px] bg-white rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.25)] border border-gray-200 z-[110] flex flex-col overflow-hidden"
+                    className="navbar-dropdown-panel absolute right-0 mt-3 w-96 max-h-[430px] z-[110] flex flex-col overflow-hidden"
                   >
-                    <div className="bg-gradient-to-r from-indigo-50 via-white to-indigo-50 px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+                    <div className="navbar-dropdown-header flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-semibold text-gray-900">
+                        <p className="text-sm font-bold text-gray-900">
                           Thông báo của bạn
                         </p>
                         <p className="text-xs text-gray-500">
@@ -451,7 +438,7 @@ const Navbar = () => {
                         </p>
                       </div>
                       {unreadCount > 0 && (
-                        <span className="px-2 py-1 text-xs font-semibold text-white bg-gradient-to-r from-pink-500 to-rose-500 rounded-full shadow">
+                        <span className="px-3 py-1 text-xs font-bold text-white bg-gradient-to-r from-red-500 to-pink-500 rounded-full shadow-lg">
                           {unreadCount} mới
                         </span>
                       )}
@@ -459,7 +446,7 @@ const Navbar = () => {
                     <div
                       ref={dropdownScrollRef}
                       onScroll={handleDropdownScroll}
-                      className="notif-scroll-container flex-1 overflow-y-auto max-h-[330px] p-3 space-y-2 custom-scrollbar"
+                      className="flex-1 overflow-y-auto max-h-[330px] p-3 space-y-2 custom-scrollbar"
                     >
                       {notificationsLoading ? (
                         <div className="flex flex-col gap-3">
@@ -544,16 +531,16 @@ const Navbar = () => {
                         </>
                       )}
                     </div>
-                    <div className="border-t border-gray-100 bg-gray-50 p-3">
+                    <div className="border-t border-gray-200 bg-white p-3">
                       <Button
                         type="link"
                         onClick={() => {
                           setNotifOpen(false);
                           setAllNotificationsModalOpen(true);
                         }}
-                        className="w-full text-sm font-semibold text-indigo-600 hover:text-indigo-800 hover:underline"
+                        className="w-full text-sm font-bold text-amber-600 hover:text-amber-700"
                       >
-                        Xem tất cả
+                        Xem tất cả →
                       </Button>
                     </div>
                   </motion.div>
@@ -569,7 +556,7 @@ const Navbar = () => {
                 <motion.button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                   whileHover={{ scale: 1.05 }}
-                  className="flex items-center gap-2 p-1 rounded-full bg-white/10 hover:bg-white/20 transition-all"
+                  className="flex items-center gap-2 p-1 rounded-lg hover:bg-white/10 transition-all"
                 >
                   <img
                     key={getAvatarUrl(user.avatar) || ""}
@@ -578,7 +565,7 @@ const Navbar = () => {
                       "https://png.pngtree.com/png-clipart/20191120/original/pngtree-outline-user-icon-png-image_5045523.jpg"
                     }
                     alt="User Avatar"
-                    className="w-12 h-12 rounded-full object-cover border-2 border-white/60 shadow-lg cursor-pointer"
+                    className="navbar-avatar"
                     onError={(e) => {
                       e.target.src =
                         "https://png.pngtree.com/png-clipart/20191120/original/pngtree-outline-user-icon-png-image_5045523.jpg";
@@ -593,9 +580,9 @@ const Navbar = () => {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -20 }}
                       transition={{ duration: 0.25 }}
-                      className="absolute right-0 mt-2 w-56 bg-gradient-to-b from-yellow-50 to-yellow-100 rounded-xl shadow-2xl border border-yellow-200 z-[110]"
+                      className="navbar-dropdown-panel absolute right-0 mt-2 w-64 z-[110]"
                     >
-                      <div className="p-4 border-b border-yellow-200">
+                      <div className="navbar-dropdown-header">
                         <p className="text-sm font-bold text-gray-900">
                           {user.fullName || user.username}
                         </p>
@@ -617,7 +604,7 @@ const Navbar = () => {
                                 dashboardPath = "/dashboard/admin";
                               navigate(dashboardPath);
                             }}
-                            className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-gray-800 rounded-lg hover:bg-yellow-200 hover:text-yellow-700 transition-all cursor-pointer"
+                            className="navbar-dropdown-item flex items-center gap-3 text-gray-800"
                           >
                             <MdOutlineSpaceDashboard className="text-lg" />{" "}
                             Dashboard
@@ -633,7 +620,7 @@ const Navbar = () => {
                                   setDropdownOpen(false);
                                   navigate("/studio/customer/liked");
                                 }}
-                                className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-800 rounded-lg hover:bg-yellow-200 hover:text-yellow-700 transition-all cursor-pointer"
+                                className="navbar-dropdown-item flex items-center gap-3 text-gray-800"
                               >
                                 <HeartOutlined className="text-lg" /> Studio đã
                                 thích
@@ -645,7 +632,7 @@ const Navbar = () => {
                                   setDropdownOpen(false);
                                   navigate("/studio/customer/reviews");
                                 }}
-                                className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-800 rounded-lg hover:bg-yellow-200 hover:text-yellow-700 transition-all cursor-pointer"
+                                className="navbar-dropdown-item flex items-center gap-3 text-gray-800"
                               >
                                 <FileTextOutlined className="text-lg" /> Reviews
                                 đã thích
@@ -661,17 +648,17 @@ const Navbar = () => {
                               setDropdownOpen(false);
                               navigate("/settings");
                             }}
-                            className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-800 rounded-lg hover:bg-yellow-200 hover:text-yellow-700 transition-all"
+                            className="navbar-dropdown-item flex items-center gap-3 text-gray-800"
                           >
                             <SettingOutlined className="text-lg" /> Cài đặt
                           </button>
                         </li>
 
                         {/* Logout */}
-                        <li className="border-t border-yellow-200">
+                        <li className="border-t border-gray-200">
                           <button
                             onClick={handleLogout}
-                            className="flex items-center gap-3 w-full px-4 py-3 text-sm text-red-600 rounded-lg hover:bg-red-100 hover:text-red-700 transition-all cursor-pointer"
+                            className="navbar-dropdown-item flex items-center gap-3 text-red-600 hover:text-red-700 hover:bg-red-50"
                           >
                             <LogoutOutlined className="text-lg" /> Đăng xuất
                           </button>
@@ -683,17 +670,17 @@ const Navbar = () => {
               </div>
             </div>
           ) : (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <Button
                 href="/login"
-                className="border border-yellow-500 text-yellow-500 font-semibold text-xs px-3 rounded-md hover:bg-yellow-50 transition-all"
+                className="border border-amber-500/50 text-amber-600 font-bold text-sm px-5 py-2 rounded-lg hover:bg-amber-50 transition-all"
               >
                 Đăng nhập
               </Button>
               <Button
                 type="primary"
                 href="/register"
-                className="bg-gradient-to-r from-yellow-400 to-yellow-500 border-none font-semibold text-xs px-3 shadow-md hover:shadow-yellow-500/40"
+                className="bg-gradient-to-r from-amber-500 to-orange-500 border-none font-bold text-sm px-5 py-2 shadow-lg hover:shadow-lg hover:opacity-95 text-white"
               >
                 Đăng ký
               </Button>
@@ -705,11 +692,9 @@ const Navbar = () => {
             whileHover={{ scale: 1.1, rotate: mobileMenuOpen ? 90 : 0 }}
             whileTap={{ scale: 0.95 }}
             onClick={toggleMobileMenu}
-            className={`lg:hidden p-3 rounded-full transition-all duration-300 ease-in-out ${
-              scrolled
-                ? "text-gray-700 bg-gray-100 hover:bg-gray-200"
-                : "text-white bg-white/10 hover:bg-white/20"
-            }`}
+            className={`lg:hidden navbar-action-btn ${
+              scrolled ? "scrolled-light" : ""
+            } ${scrolled ? "text-gray-900" : "text-white/80"}`}
           >
             <motion.div
               animate={{
@@ -734,32 +719,34 @@ const Navbar = () => {
           <>
             <motion.div
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.6 }}
+              animate={{ opacity: 0.5 }}
               exit={{ opacity: 0 }}
               onClick={closeMobileMenu}
-              className="fixed inset-0 bg-black z-[50]"
+              className="fixed inset-0 bg-black/60 z-40"
             />
             <motion.nav
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="fixed top-0 right-0 w-72 h-screen bg-white shadow-2xl z-[60] flex flex-col p-6"
+              className="fixed top-0 right-0 h-screen w-72 bg-white shadow-2xl z-50 flex flex-col p-6 overflow-y-auto"
             >
-              {NAV_LINKS.map(({ path, label, key: linkKey }) => (
-                <NavLink
-                  key={linkKey}
-                  to={path}
-                  onClick={closeMobileMenu}
-                  className={({ isActive }) =>
-                    `px-4 py-3 rounded-lg font-semibold text-gray-700 hover:bg-gray-100 transition-all ${
-                      isActive ? "bg-yellow-100 text-yellow-600" : ""
-                    }`
-                  }
-                >
-                  {label}
-                </NavLink>
-              ))}
+              <div className="flex flex-col gap-2">
+                {NAV_LINKS.map(({ path, label, key: linkKey }) => (
+                  <NavLink
+                    key={linkKey}
+                    to={path}
+                    onClick={closeMobileMenu}
+                    className={({ isActive }) =>
+                      `px-4 py-3 rounded-lg font-semibold text-gray-700 hover:bg-gray-100 transition-all ${
+                        isActive ? "bg-amber-100 text-amber-700" : ""
+                      }`
+                    }
+                  >
+                    {label}
+                  </NavLink>
+                ))}
+              </div>
             </motion.nav>
           </>
         )}

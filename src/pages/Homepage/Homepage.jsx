@@ -30,12 +30,12 @@ const Homepage = () => {
       </div>
 
       {/* Floating quick actions */}
-      <div className="relative container mx-auto px-4 md:px-6 lg:px-10 pt-6">
-        <div className="hidden lg:flex items-center justify-between gap-4 rounded-2xl bg-white/70 backdrop-blur-xl shadow-[0_20px_80px_rgba(0,0,0,0.06)] border border-white/70 px-6 py-4">
-          <div className="flex items-center gap-2 text-sm font-semibold text-amber-600">
-            <ArrowRightOutlined /> Khám phá nhanh
+      <div className="relative container mx-auto px-4 md:px-6 lg:px-10 pt-8 md:pt-10">
+        <div className="hidden lg:flex items-center justify-between gap-6 rounded-3xl bg-gradient-to-r from-white/80 to-white/60 backdrop-blur-2xl shadow-[0_25px_100px_rgba(0,0,0,0.1)] border border-white/80 px-8 py-6">
+          <div className="flex items-center gap-3 text-base md:text-lg font-bold text-amber-600">
+            <ArrowRightOutlined className="text-xl" /> Khám phá nhanh
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             {[
               { icon: <CameraOutlined />, label: "Đặt studio", href: "/studio" },
               { icon: <ShoppingOutlined />, label: "Set design", href: "/set-design" },
@@ -44,9 +44,9 @@ const Homepage = () => {
               <a
                 key={item.label}
                 href={item.href}
-                className="group inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-50 border border-amber-100 text-amber-700 font-semibold hover:bg-amber-100 hover:shadow-md transition"
+                className="group inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 text-amber-700 font-bold text-sm md:text-base hover:from-amber-100 hover:to-orange-100 hover:border-amber-300 hover:shadow-lg transition-all"
               >
-                <span className="text-base">{item.icon}</span>
+                <span className="text-lg md:text-xl">{item.icon}</span>
                 <span>{item.label}</span>
               </a>
             ))}
@@ -54,7 +54,7 @@ const Homepage = () => {
         </div>
       </div>
 
-      <main className="relative container mx-auto px-4 md:px-6 lg:px-10 py-10 md:py-14 space-y-16 lg:space-y-24">
+      <main className="relative container mx-auto px-4 md:px-6 lg:px-10 py-12 md:py-16 lg:py-20 space-y-16 lg:space-y-24">
         <IntroSection />
         <StudioSection />
         <SetDesignSection />

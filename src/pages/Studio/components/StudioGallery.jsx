@@ -16,7 +16,7 @@ export default function StudioGallery({ images = [] }) {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: i * 0.1 }}
             whileHover={{ scale: 1.02, y: -4 }}
-            className="overflow-hidden rounded-2xl shadow-[0_12px_35px_-18px_rgba(0,0,0,0.25)] group border border-amber-100 hover:border-amber-200 hover:shadow-[0_20px_50px_-15px_rgba(0,0,0,0.3)] transition-all"
+            className="studio-panel overflow-hidden rounded-2xl group hover:border-amber-200 hover:shadow-[0_20px_50px_-15px_rgba(0,0,0,0.3)] transition-all"
           >
             <img
               src={img}

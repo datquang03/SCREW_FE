@@ -59,8 +59,8 @@ const StudioCommentList = ({ targetId }) => {
   };
 
   return (
-    <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm mt-10">
-      <h2 className="text-2xl font-semibold mb-4 text-black">Bình luận</h2>
+    <div className="studio-panel p-6 md:p-7 mt-10">
+      <h2 className="text-2xl font-extrabold mb-4 text-slate-900">Bình luận</h2>
 
       {/* Input */}
       <div className="mb-6">
@@ -96,7 +96,7 @@ const StudioCommentList = ({ targetId }) => {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.03 }}
-              className="p-4 rounded-xl border border-slate-100 bg-slate-50"
+              className="p-4 rounded-xl studio-comment-card"
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="font-semibold text-slate-900">
