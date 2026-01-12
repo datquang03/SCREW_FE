@@ -1,7 +1,9 @@
 // src/pages/Payment/PaymentSuccessPage.jsx
-import React from "react";
+import React, { useEffect } from "react";
 import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
-import { Card, Typography, Button } from "antd";
+import { useDispatch, useSelector } from "react-redux";
+import { getPaymentStatus } from "../../features/payment/paymentSlice";
+import { Card, Typography, Button, Tag } from "antd";
 import { motion } from "framer-motion";
 import { FiCheckCircle } from "react-icons/fi";
 
@@ -9,16 +11,96 @@ const { Title, Text } = Typography;
 
 const PaymentSuccessPage = () => {
   const [searchParams] = useSearchParams();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // PayOS trả về các query param cho set-design
   const orderId = searchParams.get("orderId") || searchParams.get("bookingId");
   const orderCode = searchParams.get("orderCode");
   const status = searchParams.get("status") || "success";
   const amount = searchParams.get("amount");
   const paymentCode = searchParams.get("paymentCode");
   const isSetDesign = location.pathname.includes("set-design");
+
+  const transactionColumns = [
+    {
+      title: "Mã giao dịch",
+      dataIndex: "_id",
+      render: (id) => <span>#{id?.slice(-6)}</span>,
+    },
+    {
+      title: "Booking",
+      dataIndex: ["bookingId", "_id"],
+      key: "booking",
+      render: (id) => <span>#{id?.slice(-6)}</span>,
+    },
+    {
+      title: "Studio",
+      dataIndex: ["bookingId", "scheduleId", "studioId", "name"],
+      render: (name) => name || "N/A",
+    },
+    {
+      title: "Loại thanh toán",
+      dataIndex: "payType",
+      render: (v) => {
+        const label =
+          v === "full"
+            ? "Thanh toán toàn bộ"
+            : v === "prepay_50"
+            ? "Cọc 50%"
+            : v === "prepay_30"
+            ? "Cọc 30%"
+            : v;
+        const color =
+          v === "full" ? "green" : v === "prepay_50" ? "purple" : "orange";
+        return (
+          <Tag color={color} className="px-3 py-1 rounded-full">
+            {label}
+          </Tag>
+        );
+      },
+    },
+    {
+      title: "Số tiền",
+      dataIndex: "amount",
+      render: (v) => (
+        <span className="font-semibold text-gray-900">{formatCurrency(v)}</span>
+      ),
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "status",
+      render: (v) => {
+        const color =
+          v === "success"
+            ? "green"
+            : v === "pending"
+            ? "blue"
+            : v === "failed"
+            ? "red"
+            : "gray";
+        return <Tag color={color}>{v}</Tag>;
+      },
+    },
+    {
+      title: "Thao tác",
+      render: (_, record) => (
+        <Button
+          type="link"
+          onClick={() => handleViewTransactionDetail(record._id)}
+        >
+          Xem chi tiết
+        </Button>
+      ),
+    },
+  ];
+
+  // Lấy trạng thái thanh toán khi vào trang
+  useEffect(() => {
+    if (orderId) {
+      dispatch(getPaymentStatus({ paymentId: orderId }));
+    }
+  }, [orderId, dispatch]);
 
   const handleGoDashboard = () => {
     navigate(

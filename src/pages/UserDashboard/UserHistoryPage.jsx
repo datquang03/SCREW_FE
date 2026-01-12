@@ -21,6 +21,24 @@ const { Title, Text } = Typography;
 const formatCurrency = (v) =>
   typeof v === "number" ? v.toLocaleString("vi-VN") + "₫" : v || "-";
 
+// Hàm chuyển trạng thái sang tiếng Việt
+const getStatusText = (status) => {
+  switch (status) {
+    case "pending":
+      return "Chờ thanh toán";
+    case "paid":
+      return "Đã thanh toán";
+    case "cancelled":
+      return "Đã hủy";
+    case "success":
+      return "Thành công";
+    case "failed":
+      return "Thất bại";
+    default:
+      return status;
+  }
+};
+
 const UserHistoryPage = () => {
   const dispatch = useDispatch();
 
@@ -108,7 +126,7 @@ const UserHistoryPage = () => {
             "HH:mm"
           )}`;
         },
-      },
+    },
     {
       title: "Trạng thái",
         render: () => (
@@ -148,6 +166,7 @@ const UserHistoryPage = () => {
     {
       title: "Booking",
       dataIndex: ["bookingId", "_id"],
+      key: "booking_short", // Thêm key khác biệt
       render: (id) => <span>#{id?.slice(-6)}</span>,
     },
     {
@@ -179,7 +198,8 @@ const UserHistoryPage = () => {
     {
       title: "Mã booking",
       dataIndex: ["bookingId", "_id"],
-      render: (id) => <span>#{id?.slice(-6)}</span>,
+      key: "booking_full", // Thêm key khác biệt
+      render: (id) => <span>#{id?.slice(-10)}</span>,
     },
     {
       title: "Số tiền",
@@ -193,14 +213,16 @@ const UserHistoryPage = () => {
       dataIndex: "status",
       render: (v) => {
         const color =
-          v === "success"
+          v === "paid" || v === "success"
             ? "green"
             : v === "pending"
             ? "blue"
+            : v === "cancelled"
+            ? "red"
             : v === "failed"
             ? "red"
             : "gray";
-        return <Tag color={color}>{v}</Tag>;
+        return <Tag color={color}>{getStatusText(v)}</Tag>;
       },
     },
     {
@@ -282,49 +304,51 @@ const UserHistoryPage = () => {
         footer={null}
         width={650}
       >
-        {transactionDetailLoading || !currentTransaction ? (
-          <div className="flex justify-center py-10">
-            <Spin tip="Đang tải chi tiết..." />
-            </div>
-        ) : (
-          <Card>
-            <Descriptions column={2} labelStyle={{ fontWeight: 600 }}>
-              <Descriptions.Item label="Mã giao dịch">
-                #{currentTransaction._id?.slice(-10)}
-              </Descriptions.Item>
+        <Spin spinning={transactionDetailLoading || !currentTransaction} tip="Đang tải chi tiết...">
+          {!(transactionDetailLoading || !currentTransaction) && (
+            <Card>
+              <Descriptions column={2} labelStyle={{ fontWeight: 600 }}>
+                <Descriptions.Item label="Mã giao dịch">
+                  #{currentTransaction._id?.slice(-10)}
+                </Descriptions.Item>
 
-              <Descriptions.Item label="Mã booking">
-                #{currentTransaction.bookingId?._id?.slice(-10)}
-              </Descriptions.Item>
+                <Descriptions.Item label="Mã booking">
+                  #{currentTransaction.bookingId?._id?.slice(-10)}
+                </Descriptions.Item>
 
-              <Descriptions.Item label="Số tiền">
-                {formatCurrency(currentTransaction.amount)}
-              </Descriptions.Item>
+                <Descriptions.Item label="Số tiền">
+                  {formatCurrency(currentTransaction.amount)}
+                </Descriptions.Item>
 
-              <Descriptions.Item label="Phương thức">
-                <Tag color="blue">{currentTransaction.payType}</Tag>
-              </Descriptions.Item>
+                <Descriptions.Item label="Phương thức">
+                  <Tag color="blue">{currentTransaction.payType}</Tag>
+                </Descriptions.Item>
 
-              <Descriptions.Item label="Trạng thái">
-                <Tag
-                  color={
-                    currentTransaction.status === "success"
-                      ? "green"
-                      : currentTransaction.status === "pending"
-                      ? "blue"
-                      : "red"
-                  }
-                >
-                  {currentTransaction.status}
-                </Tag>
-              </Descriptions.Item>
+                <Descriptions.Item label="Trạng thái">
+                  <Tag
+                    color={
+                      currentTransaction.status === "paid" || currentTransaction.status === "success"
+                        ? "green"
+                        : currentTransaction.status === "pending"
+                        ? "blue"
+                        : currentTransaction.status === "cancelled"
+                        ? "red"
+                        : currentTransaction.status === "failed"
+                        ? "red"
+                        : "gray"
+                    }
+                  >
+                    {getStatusText(currentTransaction.status)}
+                  </Tag>
+                </Descriptions.Item>
 
-              <Descriptions.Item label="Ngày tạo">
-                {dayjs(currentTransaction.createdAt).format("DD/MM/YYYY HH:mm")}
-              </Descriptions.Item>
-            </Descriptions>
-        </Card>
-        )}
+                <Descriptions.Item label="Ngày tạo">
+                  {dayjs(currentTransaction.createdAt).format("DD/MM/YYYY HH:mm")}
+                </Descriptions.Item>
+              </Descriptions>
+            </Card>
+          )}
+        </Spin>
       </Modal>
     </div>
   );
