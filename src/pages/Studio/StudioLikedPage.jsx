@@ -1,12 +1,12 @@
 import React from 'react'
 import Layout from '../../components/layout/Layout'
 
-const EquipmentPage = () => {
+const StudioLikedPage = () => {
   return (
     <Layout>
-      EquipmentPage
+      StudioLikedPage
     </Layout>
   )
 }
 
-export default EquipmentPage
+export default StudioLikedPage

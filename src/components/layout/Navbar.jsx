@@ -1,236 +1,743 @@
-import React, { useEffect, useRef, useState } from "react";
-import { gsap } from "gsap";
-import { NavLink, Link } from "react-router-dom";
-import { FaSearch } from "react-icons/fa";
+// src/components/navbar/Navbar.jsx
+import React, { useState, useEffect, useRef } from "react";
+import { NavLink, Link, useNavigate } from "react-router-dom";
+import { Button, Modal } from "antd";
+import {
+  SearchOutlined,
+  CloseOutlined,
+  LogoutOutlined,
+  DeleteOutlined,
+  MessageOutlined,
+} from "@ant-design/icons";
+import { MdNotifications, MdOutlineSpaceDashboard } from "react-icons/md";
+
+import { motion, AnimatePresence } from "framer-motion";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../../features/auth/authSlice";
+import {
+  getNotifications,
+  markNotificationRead,
+  deleteNotification,
+} from "../../features/notification/notificationSlice";
+import { getConversations } from "../../features/message/messageSlice";
 import SPlusLogo from "../../assets/S+Logo.png";
+import notificationSound from "../../assets/notification.mp3";
+import { NAV_LINKS } from "../../constants/navigation";
+import { useScrollEffect } from "../../hooks/useScrollEffect";
 
 const Navbar = () => {
-  const navRef = useRef(null);
-  const navLinksRef = useRef(null);
-  const centerContainerRef = useRef(null);
-  const searchFormRef = useRef(null);
+  const scrolled = useScrollEffect(20);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [allNotificationsModalOpen, setAllNotificationsModalOpen] =
+    useState(false);
+  const [visibleDropdownCount, setVisibleDropdownCount] = useState(4);
+
+  const headerRef = useRef(null);
+  const searchContainerRef = useRef(null);
   const searchInputRef = useRef(null);
-  const rightActionsRef = useRef(null);
-  const indicatorRef = useRef(null);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const notificationAudioRef = useRef(null);
+  const previousUnreadCountRef = useRef(0);
+  const dropdownPanelRef = useRef(null);
+  const dropdownScrollRef = useRef(null);
+  const modalBodyRef = useRef(null);
 
-  useEffect(() => {
-    gsap.fromTo(
-      navRef.current,
-      { y: -60, opacity: 0 },
-      { y: 0, opacity: 1, duration: 1, ease: "power3.out" }
-    );
-  }, []);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { user } = useSelector((state) => state.auth);
+  const { notifications, loading: notificationsLoading } = useSelector(
+    (state) => state.notification || { notifications: [], loading: false }
+  );
+  const { messages = {}, conversations = [] } = useSelector(
+    (state) => state.message || { messages: {}, conversations: [] }
+  );
 
-  useEffect(() => {
-    if (!searchFormRef.current || !navLinksRef.current || !rightActionsRef.current)
-      return;
-  
-    if (isSearchOpen) {
-      // Thu nhỏ nhẹ toàn bộ cụm nav để vẫn giữ hàng ngang
-      gsap.to(navLinksRef.current, {
-        duration: 0.35,
-        ease: "power2.out",
-        scale: 0.92,
-        opacity: 0.75,
-        transformOrigin: "center center",
-      });
-  
-      gsap.to(rightActionsRef.current, {
-        duration: 0.35,
-        ease: "power2.out",
-        opacity: 0.8,
-        scale: 0.95,
-      });
-  
-      gsap.fromTo(
-        searchFormRef.current,
-        { width: 0, opacity: 0 },
-        {
-          width: window.innerWidth < 768 ? 320 : 560,
-          opacity: 1,
-          duration: 0.45,
-          ease: "power3.out",
-          onComplete: () =>
-            searchInputRef.current && searchInputRef.current.focus(),
-        }
-      );
-    } else {
-      // Khôi phục lại kích thước nav
-      gsap.to(navLinksRef.current, {
-        duration: 0.35,
-        ease: "power2.inOut",
-        scale: 1,
-        opacity: 1,
-        clearProps: "transform",
-      });
-      gsap.to(searchFormRef.current, {
-        width: 0,
-        opacity: 0,
-        duration: 0.35,
-        ease: "power2.inOut",
-      });
-      gsap.to(rightActionsRef.current, {
-        duration: 0.35,
-        ease: "power2.inOut",
-        opacity: 1,
-        scale: 1,
-      });
-    }
-  }, [isSearchOpen]);
-
-  // Active indicator animation between nav items (no scroll jump)
-  useEffect(() => {
-    if (!navLinksRef.current || !indicatorRef.current) return;
-    const active = navLinksRef.current.querySelector('a.active');
-    const parentRect = (centerContainerRef.current || indicatorRef.current.parentElement).getBoundingClientRect();
-    if (active) {
-      const rect = active.getBoundingClientRect();
-      const x = rect.left - parentRect.left;
-      const w = rect.width;
-      gsap.to(indicatorRef.current, {
-        x,
-        width: w,
-        opacity: 1,
-        duration: 0.6,
-        ease: 'power2.out',
-      });
-    }
-  });
-  
-  const handleSearchToggle = () => setIsSearchOpen((prev) => !prev);
-
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    setIsSearchOpen(false);
-    setSearchQuery("");
+  const handleLogout = () => {
+    dispatch(logout());
+    setDropdownOpen(false);
+    navigate("/login", { replace: true });
   };
 
+  // Initialize audio
+  useEffect(() => {
+    if (notificationAudioRef.current) return;
+    notificationAudioRef.current = new Audio(notificationSound);
+    notificationAudioRef.current.volume = 0.5; // Set volume to 50%
+  }, []);
+
+  // Fetch notifications & conversations from Redux
+  useEffect(() => {
+    if (!user) return;
+    dispatch(getNotifications());
+    dispatch(getConversations());
+  }, [user, dispatch]);
+
+  // Helper function để lấy avatar URL từ object hoặc string
+  const getAvatarUrl = (avatar) => {
+    if (!avatar) return undefined;
+    if (typeof avatar === "string") return avatar;
+    if (typeof avatar === "object" && avatar.url) return avatar.url;
+    return undefined;
+  };
+
+  const myId = user?._id || user?.id;
+  const unreadCount = notifications.filter((n) => !n.isRead && !n.read).length;
+  const unreadMessagesFromMessages = Object.values(messages).reduce(
+    (acc, list) => {
+      if (!Array.isArray(list)) return acc;
+      const unread = list.filter(
+        (m) =>
+          !m.isRead && !m.read && (m.fromUserId?._id || m.fromUserId) !== myId // only count messages from others
+      );
+      return acc + unread.length;
+    },
+    0
+  );
+  const unreadMessagesFromConvs = conversations.reduce(
+    (sum, c) => sum + (c.unreadCount || 0),
+    0
+  );
+  const unreadMessagesCount =
+    unreadMessagesFromConvs > 0
+      ? unreadMessagesFromConvs
+      : unreadMessagesFromMessages;
+  const dropdownNotifications = notifications.slice(0, visibleDropdownCount);
+
+  // Play notification sound when new notification arrives
+  useEffect(() => {
+    if (!user || notificationsLoading) return;
+
+    const currentUnreadCount = unreadCount;
+    const previousUnreadCount = previousUnreadCountRef.current;
+
+    // Play sound if there's a new unread notification (unread count increased)
+    if (currentUnreadCount > previousUnreadCount && previousUnreadCount >= 0) {
+      if (notificationAudioRef.current) {
+        notificationAudioRef.current.play().catch((err) => {
+          // Handle autoplay restrictions
+          console.log("Could not play notification sound:", err);
+        });
+      }
+    }
+
+    // Update previous count
+    previousUnreadCountRef.current = currentUnreadCount;
+  }, [unreadCount, notifications, user, notificationsLoading]);
+
+  // Reset dropdown count when toggling
+  useEffect(() => {
+    if (notifOpen) {
+      setVisibleDropdownCount(4);
+    }
+  }, [notifOpen]);
+
+  // Auto mark read when visible or hovered in dropdown
+  useEffect(() => {
+    if (!notifOpen) return;
+
+    const root = dropdownScrollRef.current || dropdownPanelRef.current || null;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const notificationId = entry.target.dataset.id;
+            const notification = notifications.find(
+              (n) => n._id === notificationId
+            );
+            if (notification && !notification.isRead && !notification.read) {
+              dispatch(markNotificationRead(notificationId));
+            }
+          }
+        });
+      },
+      { root, threshold: 0.5 }
+    );
+
+    const elems = document.querySelectorAll(".notification-item");
+    elems.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, [notifOpen, notifications, dispatch]);
+
+  // Auto mark read when visible or hovered in modal
+  useEffect(() => {
+    if (!allNotificationsModalOpen) return;
+
+    const root = modalBodyRef.current;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const notificationId = entry.target.dataset.id;
+            const notification = notifications.find(
+              (n) => n._id === notificationId
+            );
+            if (notification && !notification.isRead && !notification.read) {
+              dispatch(markNotificationRead(notificationId));
+            }
+          }
+        });
+      },
+      {
+        root,
+        threshold: 0.5,
+      }
+    );
+
+    const elems = document.querySelectorAll(".modal-notification-item");
+    elems.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, [allNotificationsModalOpen, notifications, dispatch]);
+
+  const handleDropdownScroll = (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    if (
+      scrollTop + clientHeight >= scrollHeight - 10 &&
+      visibleDropdownCount < notifications.length
+    ) {
+      setVisibleDropdownCount((prev) =>
+        Math.min(prev + 3, notifications.length)
+      );
+    }
+  };
+
+  const handleMessageClick = () => {
+    if (!user) return navigate("/login");
+    dispatch(getConversations());
+    navigate("/message");
+  };
+
+  const handleDeleteNotification = (id) => {
+    Modal.confirm({
+      title: "Xác nhận xóa",
+      content: "Bạn có chắc muốn xóa thông báo này không?",
+      onOk: () => {
+        dispatch(deleteNotification(id));
+      },
+    });
+  };
+
+  const handleNotificationHover = (notificationId) => {
+    const notification = notifications.find((n) => n._id === notificationId);
+    if (notification && !notification.isRead && !notification.read) {
+      dispatch(markNotificationRead(notificationId));
+    }
+  };
+
+  const headerClass = `navbar-professional ${scrolled ? "scrolled" : "top"}`;
+
+  // Click outside dropdown/search
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownOpen && !e.target.closest(".avatar-dropdown"))
+        setDropdownOpen(false);
+      if (
+        searchOpen &&
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(e.target)
+      )
+        setSearchOpen(false);
+      if (notifOpen && !e.target.closest(".notif-dropdown"))
+        setNotifOpen(false);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [dropdownOpen, searchOpen, notifOpen]);
+
+  // Escape key to close search
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") setSearchOpen(false);
+    };
+    if (searchOpen) document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [searchOpen]);
+
+  // Focus input when search opens
+  useEffect(() => {
+    if (searchOpen && searchInputRef.current) searchInputRef.current.focus();
+  }, [searchOpen]);
+
   return (
-    <nav
-      ref={navRef}
-      className="w-full h-[90px] flex items-center justify-center overflow-x-clip bg-[#0b1220] bg-opacity-95 py-6 md:py-7 shadow-[0_10px_30px_rgba(0,0,0,0.35)] border-b border-slate-800/80 backdrop-blur-md"
+    <motion.header
+      ref={headerRef}
+      initial={{ y: -80 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className={`${headerClass} z-[100] transition-all duration-300`}
     >
-      <div className="w-full px-10 md:px-16 lg:px-20 flex items-center justify-between gap-6 md:gap-10">
-        {/* Logo */}
-        <Link
-          to="/"
-          className="md:ml-12 flex items-center justify-start cursor-pointer"
-        >
-          <div className="w-[150px] h-[80px] rounded-xl overflow-hidden flex items-center justify-center bg-[#0a0f1c] shadow-[0_0_12px_rgba(0,0,0,0.4)] ml-4">
-            <img
-              src={SPlusLogo}
-              alt="S+ Studio Logo"
-              className="w-full h-full object-cover object-center scale-[1.0] p-[2px]"
-              loading="eager"
-              decoding="async"
-            />
-          </div>
+      <div className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-8 py-4 md:py-6">
+        {/* ===== LOGO ===== */}
+        <Link to="/" className="navbar-logo">
+          <motion.img
+            src={SPlusLogo}
+            alt="S+ Studio Logo"
+            className="h-16 md:h-24 lg:h-28 w-auto object-contain"
+            whileHover={{ rotate: [0, -10, 10, -10, 0], scale: 1.05 }}
+            transition={{ duration: 0.45 }}
+          />
         </Link>
 
-         {/* Nav Links + Search */}
-         <div ref={centerContainerRef} className="relative flex-1 flex items-center justify-center gap-4 md:gap-8 overflow-hidden">
-          <ul
-            ref={navLinksRef}
-             className="relative z-10 hidden md:flex items-center gap-8 lg:gap-12 text-[18px] font-semibold text-slate-200 whitespace-nowrap"
-          >
-            {[
-              { path: "/", label: "Trang chủ" },
-              { path: "/studio", label: "Studio" },
-              { path: "/equipment", label: "Dụng cụ" },
-              { path: "/about", label: "Về chúng tôi" },
-              { path: "/contact", label: "Liên hệ" },
-            ].map(({ path, label }) => (
+        {/* ===== DESKTOP NAV ===== */}
+        <nav className="hidden lg:flex items-center gap-2">
+          {NAV_LINKS.map(({ path, label, key: linkKey }, i) => (
+            <motion.div
+              key={linkKey}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1 }}
+            >
               <NavLink
-                key={path}
                 to={path}
                 className={({ isActive }) =>
-                  `skew-x-6 inline-flex items-center justify-center rounded-xl border-2 border-transparent transition-all duration-200 cursor-pointer
-                    ${
-                      isActive
-                        ? "active text-[#FBBF24] border-slate-700/70"
-                        : "hover:bg-slate-800/50 hover:text-[#FBBF24] hover:border-slate-600/60 hover:shadow-[0_6px_18px_rgba(2,6,23,0.35)]"
-                    }`
+                  `navbar-nav-link ${
+                    scrolled
+                      ? isActive
+                        ? "active text-amber-600"
+                        : "text-gray-700 hover:text-gray-900"
+                      : isActive
+                      ? "active text-amber-300"
+                      : "text-gray-200 hover:text-white"
+                  }`
                 }
-                style={{
-                  height: "60px",
-                  paddingLeft: "52px",
-                  paddingRight: "52px",
-                }}
               >
-                <span className="-skew-x-6 inline-flex items-center text-[20px]">
-                  {label}
-                </span>
+                {label}
               </NavLink>
-             ))}
-          </ul>
-           {/* Active indicator */}
-           <span
-             ref={indicatorRef}
-             style={{ transform: 'translateX(0)', width: 0, opacity: 0 }}
-             className="pointer-events-none hidden md:block absolute z-0 top-1/2 -translate-y-1/2 left-0 h-[48px] rounded-xl border border-slate-600/40 bg-slate-800/50 shadow-[0_10px_26px_rgba(2,6,23,0.35)]"
-           />
+            </motion.div>
+          ))}
+        </nav>
 
-          {/* Search Form */}
-          <form
-            ref={searchFormRef}
-            onSubmit={handleSearchSubmit}
-            className="hidden md:flex items-center overflow-hidden rounded-full border-2 border-slate-700/60 bg-slate-900/70 backdrop-blur px-4 ring-1 ring-transparent focus-within:ring-[#FBBF24]/30 shadow-[0_6px_20px_rgba(2,6,23,0.35)]"
-            style={{ width: 0, opacity: 0 }}
-          >
-            <span className="ml-1.5 mr-2 inline-flex items-center justify-center w-10 h-10 text-slate-300">
-              <span className="relative inline-block w-4 h-4 border-2 border-current rounded-full" />
-          </span>
-            <input
-              ref={searchInputRef}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Tìm kiếm..."
-              className="bg-transparent outline-none text-slate-200 placeholder-slate-400 text-[15px] py-3.5 w-full"
-            />
-          </form>
-        </div>
+        {/* ===== RIGHT ACTIONS ===== */}
+        <div className="flex items-center gap-3">
+          {/* MESSAGE */}
+          {user && (
+            <div className="relative">
+              <motion.button
+                type="button"
+                onClick={handleMessageClick}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.92 }}
+                className={`navbar-action-btn ${
+                  scrolled ? "scrolled-light" : ""
+                } ${scrolled ? "text-gray-900" : "text-white/80"}`}
+              >
+                <MessageOutlined className="text-lg" />
+                {unreadMessagesCount > 0 && (
+                  <span className="navbar-badge">
+                    {unreadMessagesCount > 9 ? "9+" : unreadMessagesCount}
+                  </span>
+                )}
+              </motion.button>
+            </div>
+          )}
 
-        {/* Right Actions */}
-        <div
-          ref={rightActionsRef}
-          className="flex items-center gap-4 md:gap-6 pr-8 md:pr-12 lg:pr-16"
-        >
-          {/* Search Button */}
-          <button
-            onClick={handleSearchToggle}
-            className={`skew-x-6 hidden md:inline-flex items-center justify-center rounded-2xl border-2 text-slate-200 cursor-pointer
-              bg-slate-900/70 hover:bg-slate-800/60 hover:text-[#FBBF24] hover:border-slate-600 transition-all duration-200
-              ${
-                isSearchOpen
-                  ? "bg-slate-800/70 text-[#FBBF24] border-slate-700/70 shadow-[0_8px_24px_rgba(2,6,23,0.35)]"
-                  : "shadow-[0_6px_18px_rgba(2,6,23,0.25)]"
-              }`}
-            style={{ height: "60px", width: "60px" }}
-            aria-label="Tìm kiếm"
-            title="Tìm kiếm"
-          >
-            <FaSearch className="-skew-x-6 w-5 h-5" />
-          </button>
+          {/* SEARCH */}
+          <div ref={searchContainerRef} className="relative flex items-center">
+            <AnimatePresence mode="wait">
+              {!searchOpen ? (
+                <motion.button
+                  key="search-button"
+                  type="button"
+                  onClick={() => setSearchOpen(true)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.92 }}
+                  className={`navbar-action-btn ${
+                    scrolled ? "scrolled-light" : ""
+                  } ${scrolled ? "text-gray-900" : "text-white/80"}`}
+                >
+                  <SearchOutlined className="text-lg" />
+                </motion.button>
+              ) : (
+                <motion.div
+                  key="search-bar"
+                  initial={{ scaleX: 0, opacity: 0, x: -20 }}
+                  animate={{ scaleX: 1, opacity: 1, x: 0 }}
+                  exit={{ scaleX: 0, opacity: 0, x: -20 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 25,
+                    duration: 0.3,
+                  }}
+                  className="origin-right w-64"
+                  style={{ transformOrigin: "100% 50%" }}
+                >
+                  <motion.div className="flex items-center gap-2 rounded-lg px-4 py-2.5 bg-white shadow-lg border border-gray-200">
+                    <SearchOutlined className="text-base text-amber-500" />
+                    <input
+                      ref={searchInputRef}
+                      type="text"
+                      placeholder="Tìm kiếm studio..."
+                      className="w-full bg-transparent text-sm outline-none placeholder-gray-400 text-gray-900"
+                    />
+                    <motion.button
+                      type="button"
+                      onClick={() => setSearchOpen(false)}
+                      whileHover={{ scale: 1.15, rotate: 90 }}
+                      whileTap={{ scale: 0.9 }}
+                      transition={{ type: "spring", stiffness: 400 }}
+                      className="text-gray-400 hover:text-gray-700 transition-colors"
+                    >
+                      <CloseOutlined />
+                    </motion.button>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
-          {/* Register Button */}
-          <Link
-            to="/register"
-            className="skew-x-6 inline-flex items-center justify-center rounded-2xl font-semibold
-              border-2 text-black cursor-pointer
-              bg-gradient-to-r from-[#FBBF24] to-[#ffd666] hover:brightness-105 transition-all duration-200 shadow-[0_14px_34px_rgba(251,191,36,0.45)] mr-6 md:mr-10"
-            style={{
-              height: "60px",
-              paddingLeft: "38px",
-              paddingRight: "38px",
-            }}
-          >
-            <span className="-skew-x-6 inline-block text-[15px]">Đăng ký</span>
-          </Link>
+          {/* ===== NOTIFICATION ICON ===== */}
+          {user && (
+            <div className="relative notif-dropdown">
+              <motion.button
+                type="button"
+                onClick={() => setNotifOpen((prev) => !prev)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.92 }}
+                className={`navbar-action-btn ${
+                  scrolled ? "scrolled-light" : ""
+                } ${scrolled ? "text-gray-900" : "text-white/80"}`}
+              >
+                <MdNotifications className="text-lg" />
+                {unreadCount > 0 && (
+                  <span className="navbar-badge">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </motion.button>
+
+              <AnimatePresence>
+                {notifOpen && (
+                  <motion.div
+                    ref={dropdownPanelRef}
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.2 }}
+                    className="navbar-dropdown-panel absolute right-0 mt-3 w-96 max-h-[430px] z-[110] flex flex-col overflow-hidden"
+                  >
+                    <div className="navbar-dropdown-header flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-bold text-gray-900">
+                          Thông báo của bạn
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          Cập nhật mới nhất theo thời gian thực
+                        </p>
+                      </div>
+                      {unreadCount > 0 && (
+                        <span className="px-3 py-1 text-xs font-bold text-white bg-gradient-to-r from-red-500 to-pink-500 rounded-full shadow-lg">
+                          {unreadCount} mới
+                        </span>
+                      )}
+                    </div>
+                    <div
+                      ref={dropdownScrollRef}
+                      onScroll={handleDropdownScroll}
+                      className="flex-1 overflow-y-auto max-h-[330px] p-3 space-y-2 custom-scrollbar"
+                    >
+                      {notificationsLoading ? (
+                        <div className="flex flex-col gap-3">
+                          {[...Array(3)].map((_, idx) => (
+                            <div
+                              key={idx}
+                              className="animate-pulse rounded-xl border border-gray-100 bg-gray-50 p-4 space-y-2"
+                            >
+                              <div className="h-3 w-24 bg-gray-200 rounded" />
+                              <div className="h-3 w-40 bg-gray-200 rounded" />
+                            </div>
+                          ))}
+                        </div>
+                      ) : dropdownNotifications.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-10 text-center text-gray-500">
+                          <MdNotifications className="text-3xl text-gray-300 mb-2" />
+                          <p>Chưa có thông báo</p>
+                        </div>
+                      ) : (
+                        <>
+                          {dropdownNotifications.map((n) => {
+                            const isRead = n.isRead || n.read;
+                            return (
+                              <div
+                                key={n._id}
+                                data-id={n._id}
+                                onMouseEnter={() =>
+                                  handleNotificationHover(n._id)
+                                }
+                                className={`notification-item group relative flex items-start justify-between px-4 py-3 rounded-xl cursor-pointer transition-all border ${
+                                  isRead
+                                    ? "bg-gray-50 border-gray-100 hover:bg-gray-100"
+                                    : "bg-white border-blue-200 shadow-sm hover:shadow-md"
+                                }`}
+                              >
+                                <div className="flex flex-col flex-1 pr-2">
+                                  {!isRead && (
+                                    <span className="inline-block mb-1 px-2 py-0.5 text-xs font-semibold text-blue-600 bg-blue-100 rounded-full w-fit">
+                                      Chưa đọc
+                                    </span>
+                                  )}
+                                  <span className="font-semibold text-gray-800 text-sm">
+                                    {n.title}
+                                  </span>
+                                  <span className="text-xs text-gray-600 mt-1 line-clamp-2">
+                                    {n.message}
+                                  </span>
+                                  {n.createdAt && (
+                                    <span className="text-[11px] text-gray-400 mt-1">
+                                      {new Date(n.createdAt).toLocaleString(
+                                        "vi-VN",
+                                        {
+                                          hour: "2-digit",
+                                          minute: "2-digit",
+                                          day: "2-digit",
+                                          month: "2-digit",
+                                        }
+                                      )}
+                                    </span>
+                                  )}
+                                </div>
+                                <motion.button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteNotification(n._id);
+                                  }}
+                                  className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0 p-1.5 hover:bg-red-100 rounded-full"
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
+                                >
+                                  <DeleteOutlined className="text-red-500 text-base" />
+                                </motion.button>
+                              </div>
+                            );
+                          })}
+                          {dropdownNotifications.length ===
+                            notifications.length && (
+                            <p className="text-center text-xs text-gray-400 py-2">
+                              Hết thông báo
+                            </p>
+                          )}
+                        </>
+                      )}
+                    </div>
+                    <div className="border-t border-gray-200 bg-white p-3">
+                      <Button
+                        type="link"
+                        onClick={() => {
+                          setNotifOpen(false);
+                          setAllNotificationsModalOpen(true);
+                        }}
+                        className="w-full text-sm font-bold text-amber-600 hover:text-amber-700"
+                      >
+                        Xem tất cả →
+                      </Button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
+
+          {/* USER / AUTH */}
+          {user ? (
+            <div className="flex items-center gap-2">
+              <div className="relative avatar-dropdown">
+                <motion.button
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  whileHover={{ scale: 1.05 }}
+                  className="flex items-center gap-2 p-1 rounded-lg hover:bg-white/10 transition-all"
+                >
+                  <img
+                    key={getAvatarUrl(user.avatar) || ""}
+                    src={
+                      getAvatarUrl(user.avatar) ||
+                      "https://png.pngtree.com/png-clipart/20191120/original/pngtree-outline-user-icon-png-image_5045523.jpg"
+                    }
+                    alt="User Avatar"
+                    className="navbar-avatar"
+                    onError={(e) => {
+                      e.target.src =
+                        "https://png.pngtree.com/png-clipart/20191120/original/pngtree-outline-user-icon-png-image_5045523.jpg";
+                    }}
+                  />
+                </motion.button>
+
+                <AnimatePresence>
+                  {dropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.25 }}
+                      className="navbar-dropdown-panel absolute right-0 mt-2 w-64 z-[110]"
+                    >
+                      <div className="navbar-dropdown-header">
+                        <p className="text-sm font-bold text-gray-900">
+                          {user.fullName || user.username}
+                        </p>
+                        <p className="text-xs text-gray-600">{user.email}</p>
+                      </div>
+
+                      <ul className="py-2">
+                        {/* Dashboard */}
+                        <li>
+                          <button
+                            onClick={() => {
+                              setDropdownOpen(false);
+                              let dashboardPath = "/dashboard";
+                              if (user.role === "customer")
+                                dashboardPath = "/dashboard/customer";
+                              if (user.role === "staff")
+                                dashboardPath = "/dashboard/staff";
+                              if (user.role === "admin")
+                                dashboardPath = "/dashboard/admin";
+                              navigate(dashboardPath);
+                            }}
+                            className="navbar-dropdown-item w-full flex items-center gap-3 text-gray-800"
+                          >
+                            <MdOutlineSpaceDashboard className="text-lg" />{" "}
+                            Dashboard
+                          </button>
+                        </li>
+
+                        {/* Logout */}
+                        <li className="border-t border-gray-200">
+                          <button
+                            onClick={handleLogout}
+                            className="navbar-dropdown-item w-full flex items-center gap-3 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <LogoutOutlined className="text-lg" /> Đăng xuất
+                          </button>
+                        </li>
+                      </ul>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3">
+              <Button
+                href="/login"
+                className="border border-amber-500/50 text-amber-600 font-bold text-sm px-5 py-2 rounded-lg hover:bg-amber-50 transition-all"
+              >
+                Đăng nhập
+              </Button>
+              <Button
+                type="primary"
+                href="/register"
+                className="bg-gradient-to-r from-amber-500 to-orange-500 border-none font-bold text-sm px-5 py-2 shadow-lg hover:shadow-lg hover:opacity-95 text-white"
+              >
+                Đăng ký
+              </Button>
+            </div>
+          )}
+
+
         </div>
       </div>
-    </nav>
+
+      {/* ===== ALL NOTIFICATIONS MODAL ===== */}
+      <Modal
+        title={
+          <div className="flex items-center justify-between">
+            <span className="text-xl font-bold text-gray-900">
+              Tất cả thông báo
+            </span>
+            {unreadCount > 0 && (
+              <span className="px-3 py-1 text-sm font-semibold text-blue-600 bg-blue-100 rounded-full">
+                {unreadCount} chưa đọc
+              </span>
+            )}
+          </div>
+        }
+        open={allNotificationsModalOpen}
+        onCancel={() => setAllNotificationsModalOpen(false)}
+        footer={null}
+        width={600}
+        className="all-notifications-modal"
+        styles={{
+          body: { padding: 0, maxHeight: "70vh", overflow: "hidden" },
+        }}
+      >
+        <div
+          ref={modalBodyRef}
+          className="overflow-y-auto max-h-[70vh] p-4 space-y-2 custom-scrollbar"
+        >
+          {notificationsLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <span className="text-gray-500">Đang tải...</span>
+            </div>
+          ) : notifications.length === 0 ? (
+            <div className="flex items-center justify-center py-12">
+              <span className="text-gray-500">Chưa có thông báo</span>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {notifications.map((n) => {
+                const isRead = n.isRead || n.read;
+                return (
+                  <div
+                    key={n._id}
+                    data-id={n._id}
+                    onMouseEnter={() => handleNotificationHover(n._id)}
+                    className={`modal-notification-item group relative flex items-start justify-between px-4 py-3 rounded-lg cursor-pointer transition-all ${
+                      isRead
+                        ? "bg-gray-100 hover:bg-gray-200"
+                        : "bg-white hover:bg-gray-50 border-l-4 border-blue-500"
+                    }`}
+                  >
+                    <div className="flex flex-col flex-1 pr-2">
+                      {!isRead && (
+                        <span className="inline-block mb-1 px-2 py-0.5 text-xs font-semibold text-blue-600 bg-blue-100 rounded-full w-fit">
+                          Chưa đọc
+                        </span>
+                      )}
+                      <span className="font-semibold text-gray-800 text-sm">
+                        {n.title}
+                      </span>
+                      <span className="text-xs text-gray-600 mt-1 line-clamp-3">
+                        {n.message}
+                      </span>
+                      {n.createdAt && (
+                        <span className="text-xs text-gray-400 mt-1">
+                          {new Date(n.createdAt).toLocaleString("vi-VN", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                      )}
+                    </div>
+                    <motion.button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteNotification(n._id);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0 p-1.5 hover:bg-red-100 rounded-full ml-2"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <DeleteOutlined className="text-red-500 text-base" />
+                    </motion.button>
+                  </div>
+                );
+              })}
+
+              {/* End of notifications marker */}
+              <p className="text-center text-xs text-gray-400 py-3">
+                Hết thông báo
+              </p>
+            </div>
+          )}
+        </div>
+      </Modal>
+    </motion.header>
   );
 };
 
