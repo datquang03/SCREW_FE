@@ -12,7 +12,7 @@ import promotionReducer from "../features/promotion/promotionSlice";
 import bookingReducer from "../features/booking/bookingSlice";
 import paymentReducer from "../features/payment/paymentSlice";
 import scheduleReducer from "../features/schedule/scheduleSlice";
-import setDesignReducer from "../features/setDesign/setDesignSlice";
+import setDesignReducer from "../features/setDesign/setDesignSlice.js";
 import setDesignPaymentReducer from "../features/setDesignPayment/setDesignPayment";
 import commentReducer from "../features/comment/commentSlice";
 import transactionReducer from "../features/transaction/transactionSlice";
