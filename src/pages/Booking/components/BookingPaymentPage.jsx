@@ -115,7 +115,7 @@ export default function BookingPaymentPage({
       const payUrl =
         result?.qrCodeUrl ||
         result?.payUrl ||
-        result?.paymentUrl ||
+        result?.paymentLink ||
         result?.gatewayResponse?.qrCodeUrl ||
         result?.gatewayResponse?.checkoutUrl;
 
