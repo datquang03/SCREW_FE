@@ -30,7 +30,7 @@ import {
 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { getConvertedCustomDesignByIdPublic } from "../../../features/setdesign/setDesignSlice";
+import { getConvertedCustomDesignByIdPublic } from "../../../features/setDesign/setDesignSlice";
 import {
   createOrderSetDesign,
   createPayment30,

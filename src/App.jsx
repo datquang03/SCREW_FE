@@ -11,6 +11,7 @@ import StudioPage from "./pages/Studio/StudioPage";
 import StudioBookingPage from "./pages/Booking/StudioBookingPage";
 import ForgotPasswordPage from "./pages/Authentication/Forgot/ForgotPassword";
 import VerifyEmailPage from "./pages/Authentication/Verify/Email";
+import RegisterPage from "./pages/Authentication/Register/RegisterPage";
 
 import DashboardLayout from "./components/layout/DashboardLayout";
 import StaffSidebar from "./pages/StaffDashboard/StaffSidebar";
