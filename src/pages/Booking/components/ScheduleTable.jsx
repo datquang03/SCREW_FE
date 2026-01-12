@@ -1,8 +1,8 @@
 // src/pages/Booking/components/ScheduleTable.jsx (phiên bản đã tối ưu)
 import React from "react";
-import { Tag, Badge } from "antd";
+import { Tag, Badge, Empty } from "antd";
 import dayjs from "dayjs";
-import { LeftOutlined, RightOutlined } from "@ant-design/icons";
+import { LeftOutlined, RightOutlined, CheckCircleOutlined, ClockCircleOutlined } from "@ant-design/icons";
 
 const ScheduleTable = ({
   value,
@@ -61,27 +61,30 @@ const ScheduleTable = ({
         key={key}
         onClick={() => handleDateClick(date)}
         className={`
-          relative border border-gray-300 cursor-pointer transition-all duration-200
-          hover:shadow-md hover:z-10
-          ${!isCurrentMonth ? "opacity-40" : ""}
-          ${isSelected ? "ring-4 ring-blue-500 ring-inset z-10 shadow-lg" : ""}
-          ${isToday && !isSelected ? "ring-2 ring-blue-400 ring-inset" : ""}
+          relative border border-gray-200 cursor-pointer transition-all duration-300
+          ${isPast ? "cursor-not-allowed" : "hover:shadow-lg hover:border-blue-400"}
+          ${!isCurrentMonth ? "opacity-30 bg-gray-50" : "bg-white"}
+          ${isSelected ? "ring-4 ring-blue-500 ring-inset z-10 shadow-xl" : ""}
+          ${isToday && !isSelected ? "ring-2 ring-blue-300 ring-inset" : ""}
         `}
-        style={{ height: "110px" }}
+        style={{ 
+          height: "130px",
+          cursor: isPast ? "not-allowed" : "pointer"
+        }}
       >
-        <div className="h-full flex flex-col p-2 text-xs">
+        <div className="h-full flex flex-col p-2.5 text-xs relative">
           {/* Header: ngày + tag hôm nay */}
-          <div className="flex items-start justify-between mb-1">
+          <div className="flex items-start justify-between mb-2">
             <span
               className={`
-                font-bold text-sm leading-none
+                font-bold text-base leading-none transition-colors
                 ${
                   isSelected
-                    ? "text-blue-700 font-extrabold"
+                    ? "text-white bg-blue-500 rounded-lg px-2 py-1"
                     : isToday
                     ? "text-blue-700"
                     : isCurrentMonth
-                    ? "text-gray-900"
+                    ? "text-gray-800"
                     : "text-gray-400"
                 }
               `}
@@ -89,12 +92,12 @@ const ScheduleTable = ({
               {date.date()}
             </span>
             {isSelected && (
-              <div className="absolute top-1 right-1 w-3 h-3 bg-blue-500 rounded-full animate-pulse" />
+              <div className="absolute top-1.5 right-1.5 w-2 h-2 bg-white rounded-full animate-pulse" />
             )}
-            {isToday && (
+            {isToday && !isSelected && (
               <Tag
-                color="blue"
-                className="text-[9px] px-1.5 py-0 leading-tight h-4"
+                color="cyan"
+                className="text-[9px] px-1.5 py-0 leading-tight h-5 font-semibold"
               >
                 Hôm nay
               </Tag>
@@ -102,66 +105,52 @@ const ScheduleTable = ({
           </div>
 
           {/* Nội dung chính */}
-          <div className="flex-1 flex flex-col justify-center items-center gap-1.5 text-center">
+          <div className="flex-1 flex flex-col justify-between items-center gap-1">
             {status === "past" && !isToday && (
-              <span className="text-gray-500 text-xs font-medium">Đã qua</span>
+              <div className="flex flex-col items-center gap-1">
+                <ClockCircleOutlined className="text-gray-400 text-lg" />
+                <span className="text-gray-500 text-[10px] font-semibold">Đã qua</span>
+              </div>
             )}
 
             {status === "booked" && (
-              <div className="space-y-1.5 w-full">
+              <div className="space-y-1.5 w-full text-center">
                 {/* Badge hiển thị số lượng slot đã đặt */}
                 <div className="flex flex-col items-center gap-1">
-                  <span className="text-[11px] text-gray-500 font-medium">Số lịch</span>
                   <Badge
                     count={bookings.length}
-                    style={{ backgroundColor: bookings.length > 0 ? "#f5222d" : "#d9d9d9" }}
+                    style={{ 
+                      backgroundColor: "#ef4444",
+                      boxShadow: "0 0 0 2px white",
+                      fontSize: "12px",
+                      fontWeight: "bold"
+                    }}
                     className="custom-badge"
                   />
+                  <span className="text-[10px] text-gray-600 font-medium">Slot đặt</span>
                 </div>
 
                 {/* Thông tin booking */}
-                {bookings.length > 0 && (
-                  <div className="text-[10px] font-medium text-gray-700 leading-tight text-center space-y-0.5">
+                {bookings[0] && (
+                  <div className="text-[10px] font-medium text-gray-700 space-y-0.5">
                     {/* Tên khách hàng */}
-                    <div className="flex items-center justify-center gap-1">
-                      <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse flex-shrink-0" />
-                      <span className="truncate max-w-[90px] font-semibold">
-                        {bookings[0]?.booking?.customer?.fullName
-                          ?.split(" ")
-                          .slice(-2)
-                          .join(" ") || "Khách"}
-                      </span>
-                    </div>
-                    
-                    {/* Time range của booking đầu tiên */}
-                    {bookings[0]?.timeRange && (
-                      <div className="text-[9px] text-rose-600 font-bold">
-                        {bookings[0].timeRange}
+                    {bookings[0]?.booking?.customer?.fullName && (
+                      <div className="flex items-center justify-center gap-1">
+                        <div className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                        <span className="truncate max-w-[85px] font-bold text-rose-600">
+                          {bookings[0].booking.customer.fullName
+                            .split(" ")
+                            .slice(-2)
+                            .join(" ")}
+                        </span>
                       </div>
                     )}
                     
-                    {/* Status của booking đầu tiên */}
-                    {bookings[0]?.booking?.status && (
-                      <Tag 
-                        color={
-                          bookings[0].booking.status === "completed" ? "green" :
-                          bookings[0].booking.status === "confirmed" ? "blue" :
-                          bookings[0].booking.status === "pending" ? "orange" : "default"
-                        }
-                        className="text-[8px] px-1 py-0 h-4 leading-tight"
-                      >
-                        {bookings[0].booking.status === "completed" ? "Hoàn thành" :
-                         bookings[0].booking.status === "confirmed" ? "Đã xác nhận" :
-                         bookings[0].booking.status === "pending" ? "Chờ xác nhận" :
-                         bookings[0].booking.status}
-                      </Tag>
-                    )}
-                    
-                    {/* Số lượng booking còn lại */}
-                    {bookings.length > 1 && (
-                      <span className="text-rose-600 font-bold text-xs block">
-                        +{bookings.length - 1} khác
-                      </span>
+                    {/* Time range */}
+                    {bookings[0]?.timeRange && (
+                      <div className="text-[9px] text-rose-600 font-bold bg-rose-50 px-1.5 py-0.5 rounded">
+                        {bookings[0].timeRange}
+                      </div>
                     )}
                   </div>
                 )}
@@ -169,9 +158,9 @@ const ScheduleTable = ({
             )}
 
             {status === "available" && !isPast && (
-              <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                <span className="text-emerald-700 font-semibold">Trống</span>
+              <div className="flex flex-col items-center gap-1.5">
+                <CheckCircleOutlined className="text-emerald-500 text-lg" />
+                <span className="text-emerald-700 font-bold text-[11px]">Có sẵn</span>
               </div>
             )}
           </div>
@@ -180,55 +169,50 @@ const ScheduleTable = ({
         {/* Background theo trạng thái */}
         <div
           className={`
-            absolute inset-0 -z-10 transition-colors
-            ${isSelected ? "bg-blue-100/80 backdrop-blur-sm" : ""}
-            ${status === "booked" && !isSelected ? "bg-rose-50" : ""}
-            ${status === "available" && !isSelected ? "bg-emerald-50" : ""}
-            ${status === "past" && !isSelected ? "bg-gray-100" : ""}
-            ${isToday && status !== "booked" && !isSelected ? "bg-blue-50" : ""}
+            absolute inset-0 -z-10 transition-colors duration-200
+            ${isSelected ? "bg-gradient-to-br from-blue-100 to-blue-50" : ""}
+            ${status === "booked" && !isSelected ? "bg-rose-50/70" : ""}
+            ${status === "available" && !isSelected ? "bg-emerald-50/50" : ""}
+            ${status === "past" && !isSelected ? "bg-gray-100/60" : ""}
+            ${isToday && status !== "booked" && !isSelected ? "bg-blue-50/50" : ""}
           `}
         />
-        
-        {/* Overlay khi được chọn */}
-        {isSelected && (
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-blue-600/20 pointer-events-none" />
-        )}
       </td>
     );
   };
 
-  const weekDays = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+  const weekDays = ["Chủ Nhật", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
 
   return (
-    <div className="w-full max-w-5xl mx-auto">
+    <div className="w-full">
       {/* Header tháng */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 px-2">
         <button
           onClick={handlePrevMonth}
-          className="p-3 hover:bg-gray-100 rounded-full transition-colors border"
+          className="p-2 hover:bg-blue-100 hover:text-blue-600 rounded-lg transition-colors border border-gray-200"
         >
-          <LeftOutlined />
+          <LeftOutlined className="text-lg" />
         </button>
-        <h3 className="text-2xl font-bold text-gray-800">
+        <h3 className="text-2xl font-bold text-gray-800 min-w-fit">
           {currentMonth.format("MMMM YYYY")}
         </h3>
         <button
           onClick={handleNextMonth}
-          className="p-3 hover:bg-gray-100 rounded-full transition-colors border"
+          className="p-2 hover:bg-blue-100 hover:text-blue-600 rounded-lg transition-colors border border-gray-200"
         >
-          <RightOutlined />
+          <RightOutlined className="text-lg" />
         </button>
       </div>
 
       {/* Bảng lịch */}
-      <div className="bg-white rounded-lg shadow-xl border border-gray-300 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
         <table className="w-full table-fixed">
           <thead>
             <tr>
               {weekDays.map((day) => (
                 <th
                   key={day}
-                  className="py-4 text-sm font-bold text-gray-700 bg-gray-100 border-b border-gray-300"
+                  className="py-4 text-sm font-bold text-gray-700 bg-gradient-to-b from-gray-100 to-gray-50 border-b-2 border-gray-200"
                 >
                   {day}
                 </th>
@@ -237,7 +221,9 @@ const ScheduleTable = ({
           </thead>
           <tbody>
             {weeks.map((week, i) => (
-              <tr key={i}>{week.map((date) => renderDateCell(date))}</tr>
+              <tr key={i} className="divide-x divide-gray-200">
+                {week.map((date) => renderDateCell(date))}
+              </tr>
             ))}
           </tbody>
         </table>

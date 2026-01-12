@@ -1,7 +1,7 @@
 // src/pages/Booking/components/BookingSchedulePage.jsx
 import React, { useState, useEffect, useMemo } from "react";
-import { TimePicker, Button, Card, Typography, Tag, message, Skeleton } from "antd";
-import { ArrowRightOutlined } from "@ant-design/icons";
+import { TimePicker, Button, Card, Typography, Tag, message, Skeleton, Radio, DatePicker } from "antd";
+import { ArrowRightOutlined, ClockCircleOutlined } from "@ant-design/icons";
 import { useSelector, useDispatch } from "react-redux";
 import dayjs from "dayjs";
 import { motion } from "framer-motion";
@@ -20,6 +20,8 @@ const BookingSchedulePage = ({ onNext }) => {
   );
 
   const [selectedDate, setSelectedDate] = useState(null);
+  const [dateRangeMode, setDateRangeMode] = useState("single"); // "single" hoặc "range"
+  const [dateRange, setDateRange] = useState([null, null]); // Lưu [startDate, endDate] khi chọn khoảng
   const [timeRange, setTimeRange] = useState([null, null]);
   const [now, setNow] = useState(dayjs());
 
@@ -45,6 +47,11 @@ const BookingSchedulePage = ({ onNext }) => {
     setTimeRange([null, null]);
   }, [selectedDate?.format("YYYY-MM-DD")]);
 
+  // Reset timeRange khi đổi chế độ hoặc dateRange
+  useEffect(() => {
+    setTimeRange([null, null]);
+  }, [dateRangeMode, dateRange[0]?.format("YYYY-MM-DD"), dateRange[1]?.format("YYYY-MM-DD")]);
+
   useEffect(() => {
     if (draft.startTime && draft.endTime) {
       const start = dayjs(draft.startTime);
@@ -65,35 +72,80 @@ const BookingSchedulePage = ({ onNext }) => {
     ? selectedDate.format("YYYY-MM-DD")
     : null;
 
-  const bookedSlots =
-    currentStudioSchedule?.scheduleByDate?.[selectedDateKey] || [];
+  // Lấy các booked slots - nếu là range, lấy từ nhiều ngày
+  const bookedSlots = useMemo(() => {
+    if (dateRangeMode === "single" && selectedDate) {
+      return currentStudioSchedule?.scheduleByDate?.[selectedDateKey] || [];
+    } else if (dateRangeMode === "range" && dateRange[0] && dateRange[1]) {
+      let slots = [];
+      let current = dateRange[0];
+      while (current.isBefore(dateRange[1]) || current.isSame(dateRange[1], "day")) {
+        const key = current.format("YYYY-MM-DD");
+        const daySlots = currentStudioSchedule?.scheduleByDate?.[key] || [];
+        slots = [...slots, ...daySlots];
+        current = current.add(1, "day");
+      }
+      return slots;
+    }
+    return [];
+  }, [currentStudioSchedule, selectedDate, dateRange, dateRangeMode, selectedDateKey]);
 
   const durationHours =
-    selectedDate && timeRange[0] && timeRange[1]
+    timeRange[0] && timeRange[1]
       ? timeRange[1].diff(timeRange[0], "hour", true)
       : 0;
 
   const handleNext = () => {
-    if (!selectedDate) return message.warning("Vui lòng chọn ngày đặt phòng!");
+    // Kiểm tra đã chọn ngày
+    const hasDateSelection = dateRangeMode === "single" ? selectedDate : (dateRange[0] && dateRange[1]);
+    if (!hasDateSelection) {
+      return message.warning("Vui lòng chọn ngày đặt phòng!");
+    }
+
     if (!timeRange[0] || !timeRange[1])
       return message.warning("Vui lòng chọn khung giờ bắt đầu và kết thúc!");
 
-    const startTime = selectedDate
-      .hour(timeRange[0].hour())
-      .minute(timeRange[0].minute())
-      .second(0)
-      .millisecond(0);
+    // Tính toán startTime và endTime
+    let startTime, endTime;
+    if (dateRangeMode === "single") {
+      startTime = selectedDate
+        .hour(timeRange[0].hour())
+        .minute(timeRange[0].minute())
+        .second(0)
+        .millisecond(0);
 
-    const endTime = selectedDate
-      .hour(timeRange[1].hour())
-      .minute(timeRange[1].minute())
-      .second(0)
-      .millisecond(0);
+      endTime = selectedDate
+        .hour(timeRange[1].hour())
+        .minute(timeRange[1].minute())
+        .second(0)
+        .millisecond(0);
+    } else {
+      // Chế độ range: giờ bắt đầu từ ngày đầu, giờ kết thúc đến ngày cuối
+      startTime = dateRange[0]
+        .hour(timeRange[0].hour())
+        .minute(timeRange[0].minute())
+        .second(0)
+        .millisecond(0);
+
+      endTime = dateRange[1]
+        .hour(timeRange[1].hour())
+        .minute(timeRange[1].minute())
+        .second(0)
+        .millisecond(0);
+    }
 
     if (endTime.diff(startTime, "minute") < 60)
       return message.error("Thời gian thuê phải ít nhất 1 giờ!");
     if (endTime.isBefore(startTime))
       return message.error("Giờ kết thúc phải sau giờ bắt đầu!");
+
+    // Kiểm tra tối thiểu 4 giờ cho chế độ 1 ngày
+    if (dateRangeMode === "single") {
+      const durationInHours = endTime.diff(startTime, "hour", true);
+      if (durationInHours < 4) {
+        return message.error("Đặt phòng 1 ngày phải tối thiểu 4 giờ!");
+      }
+    }
 
     // Kiểm tra trùng với các khung giờ đã được đặt
     const hasOverlap = bookedSlots.some((slot) => {
@@ -147,22 +199,77 @@ const BookingSchedulePage = ({ onNext }) => {
       <div className="grid lg:grid-cols-5 gap-6">
         {/* Lịch - chiếm 3/5 không gian */}
         <div className="lg:col-span-3">
+          {/* Nút chọn chế độ */}
+          <Card
+            className="shadow-sm border border-slate-200 rounded-2xl mb-6"
+            styles={{ body: { padding: "12px" } }}
+          >
+            <Radio.Group
+              value={dateRangeMode}
+              onChange={(e) => {
+                setDateRangeMode(e.target.value);
+                setSelectedDate(null);
+                setDateRange([null, null]);
+              }}
+              className="w-full flex gap-4"
+            >
+              <Radio.Button value="single" className="flex-1">
+                <span className="font-semibold">📅 Chọn 1 ngày (1 slot)</span>
+              </Radio.Button>
+              <Radio.Button value="range" className="flex-1">
+                <span className="font-semibold">📆 Chọn khoảng (nhiều ngày)</span>
+              </Radio.Button>
+            </Radio.Group>
+          </Card>
+
           <Card
             title={
               <Title level={4} className="font-bold mb-0">
-                Chọn ngày đặt phòng
+                {dateRangeMode === "single" ? "Chọn ngày đặt phòng" : "Chọn khoảng ngày đặt phòng"}
               </Title>
             }
             className="shadow-sm border border-slate-200 rounded-2xl"
           >
-            <ScheduleTable
-              value={selectedDate}
-              onChange={setSelectedDate}
-              scheduleByDate={currentStudioSchedule?.scheduleByDate || {}}
-              disabledDate={(current) =>
-                current && current < dayjs().startOf("day")
-              }
-            />
+            {dateRangeMode === "single" ? (
+              <ScheduleTable
+                value={selectedDate}
+                onChange={setSelectedDate}
+                scheduleByDate={currentStudioSchedule?.scheduleByDate || {}}
+                disabledDate={(current) =>
+                  current && current < dayjs().startOf("day")
+                }
+              />
+            ) : (
+              <div className="space-y-4">
+                <DatePicker.RangePicker
+                  format="DD/MM/YYYY"
+                  value={dateRange[0] && dateRange[1] ? dateRange : null}
+                  onChange={(dates) => {
+                    if (dates && dates[0] && dates[1]) {
+                      setDateRange([dates[0], dates[1]]);
+                    } else {
+                      setDateRange([null, null]);
+                    }
+                  }}
+                  className="w-full"
+                  size="large"
+                  style={{ height: 48 }}
+                  placeholder={["Ngày bắt đầu", "Ngày kết thúc"]}
+                  disabledDate={(current) =>
+                    current && current < dayjs().startOf("day")
+                  }
+                />
+                {dateRange[0] && dateRange[1] && (
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <Text className="text-sm">
+                      <strong>Khoảng thời gian chọn:</strong> {dateRange[0].format("DD/MM/YYYY")} → {dateRange[1].format("DD/MM/YYYY")}
+                      <br />
+                      <span className="text-blue-600">{dateRange[1].diff(dateRange[0], "day") + 1} ngày</span>
+                    </Text>
+                  </div>
+                )}
+              </div>
+            )}
           </Card>
         </div>
 
@@ -183,29 +290,144 @@ const BookingSchedulePage = ({ onNext }) => {
                 <Skeleton active paragraph={{ rows: 3 }} />
               </div>
             ) : (
-              <div>
-                <RangePicker
-                  format="HH:mm"
-                  minuteStep={30}
-                  placeholder={["Giờ bắt đầu", "Giờ kết thúc"]}
-                  value={timeRange[0] && timeRange[1] ? timeRange : null}
-                  onChange={setTimeRange}
-                  className="w-full text-lg"
-                  size="large"
-                  allowClear={false}
-                  disabled={!selectedDate}
-                  style={{ height: 56 }}
-                />
+              <div className="space-y-4">
+                {/* Hint thông báo tối thiểu giờ */}
+                {dateRangeMode === "single" && selectedDate && (
+                  <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-500 p-4 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <ClockCircleOutlined className="text-amber-600 text-xl" />
+                      <div>
+                        <Text className="text-sm font-bold text-amber-800 block">
+                          Lưu ý: Đặt phòng 1 ngày tối thiểu 4 giờ
+                        </Text>
+                        <Text className="text-xs text-amber-700">
+                          Ví dụ: {now.add(1, "hour").format("HH:00")} → {now.add(5, "hour").format("HH:00")}
+                        </Text>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Chỉ render RangePicker khi đã chọn ngày */}
+                {(dateRangeMode === "single" ? selectedDate : (dateRange[0] && dateRange[1])) ? (
+                  <RangePicker
+                    format="HH:mm"
+                    minuteStep={30}
+                    placeholder={["Giờ bắt đầu", "Giờ kết thúc"]}
+                    value={timeRange[0] && timeRange[1] ? timeRange : undefined}
+                    className="w-full text-lg"
+                    size="large"
+                    allowClear={false}
+                    needConfirm={false}
+                    style={{ height: 56 }}
+                    onChange={(times) => {
+                      if (times && times[0] && times[1]) {
+                        setTimeRange([times[0], times[1]]);
+                      }
+                    }}
+                    disabledTime={(dateInfo, type) => {
+                      const isToday = dateRangeMode === "single" 
+                        ? selectedDate?.isSame(dayjs(), "day")
+                        : dateRange[0]?.isSame(dayjs(), "day");
+                      
+                      const currentHour = now.hour();
+                      const currentMinute = now.minute();
+
+                      // Lấy start hour nếu user đã chọn
+                      let startHour = null;
+                      if (timeRange[0]) {
+                        startHour = timeRange[0].hour();
+                      }
+
+                      if (type === "start") {
+                        // Disable start time: tất cả giờ < giờ hiện tại nếu hôm nay
+                        const disabledHours = isToday 
+                          ? Array.from({ length: currentHour + 1 }, (_, i) => i)
+                          : [];
+                        return {
+                          disabledHours: () => disabledHours,
+                          disabledMinutes: (selectedHour) => {
+                            // Nếu chọn giờ = giờ hiện tại, disable các phút < phút hiện tại
+                            if (isToday && selectedHour === currentHour) {
+                              return Array.from({ length: currentMinute }, (_, i) => i);
+                            }
+                            return [];
+                          }
+                        };
+                      } else {
+                        // Disable end time: phải >= start time + 4 giờ
+                        let minEndHour = 0;
+                        if (startHour !== null) {
+                          minEndHour = startHour + 4;
+                        } else if (isToday) {
+                          minEndHour = currentHour + 4;
+                        }
+
+                        const disabledHours = Array.from({ length: minEndHour }, (_, i) => i);
+                        return {
+                          disabledHours: () => disabledHours,
+                          disabledMinutes: (selectedHour) => {
+                            // Nếu chọn giờ = minEndHour, disable các phút < phút bắt đầu
+                            if (startHour !== null && selectedHour === startHour + 4) {
+                              const startMinute = timeRange[0].minute();
+                              return Array.from({ length: startMinute }, (_, i) => i);
+                            }
+                            return [];
+                          }
+                        };
+                      }
+                    }}
+                  />
+                ) : (
+                  <div className="p-4 bg-gray-100 rounded-xl border border-gray-300 text-center text-gray-600">
+                    Vui lòng chọn ngày trước
+                  </div>
+                )}
+
+                {/* Hiển thị số giờ đã chọn */}
+                {timeRange[0] && timeRange[1] && (
+                  <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                          <ClockCircleOutlined className="text-white text-lg" />
+                        </div>
+                        <div>
+                          <Text className="text-xs text-gray-600 block">Thời lượng thuê</Text>
+                          <Text className="text-xl font-bold text-blue-700">
+                            {durationHours.toFixed(1)} giờ
+                          </Text>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <Text className="text-xs text-gray-600 block">Khung giờ</Text>
+                        <Text className="text-sm font-bold text-gray-800">
+                          {timeRange[0].format("HH:mm")} - {timeRange[1].format("HH:mm")}
+                        </Text>
+                      </div>
+                    </div>
+                    {dateRangeMode === "single" && durationHours < 4 && (
+                      <div className="mt-3 pt-3 border-t border-blue-200">
+                        <Text className="text-xs text-red-600 font-semibold">
+                          ⚠️ Cần thêm {(4 - durationHours).toFixed(1)} giờ nữa (tối thiểu 4 giờ)
+                        </Text>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
-            {/* Các khung giờ đã được đặt trong ngày */}
-            {selectedDate && bookedSlots.length > 0 && (
+            {/* Các khung giờ đã được đặt */}
+            {bookedSlots.length > 0 && (dateRangeMode === "single" ? selectedDate : (dateRange[0] && dateRange[1])) && (
               <div className="mt-6 p-5 rounded-2xl border border-rose-200 bg-white shadow-inner">
                 <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                   <div>
                     <Text strong className="text-red-600 text-base md:text-lg">
-                      Khung giờ đã được đặt trong ngày
+                      {dateRangeMode === "single" 
+                        ? "Khung giờ đã được đặt trong ngày"
+                        : `Khung giờ đã được đặt từ ${dateRange[0]?.format("DD/MM")} đến ${dateRange[1]?.format("DD/MM")}`
+                      }
                     </Text>
                     <p className="text-xs text-gray-500 mt-1">
                       Khi chọn khung giờ, tránh các khoảng thời gian dưới đây
@@ -232,6 +454,13 @@ const BookingSchedulePage = ({ onNext }) => {
                           ĐÃ ĐẶT
                         </Tag>
                       </div>
+
+                      {/* Ngày nếu chế độ range */}
+                      {dateRangeMode === "range" && (
+                        <div className="mb-2 text-xs text-gray-600 font-medium">
+                          📅 {dayjs(slot.startTime).format("DD/MM/YYYY")}
+                        </div>
+                      )}
 
                       {/* Thông tin khách hàng */}
                       {slot.booking?.customer && (
@@ -337,30 +566,54 @@ const BookingSchedulePage = ({ onNext }) => {
                 thể chọn khung giờ phù hợp.
               </div>
             )}
+
+            {(dateRange[0] && dateRange[1]) && bookedSlots.length === 0 && (
+              <div className="mt-6 p-5 rounded-2xl border border-emerald-200 bg-emerald-50 text-emerald-700 text-sm md:text-base">
+                <strong>Khoảng thời gian này hiện chưa có lịch đặt trước.</strong> Bạn có
+                thể chọn khung giờ phù hợp.
+              </div>
+            )}
           </Card>
 
           {/* Hiển thị ngày đã chọn */}
-          {selectedDate && (
+          {(selectedDate || (dateRange[0] && dateRange[1])) && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               className="w-full"
             >
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-xl px-6 py-4 shadow-md">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
-                    <span className="text-white font-bold text-xl">
-                      {selectedDate.date()}
+              <div className="bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 rounded-2xl px-6 py-5 shadow-xl border-2 border-blue-400 relative overflow-hidden">
+                {/* Decorative elements */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+                <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12"></div>
+                
+                <div className="flex items-center gap-4 relative z-10">
+                  <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
+                    <span className="text-blue-600 font-black text-2xl">
+                      {dateRangeMode === "single" ? selectedDate?.date() : dateRange[0]?.date()}
                     </span>
                   </div>
                   <div className="flex-1">
-                    <Text className="text-xs text-gray-600 block mb-1">Ngày đã chọn:</Text>
-                    <Text className="text-base md:text-lg font-bold text-blue-700">
-                      {selectedDate.format("DD/MM/YYYY")}
-                    </Text>
-                    <Text className="text-xs text-gray-600 block mt-1">
-                      {selectedDate.format("dddd")}
-                    </Text>
+                    <Text className="text-xs text-blue-100 block mb-1 font-semibold">📅 Ngày đặt phòng</Text>
+                    {dateRangeMode === "single" ? (
+                      <>
+                        <Text className="text-lg md:text-xl font-black text-white block">
+                          {selectedDate?.format("DD/MM/YYYY")}
+                        </Text>
+                        <Text className="text-xs text-blue-100 block mt-1">
+                          {selectedDate?.format("dddd")}
+                        </Text>
+                      </>
+                    ) : (
+                      <>
+                        <Text className="text-lg md:text-xl font-black text-white block">
+                          {dateRange[0]?.format("DD/MM")} → {dateRange[1]?.format("DD/MM/YYYY")}
+                        </Text>
+                        <Text className="text-xs text-blue-100 block mt-1">
+                          {dateRange[1]?.diff(dateRange[0], "day") + 1} ngày
+                        </Text>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -372,9 +625,13 @@ const BookingSchedulePage = ({ onNext }) => {
             size="large"
             block
             onClick={handleNext}
-            disabled={!selectedDate || !timeRange[0] || !timeRange[1]}
-            className="h-14 text-lg font-semibold rounded-2xl shadow-sm"
-            icon={<ArrowRightOutlined />}
+            disabled={
+              dateRangeMode === "single"
+                ? !selectedDate || !timeRange[0] || !timeRange[1] || durationHours < 4
+                : !dateRange[0] || !dateRange[1] || !timeRange[0] || !timeRange[1]
+            }
+            className="h-16 text-xl font-bold rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 bg-gradient-to-r from-blue-500 to-indigo-600 border-0"
+            icon={<ArrowRightOutlined className="text-2xl" />}
           >
             Tiếp theo → Chọn thiết bị & dịch vụ
           </Button>

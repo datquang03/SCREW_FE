@@ -1,10 +1,11 @@
 // src/pages/Booking/components/BookingConfirmPage.jsx
-import React, { useRef } from "react";
-import { Button, message, Skeleton, Card } from "antd";
+import React, { useRef, useState } from "react";
+import { Button, message, Skeleton, Card, Modal } from "antd";
 import { useReactToPrint } from "react-to-print";
 import { useDispatch, useSelector } from "react-redux";
 import dayjs from "dayjs";
 import { createBooking } from "../../../features/booking/bookingSlice";
+import { motion } from "framer-motion";
 
 // Icon import chuẩn
 import PrinterOutlined from "@ant-design/icons/PrinterOutlined";
@@ -17,6 +18,7 @@ import GiftOutlined from "@ant-design/icons/GiftOutlined";
 export default function BookingConfirmPage({ onBack, onSuccess }) {
   const dispatch = useDispatch();
   const printRef = useRef();
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const { currentStudio: studio, loading: studioLoading } = useSelector(
     (state) => state.studio
@@ -96,9 +98,15 @@ export default function BookingConfirmPage({ onBack, onSuccess }) {
         // ignore
       }
 
-      message.success("Đặt phòng thành công! Đang chuyển sang thanh toán...");
+      // Hiển thị modal success animation
+      setShowSuccessModal(true);
 
-      if (onSuccess) onSuccess(result); // trả kết quả cho StudioBookingPage
+      // Delay 2 giây rồi chuyển trang
+      setTimeout(() => {
+        setShowSuccessModal(false);
+        message.success("Đặt phòng thành công! Đang chuyển sang thanh toán...");
+        if (onSuccess) onSuccess(result);
+      }, 2000);
     } catch (err) {
       message.error(err?.message || "Đặt phòng thất bại, vui lòng thử lại!");
     }
@@ -325,7 +333,7 @@ export default function BookingConfirmPage({ onBack, onSuccess }) {
                   size="large"
                   icon={<PrinterOutlined />}
                   onClick={handlePrint}
-                  className="no-print"
+                  className="no-print h-12"
                 >
                   In hóa đơn
                 </Button>
@@ -335,7 +343,7 @@ export default function BookingConfirmPage({ onBack, onSuccess }) {
                   loading={bookingLoading}
                   icon={<CheckCircleOutlined />}
                   onClick={handleConfirm}
-                  className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 border-none text-white font-bold no-print"
+                  className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 border-none text-white font-bold no-print h-12 text-lg"
                 >
                   Xác nhận & Thanh toán ngay
                 </Button>
@@ -343,6 +351,59 @@ export default function BookingConfirmPage({ onBack, onSuccess }) {
             </div>
           </div>
         </div>
+
+        {/* Success Modal */}
+        <Modal
+          open={showSuccessModal}
+          footer={null}
+          closable={false}
+          centered
+          width={500}
+          className="success-modal"
+        >
+          <motion.div
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5, type: "spring" }}
+            className="text-center py-8"
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+              className="inline-block"
+            >
+              <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full flex items-center justify-center shadow-2xl">
+                <CheckCircleOutlined className="text-white text-5xl" />
+              </div>
+            </motion.div>
+            
+            <motion.h2
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="text-3xl font-black text-gray-800 mb-3"
+            >
+              Đặt phòng thành công! 🎉
+            </motion.h2>
+            
+            <motion.p
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="text-gray-600 text-lg"
+            >
+              Đang chuyển sang bước thanh toán...
+            </motion.p>
+
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: "100%" }}
+              transition={{ delay: 0.5, duration: 1.5 }}
+              className="h-1 bg-gradient-to-r from-green-400 to-emerald-600 rounded-full mt-6 mx-auto max-w-xs"
+            />
+          </motion.div>
+        </Modal>
       </div>
     </div>
   );

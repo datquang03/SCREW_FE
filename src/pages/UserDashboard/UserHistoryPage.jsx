@@ -21,6 +21,21 @@ const { Title, Text } = Typography;
 const formatCurrency = (v) =>
   typeof v === "number" ? v.toLocaleString("vi-VN") + "₫" : v || "-";
 
+const formatDateTime = (v) => (v ? dayjs(v).format("DD/MM/YYYY HH:mm") : "-");
+
+const getPayTypeText = (v) => {
+  switch (v) {
+    case "full":
+      return "Thanh toán toàn bộ";
+    case "prepay_50":
+      return "Cọc 50%";
+    case "prepay_30":
+      return "Cọc 30%";
+    default:
+      return v || "-";
+  }
+};
+
 // Hàm chuyển trạng thái sang tiếng Việt
 const getStatusText = (status) => {
   switch (status) {
@@ -49,7 +64,7 @@ const UserHistoryPage = () => {
 
   const {
     transactions,
-    currentTransaction,
+    transactionDetail,
     loading: transactionLoading,
   } = useSelector((state) => state.transaction);
 
@@ -196,12 +211,6 @@ const UserHistoryPage = () => {
       },
     },
     {
-      title: "Mã booking",
-      dataIndex: ["bookingId", "_id"],
-      key: "booking_full", // Thêm key khác biệt
-      render: (id) => <span>#{id?.slice(-10)}</span>,
-    },
-    {
       title: "Số tiền",
       dataIndex: "amount",
       render: (v) => (
@@ -302,51 +311,104 @@ const UserHistoryPage = () => {
         open={transactionModalOpen}
         onCancel={() => setTransactionModalOpen(false)}
         footer={null}
-        width={650}
+        width={720}
       >
-        <Spin spinning={transactionDetailLoading || !currentTransaction} tip="Đang tải chi tiết...">
-          {!(transactionDetailLoading || !currentTransaction) && (
-            <Card>
-              <Descriptions column={2} labelStyle={{ fontWeight: 600 }}>
-                <Descriptions.Item label="Mã giao dịch">
-                  #{currentTransaction._id?.slice(-10)}
-                </Descriptions.Item>
+        <Spin spinning={transactionDetailLoading || !transactionDetail} tip="Đang tải chi tiết...">
+          {!(transactionDetailLoading || !transactionDetail) && (
+            <div className="space-y-4">
+              {/* Header */}
+              <Card className="bg-gradient-to-r from-blue-50 to-white border-blue-100">
+                <div className="flex items-center justify-between flex-wrap gap-3">
+                  <div>
+                    <div className="text-xs uppercase text-gray-500">Mã giao dịch</div>
+                    <div className="text-xl font-bold text-gray-900">#{transactionDetail._id?.slice(-10)}</div>
+                    <div className="text-sm text-gray-600">Mã thanh toán: {transactionDetail.paymentCode}</div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Tag color="blue" className="px-3 py-1 text-sm rounded-full">
+                      {getPayTypeText(transactionDetail.payType)}
+                    </Tag>
+                    <Tag
+                      color={
+                        transactionDetail.status === "paid" || transactionDetail.status === "success"
+                          ? "green"
+                          : transactionDetail.status === "pending"
+                          ? "blue"
+                          : transactionDetail.status === "cancelled"
+                          ? "red"
+                          : transactionDetail.status === "failed"
+                          ? "red"
+                          : "gray"
+                      }
+                      className="px-3 py-1 text-sm rounded-full"
+                    >
+                      {getStatusText(transactionDetail.status)}
+                    </Tag>
+                  </div>
+                </div>
+              </Card>
 
-                <Descriptions.Item label="Mã booking">
-                  #{currentTransaction.bookingId?._id?.slice(-10)}
-                </Descriptions.Item>
+              {/* Booking info */}
+              <Card title="Thông tin booking" size="small">
+                <Descriptions column={2} labelStyle={{ fontWeight: 600 }}>
+                  <Descriptions.Item label="Mã booking">
+                    #{transactionDetail.bookingId?._id?.slice(-10)}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Studio">
+                    {transactionDetail.bookingId?.scheduleId?.studioId?.name || "-"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Ngày đặt">
+                    {transactionDetail.bookingId?.scheduleId?.startTime
+                      ? formatDateTime(transactionDetail.bookingId.scheduleId.startTime).slice(0, 10)
+                      : "-"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Khung giờ">
+                    {transactionDetail.bookingId?.scheduleId?.startTime
+                      ? `${dayjs(transactionDetail.bookingId.scheduleId.startTime).format("HH:mm")} - ${dayjs(
+                          transactionDetail.bookingId.scheduleId.endTime
+                        ).format("HH:mm")}`
+                      : "-"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Số tiền booking">
+                    {formatCurrency(transactionDetail.bookingId?.finalAmount)}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Trạng thái booking">
+                    {getStatusText(transactionDetail.bookingId?.status)}
+                  </Descriptions.Item>
+                </Descriptions>
+              </Card>
 
-                <Descriptions.Item label="Số tiền">
-                  {formatCurrency(currentTransaction.amount)}
-                </Descriptions.Item>
-
-                <Descriptions.Item label="Phương thức">
-                  <Tag color="blue">{currentTransaction.payType}</Tag>
-                </Descriptions.Item>
-
-                <Descriptions.Item label="Trạng thái">
-                  <Tag
-                    color={
-                      currentTransaction.status === "paid" || currentTransaction.status === "success"
-                        ? "green"
-                        : currentTransaction.status === "pending"
-                        ? "blue"
-                        : currentTransaction.status === "cancelled"
-                        ? "red"
-                        : currentTransaction.status === "failed"
-                        ? "red"
-                        : "gray"
-                    }
-                  >
-                    {getStatusText(currentTransaction.status)}
-                  </Tag>
-                </Descriptions.Item>
-
-                <Descriptions.Item label="Ngày tạo">
-                  {dayjs(currentTransaction.createdAt).format("DD/MM/YYYY HH:mm")}
-                </Descriptions.Item>
-              </Descriptions>
-            </Card>
+              {/* Payment info */}
+              <Card title="Chi tiết thanh toán" size="small">
+                <Descriptions column={2} labelStyle={{ fontWeight: 600 }}>
+                  <Descriptions.Item label="Số tiền thanh toán">
+                    {formatCurrency(transactionDetail.amount)}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Transaction ID">
+                    {transactionDetail.transactionId}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Ngày tạo">
+                    {formatDateTime(transactionDetail.createdAt)}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Thanh toán lúc">
+                    {formatDateTime(transactionDetail.paidAt)}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Hết hạn link">
+                    {formatDateTime(transactionDetail.expiresAt)}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Link QR / Payment">
+                    <a
+                      className="text-blue-600 hover:underline"
+                      href={transactionDetail.qrCodeUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Mở link thanh toán
+                    </a>
+                  </Descriptions.Item>
+                </Descriptions>
+              </Card>
+            </div>
           )}
         </Spin>
       </Modal>

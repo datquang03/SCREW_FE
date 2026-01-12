@@ -1,5 +1,14 @@
 import React from "react";
 
+// Lấy giá trị theo path (hỗ trợ dataIndex dạng array)
+const getValue = (obj, path) => {
+  if (!path) return undefined;
+  if (Array.isArray(path)) {
+    return path.reduce((acc, key) => (acc && acc[key] !== undefined ? acc[key] : undefined), obj);
+  }
+  return obj?.[path];
+};
+
 const DataTable = ({ columns = [], data = [], title }) => {
   return (
     <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 overflow-hidden">
@@ -38,7 +47,7 @@ const DataTable = ({ columns = [], data = [], title }) => {
 
             {data.map((row, idx) => (
               <tr
-                key={row.id || idx}
+                key={row._id || row.id || idx}
                 className={idx % 2 === 0 ? "bg-white" : "bg-gray-50/60"}
               >
                 {columns.map((c, i) => (
@@ -46,7 +55,7 @@ const DataTable = ({ columns = [], data = [], title }) => {
                     key={`${i}-cell`}
                     className="py-3 px-4 text-gray-700"
                   >
-                    {c.render ? c.render(row[c.dataIndex], row) : row[c.dataIndex]}
+                    {c.render ? c.render(getValue(row, c.dataIndex), row) : getValue(row, c.dataIndex)}
                   </td>
                 ))}
               </tr>

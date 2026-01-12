@@ -2,17 +2,34 @@ import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Button, Modal } from "antd";
+import { Button, Modal, Menu } from "antd";
 import {
   FiLogOut,
-  FiSettings,
-  FiUser,
   FiChevronDown,
-  FiMenu,
+  FiHome,
+  FiShoppingBag,
+  FiCalendar,
+  FiVideo,
+  FiTool,
+  FiUsers,
+  FiSettings,
+  FiTrendingUp,
+  FiBriefcase,
+  FiBarChart2,
+  FiClock,
+  FiUser,
 } from "react-icons/fi";
 import { MessageOutlined } from "@ant-design/icons";
 import { MdNotifications } from "react-icons/md";
 import { DeleteOutlined } from "@ant-design/icons";
+import {
+  MdDesignServices,
+  MdMiscellaneousServices,
+  MdOutlineDiscount,
+} from "react-icons/md";
+import { GiMoneyStack } from "react-icons/gi";
+import { AiOutlineProfile, AiOutlineAudit } from "react-icons/ai";
+import { RiCustomerService2Fill } from "react-icons/ri";
 import { logout } from "../../features/auth/authSlice";
 import {
   getNotifications,
@@ -46,13 +63,45 @@ const THEMES = {
   },
 };
 
-// Helper function để lấy dashboard path
-const getDashboardPath = (user) => {
-  if (!user) return "/dashboard";
-  if (user.role === "customer") return "/dashboard/customer";
-  if (user.role === "staff") return "/dashboard/staff";
-  if (user.role === "admin") return "/dashboard/admin";
-  return "/dashboard";
+// Helper function để lấy dashboard path (không dùng nhưng giữ lại cho future use)
+// const getDashboardPath = (user) => {
+//   if (!user) return "/dashboard";
+//   if (user.role === "customer") return "/dashboard/customer";
+//   if (user.role === "staff") return "/dashboard/staff";
+//   if (user.role === "admin") return "/dashboard/admin";
+//   return "/dashboard";
+// };
+
+// Menu items cho các role
+const getMenuItems = (role) => {
+  const roleMenus = {
+    staff: [
+      { key: "dashboard", icon: <FiHome />, label: "Bảng điều khiển", path: "/dashboard/staff" },
+      { key: "orders", icon: <FiShoppingBag />, label: "Quản lý đơn", path: "/dashboard/staff/order" },
+      { key: "schedule", icon: <FiCalendar />, label: "Lịch làm việc", path: "/dashboard/staff/schedule" },
+      { key: "studios", icon: <FiVideo />, label: "Quản lý Studio", path: "/dashboard/staff/studios" },
+      { key: "setdesign", icon: <MdDesignServices />, label: "Quản lý Set Design", path: "/dashboard/staff/setdesign" },
+      { key: "custom-request", icon: <RiCustomerService2Fill />, label: "Đơn yêu cầu Set Design tùy chọn", path: "/dashboard/staff/custom-request" },
+      { key: "equipment", icon: <FiTool />, label: "Thiết bị", path: "/dashboard/staff/equipment" },
+      { key: "service", icon: <MdMiscellaneousServices />, label: "Dịch vụ", path: "/dashboard/staff/service" },
+      { key: "promotion", icon: <MdOutlineDiscount />, label: "Phiếu giảm", path: "/dashboard/staff/promotion" },
+      { key: "transaction", icon: <GiMoneyStack />, label: "Quản lý giao dịch", path: "/dashboard/staff/transaction" },
+      { key: "profile", icon: <AiOutlineProfile />, label: "Hồ sơ", path: "/dashboard/staff/profile" },
+    ],
+    customer: [
+      { key: "dashboard", icon: <FiHome />, label: "Bảng điều khiển", path: "/dashboard/customer" },
+    ],
+    admin: [
+      { key: "dashboard", icon: <FiHome />, label: "Bảng điều khiển", path: "/dashboard/admin" },
+      { key: "users", icon: <FiUsers />, label: "Người dùng", path: "/dashboard/admin/users" },
+      { key: "staff", icon: <FiBriefcase />, label: "Nhân sự", path: "/dashboard/admin/staff" },
+      { key: "studios", icon: <FiVideo />, label: "Studio", path: "/dashboard/admin/studios" },
+      { key: "revenue", icon: <FiTrendingUp />, label: "Doanh thu", path: "/dashboard/admin/revenue" },
+      { key: "reports", icon: <FiBarChart2 />, label: "Báo cáo", path: "/dashboard/admin/reports" },
+      { key: "settings", icon: <FiSettings />, label: "Cài đặt", path: "/dashboard/admin/settings" },
+    ],
+  };
+  return roleMenus[role] || [];
 };
 
 const DashboardNavbar = ({ variant = "default" }) => {
@@ -79,7 +128,6 @@ const DashboardNavbar = ({ variant = "default" }) => {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const location = useLocation();
 
   // Initialize audio
   useEffect(() => {
@@ -465,9 +513,10 @@ const DashboardNavbar = ({ variant = "default" }) => {
 
           <div className="relative dashboard-avatar">
           <motion.button
-              whileHover={{ scale: 1.02 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => setDropdownOpen((prev) => !prev)}
-              className="flex items-center gap-2 rounded-full pl-1 pr-3 py-1.5 bg-white shadow-lg border border-gray-100"
+              className="flex items-center gap-2 rounded-full pl-1 pr-3 py-1.5 bg-white shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300"
           >
             <img
                 key={getAvatarUrl(user?.avatar) || ""}
@@ -476,7 +525,7 @@ const DashboardNavbar = ({ variant = "default" }) => {
                   "https://png.pngtree.com/png-clipart/20191120/original/pngtree-outline-user-icon-png-image_5045523.jpg"
                 }
                 alt="avatar"
-                className="w-10 h-10 rounded-full object-cover border border-white shadow"
+                className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-md"
                 onError={(e) => {
                   e.target.src = "https://png.pngtree.com/png-clipart/20191120/original/pngtree-outline-user-icon-png-image_5045523.jpg";
                 }}
@@ -484,61 +533,75 @@ const DashboardNavbar = ({ variant = "default" }) => {
               <span className="hidden sm:block text-sm font-semibold text-gray-800">
                 {user?.fullName || user?.username || "User"}
               </span>
-              <FiChevronDown className="text-gray-400" />
+              <motion.div animate={{ rotate: dropdownOpen ? 180 : 0 }} transition={{ duration: 0.3 }}>
+                <FiChevronDown className="text-gray-600" />
+              </motion.div>
           </motion.button>
 
           <AnimatePresence>
             {dropdownOpen && (
               <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                  className="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50"
+                initial={{ opacity: 0, y: -15, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -15, scale: 0.95 }}
+                transition={{ duration: 0.25, type: "spring", stiffness: 300, damping: 20 }}
+                className="absolute right-0 mt-4 w-72 bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden z-50"
               >
-                  <div className="p-4 bg-gray-50">
-                    <p className="text-sm font-semibold text-gray-900">
-                      {user?.fullName || user?.username}
-                    </p>
-                    <p className="text-xs text-gray-500 truncate">
-                      {user?.email}
-                    </p>
+                  {/* Header với user info */}
+                  <div className="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                    <div className="flex items-center gap-3 mb-3">
+                      <img
+                        src={
+                          getAvatarUrl(user?.avatar) ||
+                          "https://png.pngtree.com/png-clipart/20191120/original/pngtree-outline-user-icon-png-image_5045523.jpg"
+                        }
+                        alt="avatar"
+                        className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-md"
+                        onError={(e) => {
+                          e.target.src = "https://png.pngtree.com/png-clipart/20191120/original/pngtree-outline-user-icon-png-image_5045523.jpg";
+                        }}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-gray-900">
+                          {user?.fullName || user?.username}
+                        </p>
+                        <p className="text-xs text-gray-600 truncate">
+                          {user?.email}
+                        </p>
+                        <span className="inline-block mt-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-700 capitalize">
+                          {user?.role === "admin" ? "Quản trị viên" : user?.role === "staff" ? "Nhân viên" : "Khách hàng"}
+                        </span>
+                      </div>
+                    </div>
                 </div>
 
-                  <nav className="flex flex-col py-1">
-                    <button
-                      onClick={() => {
-                        setDropdownOpen(false);
-                        navigate(getDashboardPath(user));
-                      }}
-                      className="px-4 py-3 flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-50"
-                    >
-                      <FiMenu /> Tới dashboard
-                    </button>
-                    <button
-                      onClick={() => {
-                        setDropdownOpen(false);
-                        navigate(`${getDashboardPath(user)}/profile`);
-                      }}
-                      className="px-4 py-3 flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-50"
-                    >
-                      <FiUser /> Hồ sơ
-                    </button>
-                    <button
-                      onClick={() => {
-                        setDropdownOpen(false);
-                        navigate(`${getDashboardPath(user)}/settings`);
-                      }}
-                      className="px-4 py-3 flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-50"
-                    >
-                      <FiSettings /> Cài đặt
-                    </button>
-                    <button
+                  {/* Menu từ sidebar */}
+                  <nav className="flex flex-col gap-1 py-3 px-2 max-h-96 overflow-y-auto custom-scrollbar">
+                    {getMenuItems(user?.role).map((item) => (
+                      <motion.button
+                        key={item.key}
+                        onClick={() => {
+                          setDropdownOpen(false);
+                          navigate(item.path);
+                        }}
+                        className="w-full px-4 py-2.5 flex items-center gap-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 group relative overflow-hidden rounded-lg"
+                      >
+                        <span className="text-lg flex-shrink-0 group-hover:scale-110 transition-transform duration-300">{item.icon}</span>
+                        <span className="font-medium">{item.label}</span>
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-400/0 to-blue-600/0 group-hover:from-blue-400/10 group-hover:to-blue-600/10 transition-all duration-300 pointer-events-none"></div>
+                      </motion.button>
+                    ))}
+                    
+                    <div className="my-1 border-t border-gray-200"></div>
+
+                    <motion.button
                       onClick={handleLogout}
-                      className="px-4 py-3 flex items-center gap-2 text-sm text-red-600 hover:bg-red-50 border-t border-gray-100"
+                      className="w-full px-4 py-2.5 flex items-center gap-3 text-sm font-medium text-red-600 hover:bg-red-50 transition-all duration-200 group relative overflow-hidden rounded-lg"
                     >
-                      <FiLogOut /> Đăng xuất
-                    </button>
+                      <FiLogOut className="text-lg flex-shrink-0 group-hover:scale-110 transition-transform duration-300" />
+                      <span>Đăng xuất</span>
+                      <div className="absolute inset-0 bg-gradient-to-r from-red-400/0 to-red-600/0 group-hover:from-red-400/10 group-hover:to-red-600/10 transition-all duration-300 pointer-events-none"></div>
+                    </motion.button>
                   </nav>
               </motion.div>
             )}

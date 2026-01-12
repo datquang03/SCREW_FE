@@ -52,7 +52,7 @@ export const getAvailableEquipment = createAsyncThunk(
   "equipment/getAvailableEquipment",
   async ({ category } = {}, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.get("/equipment/available", {
+      const response = await axiosInstance.get("/equipment", {
         params: { category },
       });
       return response.data.data;
@@ -187,7 +187,10 @@ const equipmentSlice = createSlice({
       })
       .addCase(getAvailableEquipment.fulfilled, (state, action) => {
         state.relatedLoading = false;
-        state.availableEquipments = Array.isArray(action.payload)
+        // API trả về { equipment: [...], pagination: {...} }
+        state.availableEquipments = Array.isArray(action.payload?.equipment)
+          ? action.payload.equipment
+          : Array.isArray(action.payload)
           ? action.payload
           : [];
       })

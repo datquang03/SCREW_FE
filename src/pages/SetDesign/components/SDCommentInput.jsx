@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { motion } from "framer-motion";
-import { createComment } from "../../../features/comment/commentSlice";
+import { createComment, getComments } from "../../../features/comment/commentSlice";
 
 
 const SDCommentInput = React.memo(({ targetId }) => {
@@ -18,6 +18,8 @@ if (!user) return alert("Vui lòng đăng nhập");
 try {
 await dispatch(createComment({ content: value.trim(), targetType: "SetDesign", targetId })).unwrap();
 setValue("");
+// Fetch lại comments để có đầy đủ thông tin user được populate
+await dispatch(getComments({ targetType: "SetDesign", targetId }));
 } catch (err) {
 console.error(err);
 alert("Gửi thất bại");

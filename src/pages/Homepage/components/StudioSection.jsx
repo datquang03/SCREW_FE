@@ -8,10 +8,8 @@ import {
   FiUsers,
   FiChevronLeft,
   FiChevronRight,
-  FiInfo,
   FiShoppingCart,
 } from "react-icons/fi";
-import { motion } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import { getActiveStudios } from "../../../features/studio/studioSlice";
 import Section from "../../../components/common/Section";
@@ -78,7 +76,7 @@ const StudioSection = () => {
     <Section
       title="Studio Nổi Bật"
       subtitle="Không gian được khách hàng yêu thích nhất"
-      className="py-12 md:py-20 bg-gradient-to-br from-amber-50 via-white to-blue-50"
+      className="py-12 md:py-20 bg-white"
     >
       <div className="relative max-w-7xl mx-auto px-4">
         {/* Carousel - chỉ thấy đúng 3 card */}
@@ -89,10 +87,9 @@ const StudioSection = () => {
         >
           {/* Padding để hover không bị cắt */}
           <div className="px-6 py-10">
-            <motion.div
-              className="flex"
-              animate={{ x: `${translateX}%` }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            <div
+              className="flex transition-transform duration-500"
+              style={{ transform: `translateX(${translateX}%)` }}
             >
               {extendedStudios.map((studio, index) => (
                 <div
@@ -101,11 +98,7 @@ const StudioSection = () => {
                   style={{ width: `${100 / itemsPerView}%` }}
                 >
                   {/* CARD ĐƠN GIẢN GIỐNG DETAIL PAGE */}
-                  <motion.div
-                    whileHover={{ y: -4 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                    className="h-full"
-                  >
+                  <div className="h-full">
                     <Card
                       hoverable
                       className="overflow-hidden rounded-2xl border border-amber-100 shadow-[0_12px_35px_-18px_rgba(0,0,0,0.25)] h-full bg-white cursor-pointer"
@@ -206,10 +199,10 @@ const StudioSection = () => {
                         </div>
                       </div>
                     </Card>
-                  </motion.div>
+                  </div>
                 </div>
               ))}
-            </motion.div>
+            </div>
           </div>
 
           {/* Nút prev/next */}

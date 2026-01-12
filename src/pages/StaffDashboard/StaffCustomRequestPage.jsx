@@ -43,7 +43,7 @@ import {
   getConvertedCustomDesigns,
   updateConvertedCustomDesign,
   deleteSetDesign,
-} from "../../features/setdesign/setDesignSlice";
+} from "../../features/setDesign/setDesignSlice";
 import { createMessage } from "../../features/message/messageSlice";
 import StaffPageHeader from "./components/StaffPageHeader";
 import StaffStatCard from "./components/StaffStatCard";
@@ -87,10 +87,12 @@ const StaffCustomRequestPage = () => {
   const [convertLoading, setConvertLoading] = useState(false);
   const [sendLoading, setSendLoading] = useState(false);
   const [convertForm, setConvertForm] = useState({
-    name: "Vintage Wedding Set Design",
-    price: 8500000,
-    category: "Wedding",
-    tagsText: "vintage, wedding, pastel, romantic",
+    name: "Custom Vintage Portrait Set",
+    price: 4800000,
+    category: "Portrait",
+    tagsText: "custom, vintage, portrait",
+    additionalImages: [], // base64 strings to send
+    additionalPreview: [], // data URLs for preview
   });
   const [sendAfterConvert, setSendAfterConvert] = useState(true);
   const [convertResult, setConvertResult] = useState(null);
@@ -120,6 +122,43 @@ const StaffCustomRequestPage = () => {
   const showToast = (type, content, suggestion = null) => {
     setToast({ type, message: content, suggestion });
     setTimeout(() => setToast(null), 5000); // Tăng thời gian để đọc suggestion
+  };
+
+  // Handle additional images upload (convert to base64 for body and preview)
+  const handleAdditionalImagesChange = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+
+    const readAsDataUrl = (file) =>
+      new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+    try {
+      const dataUrls = await Promise.all(files.map(readAsDataUrl));
+      setConvertForm((p) => ({
+        ...p,
+        additionalImages: [...(p.additionalImages || []), ...dataUrls], // Append new images
+        additionalPreview: [...(p.additionalPreview || []), ...dataUrls], // Append preview
+      }));
+      // Reset file input
+      e.target.value = '';
+    } catch (err) {
+      console.error("Failed to read images", err);
+      showToast("error", "Không đọc được file ảnh. Vui lòng thử lại.");
+    }
+  };
+
+  // Remove image at index
+  const removeAdditionalImage = (idx) => {
+    setConvertForm((p) => ({
+      ...p,
+      additionalImages: p.additionalImages.filter((_, i) => i !== idx),
+      additionalPreview: p.additionalPreview.filter((_, i) => i !== idx),
+    }));
   };
 
   // Helper để parse error từ API response
@@ -303,11 +342,15 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
       .split(",")
       .map((t) => t.trim())
       .filter(Boolean);
+    const additionalImages = (selectedRequest.referenceImages || [])
+      .map((img) => (typeof img === "string" ? img : img?.url))
+      .filter(Boolean);
     const body = {
       name: convertForm.name,
       price: Number(convertForm.price) || 0,
-      category: convertForm.category || "Other",
       tags,
+      isActive: true,
+      additionalImages: [...(convertForm.additionalImages || []), ...additionalImages],
     };
     try {
       setConvertLoading(true);
@@ -802,26 +845,49 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
               </Paragraph>
             </Card>
 
-            {/* Hình ảnh tham khảo */}
+            {/* Tất cả hình ảnh - Hiển thị khi có ảnh tham khảo */}
             {selectedRequest.referenceImages?.length > 0 && (
               <Card
                 title={
-                  <span>
-                    <FiImage /> Hình ảnh tham khảo (
-                    {selectedRequest.referenceImages.length})
+                  <span className="flex items-center gap-2">
+                    <FiImage /> Tất cả hình ảnh ({selectedRequest.referenceImages.length})
                   </span>
                 }
-                className="mb-6"
+                className="mb-6 rounded-2xl"
               >
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {selectedRequest.referenceImages.map((img, i) => (
-                    <img
-                      key={i}
-                      src={img}
-                      alt={`Ref ${i + 1}`}
-                      className="rounded-lg object-cover w-full h-40 border-2 border-dashed border-purple-300 hover:border-purple-500 transition"
-                    />
-                  ))}
+                <div className="overflow-x-auto pb-4 -mx-6 px-6">
+                  <div className="flex gap-4 min-w-min">
+                    {selectedRequest.referenceImages.map((imgObj, i) => {
+                      // Handle both array of strings and array of objects
+                      const imgUrl = typeof imgObj === 'string' ? imgObj : imgObj?.url;
+                      return (
+                        <div key={i} className="flex-shrink-0">
+                          <img
+                            src={imgUrl}
+                            alt={`Ref ${i + 1}`}
+                            className="rounded-lg object-cover h-48 w-56 border-2 border-purple-200 hover:border-purple-500 hover:shadow-lg transition cursor-pointer"
+                            onClick={() => {
+                              // Open fullscreen preview using Image component preview
+                              const image = new window.Image();
+                              image.src = imgUrl;
+                              image.onload = () => {
+                                const modal = document.createElement('div');
+                                modal.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-[1000] cursor-pointer';
+                                modal.innerHTML = `
+                                  <img src="${imgUrl}" alt="Fullscreen" class="max-w-full max-h-full object-contain rounded-lg" />
+                                  <button class="absolute top-4 right-4 w-10 h-10 bg-white/20 hover:bg-white/40 rounded-full text-white text-xl transition flex items-center justify-center" onclick="this.closest('div').remove()">✕</button>
+                                `;
+                                modal.onclick = (e) => {
+                                  if (e.target === modal) modal.remove();
+                                };
+                                document.body.appendChild(modal);
+                              };
+                            }}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </Card>
             )}
@@ -1352,6 +1418,48 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
                     Ngăn cách bằng dấu phẩy để tự động tách tag.
                   </Text>
                 </div>
+
+                {/* Upload thêm ảnh bổ sung */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Text className="text-xs text-gray-500">Ảnh bổ sung (optional)</Text>
+                    <Text className="text-[11px] text-gray-400">Chấp nhận nhiều ảnh • jpg/png/webp</Text>
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleAdditionalImagesChange}
+                    className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
+                  />
+                  {convertForm.additionalPreview?.length > 0 && (
+                    <div className="space-y-2">
+                      <div className="overflow-x-auto -mx-2 px-2">
+                        <div className="flex gap-3 py-2">
+                          {convertForm.additionalPreview.map((url, idx) => (
+                            <div key={idx} className="relative flex-shrink-0">
+                              <img
+                                src={url}
+                                alt={`Preview ${idx + 1}`}
+                                className="h-24 w-28 object-cover rounded-xl border border-gray-200 shadow-sm"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removeAdditionalImage(idx)}
+                                className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold transition"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <Text className="text-[11px] text-gray-500">
+                        {convertForm.additionalPreview.length} ảnh được chọn • Click ✕ để xóa
+                      </Text>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -1400,6 +1508,25 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
                         : "..."}
                     </div>
                   </div>
+
+                  {/* Hiển thị ảnh bổ sung */}
+                  {convertForm.additionalPreview?.length > 0 && (
+                    <div className="border-t pt-3">
+                      <Text type="secondary" className="block mb-2">Ảnh bổ sung ({convertForm.additionalPreview.length})</Text>
+                      <div className="overflow-x-auto -mx-3 px-3">
+                        <div className="flex gap-2 pb-1">
+                          {convertForm.additionalPreview.map((url, idx) => (
+                            <img
+                              key={idx}
+                              src={url}
+                              alt={`Preview ${idx + 1}`}
+                              className="h-20 w-20 object-cover rounded-lg border border-amber-200 flex-shrink-0"
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="mt-4 flex items-center gap-2">
                   <input

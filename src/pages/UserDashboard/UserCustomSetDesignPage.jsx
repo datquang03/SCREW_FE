@@ -15,7 +15,7 @@ import {
 } from "antd";
 import dayjs from "dayjs";
 import DataTable from "../../components/dashboard/DataTable";
-import { FiPackage, FiClock, FiCheckCircle, FiXCircle } from "react-icons/fi";
+import { FiPackage, FiClock, FiCheckCircle, FiXCircle, FiImage } from "react-icons/fi";
 import useToast from "../../hooks/useToast";
 import ToastNotification from "../../components/ToastNotification";
 
@@ -77,8 +77,8 @@ const UserCustomSetDesignPage = () => {
       },
       {
         title: "Ngân sách",
-        dataIndex: "budgetRange",
-        render: (b) => formatBudget(b),
+        dataIndex: "budget",
+        render: (b) => (b ? `${b.toLocaleString("vi-VN")}₫` : "Không rõ"),
       },
       {
         title: "Trạng thái",
@@ -100,7 +100,15 @@ const UserCustomSetDesignPage = () => {
       {
         title: "Ảnh tham khảo",
         dataIndex: "referenceImages",
-        render: (imgs) => (imgs?.length || 0) + " ảnh",
+        render: (imgs, record) => (
+          <Button
+            type="text"
+            className="text-indigo-600 hover:text-indigo-700 p-0"
+            onClick={() => setDetail(record)}
+          >
+            {(imgs?.length || 0)} ảnh
+          </Button>
+        ),
       },
       {
         title: "Ngày tạo",
@@ -206,47 +214,71 @@ const UserCustomSetDesignPage = () => {
         onCancel={() => setDetail(null)}
         footer={null}
         title="Chi tiết yêu cầu"
+        width={900}
+        centered
       >
         {detail && (
-          <Descriptions column={1} size="small" bordered>
-            <Descriptions.Item label="Tên">{detail.customerName}</Descriptions.Item>
-            <Descriptions.Item label="Email">{detail.email}</Descriptions.Item>
-            <Descriptions.Item label="Điện thoại">{detail.phoneNumber}</Descriptions.Item>
-            <Descriptions.Item label="Phân loại">
-              {detail.preferredCategory || "Không rõ"}
-            </Descriptions.Item>
-            <Descriptions.Item label="Ngân sách">
-              {formatBudget(detail.budgetRange)}
-            </Descriptions.Item>
-            <Descriptions.Item label="Mô tả">
-              {detail.description}
-            </Descriptions.Item>
-            <Descriptions.Item label="Trạng thái">
-              <Tag color={statusConfig[detail.status]?.color || "orange"}>
-                {statusConfig[detail.status]?.label || "Chờ xử lý"}
-              </Tag>
-            </Descriptions.Item>
-            <Descriptions.Item label="Tạo lúc">
-              {dayjs(detail.createdAt).format("HH:mm, DD/MM/YYYY")}
-            </Descriptions.Item>
-            {detail.referenceImages?.length > 0 && (
-              <Descriptions.Item label="Ảnh tham khảo">
-                <div className="grid grid-cols-3 gap-2">
-                  {detail.referenceImages.map((img, idx) => {
-                    const src = img?.url || img?.secure_url || img;
-                    return (
-                      <img
-                        key={idx}
-                        src={src}
-                        alt="ref"
-                        className="w-full h-20 object-cover rounded"
-                      />
-                    );
-                  })}
+          <div className="space-y-6">
+            <Descriptions column={1} size="small" bordered>
+              <Descriptions.Item label="Tên">{detail.customerName}</Descriptions.Item>
+              <Descriptions.Item label="Email">{detail.email}</Descriptions.Item>
+              <Descriptions.Item label="Điện thoại">{detail.phoneNumber}</Descriptions.Item>
+              <Descriptions.Item label="Phân loại">
+                {detail.preferredCategory || "Không rõ"}
+              </Descriptions.Item>
+              <Descriptions.Item label="Ngân sách">
+                {detail.budget ? `${detail.budget.toLocaleString("vi-VN")}₫` : "Không rõ"}
+              </Descriptions.Item>
+              <Descriptions.Item label="Mô tả">
+                <div className="whitespace-pre-wrap text-sm">
+                  {detail.description}
                 </div>
               </Descriptions.Item>
+              <Descriptions.Item label="Trạng thái">
+                <Tag color={statusConfig[detail.status]?.color || "orange"}>
+                  {statusConfig[detail.status]?.label || "Chờ xử lý"}
+                </Tag>
+              </Descriptions.Item>
+              <Descriptions.Item label="Tạo lúc">
+                {dayjs(detail.createdAt).format("HH:mm, DD/MM/YYYY")}
+              </Descriptions.Item>
+            </Descriptions>
+
+            {/* Hình ảnh tham khảo */}
+            {detail.referenceImages && detail.referenceImages.length > 0 && (
+              <Card
+                title={
+                  <span className="flex items-center gap-2">
+                    <FiImage /> Ảnh tham khảo ({detail.referenceImages.length})
+                  </span>
+                }
+                className="rounded-2xl"
+              >
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {detail.referenceImages.map((img, idx) => (
+                    <div
+                      key={idx}
+                      className="relative group rounded-lg overflow-hidden border-2 border-gray-200 hover:border-indigo-400 transition-all"
+                    >
+                      <img
+                        src={img.url || img}
+                        alt={`Reference ${idx + 1}`}
+                        className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300"
+                        title={img.filename || `Ảnh ${idx + 1}`}
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-end justify-start p-2">
+                        {img.filename && (
+                          <div className="text-white text-xs bg-black/50 px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity max-w-full truncate">
+                            {img.filename}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
             )}
-          </Descriptions>
+          </div>
         )}
       </Modal>
     </div>

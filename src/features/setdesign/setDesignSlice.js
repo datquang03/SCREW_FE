@@ -277,12 +277,12 @@ export const getActiveSetDesigns = createAsyncThunk(
 );
 /* =============================
    UPLOAD SET DESIGN IMAGES
-   POST {{base_url}}/api/upload/set-design/:setDesignId/images
+   POST {{base_url}}/api/upload/images
    body: FormData với images là File objects
 ============================= */
 export const uploadSetDesignImages = createAsyncThunk(
   "setDesign/uploadSetDesignImages",
-  async ({ setDesignId, images }, { rejectWithValue, getState }) => {
+  async (images, { rejectWithValue, getState }) => {
     try {
       const { token } = getState().auth;
 
@@ -296,18 +296,18 @@ export const uploadSetDesignImages = createAsyncThunk(
       });
 
       const res = await axiosInstance.post(
-        `/upload/set-design/${setDesignId}/images`,
+        `/upload/images`,
         formData,
         {
           headers: {
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            Authorization: `Bearer ${token}`,
             "Content-Type": "multipart/form-data",
           },
         }
       );
 
-      // Backend nên trả về danh sách URL / publicId đã lưu trong set design
-      return res.data; // ví dụ: { success: true, data: updatedSetDesign } hoặc { images: [...] }
+      // Backend trả về danh sách ảnh
+      return res.data.data; // { images: [{...}, {...}] }
     } catch (err) {
       return rejectWithValue(
         err.response?.data || { message: "Upload ảnh thất bại" }
@@ -348,9 +348,6 @@ export const customSetDesignRequest = createAsyncThunk(
   "setDesign/customSetDesignRequest",
   async (
     {
-      customerName,
-      email,
-      phoneNumber,
       description,
       preferredCategory,
       budget,
@@ -362,20 +359,28 @@ export const customSetDesignRequest = createAsyncThunk(
     try {
       const { token } = getState().auth || {};
 
+      // Tạo FormData để gửi file + data
+      const formData = new FormData();
+      formData.append("description", description);
+      formData.append("preferredCategory", preferredCategory);
+      formData.append("budget", budget);
+      if (setDesignId) formData.append("setDesignId", setDesignId);
+
+      // Append files (referenceImages là File objects)
+      referenceImages.forEach((file) => {
+        if (file instanceof File) {
+          formData.append("referenceImages", file);
+        }
+      });
+
       const res = await axiosInstance.post(
         "/set-designs/custom-request",
+        formData,
         {
-          customerName,
-          email,
-          phoneNumber,
-          description,
-          preferredCategory,
-        budget,
-          referenceImages,
-          setDesignId,
-        },
-        {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            "Content-Type": "multipart/form-data",
+          },
         }
       );
 
@@ -512,7 +517,7 @@ export const convertCustomRequestToSetDesign = createAsyncThunk(
 
       const res = await axiosInstance.post(
         `/set-designs/custom-requests/${requestId}/convert`,
-        setDesignData, // { name, price, category, tags }
+        setDesignData, // { name, price, tags, isActive, additionalImages }
         {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         }

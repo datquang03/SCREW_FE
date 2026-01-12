@@ -4,12 +4,8 @@ import { NavLink, Link, useNavigate } from "react-router-dom";
 import { Button, Modal } from "antd";
 import {
   SearchOutlined,
-  MenuOutlined,
   CloseOutlined,
   LogoutOutlined,
-  SettingOutlined,
-  HeartOutlined,
-  FileTextOutlined,
   DeleteOutlined,
   MessageOutlined,
 } from "@ant-design/icons";
@@ -31,7 +27,6 @@ import { useScrollEffect } from "../../hooks/useScrollEffect";
 
 const Navbar = () => {
   const scrolled = useScrollEffect(20);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -63,9 +58,6 @@ const Navbar = () => {
     setDropdownOpen(false);
     navigate("/login", { replace: true });
   };
-
-  const toggleMobileMenu = () => setMobileMenuOpen((prev) => !prev);
-  const closeMobileMenu = () => setMobileMenuOpen(false);
 
   // Initialize audio
   useEffect(() => {
@@ -604,53 +596,10 @@ const Navbar = () => {
                                 dashboardPath = "/dashboard/admin";
                               navigate(dashboardPath);
                             }}
-                            className="navbar-dropdown-item flex items-center gap-3 text-gray-800"
+                            className="navbar-dropdown-item w-full flex items-center gap-3 text-gray-800"
                           >
                             <MdOutlineSpaceDashboard className="text-lg" />{" "}
                             Dashboard
-                          </button>
-                        </li>
-
-                        {/* Customer only */}
-                        {user.role === "customer" && (
-                          <>
-                            <li>
-                              <button
-                                onClick={() => {
-                                  setDropdownOpen(false);
-                                  navigate("/studio/customer/liked");
-                                }}
-                                className="navbar-dropdown-item flex items-center gap-3 text-gray-800"
-                              >
-                                <HeartOutlined className="text-lg" /> Studio đã
-                                thích
-                              </button>
-                            </li>
-                            <li>
-                              <button
-                                onClick={() => {
-                                  setDropdownOpen(false);
-                                  navigate("/studio/customer/reviews");
-                                }}
-                                className="navbar-dropdown-item flex items-center gap-3 text-gray-800"
-                              >
-                                <FileTextOutlined className="text-lg" /> Reviews
-                                đã thích
-                              </button>
-                            </li>
-                          </>
-                        )}
-
-                        {/* Settings */}
-                        <li>
-                          <button
-                            onClick={() => {
-                              setDropdownOpen(false);
-                              navigate("/settings");
-                            }}
-                            className="navbar-dropdown-item flex items-center gap-3 text-gray-800"
-                          >
-                            <SettingOutlined className="text-lg" /> Cài đặt
                           </button>
                         </li>
 
@@ -658,7 +607,7 @@ const Navbar = () => {
                         <li className="border-t border-gray-200">
                           <button
                             onClick={handleLogout}
-                            className="navbar-dropdown-item flex items-center gap-3 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="navbar-dropdown-item w-full flex items-center gap-3 text-red-600 hover:text-red-700 hover:bg-red-50"
                           >
                             <LogoutOutlined className="text-lg" /> Đăng xuất
                           </button>
@@ -687,70 +636,9 @@ const Navbar = () => {
             </div>
           )}
 
-          {/* ===== MOBILE MENU BUTTON ===== */}
-          <motion.button
-            whileHover={{ scale: 1.1, rotate: mobileMenuOpen ? 90 : 0 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={toggleMobileMenu}
-            className={`lg:hidden navbar-action-btn ${
-              scrolled ? "scrolled-light" : ""
-            } ${scrolled ? "text-gray-900" : "text-white/80"}`}
-          >
-            <motion.div
-              animate={{
-                rotate: mobileMenuOpen ? 180 : 0,
-                scale: mobileMenuOpen ? 1.1 : 1,
-              }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-            >
-              {mobileMenuOpen ? (
-                <CloseOutlined className="text-lg" />
-              ) : (
-                <MenuOutlined className="text-lg" />
-              )}
-            </motion.div>
-          </motion.button>
+
         </div>
       </div>
-
-      {/* ===== MOBILE MENU ===== */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
-              exit={{ opacity: 0 }}
-              onClick={closeMobileMenu}
-              className="fixed inset-0 bg-black/60 z-40"
-            />
-            <motion.nav
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="fixed top-0 right-0 h-screen w-72 bg-white shadow-2xl z-50 flex flex-col p-6 overflow-y-auto"
-            >
-              <div className="flex flex-col gap-2">
-                {NAV_LINKS.map(({ path, label, key: linkKey }) => (
-                  <NavLink
-                    key={linkKey}
-                    to={path}
-                    onClick={closeMobileMenu}
-                    className={({ isActive }) =>
-                      `px-4 py-3 rounded-lg font-semibold text-gray-700 hover:bg-gray-100 transition-all ${
-                        isActive ? "bg-amber-100 text-amber-700" : ""
-                      }`
-                    }
-                  >
-                    {label}
-                  </NavLink>
-                ))}
-              </div>
-            </motion.nav>
-          </>
-        )}
-      </AnimatePresence>
 
       {/* ===== ALL NOTIFICATIONS MODAL ===== */}
       <Modal

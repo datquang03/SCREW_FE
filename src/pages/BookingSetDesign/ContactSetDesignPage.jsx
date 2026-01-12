@@ -1,23 +1,11 @@
 // src/pages/CustomSetDesignRequestPage.jsx
-import React, { useMemo, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Button, Select } from "antd";
+import { Select } from "antd";
 import { useDispatch } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
-import {
-  FiUser,
-  FiMail,
-  FiPhone,
-  FiEdit,
-  FiCheckCircle,
-  FiImage,
-  FiX,
-} from "react-icons/fi";
-import { customSetDesignRequest } from "../../features/setdesign/setDesignSlice";
-import {
-  uploadCustomerSetDesignImages,
-  uploadImage,
-} from "../../features/upload/uploadSlice";
+import { FiEdit, FiCheckCircle, FiImage, FiX } from "react-icons/fi";
+import { customSetDesignRequest } from "../../features/setDesign/setDesignSlice";
 import useToast from "../../hooks/useToast";
 import ToastNotification from "../../components/ToastNotification";
 
@@ -36,9 +24,6 @@ const CustomSetDesignRequestPage = () => {
   const { toast, success, error, closeToast } = useToast();
 
   const [form, setForm] = useState({
-    customerName: "",
-    email: "",
-    phoneNumber: "",
     description: preset?.name ? `Yêu cầu cho set design: ${preset.name}` : "",
     preferredCategory: "",
     budget: "",
@@ -84,46 +69,26 @@ const CustomSetDesignRequestPage = () => {
   };
 
   const handleSubmit = async () => {
-    if (
-      !form.customerName ||
-      !form.email ||
-      !form.phoneNumber ||
-      !form.description
-    ) {
+    if (!form.description) {
       setShake(true);
       setTimeout(() => setShake(false), 500);
-      return error("Vui lòng nhập đầy đủ thông tin!");
+      return error("Vui lòng nhập mô tả!");
     }
 
     setLoading(true);
 
     try {
-      let uploadedImageUrls = [];
-      if (files.length > 0) {
-        console.log("files", files);
-        const uploadRes = await dispatch(
-          uploadCustomerSetDesignImages(files)
-        ).unwrap();
-        const images =
-          uploadRes?.images ||
-          uploadRes?.data?.images ||
-          (Array.isArray(uploadRes) ? uploadRes : []);
-        uploadedImageUrls = images
-          .map((img) => img?.url || img?.secure_url || img?.image || img)
-          .filter(Boolean);
-      }
-
       const payload = {
-        ...form,
+        description: form.description,
         setDesignId: preset?.id,
         preferredCategory: form.preferredCategory,
         budget: form.budget,
-        referenceImages: uploadedImageUrls,
+        referenceImages: files, // Truyền File objects trực tiếp
       };
 
-      const res = await dispatch(customSetDesignRequest(payload));
+      const res = await dispatch(customSetDesignRequest(payload)).unwrap();
 
-      if (res?.meta?.requestStatus === "fulfilled") {
+      if (res) {
         success("Gửi yêu cầu thành công!");
 
         // ICON BAY LÊN
@@ -135,18 +100,13 @@ const CustomSetDesignRequestPage = () => {
 
         // Reset form và files
         setForm({
-          customerName: "",
-          email: "",
-          phoneNumber: "",
           description: "",
           preferredCategory: "",
-          budgetRange: "",
+          budget: "",
         });
         setFiles([]);
         previewUrls.forEach((url) => URL.revokeObjectURL(url));
         setPreviewUrls([]);
-      } else {
-        error("Gửi yêu cầu thất bại!");
       }
     } catch (err) {
       error(err?.message || "Có lỗi xảy ra khi gửi yêu cầu!");
@@ -198,56 +158,7 @@ const CustomSetDesignRequestPage = () => {
           className="space-y-6 max-h-[70vh] overflow-y-auto pr-2 custom-scroll"
         >
           {/* NAME */}
-          <div className="w-full">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Họ và tên <span className="text-red-500">*</span>
-            </label>
-            <div className="flex items-center gap-3 bg-white rounded-lg p-4 border-2 border-gray-200 hover:border-indigo-400 focus-within:border-indigo-500 transition-colors">
-              <FiUser className="text-indigo-500 text-xl flex-shrink-0" />
-              <input
-                type="text"
-                placeholder="Nhập họ và tên của bạn"
-                value={form.customerName}
-                onChange={(e) => updateField("customerName", e.target.value)}
-                className="w-full bg-transparent outline-none text-gray-700 placeholder:text-gray-400"
-              />
-            </div>
-          </div>
-
-          {/* EMAIL */}
-          <div className="w-full">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email <span className="text-red-500">*</span>
-            </label>
-            <div className="flex items-center gap-3 bg-white rounded-lg p-4 border-2 border-gray-200 hover:border-indigo-400 focus-within:border-indigo-500 transition-colors">
-              <FiMail className="text-indigo-500 text-xl flex-shrink-0" />
-              <input
-                type="email"
-                placeholder="Nhập địa chỉ email của bạn"
-                value={form.email}
-                onChange={(e) => updateField("email", e.target.value)}
-                className="w-full bg-transparent outline-none text-gray-700 placeholder:text-gray-400"
-              />
-            </div>
-          </div>
-
-          {/* PHONE */}
-          <div className="w-full">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Số điện thoại <span className="text-red-500">*</span>
-            </label>
-            <div className="flex items-center gap-3 bg-white rounded-lg p-4 border-2 border-gray-200 hover:border-indigo-400 focus-within:border-indigo-500 transition-colors">
-              <FiPhone className="text-indigo-500 text-xl flex-shrink-0" />
-              <input
-                type="text"
-                placeholder="Nhập số điện thoại của bạn"
-                value={form.phoneNumber}
-                onChange={(e) => updateField("phoneNumber", e.target.value)}
-                className="w-full bg-transparent outline-none text-gray-700 placeholder:text-gray-400"
-              />
-            </div>
-          </div>
-
+          
           {/* DESCRIPTION */}
           <div className="w-full">
             <label className="block text-sm font-medium text-gray-700 mb-2">
