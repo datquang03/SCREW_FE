@@ -9,6 +9,7 @@ import {
 } from "react-icons/fi";
 import DataTable from "../../components/dashboard/DataTable";
 import { getAllMyBookings, getBookingById } from "../../features/booking/bookingSlice";
+import { getStudioById } from '../../features/studio/studioSlice';
 
 const { Title, Text } = Typography;
 
@@ -51,10 +52,23 @@ const UserBookingsPage = () => {
 
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [studioDetail, setStudioDetail] = useState(null);
+  const [studioLoading, setStudioLoading] = useState(false);
 
   useEffect(() => {
     dispatch(getAllMyBookings());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (detailModalOpen && currentBooking?.studio?._id) {
+      setStudioLoading(true);
+      dispatch(getStudioById(currentBooking.studio._id))
+        .unwrap()
+        .then((data) => setStudioDetail(data))
+        .catch(() => setStudioDetail(null))
+        .finally(() => setStudioLoading(false));
+    }
+  }, [detailModalOpen, currentBooking?.studio?._id, dispatch]);
 
   const handleViewDetail = async (bookingId) => {
     try {
@@ -214,6 +228,40 @@ const UserBookingsPage = () => {
           </div>
         ) : (
           <div className="space-y-6">
+            {/* Studio Section + Thời gian (Highlight) */}
+            <div className="flex flex-row items-center gap-6 border border-amber-100 rounded-2xl shadow bg-white/90 p-4">
+              {studioLoading ? (
+                <div className="w-20 h-20 bg-amber-50 rounded-xl animate-pulse" />
+              ) : studioDetail?.images?.[0] ? (
+                <img
+                  src={studioDetail.images[0]}
+                  alt={studioDetail.name}
+                  className="w-20 h-20 object-cover rounded-xl border border-amber-100"
+                />
+              ) : (
+                <div className="w-20 h-20 bg-amber-50 rounded-xl flex items-center justify-center font-bold text-amber-600">
+                  {studioDetail?.name || currentBooking.studio?.name || 'Studio'}
+                </div>
+              )}
+              <div className="flex-1 min-w-0 flex flex-col gap-1">
+                <span className="text-lg font-bold text-gray-900 line-clamp-1">
+                  {studioDetail?.name || currentBooking.studio?.name}
+                </span>
+                {/* Highlight thời gian booking */}
+                <div className="mt-2">
+                  <span className="inline-block bg-amber-100 text-amber-700 px-4 py-2 rounded-xl text-xl font-extrabold tracking-wide shadow border border-amber-200">
+                    {currentBooking.schedule?.date ? dayjs(currentBooking.schedule.date).format("DD/MM/YYYY") : "-"}
+                    {currentBooking.schedule?.timeRange ? (
+                      <>
+                        {" "}
+                        <span className="text-base font-bold">{currentBooking.schedule.timeRange}</span>
+                      </>
+                    ) : null}
+                  </span>
+                </div>
+              </div>
+            </div>
+
             <Card className="border border-gray-100 rounded-2xl shadow-sm bg-gradient-to-br from-blue-50 to-white">
               <Descriptions
                 column={2}
@@ -226,34 +274,9 @@ const UserBookingsPage = () => {
                     {mapStatusLabel(currentBooking.status)}
                   </Tag>
                 </Descriptions.Item>
-                <Descriptions.Item label="Hình thức thanh toán">
-                  <Tag
-                    color={
-                      currentBooking.payType === "full"
-                        ? "green"
-                        : currentBooking.payType === "prepay_50"
-                        ? "purple"
-                        : "orange"
-                    }
-                  >
-                    {currentBooking.payType === "full"
-                      ? "Thanh toán toàn bộ"
-                      : currentBooking.payType === "prepay_50"
-                      ? "Cọc 50%"
-                      : currentBooking.payType === "prepay_30"
-                      ? "Cọc 30%"
-                      : currentBooking.payType}
-                  </Tag>
-                </Descriptions.Item>
-                <Descriptions.Item label="Tổng trước giảm">
-                  {formatCurrency(currentBooking.totalBeforeDiscount)}
-                </Descriptions.Item>
-                <Descriptions.Item label="Giảm giá">
-                  {formatCurrency(currentBooking.discountAmount)}
-                </Descriptions.Item>
-                <Descriptions.Item label="Thành tiền">
-                  <span className="font-semibold text-lg text-gray-900">
-                    {formatCurrency(currentBooking.finalAmount)}
+                <Descriptions.Item label="Studio">
+                  <span className="font-semibold text-blue-700">
+                    {currentBooking.studio?.name}
                   </span>
                 </Descriptions.Item>
                 <Descriptions.Item label="Ngày tạo">
@@ -261,7 +284,80 @@ const UserBookingsPage = () => {
                     ? dayjs(currentBooking.createdAt).format("DD/MM/YYYY HH:mm")
                     : "-"}
                 </Descriptions.Item>
+                <Descriptions.Item label="Khách hàng">
+                  <span className="font-semibold text-gray-700">
+                    {currentBooking.customer?.fullName}
+                  </span>
+                </Descriptions.Item>
+                <Descriptions.Item label="Khuyến mãi">
+                  {currentBooking.promotion?.name ? (
+                    <Tag color="gold">{currentBooking.promotion.name}</Tag>
+                  ) : (
+                    <span className="text-gray-400">Không áp dụng</span>
+                  )}
+                </Descriptions.Item>
               </Descriptions>
+            </Card>
+
+            <Card className="border border-gray-100 rounded-2xl shadow-sm bg-gradient-to-br from-amber-50 to-white">
+              <Title level={5} className="mb-3 text-amber-700">Tóm tắt thanh toán</Title>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <div className="text-gray-500">Tổng phí (trước giảm):</div>
+                  <div className="font-bold text-gray-900">{formatCurrency(currentBooking.totalBeforeDiscount)}</div>
+                </div>
+                <div>
+                  <div className="text-gray-500">Giảm giá:</div>
+                  <div className="font-bold text-green-600">-{formatCurrency(currentBooking.discountAmount)}</div>
+                </div>
+                <div>
+                  <div className="text-gray-500">Thành tiền cần thanh toán:</div>
+                  <div className="font-bold text-amber-600 text-lg">{formatCurrency(currentBooking.finalAmount)}</div>
+                </div>
+                <div>
+                  <div className="text-gray-500">Đã thanh toán:</div>
+                  <div className="font-bold text-blue-600">
+                    {formatCurrency(currentBooking.paymentSummary?.paidAmount)}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-gray-500">Còn lại phải trả:</div>
+                  <div className="font-bold text-orange-600 text-xl">
+                    {formatCurrency(currentBooking.paymentSummary?.remainingAmount)}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-gray-500">Tỷ lệ đã thanh toán:</div>
+                  <div className="font-bold text-blue-500">
+                    {currentBooking.paymentSummary?.paidPercentage != null
+                      ? `${currentBooking.paymentSummary.paidPercentage}%`
+                      : currentBooking.finalAmount && currentBooking.paymentSummary?.paidAmount
+                        ? `${Math.round((currentBooking.paymentSummary.paidAmount / currentBooking.finalAmount) * 100)}%`
+                        : "-"}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-gray-500">Hoàn tiền:</div>
+                  <div className="font-bold text-green-600">{formatCurrency(currentBooking.financials?.refundAmount)}</div>
+                </div>
+                <div>
+                  <div className="text-gray-500">Phí phát sinh/phạt:</div>
+                  <div className="font-bold text-red-500">{formatCurrency(currentBooking.financials?.chargeAmount)}</div>
+                </div>
+                <div className="col-span-2">
+                  <div className="text-gray-500">Tiền tệ:</div>
+                  <div className="font-bold text-gray-700">
+                    {currentBooking.paymentSummary?.currency || 'VND'}
+                  </div>
+                </div>
+              </div>
+              <div className="mt-4 text-right">
+                <Button type="primary" danger disabled={
+                  (currentBooking.paymentSummary?.remainingAmount ?? currentBooking.financials?.netAmount) <= 0
+                }>
+                  Tạo phí trả còn lại
+                </Button>
+              </div>
             </Card>
 
             <Divider className="my-2" />

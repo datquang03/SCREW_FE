@@ -10,7 +10,7 @@ const { Title, Paragraph, Text } = Typography;
 
 const SetDesignSection = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate(); // ← Dùng để chuyển trang
+  const navigate = useNavigate(); 
 
   const setDesigns = useSelector((state) => state.setDesign.activeSetDesigns);
   const loading = useSelector((state) => state.setDesign.loading);
@@ -19,24 +19,26 @@ const SetDesignSection = () => {
   const timeoutRef = useRef(null);
   const [isHovering, setIsHovering] = useState(false);
 
+  const filteredSetDesigns = setDesigns.filter(item => !item.isConvertedFromCustomRequest);
+
   // Chỉ gọi API một lần khi component được mount
   useEffect(() => {
     dispatch(getActiveSetDesigns());
   }, [dispatch]);
 
   useEffect(() => {
-    if (!isHovering && setDesigns.length > 1) {
+    if (!isHovering && filteredSetDesigns.length > 1) {
       timeoutRef.current = setTimeout(() => {
-        setCurrent((prev) => (prev + 1) % setDesigns.length);
+        setCurrent((prev) => (prev + 1) % filteredSetDesigns.length);
       }, 5000);
     }
     return () => clearTimeout(timeoutRef.current);
-  }, [current, isHovering, setDesigns.length]);
+  }, [current, isHovering, filteredSetDesigns.length]);
 
   const handlePrev = () =>
-    setCurrent((prev) => (prev - 1 + setDesigns.length) % setDesigns.length);
+    setCurrent((prev) => (prev - 1 + filteredSetDesigns.length) % filteredSetDesigns.length);
   const handleNext = () =>
-    setCurrent((prev) => (prev + 1) % setDesigns.length);
+    setCurrent((prev) => (prev + 1) % filteredSetDesigns.length);
 
   // Hàm chung: chuyển sang trang chi tiết + gọi API
   const goToDetail = (id) => {
@@ -59,7 +61,7 @@ const SetDesignSection = () => {
     );
   }
 
-  if (setDesigns.length === 0) {
+  if (filteredSetDesigns.length === 0) {
     return (
       <div className="w-full bg-white py-16 md:py-20">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-10 text-center">
@@ -72,7 +74,7 @@ const SetDesignSection = () => {
     );
   }
 
-  const item = setDesigns[current];
+  const item = filteredSetDesigns[current];
   const imageUrl = item.images?.[0] || "https://images.unsplash.com/photo-1618776148559-309e0b8775d3?auto=format&fit=crop&w=1000&q=80";
 
   return (
@@ -159,7 +161,7 @@ const SetDesignSection = () => {
           </div>
 
           {/* Nút điều hướng */}
-          {setDesigns.length > 1 && (
+          {filteredSetDesigns.length > 1 && (
             <>
               <button 
                 onClick={handlePrev} 
@@ -180,9 +182,9 @@ const SetDesignSection = () => {
         </div>
 
         {/* Chỉ báo slides */}
-        {setDesigns.length > 1 && (
+        {filteredSetDesigns.length > 1 && (
           <div className="flex justify-center mt-12 gap-2">
-            {setDesigns.map((_, idx) => (
+            {filteredSetDesigns.map((_, idx) => (
               <button
                 key={idx}
                 onClick={() => setCurrent(idx)}

@@ -63,6 +63,7 @@ import BookingSetDesignPage from "./pages/BookingSetDesign/BookingSetDesignPage"
 import ContactSetDesignRequestPage from "./pages/BookingSetDesign/ContactSetDesignPage";
 import StaffCustomRequestPage from "./pages/StaffDashboard/StaffCustomRequestPage";
 import UserCustomSetDesignPage from "./pages/UserDashboard/UserCustomSetDesignPage";
+import SearchPage from "./pages/Search/SearchPage";
 
 const pageVariants = {
   initial: { opacity: 0, y: 10 },
@@ -106,6 +107,7 @@ const AppContent = () => {
               <Route path="/equipment" element={<EquipmentListPage />} />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/studio" element={<StudioPage />} />
+              <Route path="/search" element={<SearchPage />} />
               <Route
                 path="/set-design-request"
                 element={<ContactSetDesignRequestPage />}

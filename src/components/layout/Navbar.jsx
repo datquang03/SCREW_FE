@@ -20,6 +20,7 @@ import {
   deleteNotification,
 } from "../../features/notification/notificationSlice";
 import { getConversations } from "../../features/message/messageSlice";
+import { createSearch } from "../../features/search/searchSlice";
 import SPlusLogo from "../../assets/S+Logo.png";
 import notificationSound from "../../assets/notification.mp3";
 import { NAV_LINKS } from "../../constants/navigation";
@@ -33,6 +34,7 @@ const Navbar = () => {
   const [allNotificationsModalOpen, setAllNotificationsModalOpen] =
     useState(false);
   const [visibleDropdownCount, setVisibleDropdownCount] = useState(4);
+  const [searchKeyword, setSearchKeyword] = useState("");
 
   const headerRef = useRef(null);
   const searchContainerRef = useRef(null);
@@ -373,10 +375,33 @@ const Navbar = () => {
                       type="text"
                       placeholder="Tìm kiếm studio..."
                       className="w-full bg-transparent text-sm outline-none placeholder-gray-400 text-gray-900"
+                      value={searchKeyword}
+                      onChange={(e) => setSearchKeyword(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && searchKeyword.trim()) {
+                          dispatch(createSearch(searchKeyword.trim()));
+                          setSearchOpen(false);
+                          navigate(
+                            `/search?keyword=${encodeURIComponent(
+                              searchKeyword.trim()
+                            )}`
+                          );
+                        }
+                      }}
                     />
                     <motion.button
                       type="button"
-                      onClick={() => setSearchOpen(false)}
+                      onClick={() => {
+                        if (searchKeyword.trim()) {
+                          dispatch(createSearch(searchKeyword.trim()));
+                          setSearchOpen(false);
+                          navigate(
+                            `/search?keyword=${encodeURIComponent(
+                              searchKeyword.trim()
+                            )}`
+                          );
+                        }
+                      }}
                       whileHover={{ scale: 1.15, rotate: 90 }}
                       whileTap={{ scale: 0.9 }}
                       transition={{ type: "spring", stiffness: 400 }}

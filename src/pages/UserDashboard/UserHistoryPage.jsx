@@ -311,20 +311,21 @@ const UserHistoryPage = () => {
         open={transactionModalOpen}
         onCancel={() => setTransactionModalOpen(false)}
         footer={null}
-        width={720}
+        width={800}
+        className="custom-transaction-modal"
       >
         <Spin spinning={transactionDetailLoading || !transactionDetail} tip="Đang tải chi tiết...">
           {!(transactionDetailLoading || !transactionDetail) && (
-            <div className="space-y-4">
-              {/* Header */}
-              <Card className="bg-gradient-to-r from-blue-50 to-white border-blue-100">
-                <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="space-y-6">
+              {/* ===== HEADER ===== */}
+              <Card className="bg-gradient-to-r from-blue-50 to-white border-blue-100 shadow-md">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                   <div>
                     <div className="text-xs uppercase text-gray-500">Mã giao dịch</div>
-                    <div className="text-xl font-bold text-gray-900">#{transactionDetail._id?.slice(-10)}</div>
-                    <div className="text-sm text-gray-600">Mã thanh toán: {transactionDetail.paymentCode}</div>
+                    <div className="text-2xl font-bold text-gray-900 mb-1">#{transactionDetail._id?.slice(-10)}</div>
+                    <div className="text-sm text-gray-600">Mã thanh toán: <span className="font-mono">{transactionDetail.paymentCode}</span></div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 flex-wrap">
                     <Tag color="blue" className="px-3 py-1 text-sm rounded-full">
                       {getPayTypeText(transactionDetail.payType)}
                     </Tag>
@@ -340,16 +341,38 @@ const UserHistoryPage = () => {
                           ? "red"
                           : "gray"
                       }
-                      className="px-3 py-1 text-sm rounded-full"
+                      className="px-3 py-1 text-sm rounded-full font-semibold"
                     >
                       {getStatusText(transactionDetail.status)}
                     </Tag>
+                    <span className="text-lg font-bold text-green-600 ml-2">{formatCurrency(transactionDetail.amount)}</span>
                   </div>
                 </div>
               </Card>
 
-              {/* Booking info */}
-              <Card title="Thông tin booking" size="small">
+              {/* ===== TRANSACTION INFO ===== */}
+              <Card size="small" className="bg-white border border-blue-100">
+                <Descriptions column={2} labelStyle={{ fontWeight: 600 }}>
+                  <Descriptions.Item label="Transaction ID">
+                    <span className="font-mono">{transactionDetail.transactionId}</span>
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Mã thanh toán">
+                    <span className="font-mono">{transactionDetail.paymentCode}</span>
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Ngày tạo">
+                    {formatDateTime(transactionDetail.createdAt)}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Thanh toán lúc">
+                    {formatDateTime(transactionDetail.paidAt)}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Hết hạn link">
+                    {formatDateTime(transactionDetail.expiresAt)}
+                  </Descriptions.Item>
+                </Descriptions>
+              </Card>
+
+              {/* ===== BOOKING INFO ===== */}
+              <Card title="Thông tin booking" size="small" className="bg-white border border-blue-100">
                 <Descriptions column={2} labelStyle={{ fontWeight: 600 }}>
                   <Descriptions.Item label="Mã booking">
                     #{transactionDetail.bookingId?._id?.slice(-10)}
@@ -367,44 +390,13 @@ const UserHistoryPage = () => {
                       ? `${dayjs(transactionDetail.bookingId.scheduleId.startTime).format("HH:mm")} - ${dayjs(
                           transactionDetail.bookingId.scheduleId.endTime
                         ).format("HH:mm")}`
-                      : "-"}
+                      : "-"} 
                   </Descriptions.Item>
                   <Descriptions.Item label="Số tiền booking">
                     {formatCurrency(transactionDetail.bookingId?.finalAmount)}
                   </Descriptions.Item>
                   <Descriptions.Item label="Trạng thái booking">
                     {getStatusText(transactionDetail.bookingId?.status)}
-                  </Descriptions.Item>
-                </Descriptions>
-              </Card>
-
-              {/* Payment info */}
-              <Card title="Chi tiết thanh toán" size="small">
-                <Descriptions column={2} labelStyle={{ fontWeight: 600 }}>
-                  <Descriptions.Item label="Số tiền thanh toán">
-                    {formatCurrency(transactionDetail.amount)}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Transaction ID">
-                    {transactionDetail.transactionId}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Ngày tạo">
-                    {formatDateTime(transactionDetail.createdAt)}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Thanh toán lúc">
-                    {formatDateTime(transactionDetail.paidAt)}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Hết hạn link">
-                    {formatDateTime(transactionDetail.expiresAt)}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Link QR / Payment">
-                    <a
-                      className="text-blue-600 hover:underline"
-                      href={transactionDetail.qrCodeUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      Mở link thanh toán
-                    </a>
                   </Descriptions.Item>
                 </Descriptions>
               </Card>
