@@ -81,12 +81,200 @@ export const getPaymentStatus = createAsyncThunk(
   }
 );
 
+// 5) Yêu cầu hoàn tiền (Refund Request)
+export const refundPayment = createAsyncThunk(
+  "payment/refundPayment",
+  async (
+    { bookingId, bankName, accountNumber, accountName, reason },
+    { rejectWithValue, getState }
+  ) => {
+    try {
+      const { token } = getState().auth;
+      const res = await axiosInstance.post(
+        `/bookings/${bookingId}/refund-request`,
+        {
+          bankName,
+          accountNumber,
+          accountName,
+          reason,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return res.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Gửi yêu cầu hoàn tiền thất bại" }
+      );
+    }
+  }
+);
+
+// 6) Duyệt yêu cầu hoàn tiền (Approve Refund)
+export const approveRefund = createAsyncThunk(
+  "payment/approveRefund",
+  async (bookingId, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+      const res = await axiosInstance.post(
+        `/bookings/${bookingId}/refund-approve`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return res.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Duyệt hoàn tiền thất bại" }
+      );
+    }
+  }
+);
+
+// 7) Từ chối yêu cầu hoàn tiền (Reject Refund)
+export const rejectRefund = createAsyncThunk(
+  "payment/rejectRefund",
+  async ({ bookingId, reason }, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+      const res = await axiosInstance.post(
+        `/bookings/${bookingId}/refund-reject`,
+        { reason },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return res.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Từ chối hoàn tiền thất bại" }
+      );
+    }
+  }
+);
+
+// 8) Lấy danh sách yêu cầu hoàn tiền (Pending)
+export const getCustomerRefunds = createAsyncThunk(
+  "payment/getCustomerRefunds",
+  async ({ page = 1, limit = 10 } = {}, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+      const res = await axiosInstance.get(
+        `/refunds/pending?page=${page}&limit=${limit}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return res.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Lấy danh sách hoàn tiền thất bại" }
+      );
+    }
+  }
+);
+
+// 9) Lấy chi tiết yêu cầu hoàn tiền
+export const getCustomerRefundById = createAsyncThunk(
+  "payment/getCustomerRefundById",
+  async (refundId, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+      const res = await axiosInstance.get(`/refunds/${refundId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return res.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Lấy chi tiết hoàn tiền thất bại" }
+      );
+    }
+  }
+);
+
+// 10) Duyệt yêu cầu hoàn tiền (Approve -> Chờ chuyển tiền)
+export const approveCustomerRefund = createAsyncThunk(
+  "payment/approveCustomerRefund",
+  async (refundId, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+      const res = await axiosInstance.post(
+        `/refunds/${refundId}/approve`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return res.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Duyệt hoàn tiền thất bại" }
+      );
+    }
+  }
+);
+
+// 11) Từ chối yêu cầu hoàn tiền
+export const rejectCustomerRefund = createAsyncThunk(
+  "payment/rejectCustomerRefund",
+  async ({ refundId, reason }, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+      const res = await axiosInstance.post(
+        `/refunds/${refundId}/reject`,
+        { reason },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return res.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Từ chối hoàn tiền thất bại" }
+      );
+    }
+  }
+);
+
+// 12) Xem danh sách đã approve (chờ chuyển tiền)
+export const getApprovedRefunds = createAsyncThunk(
+  "payment/getApprovedRefunds",
+  async ({ page = 1, limit = 10 } = {}, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+      const res = await axiosInstance.get(
+        `/refunds/approved?page=${page}&limit=${limit}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return res.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Lấy danh sách hoàn tiền đã duyệt thất bại" }
+      );
+    }
+  }
+);
+
+// 13) Xác nhận đã chuyển tiền
+export const confirmRefundPayment = createAsyncThunk(
+  "payment/confirmRefundPayment",
+  async ({ refundId, proofImage }, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+      const res = await axiosInstance.post(
+        `/refunds/${refundId}/confirm`,
+        { proofImage },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return res.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Xác nhận chuyển tiền thất bại" }
+      );
+    }
+  }
+);
+
 // ========================== INITIAL STATE ==========================
 const initialState = {
   paymentData: null,
   paymentStatus: null,
+  refundsList: [],
+  refundDetail: null,
+  approvedRefunds: [],
   loading: false,
   error: null,
+  pagination: {},
 };
 
 // ========================== SLICE ==========================
@@ -155,6 +343,128 @@ const paymentSlice = createSlice({
         state.paymentStatus = action.payload;
       })
       .addCase(getPaymentStatus.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      .addCase(refundPayment.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(refundPayment.fulfilled, (state, action) => {
+        state.loading = false;
+        // Có thể lưu thông tin refund vào state nếu cần
+        // state.refundData = action.payload; 
+      })
+      .addCase(refundPayment.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // getCustomerRefunds
+      .addCase(getCustomerRefunds.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getCustomerRefunds.fulfilled, (state, action) => {
+        state.loading = false;
+        const payload = action.payload;
+        // Xử lý linh hoạt logic trả về từ BE
+        if (Array.isArray(payload)) {
+          state.refundsList = payload;
+        } else if (payload && Array.isArray(payload.refunds)) {
+          state.refundsList = payload.refunds;
+        } else if (payload && Array.isArray(payload.data)) {
+          state.refundsList = payload.data;
+        } else if (payload && Array.isArray(payload.docs)) {
+            state.refundsList = payload.docs;
+        } else {
+          state.refundsList = [];
+        }
+        
+        if (payload?.pagination) {
+          state.pagination = payload.pagination;
+        } else if (payload?.total) {
+             state.pagination = {
+                total: payload.total,
+                page: payload.page,
+                pages: payload.pages
+             }
+        }
+      })
+      .addCase(getCustomerRefunds.rejected, (state, action) => {
+        state.loading = false;
+        state.refundsList = [];
+        state.error = action.payload;
+      })
+
+      // getCustomerRefundById
+      .addCase(getCustomerRefundById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getCustomerRefundById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.refundDetail = action.payload;
+      })
+      .addCase(getCustomerRefundById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // approveCustomerRefund
+      .addCase(approveCustomerRefund.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(approveCustomerRefund.fulfilled, (state, action) => {
+        state.loading = false;
+        // Có thể cập nhật lại list hoặc detail
+      })
+      .addCase(approveCustomerRefund.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // rejectCustomerRefund
+      .addCase(rejectCustomerRefund.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(rejectCustomerRefund.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(rejectCustomerRefund.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // getApprovedRefunds
+      .addCase(getApprovedRefunds.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getApprovedRefunds.fulfilled, (state, action) => {
+        state.loading = false;
+        state.approvedRefunds = action.payload.data || action.payload;
+        if (action.payload.pagination) {
+          state.pagination = action.payload.pagination;
+        }
+      })
+      .addCase(getApprovedRefunds.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // confirmRefundPayment
+      .addCase(confirmRefundPayment.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(confirmRefundPayment.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(confirmRefundPayment.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

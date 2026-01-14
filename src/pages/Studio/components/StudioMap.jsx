@@ -32,13 +32,13 @@ export default function StudioMap({ location }) {
   };
 
   return (
-    <div className="studio-panel studio-map-card rounded-2xl p-6 md:p-8">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <div className="studio-panel studio-map-card rounded-2xl p-5">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
         <div className="flex items-center gap-3">
-          <div className="h-12 w-12 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-white font-bold text-xl shadow-sm">
+          <div className="h-10 w-10 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center text-white font-bold text-lg shadow-sm">
             🗺️
           </div>
-          <h2 className="text-2xl md:text-3xl font-bold text-white">Bản đồ</h2>
+          <h2 className="text-xl md:text-2xl font-bold text-white">Bản đồ</h2>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button

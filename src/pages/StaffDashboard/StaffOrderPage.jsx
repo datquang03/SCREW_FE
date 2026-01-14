@@ -387,48 +387,47 @@ const StaffOrderPage = () => {
         rowKey="_id"
       />
 
-      {/* ==================== MODAL CHI TIẾT SIÊU ĐẸP - HIỂN THỊ 100% DATA THỰC TẾ ==================== */}
+      {/* ==================== MODAL CHI TIẾT TỐI ƯU ==================== */}
       <Modal
         open={detailModalOpen}
         onCancel={() => setDetailModalOpen(false)}
         footer={null}
-        width={1100}
+        width={700}
         closeIcon={
-          <div className="text-3xl text-gray-400 hover:text-gray-700">×</div>
+          <div className="text-2xl text-white/80 hover:text-white transition-colors">×</div>
         }
         title={null}
-        className="top-6"
+        className="top-4 compact-modal"
+        styles={{ content: { padding: 0, borderRadius: "16px", overflow: "hidden" } }}
       >
         {detailLoading || !currentBooking ? (
-          <div className="py-24 text-center">
-            <Spin size="large" tip="Đang tải chi tiết đơn..." />
+          <div className="py-12 text-center">
+            <Spin size="large" tip="Đang tải..." />
           </div>
         ) : (
-          <div className="space-y-8">
-            {/* HEADER GRADIENT - MÃ + TIỀN + TRẠNG THÁI */}
-            <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-3xl p-8 text-white shadow-2xl -m-6 mb-8">
-              <div className="flex justify-between items-start">
+          <div className="flex flex-col h-full bg-gray-50">
+            {/* HEADER COMPACT */}
+            <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-5 text-white relative">
+              <div className="flex justify-between items-center z-10 relative">
                 <div>
-                  <h2 className="text-4xl font-extrabold tracking-tight">
+                  <h2 className="text-xl font-extrabold tracking-tight m-0">
                     ĐƠN ĐẶT CHỖ
                   </h2>
-                  <p className="text-2xl font-mono mt-2 opacity-95">
+                  <p className="text-sm font-mono opacity-90 m-0">
                     #{currentBooking._id.slice(-8).toUpperCase()}
                   </p>
                 </div>
-                <div className="text-right">
-                  <div className="text-5xl font-extrabold tracking-wider drop-shadow-lg">
+                <div className="text-right pr-6">
+                  <div className="text-2xl font-extrabold">
                     {formatCurrency(currentBooking.finalAmount)}
                   </div>
-                  <div className="mt-4">
-                    {currentBooking.events?.some(
-                      (e) => e.type === "NO_SHOW"
-                    ) ? (
-                      <Tag className="text-2xl px-8 py-3 bg-red-600 border-0 font-bold shadow-lg">
-                        KHÔNG ĐẾN – ĐÃ PHẠT
+                  <div className="mt-1">
+                    {currentBooking.events?.some((e) => e.type === "NO_SHOW") ? (
+                      <Tag className="text-xs font-bold px-2 py-0.5 bg-red-600 border-0 text-white">
+                        NO-SHOW
                       </Tag>
                     ) : (
-                      <Tag className="text-xl px-6 py-3 bg-white/20 backdrop-blur border-0 font-bold">
+                      <Tag className="text-xs font-bold px-2 py-0.5 bg-white/20 border-0 text-white backdrop-blur-sm">
                         {getStatusDisplay(currentBooking).label}
                       </Tag>
                     )}
@@ -437,394 +436,159 @@ const StaffOrderPage = () => {
               </div>
             </div>
 
-            {/* NO-SHOW ALERT - ƯU TIÊN CAO NHẤT */}
-            {currentBooking.events?.some((e) => e.type === "NO_SHOW") && (
-              <div className="bg-red-50 border-4 border-red-500 rounded-3xl p-8 text-center shadow-2xl transform hover:scale-[1.01] transition-all">
-                <FiUserX className="text-9xl text-red-600 mx-auto mb-5" />
-                <h3 className="text-4xl font-extrabold text-red-800 mb-4">
-                  KHÁCH KHÔNG ĐẾN (NO-SHOW)
-                </h3>
-                <p className="text-2xl font-bold text-red-700">
-                  Đã bị phạt{" "}
-                  <span className="text-3xl">
-                    {formatCurrency(currentBooking.finalAmount)}
-                  </span>
-                </p>
-                <p className="text-lg text-red-600 mt-4 font-medium">
-                  Ghi nhận lúc:{" "}
-                  {dayjs(
-                    currentBooking.events.find((e) => e.type === "NO_SHOW")
-                      ?.timestamp
-                  ).format("HH:mm, dddd DD/MM/YYYY")}
-                </p>
-              </div>
-            )}
-
-            {/* CHECK-IN / CHECK-OUT STATUS */}
-            {(() => {
-              // Lấy thông tin check-in từ checkInAt hoặc từ event CHECK_IN
-              const checkInEvent = currentBooking.events?.find(
-                (e) => e.type === "CHECK_IN"
-              );
-              const checkInTime =
-                currentBooking.checkInAt || checkInEvent?.timestamp;
-              const hasCheckIn =
-                checkInTime || currentBooking.status === "checked_in";
-              const hasCheckOut = currentBooking.checkOutAt;
-
-              if (hasCheckIn || hasCheckOut) {
-                return (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {hasCheckIn && (
-                      <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border-4 border-emerald-300 rounded-3xl p-10 text-center shadow-2xl">
-                        <FiLogIn className="text-8xl text-emerald-600 mx-auto mb-5" />
-                        <h4 className="text-3xl font-extrabold text-emerald-800">
-                          ĐÃ CHECK-IN
-                        </h4>
-                        <p className="text-5xl font-black text-emerald-700 mt-4">
-                          {dayjs(checkInTime).format("HH:mm")}
-                        </p>
-                        <p className="text-xl text-gray-700 mt-2">
-                          {dayjs(checkInTime).format("dddd, DD/MM/YYYY")}
-                        </p>
-                      </div>
-                    )}
-                    {hasCheckOut && (
-                      <div className="bg-gradient-to-br from-purple-50 to-violet-50 border-4 border-purple-300 rounded-3xl p-10 text-center shadow-2xl">
-                        <FiLogOut className="text-8xl text-purple-600 mx-auto mb-5" />
-                        <h4 className="text-3xl font-extrabold text-purple-800">
-                          ĐÃ CHECK-OUT
-                        </h4>
-                        <p className="text-5xl font-black text-purple-700 mt-4">
-                          {dayjs(currentBooking.checkOutAt).format("HH:mm")}
-                        </p>
-                        <p className="text-xl text-gray-700 mt-2">
-                          {dayjs(currentBooking.checkOutAt).format(
-                            "dddd, DD/MM/YYYY"
-                          )}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                );
-              }
-              return null;
-            })()}
-
-            {/* THÔNG TIN CHÍNH - 2 CỘT */}
-            <div className="grid lg:grid-cols-2 gap-10">
-              {/* CỘT TRÁI: KHÁCH HÀNG + STUDIO + LỊCH */}
-              <div className="space-y-8">
-                {/* Khách hàng */}
-                <div className="bg-white border-2 border-gray-200 rounded-3xl p-8 shadow-xl">
-                  <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-                    <FiUser className="text-3xl text-blue-600" /> Thông tin
-                    khách hàng
-                  </h3>
-                  <div className="space-y-5 text-lg">
-                    <div className="text-2xl font-extrabold text-gray-900">
-                      {currentBooking.customer?.fullName || "Khách lẻ"}
-                    </div>
-                    {currentBooking.customer?.username && (
-                      <div className="text-gray-600">
-                        @{currentBooking.customer.username}
-                      </div>
-                    )}
-                    {currentBooking.customer?.phone && (
-                      <div className="flex items-center gap-4">
-                        <FiPhone className="text-2xl text-green-600" />
-                        <span className="font-semibold">
-                          {currentBooking.customer.phone}
-                        </span>
-                      </div>
-                    )}
-                    {currentBooking.customer?.email && (
-                      <div className="flex items-center gap-4">
-                        <FiMail className="text-2xl text-blue-600" />
-                        <span>{currentBooking.customer.email}</span>
-                      </div>
-                    )}
+            <div className="p-5 space-y-4 max-h-[75vh] overflow-y-auto">
+              {/* NO-SHOW ALERT */}
+              {currentBooking.events?.some((e) => e.type === "NO_SHOW") && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-3 flex items-center gap-3">
+                  <FiUserX className="text-3xl text-red-600 flex-shrink-0" />
+                  <div>
+                    <h3 className="text-sm font-bold text-red-800 m-0">KHÁCH KHÔNG ĐẾN</h3>
+                    <p className="text-xs text-red-700 m-0">
+                      Phạt: <span className="font-bold">{formatCurrency(currentBooking.finalAmount)}</span>
+                    </p>
                   </div>
                 </div>
+              )}
 
-                {/* Studio & Lịch đặt */}
-                <div className="bg-gradient-to-br from-cyan-50 to-blue-50 border-2 border-cyan-300 rounded-3xl p-8 shadow-xl">
-                  <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-                    <FiCalendar className="text-3xl text-cyan-600" /> Studio &
-                    Lịch đặt
-                  </h3>
-                  <div className="space-y-6">
-                    <div className="text-2xl font-bold text-gray-900">
-                      {currentBooking.studio?.name}
-                    </div>
-                    <div className="text-lg text-gray-700">
-                      {currentBooking.studio?.location}
-                    </div>
-
-                    <div className="bg-white rounded-3xl p-8 shadow-lg text-center border-2 border-cyan-200">
-                      <div className="text-6xl font-extrabold text-cyan-700 mb-4">
-                        {currentBooking.schedule?.timeRange}
-                      </div>
-                      <div className="text-2xl font-bold text-gray-800">
-                        {dayjs(currentBooking.schedule?.date).format(
-                          "dddd, DD/MM/YYYY"
-                        )}
-                      </div>
-                      <div className="text-lg text-gray-600 mt-4">
-                        Thời lượng:{" "}
-                        <strong>
-                          {currentBooking.schedule?.duration || 1} giờ
-                        </strong>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* CỘT PHẢI: TIỀN + CHÍNH SÁCH + SỰ KIỆN */}
-              <div className="space-y-8">
-                {/* Tiền */}
-                <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 rounded-3xl p-8 shadow-xl">
-                  <h3 className="text-2xl font-bold text-gray-800 mb-6">
-                    Chi tiết tài chính
-                  </h3>
-                  <div className="space-y-5 text-xl">
-                    <div className="flex justify-between">
-                      <span className="text-gray-700">Trước giảm giá</span>
-                      <span className="line-through text-gray-500">
-                        {formatCurrency(currentBooking.totalBeforeDiscount)}
-                      </span>
-                    </div>
-                    {currentBooking.discountAmount > 0 && (
-                      <div className="flex justify-between text-green-600 font-bold">
-                        <span>Giảm giá</span>
-                        <span>
-                          -{formatCurrency(currentBooking.discountAmount)}
-                        </span>
-                      </div>
-                    )}
-                    <Divider className="my-4 border-green-300" />
-                    <div className="flex justify-between text-3xl font-extrabold">
-                      <span className="text-gray-800">Thành tiền</span>
-                      <span className="text-green-600">
-                        {formatCurrency(currentBooking.finalAmount)}
-                      </span>
-                    </div>
-
-                    {/* Hiển thị progress bar cho prepay */}
-                    {(() => {
-                      const paymentInfo = calculatePaymentInfo(currentBooking);
-                      const isPrepay =
-                        currentBooking.payType?.startsWith("prepay_");
-
-                      if (isPrepay) {
-                        return (
-                          <>
-                            <Divider className="my-4 border-green-300" />
-                            <div className="space-y-3">
-                              <div className="text-center">
-                                <div className="text-sm font-semibold text-gray-700 mb-2">
-                                  Tiến độ thanh toán
-                                </div>
-                                {/* Progress bar lớn */}
-                                <div className="relative w-full h-6 bg-gray-200 rounded-full overflow-hidden shadow-inner">
-                                  <div
-                                    className="absolute top-0 left-0 h-full bg-gradient-to-r from-green-500 via-green-500 to-green-600 transition-all duration-500 flex items-center justify-end pr-2"
-                                    style={{
-                                      width: `${paymentInfo.paidPercentage}%`,
-                                    }}
-                                  >
-                                    {paymentInfo.paidPercentage > 15 && (
-                                      <span className="text-white text-xs font-bold">
-                                        {paymentInfo.paidPercentage}%
-                                      </span>
-                                    )}
-                                  </div>
-                                  <div
-                                    className="absolute top-0 right-0 h-full bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 transition-all duration-500 flex items-center justify-start pl-2"
-                                    style={{
-                                      width: `${paymentInfo.remainingPercentage}%`,
-                                    }}
-                                  >
-                                    {paymentInfo.remainingPercentage > 15 && (
-                                      <span className="text-white text-xs font-bold">
-                                        {paymentInfo.remainingPercentage}%
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                                <div className="flex justify-between mt-2 text-sm">
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                                    <span className="text-gray-700">
-                                      Đã trả:
-                                    </span>
-                                    <span className="text-green-600 font-bold">
-                                      {formatCurrency(paymentInfo.paidAmount)}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-3 h-3 rounded-full bg-orange-500"></div>
-                                    <span className="text-gray-700">
-                                      Còn lại:
-                                    </span>
-                                    <span className="text-orange-600 font-bold">
-                                      {formatCurrency(
-                                        paymentInfo.remainingAmount
-                                      )}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </>
-                        );
-                      }
-                      return null;
-                    })()}
-
-                    <div className="text-center mt-6">
-                      <Tag color="blue" className="text-lg px-6 py-2 font-bold">
-                        Thanh toán:{" "}
-                        {currentBooking.payType === "full"
-                          ? "Toàn bộ"
-                          : currentBooking.payType === "prepay_50"
-                          ? "Cọc 50%"
-                          : currentBooking.payType === "prepay_30"
-                          ? "Cọc 30%"
-                          : currentBooking.payType || "Không rõ"}
-                      </Tag>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Chính sách hủy & No-Show */}
-                <div className="grid grid-cols-2 gap-6">
-                  <Card
-                    title="Chính sách hủy"
-                    className="border-orange-300 shadow-lg"
-                  >
-                    <ul className="text-sm space-y-2">
-                      {currentBooking.policySnapshots?.cancellation?.refundTiers?.map(
-                        (tier) => (
-                          <li key={tier._id}>
-                            <strong>{tier.hoursBeforeBooking}h trước</strong>:
-                            hoàn <strong>{tier.refundPercentage}%</strong>
-                          </li>
-                        )
-                      )}
-                    </ul>
-                  </Card>
-                  <Card title="No-Show" className="border-red-300 shadow-lg">
-                    <div className="text-sm space-y-2">
-                      <div>
-                        Phạt: <strong>100%</strong>
-                      </div>
-                      <div>
-                        Ân hạn: <strong>15 phút</strong>
-                      </div>
-                      <div>
-                        Tha thứ tối đa: <strong>1 lần</strong>
-                      </div>
-                    </div>
-                  </Card>
-                </div>
-              </div>
-            </div>
-
-            {/* NÚT HÀNH ĐỘNG */}
-            <div className="flex justify-center gap-8 pt-10 border-t-4 border-gray-200">
+              {/* CHECK-IN/OUT STATUS COMPACT */}
               {(() => {
-                // Kiểm tra đã check-in: status === "checked_in" hoặc có event CHECK_IN hoặc có checkInAt
-                const hasCheckIn =
-                  currentBooking.status === "checked_in" ||
-                  currentBooking.events?.some((e) => e.type === "CHECK_IN") ||
-                  currentBooking.checkInAt;
+                const checkInEvent = currentBooking.events?.find((e) => e.type === "CHECK_IN");
+                const checkInTime = currentBooking.checkInAt || checkInEvent?.timestamp;
+                const hasCheckIn = checkInTime || currentBooking.status === "checked_in";
                 const hasCheckOut = currentBooking.checkOutAt;
-                const hasNoShow = currentBooking.events?.some(
-                  (e) => e.type === "NO_SHOW"
-                );
 
-                if (currentBooking.status === "pending") {
-                  return (
-                    <Button
-                      type="primary"
-                      size="large"
-                      className="px-20 py-8 text-2xl font-bold"
-                      onClick={() =>
-                        handleAction(confirmBooking, currentBooking._id)
-                      }
-                    >
-                      XÁC NHẬN ĐƠN
-                    </Button>
-                  );
-                }
-
-                if (
-                  (currentBooking.status === "confirmed" ||
-                    currentBooking.status === "checked_in") &&
-                  !hasCheckIn
-                ) {
-                  return (
-                    <Button
-                      type="primary"
-                      size="large"
-                      className="bg-emerald-600 px-24 py-10 text-3xl font-extrabold flex items-center gap-5"
-                      icon={<FiLogIn className="text-5xl" />}
-                      onClick={() =>
-                        handleAction(checkInBooking, currentBooking._id)
-                      }
-                    >
-                      CHECK-IN NGAY
-                    </Button>
-                  );
-                }
-
-                if (hasCheckIn && !hasCheckOut) {
-                  return (
-                    <Button
-                      type="primary"
-                      danger
-                      size="large"
-                      className="bg-purple-600 px-24 py-10 text-3xl font-extrabold flex items-center gap-5"
-                      icon={<FiLogOut className="text-5xl" />}
-                      onClick={() =>
-                        handleAction(checkOutBooking, currentBooking._id)
-                      }
-                    >
-                      CHECK-OUT HOÀN TẤT
-                    </Button>
-                  );
-                }
-
-                if (hasCheckOut || hasNoShow) {
-                  return (
-                    <div className="flex items-center gap-6 text-4xl font-extrabold text-green-600">
-                      <FiCheckCircle className="text-8xl" />
-                      ĐÃ XỬ LÝ XONG ĐƠN
+                if (hasCheckIn || hasCheckOut) {
+                   return (
+                    <div className="grid grid-cols-2 gap-3">
+                      {hasCheckIn && (
+                        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center">
+                          <div className="text-emerald-700 text-xs font-bold uppercase mb-1">Check-in</div>
+                           <div className="text-lg font-bold text-emerald-800">{dayjs(checkInTime).format("HH:mm")}</div>
+                           <div className="text-xs text-gray-500">{dayjs(checkInTime).format("DD/MM")}</div>
+                        </div>
+                      )}
+                      {hasCheckOut && (
+                        <div className="bg-purple-50 border border-purple-200 rounded-xl p-3 text-center">
+                           <div className="text-purple-700 text-xs font-bold uppercase mb-1">Check-out</div>
+                           <div className="text-lg font-bold text-purple-800">{dayjs(currentBooking.checkOutAt).format("HH:mm")}</div>
+                           <div className="text-xs text-gray-500">{dayjs(currentBooking.checkOutAt).format("DD/MM")}</div>
+                        </div>
+                      )}
                     </div>
-                  );
+                   );
                 }
-
                 return null;
               })()}
-            </div>
 
-            {/* Footer */}
-            <div className="text-center py-6 border-t-2 border-gray-200 text-gray-500">
-              <div className="flex items-center justify-center gap-3 text-lg">
-                <FiClock />
-                <span>
-                  Đặt lúc:{" "}
-                  {dayjs(currentBooking.createdAt).format(
-                    "HH:mm, dddd DD/MM/YYYY"
-                  )}
-                </span>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* LEFT COL */}
+                <div className="space-y-4">
+                   {/* CUSTOMER */}
+                   <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                      <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-100">
+                         <FiUser className="text-blue-500" />
+                         <span className="font-bold text-gray-700 text-sm">Thông tin khách hàng</span>
+                      </div>
+                      <div className="space-y-2">
+                         <div>
+                            <div className="font-bold text-gray-900 text-base">{currentBooking.customer?.fullName || "Khách lẻ"}</div>
+                            <div className="text-xs text-gray-500">@{currentBooking.customer?.username || "unknown"}</div>
+                         </div>
+                         <div className="space-y-1 mt-2">
+                            {currentBooking.customer?.phone && (
+                              <div className="flex items-center gap-2 text-sm text-gray-700">
+                                <FiPhone className="text-green-500" /> {currentBooking.customer.phone}
+                              </div>
+                            )}
+                            {currentBooking.customer?.email && (
+                              <div className="flex items-center gap-2 text-sm text-gray-700 truncate" title={currentBooking.customer.email}>
+                                <FiMail className="text-blue-500" /> {currentBooking.customer.email}
+                              </div>
+                            )}
+                         </div>
+                      </div>
+                   </div>
+
+                   {/* STUDIO */}
+                    <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                      <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-100">
+                         <FiCalendar className="text-cyan-500" />
+                         <span className="font-bold text-gray-700 text-sm">Studio & Lịch đặt</span>
+                      </div>
+                      <div>
+                          <div className="font-bold text-gray-900">{currentBooking.studio?.name}</div>
+                          <div className="text-xs text-gray-500 mb-2 truncate">{currentBooking.studio?.location}</div>
+                          
+                          <div className="bg-cyan-50 rounded-lg p-2 text-center border border-cyan-100">
+                             <div className="text-xl font-bold text-cyan-700">{currentBooking.schedule?.timeRange}</div>
+                             <div className="text-xs font-medium text-gray-600">{dayjs(currentBooking.schedule?.date).format("dddd, DD/MM/YYYY")}</div>
+                          </div>
+                      </div>
+                   </div>
+                </div>
+
+                {/* RIGHT COL */}
+                <div className="space-y-4">
+                    {/* FINANCE */}
+                    <div className="bg-emerald-50/50 rounded-xl p-4 shadow-sm border border-emerald-100">
+                         <div className="flex items-center gap-2 mb-3 pb-2 border-b border-emerald-100">
+                            <span className="font-bold text-emerald-800 text-sm">Chi tiết tài chính</span>
+                         </div>
+                         <div className="space-y-2 text-sm">
+                            <div className="flex justify-between text-gray-500">
+                               <span>Trước giảm giá</span>
+                               <span className="line-through">{formatCurrency(currentBooking.totalBeforeDiscount)}</span>
+                            </div>
+                            {currentBooking.discountAmount > 0 && (
+                               <div className="flex justify-between text-green-600">
+                                  <span>Giảm giá</span>
+                                  <span>-{formatCurrency(currentBooking.discountAmount)}</span>
+                               </div>
+                            )}
+                             <Divider className="my-1" />
+                             <div className="flex justify-between items-end">
+                                <span className="font-bold text-gray-800">Thành tiền</span>
+                                <span className="text-xl font-extrabold text-emerald-600">{formatCurrency(currentBooking.finalAmount)}</span>
+                             </div>
+                             
+                             <div className="flex justify-center mt-2">
+                                <Tag className="m-0 bg-blue-100 text-blue-800 border-0 font-medium text-xs">
+                                  Thanh toán: {currentBooking.payType === "full" ? "Toàn bộ" : currentBooking.payType}
+                                </Tag>
+                             </div>
+                         </div>
+                    </div>
+
+                    {/* POLICY & EVENTS */}
+                    <div className="grid grid-cols-2 gap-2">
+                        <div className="bg-white rounded-xl p-3 border border-gray-100">
+                           <div className="text-xs font-bold text-gray-500 mb-1">Chính sách hủy</div>
+                           <div className="text-[10px] text-gray-700 space-y-1">
+                              <div><strong>48h trước:</strong> hoàn 100%</div>
+                              <div><strong>24h trước:</strong> hoàn 50%</div>
+                           </div>
+                        </div>
+                        <div className="bg-white rounded-xl p-3 border border-gray-100">
+                           <div className="text-xs font-bold text-gray-500 mb-1">No-Show</div>
+                           <div className="text-[10px] text-gray-700 space-y-1">
+                              <div><strong>Phạt:</strong> 100%</div>
+                              <div><strong>Ân hạn:</strong> 1 giờ</div>
+                           </div>
+                        </div>
+                    </div>
+                </div>
               </div>
-              <div className="text-sm mt-2">
-                Cập nhật:{" "}
-                {dayjs(currentBooking.updatedAt).format("HH:mm, DD/MM/YYYY")}
-              </div>
+              
+              {/* FOOTER ACTIONS - IF NEEDED */}
+               {currentBooking.status === 'pending' && (
+                 <div className="pt-2">
+                    <Button type="primary" block onClick={() => {
+                        handleAction(confirmBooking, currentBooking._id);
+                        setDetailModalOpen(false);
+                    }}>Xác nhận đơn này</Button>
+                 </div>
+               )}
             </div>
           </div>
         )}

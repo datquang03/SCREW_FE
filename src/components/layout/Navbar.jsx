@@ -624,7 +624,7 @@ const Navbar = () => {
                             className="navbar-dropdown-item w-full flex items-center gap-3 text-gray-800"
                           >
                             <MdOutlineSpaceDashboard className="text-lg" />{" "}
-                            Dashboard
+                            Bảng điều khiển
                           </button>
                         </li>
 

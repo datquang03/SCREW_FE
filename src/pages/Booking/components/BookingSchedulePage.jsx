@@ -437,121 +437,118 @@ const BookingSchedulePage = ({ onNext }) => {
                     {bookedSlots.length} khung giờ
                   </Tag>
                 </div>
-                <div className="grid md:grid-cols-2 gap-3 max-h-64 overflow-y-auto custom-scrollbar pr-1">
+                <div className={`grid gap-3 ${bookedSlots.length === 1 ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
                   {bookedSlots.map((slot) => (
                     <div
                       key={slot._id}
-                      className="rounded-2xl border border-red-200 bg-white/90 px-4 py-3 shadow-sm hover:shadow-md transition-all"
+                      className="rounded-2xl border border-red-200 bg-white/90 px-4 py-3 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <Text className="text-lg font-bold text-red-600">
-                          {slot.timeRange ||
-                            `${dayjs(slot.startTime).format("HH:mm")} - ${dayjs(
-                              slot.endTime
-                            ).format("HH:mm")}`}
-                        </Text>
-                        <Tag color="red" className="text-[10px] font-semibold">
-                          ĐÃ ĐẶT
-                        </Tag>
+                      <div>
+                        {/* Header của thẻ */}
+                        <div className="flex items-center justify-between mb-3 border-b border-gray-100 pb-2">
+                          <Text className="text-xl font-extrabold text-red-600 tracking-tight">
+                            {slot.timeRange ||
+                              `${dayjs(slot.startTime).format("HH:mm")} - ${dayjs(
+                                slot.endTime
+                              ).format("HH:mm")}`}
+                          </Text>
+                          <Tag color="red" className="text-[10px] font-bold uppercase m-0">
+                            ĐÃ ĐẶT
+                          </Tag>
+                        </div>
+
+                        {/* Thân thẻ - dùng grid nếu full width */}
+                        <div className={`${bookedSlots.length === 1 ? 'grid grid-cols-1 md:grid-cols-2 gap-4' : 'space-y-3'}`}>
+                            {/* Cột trái (hoặc hàng trên) */}
+                            <div className="space-y-3">
+                                {/* Ngày nếu chế độ range */}
+                                {dateRangeMode === "range" && (
+                                  <div className="text-sm text-gray-700 font-semibold bg-gray-50 p-2 rounded-lg inline-block">
+                                    📅 {dayjs(slot.startTime).format("DD/MM/YYYY")}
+                                  </div>
+                                )}
+
+                                {/* Thông tin khách hàng */}
+                                {slot.booking?.customer && (
+                                  <div className="bg-gray-50 rounded-lg p-2.5">
+                                      <div className="text-xs text-gray-500 font-medium mb-1">Khách hàng</div>
+                                      <div className="font-bold text-gray-900 text-sm">
+                                        {slot.booking.customer.fullName ||
+                                          slot.booking.customer.username ||
+                                          "Khách"}
+                                      </div>
+                                    {slot.booking.customer.phone && (
+                                       <div className="text-xs text-gray-500 mt-0.5">
+                                          {slot.booking.customer.phone}
+                                       </div>
+                                    )}
+                                  </div>
+                                )}
+                            </div>
+
+                            {/* Cột phải (hoặc hàng dưới) */}
+                            <div className="space-y-2">
+                                {/* Trạng thái & Thanh toán */}
+                                <div className="flex flex-wrap gap-2">
+                                    {slot.booking?.status && (
+                                        <Tag
+                                          color={
+                                            slot.booking.status === "completed"
+                                              ? "green"
+                                              : slot.booking.status === "confirmed"
+                                              ? "blue"
+                                              : slot.booking.status === "pending"
+                                              ? "orange"
+                                              : "default"
+                                          }
+                                          className="text-[11px] font-medium px-2 py-0.5 m-0 rounded-md"
+                                        >
+                                          {slot.booking.status === "completed"
+                                            ? "Hoàn thành"
+                                            : slot.booking.status === "confirmed"
+                                            ? "Đã xác nhận"
+                                            : slot.booking.status === "pending"
+                                            ? "Chờ xác nhận"
+                                            : slot.booking.status}
+                                        </Tag>
+                                    )}
+                                    {slot.booking?.payType && (
+                                        <Tag
+                                          color={
+                                            slot.booking.payType === "full"
+                                              ? "green" // Tag xanh lá
+                                              : slot.booking.payType.startsWith("prepay")
+                                              ? "orange"
+                                              : "default"
+                                          }
+                                          className={`text-[11px] font-medium px-2 py-0.5 m-0 rounded-md ${slot.booking.payType === 'full' ? '!text-white' : ''}`} // Text trắng nếu là full
+                                          style={slot.booking.payType === 'full' ? {backgroundColor: '#52c41a', color: 'white', borderColor: 'transparent'} : {}}
+                                        >
+                                          {slot.booking.payType === "full"
+                                            ? "Thanh toán đủ"
+                                            : slot.booking.payType === "prepay_50"
+                                            ? "Cọc 50%"
+                                            : slot.booking.payType === "prepay_30"
+                                            ? "Cọc 30%"
+                                            : slot.booking.payType}
+                                        </Tag>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                       </div>
 
-                      {/* Ngày nếu chế độ range */}
-                      {dateRangeMode === "range" && (
-                        <div className="mb-2 text-xs text-gray-600 font-medium">
-                          📅 {dayjs(slot.startTime).format("DD/MM/YYYY")}
-                        </div>
-                      )}
-
-                      {/* Thông tin khách hàng */}
-                      {slot.booking?.customer && (
-                        <div className="mb-2 space-y-1">
-                          <div>
-                            <Text className="text-xs text-gray-600 font-medium">
-                              Khách hàng:
-                            </Text>
-                            <Text className="text-xs text-gray-700 ml-1 font-semibold">
-                              {slot.booking.customer.fullName ||
-                                slot.booking.customer.username ||
-                                "Khách"}
-                            </Text>
-                          </div>
-                          {slot.booking.customer.phone && (
-                            <div>
-                              <Text className="text-xs text-gray-500">
-                                SĐT: {slot.booking.customer.phone}
-                              </Text>
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Trạng thái booking */}
-                      {slot.booking?.status && (
-                        <div className="flex items-center gap-2 mb-1">
-                          <Text className="text-xs text-gray-500">
-                            Trạng thái:
-                          </Text>
-                          <Tag
-                            color={
-                              slot.booking.status === "completed"
-                                ? "green"
-                                : slot.booking.status === "confirmed"
-                                ? "blue"
-                                : slot.booking.status === "pending"
-                                ? "orange"
-                                : "default"
-                            }
-                            className="text-[10px]"
-                          >
-                            {slot.booking.status === "completed"
-                              ? "Hoàn thành"
-                              : slot.booking.status === "confirmed"
-                              ? "Đã xác nhận"
-                              : slot.booking.status === "pending"
-                              ? "Chờ xác nhận"
-                              : slot.booking.status}
-                          </Tag>
-                        </div>
-                      )}
-
-                      {/* Phương thức thanh toán */}
-                      {slot.booking?.payType && (
-                        <div className="flex items-center gap-2 mb-1">
-                          <Text className="text-xs text-gray-500">
-                            Thanh toán:
-                          </Text>
-                          <Tag
-                            color={
-                              slot.booking.payType === "full"
-                                ? "green"
-                                : slot.booking.payType.startsWith("prepay")
-                                ? "orange"
-                                : "default"
-                            }
-                            className="text-[10px]"
-                          >
-                            {slot.booking.payType === "full"
-                              ? "Thanh toán đủ"
-                              : slot.booking.payType === "prepay_50"
-                              ? "Cọc 50%"
-                              : slot.booking.payType === "prepay_30"
-                              ? "Cọc 30%"
-                              : slot.booking.payType}
-                          </Tag>
-                        </div>
-                      )}
-
-                      {/* Thông tin giá và thời lượng */}
-                      <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
+                      {/* Footer thẻ */}
+                      <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100 bg-gray-50/50 -mx-4 -mb-3 px-4 py-2 rounded-b-2xl">
                         {slot.duration && (
-                          <Text className="text-xs text-gray-500">
-                            Thời lượng: {slot.duration} giờ
-                          </Text>
+                          <div className="text-xs text-gray-500 font-medium">
+                            ⏱️ {slot.duration} giờ
+                          </div>
                         )}
                         {slot.booking?.finalAmount && (
-                          <Text className="text-xs font-semibold text-gray-700">
+                          <div className="text-sm font-bold text-gray-800">
                             {slot.booking.finalAmount.toLocaleString()}₫
-                          </Text>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -594,24 +591,24 @@ const BookingSchedulePage = ({ onNext }) => {
                     </span>
                   </div>
                   <div className="flex-1">
-                    <Text className="text-xs text-blue-100 block mb-1 font-semibold">📅 Ngày đặt phòng</Text>
+                    <span className="text-xs !text-blue-100 block mb-1 font-semibold">📅 Ngày đặt phòng</span>
                     {dateRangeMode === "single" ? (
                       <>
-                        <Text className="text-lg md:text-xl font-black text-white block">
+                        <span className="text-lg md:text-xl font-black !text-white block">
                           {selectedDate?.format("DD/MM/YYYY")}
-                        </Text>
-                        <Text className="text-xs text-blue-100 block mt-1">
+                        </span>
+                        <span className="text-xs !text-blue-100 block mt-1 capitalize">
                           {selectedDate?.format("dddd")}
-                        </Text>
+                        </span>
                       </>
                     ) : (
                       <>
-                        <Text className="text-lg md:text-xl font-black text-white block">
+                        <span className="text-lg md:text-xl font-black !text-white block">
                           {dateRange[0]?.format("DD/MM")} → {dateRange[1]?.format("DD/MM/YYYY")}
-                        </Text>
-                        <Text className="text-xs text-blue-100 block mt-1">
+                        </span>
+                        <span className="text-xs !text-blue-100 block mt-1">
                           {dateRange[1]?.diff(dateRange[0], "day") + 1} ngày
-                        </Text>
+                        </span>
                       </>
                     )}
                   </div>

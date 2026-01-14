@@ -25,7 +25,8 @@ const DataTable = ({ columns = [], data = [], title }) => {
               {columns.map((c, i) => (
                 <th
                   key={c.key || c.dataIndex || i}
-                  className="py-3 px-4 text-left font-semibold text-gray-600"
+                  className={`py-3 px-4 text-left font-semibold text-gray-600 whitespace-nowrap ${c.className || ""}`}
+                  style={c.width ? { width: c.width } : {}}
                 >
                   {c.title}
                 </th>
@@ -48,12 +49,12 @@ const DataTable = ({ columns = [], data = [], title }) => {
             {data.map((row, idx) => (
               <tr
                 key={row._id || row.id || idx}
-                className={idx % 2 === 0 ? "bg-white" : "bg-gray-50/60"}
+                className={`hover:bg-gray-50 ${idx % 2 === 0 ? "bg-white" : "bg-gray-50/60"}`}
               >
                 {columns.map((c, i) => (
                   <td
                     key={`${i}-cell`}
-                    className="py-3 px-4 text-gray-700"
+                    className={`py-3 px-4 text-gray-700 ${c.className || ""}`}
                   >
                     {c.render ? c.render(getValue(row, c.dataIndex), row) : getValue(row, c.dataIndex)}
                   </td>

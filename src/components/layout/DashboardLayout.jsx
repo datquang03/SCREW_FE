@@ -50,7 +50,7 @@ const DashboardLayout = ({
   const theme = VARIANTS[variant] || VARIANTS.default;
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="min-h-screen bg-slate-50">
       <aside
         ref={sidebarRef}
         className="hidden lg:flex lg:w-64 xl:w-72 fixed inset-y-0 left-0 z-50 bg-gradient-to-b from-gray-950 via-gray-900 to-black shadow-2xl"
@@ -58,16 +58,16 @@ const DashboardLayout = ({
         {SidebarComponent && <SidebarComponent variant={variant} />}
       </aside>
 
-      <div className="flex-1 flex flex-col w-full lg:ml-64 xl:ml-72">
+      <div className="flex flex-col lg:ml-64 xl:ml-72">
         <DashboardNavbar variant={variant} />
         <main
           ref={contentRef}
-          className="px-4 sm:px-6 lg:px-10 py-8 min-h-screen pt-20 md:pt-24"
+          className="px-2 sm:px-4 lg:px-6 py-6 min-h-screen pt-32 md:pt-40 transition-all duration-300 ease-in-out"
         >
           <div
-            className={`rounded-3xl bg-gradient-to-br ${theme.accent} shadow-[0_30px_90px_rgba(15,23,42,0.12)] border border-white/60 min-h-[calc(100vh-8rem)]`}
+            className={`rounded-3xl bg-gradient-to-br ${theme.accent} shadow-[0_30px_90px_rgba(15,23,42,0.12)] border border-white/60 min-h-[calc(100vh-8rem)] w-full max-w-full overflow-hidden`}
           >
-            <div className="p-4 sm:p-8 lg:p-10">
+            <div className="p-3 sm:p-5 lg:p-6 h-full flex flex-col">
           {children ?? <Outlet />}
             </div>
       </div>

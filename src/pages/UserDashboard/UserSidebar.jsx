@@ -19,22 +19,10 @@ const UserSidebar = ({ variant = "customer" }) => {
   const menuItems = useMemo(
     () => [
       {
-        key: "dashboard",
-        icon: <FiHome />,
-        label: "Bảng điều khiển",
-        path: "/dashboard/customer",
-      },
-      {
         key: "bookings",
         icon: <FiCalendar />,
         label: "Đơn của tôi",
         path: "/dashboard/customer/bookings",
-      },
-      {
-        key: "studios",
-        icon: <FiVideo />,
-        label: "Studio yêu thích",
-        path: "/dashboard/customer/studios",
       },
       {
         key: "history",

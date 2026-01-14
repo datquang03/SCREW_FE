@@ -174,23 +174,25 @@ const BookingStudioInfo = ({ onNext }) => {
                 </span>
               </div>
             )}
-          </Card>
 
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="flex justify-center"
-          >
-            <Button
-              type="primary"
-              size="large"
-              icon={<FiCheckCircle />}
-              className="w-full md:w-auto bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400 border-none text-white font-bold px-8 py-4 rounded-xl shadow-lg hover:shadow-2xl transition text-lg"
-              onClick={onNext}
-            >
-              Xác nhận và tiếp tục
-            </Button>
-          </motion.div>
+            <div className="mt-8 pt-6 border-t border-gray-100">
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full"
+              >
+                <Button
+                  type="primary"
+                  size="large"
+                  icon={<FiCheckCircle />}
+                  className="w-full !bg-gradient-to-r from-blue-500 via-blue-600 to-blue-500 border-none text-white font-bold h-14 rounded-xl shadow-lg hover:shadow-xl transition-all text-lg flex items-center justify-center gap-2 hover:!text-white"
+                  onClick={onNext}
+                >
+                  Xác nhận và tiếp tục
+                </Button>
+              </motion.div>
+            </div>
+          </Card>
         </motion.div>
       </div>
     </div>

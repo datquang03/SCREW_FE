@@ -137,153 +137,129 @@ export default function BookingPaymentPage({
   };
 
   return (
-    <div className="max-w-5xl mx-auto py-12 px-4">
-      <Card className="shadow-2xl rounded-3xl overflow-hidden border-0">
-        {/* Header */}
-        <div className="text-center py-12 bg-gradient-to-r from-purple-600 to-pink-600 text-white">
-          <CheckCircleOutlined className="text-8xl mb-4" />
-          <Title level={1} className="text-white text-5xl font-bold mb-2">
+    <div className="max-w-4xl mx-auto py-6 px-4">
+      <Card className="shadow-2xl rounded-2xl overflow-hidden border-0">
+        {/* Header Compact */}
+        <div className="text-center py-6 bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+          <CheckCircleOutlined className="text-5xl mb-2" />
+          <Title level={2} className="text-white m-0 !text-white">
             ĐẶT PHÒNG THÀNH CÔNG
           </Title>
-          <Text className="text-xl opacity-90">
-            Mã đặt phòng: <strong>{bookingId}</strong>
+          <Text className="text-white/80">
+            Mã: <strong>{bookingId}</strong>
           </Text>
         </div>
 
-        <div className="p-8 md:p-12">
-          <div className="grid md:grid-cols-2 gap-12 items-start mb-10">
-            {/* Thông tin chính */}
-            <div className="space-y-8 md:col-span-2">
-              <div>
-                <Text strong className="text-lg text-gray-600">
-                  Studio
-                </Text>
-                <Title level={2} className="mt-1 text-purple-700">
-                  {currentStudio?.name || "Studio"}
-                </Title>
+        <div className="p-6">
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Cột trái: Thông tin & Giá */}
+            <div className="flex flex-col gap-4">
+              {/* Studio Info (Compact) */}
+              <div className="bg-gradient-to-br from-purple-50 to-white rounded-2xl p-4 border border-purple-100 shadow-sm flex gap-4 items-center">
+                 {currentStudio?.images?.[0] ? (
+                    <img 
+                      src={currentStudio.images[0]} 
+                      alt={currentStudio.name} 
+                      className="w-20 h-20 rounded-xl object-cover border border-purple-100 shadow-sm flex-shrink-0"
+                    />
+                 ) : (
+                    <div className="w-20 h-20 rounded-xl bg-purple-100 flex-shrink-0 flex items-center justify-center text-purple-400">
+                       <CheckCircleOutlined className="text-2xl" />
+                    </div>
+                 )}
+                 <div className="min-w-0 flex-1">
+                    <Text type="secondary" className="text-[10px] font-bold uppercase tracking-wider text-purple-500 bg-purple-100 px-2 py-0.5 rounded-full">
+                      Studio
+                    </Text>
+                    <h4 className="m-0 text-gray-800 font-bold text-lg mt-1 truncate">
+                      {currentStudio?.name || "Tên Studio"}
+                    </h4>
+                    <p className="m-0 text-xs text-gray-500 truncate mt-1 flex items-center gap-1">
+                       <InfoCircleOutlined className="text-[10px]" />
+                       {currentStudio?.location || "Địa chỉ đang cập nhật"}
+                    </p>
+                 </div>
               </div>
 
-              {/* Bảng giá */}
-              <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
-                <Space direction="vertical" size="middle" className="w-full">
-                  <div className="flex justify-between text-lg">
+              {/* Bảng giá (Compact) */}
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-200 flex-1">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm text-gray-600">
                     <span>Tạm tính</span>
-                    <strong>{formatted(totalBeforeDiscount)}</strong>
+                    <strong className="text-gray-800">{formatted(totalBeforeDiscount)}</strong>
                   </div>
                   {hasDiscount && (
-                    <div className="flex justify-between text-lg text-green-600 font-bold">
+                    <div className="flex justify-between text-sm text-green-600 font-bold">
                       <span>Giảm giá</span>
                       <span>-{formatted(discountAmount)}</span>
                     </div>
                   )}
-                  <Divider className="my-3" />
+                  <div className="h-px bg-gray-200 my-2" />
                   <div className="flex justify-between items-baseline">
-                    <Title level={3} className="m-0 text-gray-700">
-                      TỔNG CỘNG
-                    </Title>
-                    <Title
-                      level={1}
-                      className="m-0 text-purple-700 font-extrabold"
-                    >
+                    <span className="font-bold text-gray-700">TỔNG CỘNG</span>
+                    <span className="text-2xl font-extrabold text-purple-700">
                       {formatted(finalAmount)}
-                    </Title>
+                    </span>
                   </div>
-                </Space>
+                </div>
+              </div>
+            </div>
+
+            {/* Cột phải: Chính sách (Condensed) */}
+            <div className="flex flex-col gap-4">
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+                <div className="flex items-center gap-2 mb-2 text-gray-700 font-bold text-sm">
+                  <InfoCircleOutlined className="text-blue-500" />
+                  <span>Chính sách hủy</span>
+                </div>
+                <ul className="text-xs space-y-1 text-gray-600 pl-5 list-disc">
+                   {cancellationTiers.length > 0 ? cancellationTiers.map(tier => (
+                     <li key={tier._id}>
+                        Trước <strong>{tier.hoursBeforeBooking}h</strong>: hoàn <strong>{tier.refundPercentage}%</strong>
+                     </li>
+                   )) : <li>Không có thông tin</li>}
+                </ul>
+              </div>
+
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+                <div className="flex items-center gap-2 mb-2 text-gray-700 font-bold text-sm">
+                  <InfoCircleOutlined className="text-red-500" />
+                  <span>No-Show (Không đến)</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                   <div className="bg-red-50 p-2 rounded text-center">
+                      <div className="text-gray-500">Phạt</div>
+                      <div className="font-bold text-red-600">{noShowRules.chargePercentage || 100}%</div>
+                   </div>
+                   <div className="bg-orange-50 p-2 rounded text-center">
+                      <div className="text-gray-500">Ân hạn</div>
+                      <div className="font-bold text-orange-600">{noShowRules.graceMinutes || 15}p</div>
+                   </div>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Chính sách hủy & No-Show */}
-          <div className="grid md:grid-cols-2 gap-8 mt-12">
-            {/* Hủy phòng */}
-            <Card
-              title={
-                <>
-                  <InfoCircleOutlined /> Chính sách hủy phòng
-                </>
-              }
-              bordered={false}
-              className="shadow-lg"
-            >
-              <Table
-                dataSource={cancellationTiers}
-                pagination={false}
-                rowKey="_id"
-                size="small"
-                columns={[
-                  {
-                    title: "Thời gian hủy",
-                    dataIndex: "hoursBeforeBooking",
-                    render: (hours) =>
-                      hours === 0 ? "Dưới 24 giờ" : `Trước ${hours} giờ`,
-                  },
-                  {
-                    title: "Hoàn tiền",
-                    dataIndex: "refundPercentage",
-                    render: (pct) => (
-                      <Tag
-                        color={
-                          pct === 100 ? "green" : pct === 50 ? "orange" : "red"
-                        }
-                      >
-                        {pct}%
-                      </Tag>
-                    ),
-                  },
-                ]}
-              />
-            </Card>
-
-            {/* No-Show */}
-            <Card
-              title={
-                <>
-                  <InfoCircleOutlined /> Chính sách không đến (No-Show)
-                </>
-              }
-              bordered={false}
-              className="shadow-lg"
-            >
-              <div className="space-y-3 text-gray-700">
-                <p>
-                  <strong>Phạt:</strong> {noShowRules.chargePercentage || 100}%
-                  tổng tiền
-                </p>
-                <p>
-                  <strong>Thời gian ân hạn:</strong>{" "}
-                  {noShowRules.graceMinutes || 15} phút
-                </p>
-                <p>
-                  <strong>Số lần tha thứ tối đa:</strong>{" "}
-                  {noShowRules.maxForgivenessCount || 1} lần
-                </p>
-              </div>
-            </Card>
-          </div>
-
-          <Divider className="my-12" />
-
-          {/* Nút hành động */}
-          <div className="flex flex-col md:flex-row justify-center gap-6">
-            <Button size="large" onClick={onBack}>
-              Quay lại
+          {/* Actions */}
+          <div className="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
+            <Button size="large" onClick={onBack} className="min-w-[120px]">
+              Về trang chủ
             </Button>
             <Button
               type="primary"
               size="large"
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-lg px-12"
+              className="bg-amber-500 hover:bg-amber-600 border-none font-bold px-8 shadow-amber-200 shadow-lg min-w-[200px]"
               loading={localLoading || paymentLoading}
               disabled={!bookingId}
               onClick={() => setIsModalVisible(true)}
             >
-              Chọn mức thanh toán
+              Thanh toán ngay
             </Button>
           </div>
-
-          <div className="text-center mt-8 text-gray-500">
-            <Text type="secondary">
-              Hệ thống tự động xác nhận sau vài phút • Hotline:{" "}
-              <strong>0909 888 999</strong>
+          
+          <div className="text-center mt-4">
+            <Text type="secondary" className="text-xs">
+               Hotline hỗ trợ: <strong>0909 888 999</strong>
             </Text>
           </div>
         </div>
@@ -291,70 +267,126 @@ export default function BookingPaymentPage({
 
       {/* Modal chọn % */}
       <Modal
+        centered
         title={
-          <div className="text-center space-y-1">
-            <Title level={4} className="mb-0">
-              Chọn mức thanh toán trước
-            </Title>
-            <Text className="text-gray-500 text-sm">
-              Số tiền sẽ được tính trên tổng giá trị đơn hiện tại.
-            </Text>
+          <div className="text-center pt-6 pb-2">
+            <h3 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 m-0 uppercase tracking-tight">
+              Chọn mức thanh toán
+            </h3>
+            <p className="text-gray-400 text-sm mt-1 font-medium">
+              Vui lòng chọn số tiền bạn muốn thanh toán ngay
+            </p>
           </div>
         }
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
-        onOk={() => {
-          handlePayPercent(selectedPercent);
-          setIsModalVisible(false);
+        footer={
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+            <Button
+              size="large"
+              className="rounded-xl font-semibold border-0 text-gray-500 hover:bg-gray-100"
+              onClick={() => setIsModalVisible(false)}
+            >
+              Để sau
+            </Button>
+            <Button
+              size="large"
+              type="primary"
+              className="rounded-xl px-8 font-bold bg-gradient-to-r from-purple-600 to-pink-600 border-0 shadow-xl shadow-purple-200 hover:shadow-purple-300 hover:scale-[1.02] transition-all"
+              onClick={() => {
+                handlePayPercent(selectedPercent);
+                setIsModalVisible(false);
+              }}
+            >
+              Tiến hành thanh toán
+            </Button>
+          </div>
+        }
+        width={500}
+        styles={{
+          content: { borderRadius: "24px", padding: "0 24px 24px" },
+          header: { borderBottom: "none" },
         }}
-        okText="Xác nhận thanh toán"
-        cancelText="Hủy"
-        width={560}
-        styles={{ body: { paddingTop: 8, paddingBottom: 16 } }}
       >
-        <Radio.Group
-          value={selectedPercent}
-          onChange={(e) => setSelectedPercent(e.target.value)}
-          className="w-full"
-        >
-          {[30, 50, 100].map((p) => {
-            const isActive = selectedPercent === p;
-            const amount = (finalAmount * p) / 100;
-            return (
-              <Radio
-                key={p}
-                value={p}
-                className={`flex justify-between items-center py-5 px-6 border-2 rounded-xl my-3 transition-all bg-white ${
-                  isActive
-                    ? "border-slate-900 shadow-md"
-                    : "border-slate-200 hover:border-slate-400"
-                }`}
-              >
-                <div className="flex flex-col gap-1">
-                  <span className="text-base text-slate-600">
-                    Thanh toán trước
-                  </span>
-                  <span className="text-xl font-semibold text-slate-900">
-                    {p}% giá trị đơn
-                  </span>
+        <div className="py-2">
+          <div className="flex flex-col gap-4">
+            {[30, 50, 100].map((p) => {
+              const isActive = selectedPercent === p;
+              const amount = (finalAmount * p) / 100;
+
+              return (
+                <div
+                  key={p}
+                  onClick={() => setSelectedPercent(p)}
+                  className={`relative cursor-pointer rounded-2xl p-5 border-2 transition-all duration-300 group
+                  ${
+                    isActive
+                      ? "border-purple-500 bg-purple-50 shadow-lg shadow-purple-100 translate-x-1"
+                      : "border-gray-100 bg-white hover:border-purple-200 hover:shadow-md"
+                  }`}
+                >
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-4">
+                      {/* Radio Circle Simulation */}
+                      <div
+                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all
+                        ${
+                          isActive
+                            ? "border-purple-600 bg-purple-600"
+                            : "border-gray-300 bg-white"
+                        }`}
+                      >
+                        {isActive && (
+                          <div className="w-2.5 h-2.5 rounded-full bg-white" />
+                        )}
+                      </div>
+
+                      <div className="flex flex-col">
+                        <span
+                          className={`text-base font-bold transition-colors ${
+                            isActive ? "text-purple-900" : "text-gray-700"
+                          }`}
+                        >
+                          Thanh toán trước {p}%
+                        </span>
+                        <span className="text-xs text-gray-400 font-medium">
+                          {p === 100
+                            ? "Hoàn tất đơn hàng ngay"
+                            : "Giữ chỗ và thanh toán sau"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="text-right">
+                      <span
+                        className={`block text-xl font-extrabold transition-colors ${
+                          isActive ? "text-purple-600" : "text-gray-900"
+                        }`}
+                      >
+                        {formatted(amount)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {isActive && (
+                    <div className="absolute -left-[2px] top-6 w-[4px] h-10 bg-purple-600 rounded-r-lg" />
+                  )}
+
                   {p === 30 && (
-                    <Tag color="blue" className="w-fit mt-1">
-                      Phổ biến
-                    </Tag>
+                    <div className="absolute -top-3 right-6 bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-md">
+                      PHỔ BIẾN NHẤT
+                    </div>
+                  )}
+                  {p === 100 && (
+                    <div className="absolute -top-3 right-6 bg-gradient-to-r from-emerald-500 to-green-500 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-md">
+                      TIỆN LỢI NHẤT
+                    </div>
                   )}
                 </div>
-                <div className="text-right">
-                  <span className="block text-xs text-slate-500">
-                    Số tiền tạm tính
-                  </span>
-                  <span className="text-2xl font-bold text-slate-900">
-                    {formatted(amount)}
-                  </span>
-                </div>
-              </Radio>
-            );
-          })}
-        </Radio.Group>
+              );
+            })}
+          </div>
+        </div>
       </Modal>
     </div>
   );

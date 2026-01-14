@@ -29,7 +29,7 @@ import {
 } from "react-icons/md";
 import { GiMoneyStack } from "react-icons/gi";
 import { AiOutlineProfile, AiOutlineAudit } from "react-icons/ai";
-import { RiCustomerService2Fill } from "react-icons/ri";
+import { RiCustomerService2Fill, RiRefund2Line } from "react-icons/ri";
 import { logout } from "../../features/auth/authSlice";
 import {
   getNotifications,
@@ -86,10 +86,14 @@ const getMenuItems = (role) => {
       { key: "service", icon: <MdMiscellaneousServices />, label: "Dịch vụ", path: "/dashboard/staff/service" },
       { key: "promotion", icon: <MdOutlineDiscount />, label: "Phiếu giảm", path: "/dashboard/staff/promotion" },
       { key: "transaction", icon: <GiMoneyStack />, label: "Quản lý giao dịch", path: "/dashboard/staff/transaction" },
+      { key: "refunds", icon: <RiRefund2Line />, label: "Yêu cầu hoàn tiền", path: "/dashboard/staff/refunds" },
       { key: "profile", icon: <AiOutlineProfile />, label: "Hồ sơ", path: "/dashboard/staff/profile" },
     ],
     customer: [
-      { key: "dashboard", icon: <FiHome />, label: "Bảng điều khiển", path: "/dashboard/customer" },
+      { key: "bookings", icon: <FiCalendar />, label: "Đơn của tôi", path: "/dashboard/customer/bookings" },
+      { key: "history", icon: <FiClock />, label: "Lịch sử thuê", path: "/dashboard/customer/history" },
+      { key: "custom-requests", icon: <RiCustomerService2Fill />, label: "Yêu cầu Set Design", path: "/dashboard/customer/custom-requests" },
+      { key: "profile", icon: <FiUser />, label: "Hồ sơ", path: "/dashboard/customer/profile" },
     ],
     admin: [
       { key: "dashboard", icon: <FiHome />, label: "Bảng điều khiển", path: "/dashboard/admin" },

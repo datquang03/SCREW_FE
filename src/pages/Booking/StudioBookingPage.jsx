@@ -13,7 +13,6 @@ import {
 
 import { motion, AnimatePresence } from "framer-motion";
 
-import Layout from "../../components/layout/Layout";
 import BookingStudioInfo from "./components/BookingStudioInfo";
 import BookingSchedulePage from "./components/BookingSchedulePage";
 import BookingStudioDetails from "./components/BookingStudioDetails";
@@ -140,8 +139,8 @@ const StudioBookingPage = () => {
   ];
 
   return (
-    <Layout>
-      <div className="max-w-6xl mx-auto px-4 py-10">
+    <>
+      <div className="max-w-6xl mx-auto px-4 pt-28 pb-10">
         {/* Nút quay lại */}
         {localStep > 0 && (
           <motion.div
@@ -229,7 +228,7 @@ const StudioBookingPage = () => {
           </Card>
         </div>
       )}
-    </Layout>
+    </>
   );
 };
 
