@@ -49,22 +49,22 @@ const StaffSidebar = () => {
 
   return (
     <div className="flex h-full w-full flex-col bg-gradient-to-b from-gray-950 via-gray-900 to-black text-white">
-      <div className="px-5 pb-8 pt-10 border-b border-white/10">
+      <div className="px-5 pb-5 pt-10 border-b border-white/10">
         <div className="flex items-center gap-3">
-          <div className="rounded-2xl bg-gradient-to-tr from-teal-400 to-cyan-500 px-4 py-3 shadow-lg shadow-teal-500/30">
-            <span className="text-2xl font-black text-white">S+</span>
+          <div className="rounded-xl bg-gradient-to-tr from-teal-400 to-cyan-500 px-3 py-2 shadow-lg shadow-teal-500/30">
+            <span className="text-xl font-black text-white">S+</span>
           </div>
           <div>
-            <p className="text-base uppercase tracking-[0.3em] text-white/60">
+            <p className="text-xs uppercase tracking-[0.2em] text-white/60">
               Staff
             </p>
-            <p className="text-lg font-semibold text-white">{roleText}</p>
+            <p className="text-base font-semibold text-white">{roleText}</p>
           </div>
         </div>
       </div>
 
-  <div className="px-5 py-4">
-        <span className="inline-flex w-full items-center justify-center rounded-2xl border border-white/15 bg-white/5 px-4 py-2 text-xs font-bold uppercase tracking-widest text-cyan-200">
+      <div className="px-5 py-3">
+        <span className="inline-flex w-full items-center justify-center rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-cyan-200">
           {roleText}
         </span>
       </div>
@@ -92,7 +92,7 @@ const StaffSidebar = () => {
             </NavLink>
           ),
         }))}
-        className="flex-1 bg-transparent border-0 px-4 [&_.ant-menu-item]:rounded-2xl [&_.ant-menu-item]:py-2"
+        className="flex-1 overflow-y-auto bg-transparent border-0 px-4 pb-6 [&_.ant-menu-item]:rounded-2xl [&_.ant-menu-item]:py-2"
         inlineIndent={16}
       />
     </div>
