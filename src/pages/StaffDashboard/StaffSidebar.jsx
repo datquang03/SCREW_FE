@@ -12,7 +12,7 @@ import {
 import { MdDesignServices, MdMiscellaneousServices, MdOutlineDiscount } from "react-icons/md";
 import { GiMoneyStack } from "react-icons/gi";
 import { AiOutlineProfile } from "react-icons/ai";
-import { RiCustomerService2Fill } from "react-icons/ri";
+import { RiCustomerService2Fill, RiRefund2Line } from "react-icons/ri";
 
 
 const StaffSidebar = () => {
@@ -32,6 +32,7 @@ const StaffSidebar = () => {
       { key: "service", icon: <MdMiscellaneousServices />, label: "Dịch vụ", path: "/dashboard/staff/service" },
       { key: "promotion", icon: <MdOutlineDiscount />, label: "Phiếu giảm", path: "/dashboard/staff/promotion" },
       { key: "transaction", icon: <GiMoneyStack />, label: "Quản lý giao dịch", path: "/dashboard/staff/transaction" },
+      { key: "refunds", icon: <RiRefund2Line />, label: "Yêu cầu hoàn tiền", path: "/dashboard/staff/refunds" },
       { key: "profile", icon: <AiOutlineProfile  />, label: "Hồ sơ", path: "/dashboard/staff/profile" },
     ],
     []

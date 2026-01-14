@@ -48,6 +48,7 @@ import {
   ProtectedRouteForAdmin,
 } from "./middlewares/AuthProtector";
 import StaffServicePage from "./pages/StaffDashboard/StaffServicePage";
+import CustomerRefundPage from "./pages/StaffDashboard/CustomerRefundPage";
 import StaffPromotionPage from "./pages/StaffDashboard/StaffPromotionPage";
 import StudioReviewsRecord from "./pages/Studio/StudioReviewsRecord";
 import StudioLikedPage from "./pages/Studio/StudioLikedPage";
@@ -207,6 +208,7 @@ const AppContent = () => {
               <Route path="service" element={<StaffServicePage />} />
               <Route path="promotion" element={<StaffPromotionPage />} />
               <Route path="transaction" element={<StaffTransactionPage />} />
+              <Route path="refunds" element={<CustomerRefundPage />} />
             </Route>
 
             {/* ADMIN DASHBOARD */}

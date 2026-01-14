@@ -199,6 +199,54 @@ export const checkOutBooking = createAsyncThunk(
   }
 );
 
+// 11) Cancel Booking (Refund Request)
+export const cancelBooking = createAsyncThunk(
+  "booking/cancelBooking",
+  async (bookingId, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+
+      const res = await axiosInstance.post(
+        `/bookings/${bookingId}/cancel`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      return res.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Không thể hủy đơn đặt" }
+      );
+    }
+  }
+);
+
+// 12) Request Refund
+export const requestRefund = createAsyncThunk(
+  "booking/requestRefund",
+  async (bookingId, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+
+      const res = await axiosInstance.post(
+        `/bookings/${bookingId}/refund-request`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      return res.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Không thể gửi yêu cầu hoàn tiền" }
+      );
+    }
+  }
+);
+
 // =========================================================
 // ================       INITIAL STATE     =================
 // =========================================================
@@ -377,6 +425,44 @@ const bookingSlice = createSlice({
         state.myBookings = state.myBookings.map((b) =>
           b._id === updated._id ? updated : b
         );
+      })
+
+      // ================= CANCEL BOOKING =================
+      .addCase(cancelBooking.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(cancelBooking.fulfilled, (state, action) => {
+        state.loading = false;
+        const updated = action.payload.booking || action.payload;
+
+        state.currentBooking = updated;
+        state.myBookings = state.myBookings.map((b) =>
+          b._id === updated._id ? updated : b
+        );
+      })
+      .addCase(cancelBooking.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // ================= REFUND REQUEST =================
+      .addCase(requestRefund.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(requestRefund.fulfilled, (state, action) => {
+        state.loading = false;
+        const updated = action.payload.booking || action.payload;
+
+        state.currentBooking = updated;
+        state.myBookings = state.myBookings.map((b) =>
+          b._id === updated._id ? updated : b
+        );
+      })
+      .addCase(requestRefund.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });

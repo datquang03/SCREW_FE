@@ -3,7 +3,13 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Button, Input, Tag, Spin } from "antd";
 import { useParams, useNavigate } from "react-router-dom";
-import { FiStar, FiMessageSquare } from "react-icons/fi";
+import {
+  FiUser,
+  FiPhone,
+  FiMail,
+  FiStar,
+  FiMessageSquare,
+} from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import {
   getSetDesignById,
@@ -23,6 +29,9 @@ const BookingSetDesignPage = () => {
 
   // FORM CUSTOM REQUEST
   const [form, setForm] = useState({
+    customerName: "",
+    email: "",
+    phoneNumber: "",
     description: "",
   });
   const [submitting, setSubmitting] = useState(false);
@@ -114,6 +123,42 @@ const BookingSetDesignPage = () => {
             </h2>
 
             <div className="space-y-6">
+              {/* FULL NAME */}
+              <div className="flex items-center gap-3 bg-white rounded-xl shadow p-4 border border-gray-100">
+                <FiUser className="text-indigo-500 text-xl" />
+                <input
+                  type="text"
+                  placeholder="Họ và tên"
+                  value={form.customerName}
+                  onChange={(e) => updateField("customerName", e.target.value)}
+                  className="w-full bg-transparent outline-none text-gray-700 placeholder-gradient"
+                />
+              </div>
+
+              {/* EMAIL */}
+              <div className="flex items-center gap-3 bg-white rounded-xl shadow p-4 border border-gray-100">
+                <FiMail className="text-indigo-500 text-xl" />
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={form.email}
+                  onChange={(e) => updateField("email", e.target.value)}
+                  className="w-full bg-transparent outline-none text-gray-700 placeholder-gradient"
+                />
+              </div>
+
+              {/* PHONE */}
+              <div className="flex items-center gap-3 bg-white rounded-xl shadow p-4 border border-gray-100">
+                <FiPhone className="text-indigo-500 text-xl" />
+                <input
+                  type="text"
+                  placeholder="Số điện thoại"
+                  value={form.phoneNumber}
+                  onChange={(e) => updateField("phoneNumber", e.target.value)}
+                  className="w-full bg-transparent outline-none text-gray-700 placeholder-gradient"
+                />
+              </div>
+
               {/* DESCRIPTION */}
               <div className="flex items-start gap-3 bg-white rounded-xl shadow p-4 border border-gray-100">
                 <FiMessageSquare className="text-indigo-500 text-xl mt-1" />
@@ -176,7 +221,12 @@ const BookingSetDesignPage = () => {
               whileTap={{ scale: 0.97 }}
               disabled={submitting}
               onClick={async () => {
-                if (!form.description) {
+                if (
+                  !form.customerName ||
+                  !form.email ||
+                  !form.phoneNumber ||
+                  !form.description
+                ) {
                   return message.error("Vui lòng nhập đầy đủ thông tin");
                 }
                 setSubmitting(true);
@@ -195,7 +245,7 @@ const BookingSetDesignPage = () => {
                     uploaded = img ? [img] : [];
                   }
                   const payload = {
-                    description: form.description,
+                    ...form,
                     setDesignId: id,
                     images: uploaded,
                   };
@@ -204,6 +254,9 @@ const BookingSetDesignPage = () => {
                   ).unwrap();
                   message.success("Gửi yêu cầu thiết kế thành công");
                   setForm({
+                    customerName: "",
+                    email: "",
+                    phoneNumber: "",
                     description: "",
                   });
                   setLocalFile(null);

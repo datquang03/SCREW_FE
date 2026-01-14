@@ -61,167 +61,128 @@ const ScheduleTable = ({
         key={key}
         onClick={() => handleDateClick(date)}
         className={`
-          relative border border-gray-200 cursor-pointer transition-all duration-300
-          ${isPast ? "cursor-not-allowed" : "hover:shadow-lg hover:border-blue-400"}
-          ${!isCurrentMonth ? "opacity-30 bg-gray-50" : "bg-white"}
-          ${isSelected ? "ring-4 ring-blue-500 ring-inset z-10 shadow-xl" : ""}
-          ${isToday && !isSelected ? "ring-2 ring-blue-300 ring-inset" : ""}
+          relative border-b border-gray-100 cursor-pointer transition-all duration-200 align-top group
+          ${isPast ? "cursor-not-allowed bg-gray-50/50" : "hover:bg-blue-50/30"}
+          ${!isCurrentMonth ? "opacity-30 pointer-events-none" : ""}
+          ${isSelected ? "ring-2 ring-blue-500 ring-inset z-10 bg-blue-50/20" : ""}
         `}
         style={{ 
-          height: "130px",
           cursor: isPast ? "not-allowed" : "pointer"
         }}
       >
-        <div className="h-full flex flex-col p-2.5 text-xs relative">
-          {/* Header: ngày + tag hôm nay */}
-          <div className="flex items-start justify-between mb-2">
-            <span
-              className={`
-                font-bold text-base leading-none transition-colors
-                ${
-                  isSelected
-                    ? "text-white bg-blue-500 rounded-lg px-2 py-1"
-                    : isToday
-                    ? "text-blue-700"
-                    : isCurrentMonth
-                    ? "text-gray-800"
-                    : "text-gray-400"
-                }
-              `}
-            >
+        <div className="w-full aspect-square flex flex-col p-1">
+          {/* Header: Date Number */}
+          <div className="flex justify-between items-start">
+            <div className={`
+              w-6 h-6 flex items-center justify-center rounded-full text-xs font-semibold transition-colors
+              ${
+                isSelected
+                  ? "bg-blue-600 text-white shadow-md scale-110"
+                  : isToday
+                  ? "bg-blue-100 text-blue-700 font-bold"
+                  : "text-gray-600"
+              }
+            `}>
               {date.date()}
-            </span>
-            {isSelected && (
-              <div className="absolute top-1.5 right-1.5 w-2 h-2 bg-white rounded-full animate-pulse" />
-            )}
+            </div>
+            
             {isToday && !isSelected && (
-              <Tag
-                color="cyan"
-                className="text-[9px] px-1.5 py-0 leading-tight h-5 font-semibold"
-              >
-                Hôm nay
-              </Tag>
+              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-1.5 mr-1" title="Hôm nay" />
             )}
           </div>
 
-          {/* Nội dung chính */}
-          <div className="flex-1 flex flex-col justify-between items-center gap-1">
+          {/* Body: Status Content */}
+          <div className="flex-1 flex flex-col justify-center items-center w-full">
             {status === "past" && !isToday && (
-              <div className="flex flex-col items-center gap-1">
-                <ClockCircleOutlined className="text-gray-400 text-lg" />
-                <span className="text-gray-500 text-[10px] font-semibold">Đã qua</span>
+              <div className="flex flex-col items-center opacity-40">
+                <ClockCircleOutlined className="text-gray-400 text-base" />
               </div>
             )}
 
             {status === "booked" && (
-              <div className="space-y-1.5 w-full text-center">
-                {/* Badge hiển thị số lượng slot đã đặt */}
-                <div className="flex flex-col items-center gap-1">
-                  <Badge
-                    count={bookings.length}
-                    style={{ 
-                      backgroundColor: "#ef4444",
-                      boxShadow: "0 0 0 2px white",
-                      fontSize: "12px",
-                      fontWeight: "bold"
-                    }}
-                    className="custom-badge"
-                  />
-                  <span className="text-[10px] text-gray-600 font-medium">Slot đặt</span>
+              <div className="w-full flex flex-col items-center gap-0.5">
+                <div className="bg-red-50 text-red-600 rounded px-1.5 py-0.5 text-[10px] font-bold border border-red-100 flex items-center gap-1">
+                  <div className="w-1 h-1 bg-current rounded-full" />
+                  {bookings.length} lịch
                 </div>
-
-                {/* Thông tin booking */}
-                {bookings[0] && (
-                  <div className="text-[10px] font-medium text-gray-700 space-y-0.5">
-                    {/* Tên khách hàng */}
-                    {bookings[0]?.booking?.customer?.fullName && (
-                      <div className="flex items-center justify-center gap-1">
-                        <div className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-                        <span className="truncate max-w-[85px] font-bold text-rose-600">
-                          {bookings[0].booking.customer.fullName
-                            .split(" ")
-                            .slice(-2)
-                            .join(" ")}
-                        </span>
-                      </div>
-                    )}
-                    
-                    {/* Time range */}
-                    {bookings[0]?.timeRange && (
-                      <div className="text-[9px] text-rose-600 font-bold bg-rose-50 px-1.5 py-0.5 rounded">
-                        {bookings[0].timeRange}
-                      </div>
-                    )}
-                  </div>
-                )}
+                {/* Chỉ hiện tên khách trên màn hình đủ lớn, hoặc rút gọn */}
+                 {bookings[0]?.booking?.customer?.fullName && (
+                    <div className="hidden md:block w-full text-[9px] text-gray-500 text-center truncate px-1">
+                       {bookings[0].booking.customer.fullName.split(' ').pop()}
+                    </div>
+                 )}
               </div>
             )}
 
             {status === "available" && !isPast && (
-              <div className="flex flex-col items-center gap-1.5">
-                <CheckCircleOutlined className="text-emerald-500 text-lg" />
-                <span className="text-emerald-700 font-bold text-[11px]">Có sẵn</span>
+              <div className="flex flex-col items-center gap-1 group-hover:-translate-y-0.5 transition-transform duration-300">
+                <CheckCircleOutlined className="text-emerald-500 text-lg sm:text-xl" />
+                <span className="text-[10px] font-medium text-emerald-600 bg-emerald-50 px-1.5 rounded-md hidden sm:block">
+                  Trống
+                </span>
+              </div>
+            )}
+            
+            {status === "available" && isToday && (
+              <div className="text-[9px] text-blue-500 font-medium mt-1 animate-pulse">
+                Đặt ngay
               </div>
             )}
           </div>
         </div>
-
-        {/* Background theo trạng thái */}
-        <div
-          className={`
-            absolute inset-0 -z-10 transition-colors duration-200
-            ${isSelected ? "bg-gradient-to-br from-blue-100 to-blue-50" : ""}
-            ${status === "booked" && !isSelected ? "bg-rose-50/70" : ""}
-            ${status === "available" && !isSelected ? "bg-emerald-50/50" : ""}
-            ${status === "past" && !isSelected ? "bg-gray-100/60" : ""}
-            ${isToday && status !== "booked" && !isSelected ? "bg-blue-50/50" : ""}
-          `}
-        />
       </td>
     );
   };
 
-  const weekDays = ["Chủ Nhật", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
+  const weekDays = ["CN", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
 
   return (
-    <div className="w-full">
-      {/* Header tháng */}
-      <div className="flex items-center justify-between mb-6 px-2">
+    <div className="w-full select-none">
+      {/* Header Month Navigation */}
+      <div className="flex items-center justify-between mb-6 px-4 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
         <button
           onClick={handlePrevMonth}
-          className="p-2 hover:bg-blue-100 hover:text-blue-600 rounded-lg transition-colors border border-gray-200"
+          className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 text-gray-600 rounded-full transition-all active:scale-95"
         >
-          <LeftOutlined className="text-lg" />
+          <LeftOutlined />
         </button>
-        <h3 className="text-2xl font-bold text-gray-800 min-w-fit">
-          {currentMonth.format("MMMM YYYY")}
-        </h3>
+        
+        <div className="flex flex-col items-center">
+          <h3 className="text-xl font-extrabold text-gray-800 m-0 uppercase tracking-tight">
+            Tháng {currentMonth.format("MM / YYYY")}
+          </h3>
+          <span className="text-xs text-gray-500 font-medium mt-0.5">Lịch đặt studio</span>
+        </div>
+
         <button
           onClick={handleNextMonth}
-          className="p-2 hover:bg-blue-100 hover:text-blue-600 rounded-lg transition-colors border border-gray-200"
+          className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 text-gray-600 rounded-full transition-all active:scale-95"
         >
-          <RightOutlined className="text-lg" />
+          <RightOutlined />
         </button>
       </div>
 
-      {/* Bảng lịch */}
-      <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-        <table className="w-full table-fixed">
+      {/* Calendar Grid */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+        <table className="w-full table-fixed border-collapse">
           <thead>
             <tr>
-              {weekDays.map((day) => (
+              {weekDays.map((day, index) => (
                 <th
                   key={day}
-                  className="py-4 text-sm font-bold text-gray-700 bg-gradient-to-b from-gray-100 to-gray-50 border-b-2 border-gray-200"
+                  className={`
+                    py-4 text-xs font-bold uppercase tracking-wider border-b-2 border-gray-100
+                    ${index === 0 || index === 6 ? 'text-blue-600 bg-blue-50/50' : 'text-gray-500 bg-gray-50/30'}
+                  `}
                 >
                   {day}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-gray-100">
             {weeks.map((week, i) => (
-              <tr key={i} className="divide-x divide-gray-200">
+              <tr key={i} className="divide-x divide-gray-100">
                 {week.map((date) => renderDateCell(date))}
               </tr>
             ))}

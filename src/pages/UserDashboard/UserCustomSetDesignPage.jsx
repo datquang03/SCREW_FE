@@ -13,6 +13,8 @@ import {
   FiCheckCircle,
   FiXCircle,
   FiImage,
+  FiEye,
+  FiTrash2,
 } from "react-icons/fi";
 import useToast from "../../hooks/useToast";
 import ToastNotification from "../../components/ToastNotification";
@@ -61,6 +63,7 @@ const UserCustomSetDesignPage = () => {
       {
         title: "Mã yêu cầu",
         dataIndex: "_id",
+        className: "hidden 2xl:table-cell",
         render: (id) => (
           <span className="font-mono font-semibold text-gray-800">
             #{id?.slice(-6) || "--"}
@@ -70,29 +73,34 @@ const UserCustomSetDesignPage = () => {
       {
         title: "Loại set",
         dataIndex: "preferredCategory",
-        render: (v) => v || "Không rõ",
+        className: "whitespace-nowrap",
+        render: (v) => <span className="font-medium">{v || "Không rõ"}</span>,
       },
       {
         title: "Mô tả",
         dataIndex: "description",
+        className: "hidden xl:table-cell min-w-[200px]",
+        width: 250,
         render: (v) => (
-          <span className="text-gray-700 text-sm line-clamp-2">
+          <div className="text-gray-700 text-sm line-clamp-2 max-w-[250px] whitespace-normal">
             {v || "Không có mô tả"}
-          </span>
+          </div>
         ),
       },
       {
         title: "Ngân sách",
         dataIndex: "budget",
+        className: "whitespace-nowrap",
         render: (b) => (b ? `${b.toLocaleString("vi-VN")}₫` : "Không rõ"),
       },
       {
         title: "Trạng thái",
         dataIndex: "status",
+        className: "whitespace-nowrap",
         render: (v) => {
           const cfg = statusConfig[v] || statusConfig.pending;
           return (
-            <Tag color={cfg.color} className="px-3 py-1 rounded-full">
+            <Tag color={cfg.color} className="px-3 py-1 rounded-full border-0">
               {cfg.label}
             </Tag>
           );
@@ -101,34 +109,37 @@ const UserCustomSetDesignPage = () => {
       {
         title: "Nhân viên",
         dataIndex: "processedBy",
+        className: "hidden 2xl:table-cell",
         render: (p) => p?.email || "Chưa có",
       },
       {
-        title: "Ảnh tham khảo",
+        title: "Ảnh",
         dataIndex: "referenceImages",
+        className: "hidden lg:table-cell",
+        width: 60,
         render: (imgs = [], record) => {
           const firstImg = imgs[0];
           const remain = imgs.length > 1 ? imgs.length - 1 : 0;
 
           return (
             <div
-              className="relative w-16 h-16 cursor-pointer"
+              className="relative w-10 h-10 cursor-pointer"
               onClick={() => setDetail(record)}
             >
               {firstImg ? (
                 <img
                   src={firstImg.url || firstImg}
                   alt="reference"
-                  className="w-full h-full object-cover rounded-lg border border-gray-200"
+                  className="w-full h-full object-cover rounded-md border border-gray-200"
                 />
               ) : (
-                <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center text-xs text-gray-400">
-                  No image
+                <div className="w-full h-full bg-gray-100 rounded-md flex items-center justify-center text-[10px] text-gray-400">
+                  -
                 </div>
               )}
 
               {remain > 0 && (
-                <div className="absolute -top-1 -right-1 bg-black/70 text-white text-xs font-semibold px-1.5 py-0.5 rounded-full">
+                <div className="absolute -top-1 -right-1 bg-black/70 text-white text-[8px] font-semibold px-1 py-0.5 rounded-full">
                   +{remain}
                 </div>
               )}
@@ -136,23 +147,29 @@ const UserCustomSetDesignPage = () => {
           );
         },
       },
-
       {
         title: "Ngày tạo",
         dataIndex: "createdAt",
-        render: (v) => (v ? dayjs(v).format("DD/MM/YYYY HH:mm") : "-"),
+        className: "hidden 2xl:table-cell whitespace-nowrap",
+        render: (v) => (v ? dayjs(v).format("DD/MM/YYYY") : "-"),
       },
       {
         title: "Thao tác",
         key: "actions",
+        className: "whitespace-nowrap text-right sticky right-0 bg-white shadow-xl md:shadow-none",
         render: (_, record) => (
-          <div className="flex gap-2">
-            <Button size="small" onClick={() => setDetail(record)}>
-              Xem
-            </Button>
+          <div className="flex justify-end gap-2">
+            <Button 
+                size="small" 
+                icon={<FiEye />}
+                className="flex items-center justify-center border-gray-200 text-gray-600 hover:text-blue-600 hover:border-blue-600"
+                onClick={() => setDetail(record)}
+            />
             <Button
               size="small"
               danger
+              icon={<FiTrash2 />}
+              className="flex items-center justify-center"
               loading={deletingId === record._id}
               onClick={async () => {
                 setDeletingId(record._id);
@@ -165,15 +182,14 @@ const UserCustomSetDesignPage = () => {
                   setDeletingId(null);
                 }
               }}
-            >
-              Xóa
-            </Button>
+            />
           </div>
         ),
       },
     ],
     [deletingId, dispatch]
   );
+
 
   const total = myCustomRequests.length;
   const pending = myCustomRequests.filter((r) => r.status === "pending").length;
