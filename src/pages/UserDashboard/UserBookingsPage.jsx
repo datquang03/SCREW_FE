@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Card, Typography, Tag, Button, Modal, Descriptions, Divider, Spin, DatePicker } from "antd";
+import { Card, Typography, Tag, Button, Modal, Descriptions, Divider, Spin, DatePicker, Form, Input } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import dayjs from "dayjs";
 import {
@@ -8,8 +8,8 @@ import {
   FiCheckCircle,
 } from "react-icons/fi";
 import DataTable from "../../components/dashboard/DataTable";
-import { getAllMyBookings, getBookingById, extendStudioSchedule } from "../../features/booking/bookingSlice";
-import { createRemainingPayment } from "../../features/payment/paymentSlice";
+import { getAllMyBookings, getBookingById, extendStudioSchedule, cancelBooking } from "../../features/booking/bookingSlice";
+import { createRemainingPayment, refundPayment } from "../../features/payment/paymentSlice";
 import { getStudioById } from '../../features/studio/studioSlice';
 
 const { Title, Text } = Typography;
@@ -60,6 +60,11 @@ const UserBookingsPage = () => {
   const [extendModalOpen, setExtendModalOpen] = useState(false);
   const [extendLoading, setExtendLoading] = useState(false);
   const [newEndTime, setNewEndTime] = useState(null);
+
+  // Refund Modal State
+  const [refundModalOpen, setRefundModalOpen] = useState(false);
+  const [refundLoading, setRefundLoading] = useState(false);
+  const [refundForm] = Form.useForm();
 
   useEffect(() => {
     dispatch(getAllMyBookings());
@@ -118,7 +123,57 @@ const UserBookingsPage = () => {
     }
   };
 
-  const handlePayRemaining = async () => {
+  const handleRefund = () => {
+    // Nếu status = cancelled -> Yêu cầu hoàn tiền
+    // Nếu status = pending/confirmed -> Hủy & Hoàn tiền (nếu đã thanh toán)
+    if (currentBooking?.status === "cancelled") {
+        setRefundModalOpen(true);
+    } else {
+        Modal.confirm({
+            title: "Xác nhận hủy đặt phòng",
+            content: "Bạn có chắc chắn muốn hủy đơn này không?",
+            okText: "Hủy phòng",
+            okType: "danger",
+            onOk: async () => {
+                 try {
+                     await dispatch(cancelBooking(currentBooking._id)).unwrap();
+                     Modal.success({ content: "Đã hủy đặt phòng thành công." });
+                     setDetailModalOpen(false);
+                 } catch (err) {
+                     Modal.error({ content: err.message || "Hủy thất bại" });
+                 }
+            }
+        });
+    }
+  };
+
+  // Nút mở modal Refund riêng (dành cho status cancelled hoặc manual refund)
+  const openRefundModal = () => {
+      setRefundModalOpen(true);
+  };
+
+  const submitRefund = async () => {
+      try {
+          const values = await refundForm.validateFields();
+          setRefundLoading(true);
+          
+          await dispatch(refundPayment({
+             bookingId: currentBooking._id,
+             ...values
+          })).unwrap();
+          
+          Modal.success({ content: "Đã gửi yêu cầu hoàn tiền thành công!" });
+          setRefundModalOpen(false);
+          setDetailModalOpen(false);
+          refundForm.resetFields();
+      } catch (err) {
+          Modal.error({ content: err.message || "Gửi yêu cầu thất bại" });
+      } finally {
+          setRefundLoading(false);
+      }
+   };
+
+   const handlePayRemaining = async () => {
     try {
       if (!currentBooking) return;
       
@@ -127,7 +182,6 @@ const UserBookingsPage = () => {
       ).unwrap();
 
       if (res?.qrCodeUrl) {
-         // Nếu có link thanh toán, chuyển hướng
          window.location.href = res.qrCodeUrl;
       } else {
          Modal.success({ content: "Tạo thanh toán thành công!" });
@@ -410,9 +464,14 @@ const UserBookingsPage = () => {
               </div>
               <div className="mt-4 flex justify-end gap-3 pt-4 border-t border-gray-200">
                 {["pending", "confirmed"].includes(currentBooking.status) && (
-                  <Button onClick={handleOpenExtend}>
-                    Gia hạn
-                  </Button>
+                  <>
+                    <Button onClick={handleOpenExtend}>
+                      Gia hạn
+                    </Button>
+                    <Button danger onClick={handleRefund}>
+                      Hủy đặt phòng
+                    </Button>
+                  </>
                 )}
                 <Button 
                   type="primary"
@@ -594,6 +653,50 @@ const UserBookingsPage = () => {
             Lưu ý: Việc gia hạn tùy thuộc vào tính khả dụng của studio.
           </p>
         </div>
+      </Modal>
+
+      {/* Refund Modal */}
+      <Modal
+         title="Yêu cầu hoàn tiền"
+         open={refundModalOpen}
+         onCancel={() => {
+            setRefundModalOpen(false);
+            refundForm.resetFields();
+         }}
+         footer={[
+            <Button key="cancel" onClick={() => setRefundModalOpen(false)}>Thoát</Button>,
+            <Button key="submit" type="primary" loading={refundLoading} onClick={submitRefund}>Đồng ý</Button>
+         ]}
+      >
+         <Form form={refundForm} layout="vertical">
+            <Form.Item
+               name="bankName"
+               label="Tên ngân hàng"
+               rules={[{ required: true, message: "Vui lòng nhập tên ngân hàng" }]}
+            >
+               <Input placeholder="Ví dụ: Vietcombank, Techcombank..." />
+            </Form.Item>
+            <Form.Item
+               name="accountNumber"
+               label="Số tài khoản"
+               rules={[{ required: true, message: "Vui lòng nhập số tài khoản" }]}
+            >
+               <Input placeholder="0123456789" />
+            </Form.Item>
+            <Form.Item
+               name="accountName"
+               label="Tên chủ tài khoản"
+               rules={[{ required: true, message: "Vui lòng nhập tên chủ tài khoản" }]}
+            >
+               <Input placeholder="NGUYEN VAN A" style={{ textTransform: 'uppercase'}} />
+            </Form.Item>
+            <Form.Item
+               name="reason"
+               label="Lý do (Tùy chọn)"
+            >
+               <Input.TextArea rows={3} placeholder="Lý do hoàn tiền..." />
+            </Form.Item>
+         </Form>
       </Modal>
     </div>
   );
