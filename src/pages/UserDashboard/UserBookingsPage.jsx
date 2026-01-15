@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Card, Typography, Tag, Button, Modal, Descriptions, Divider, Spin, Form, Input } from "antd";
+import { Card, Typography, Tag, Button, Modal, Descriptions, Divider, Spin, DatePicker } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import dayjs from "dayjs";
 import {
@@ -8,8 +8,7 @@ import {
   FiCheckCircle,
 } from "react-icons/fi";
 import DataTable from "../../components/dashboard/DataTable";
-import { getAllMyBookings, getBookingById, cancelBooking } from "../../features/booking/bookingSlice";
-import { refundPayment } from "../../features/payment/paymentSlice";
+import { getAllMyBookings, getBookingById, extendStudioSchedule } from "../../features/booking/bookingSlice";
 import { getStudioById } from '../../features/studio/studioSlice';
 
 const { Title, Text } = Typography;
@@ -56,10 +55,10 @@ const UserBookingsPage = () => {
   const [studioDetail, setStudioDetail] = useState(null);
   const [studioLoading, setStudioLoading] = useState(false);
 
-  // Refund Modal State
-  const [refundModalOpen, setRefundModalOpen] = useState(false);
-  const [refundLoading, setRefundLoading] = useState(false);
-  const [refundForm] = Form.useForm();
+  // Extend Modal State
+  const [extendModalOpen, setExtendModalOpen] = useState(false);
+  const [extendLoading, setExtendLoading] = useState(false);
+  const [newEndTime, setNewEndTime] = useState(null);
 
   useEffect(() => {
     dispatch(getAllMyBookings());
@@ -88,50 +87,34 @@ const UserBookingsPage = () => {
     }
   };
 
-  const handleCancel = () => {
-    if (!currentBooking) return;
-    
-    Modal.confirm({
-      title: "Xác nhận hủy đặt phòng",
-      content: "Bạn có chắc chắn muốn hủy đơn đặt này không? Nếu đã thanh toán, yêu cầu hoàn tiền sẽ được gửi.",
-      okText: "Hủy đặt phòng",
-      okType: "danger",
-      cancelText: "Không",
-      onOk: async () => {
-        try {
-           await dispatch(cancelBooking(currentBooking._id)).unwrap();
-           Modal.success({ content: "Đã gửi yêu cầu hủy thành công!" });
-           setDetailModalOpen(false);
-        } catch (err) {
-           Modal.error({ content: err.message || "Hủy thất bại" });
-        }
-      }
-    });
+  const handleOpenExtend = () => {
+    setExtendModalOpen(true);
+    setNewEndTime(null);
   };
 
-  const handleRefund = () => {
-    setRefundModalOpen(true);
-  };
-  
-  const submitRefund = async () => {
-     try {
-         const values = await refundForm.validateFields();
-         setRefundLoading(true);
-         
-         await dispatch(refundPayment({
-            bookingId: currentBooking._id,
-            ...values
-         })).unwrap();
-         
-         Modal.success({ content: "Đã gửi yêu cầu hoàn tiền thành công!" });
-         setRefundModalOpen(false);
-         setDetailModalOpen(false);
-         refundForm.resetFields();
-     } catch (err) {
-         Modal.error({ content: err.message || "Gửi yêu cầu thất bại" });
-     } finally {
-         setRefundLoading(false);
-     }
+  const submitExtend = async () => {
+    if (!newEndTime) {
+      Modal.error({ content: "Vui lòng chọn thời gian kết thúc mới" });
+      return;
+    }
+
+    try {
+      setExtendLoading(true);
+      await dispatch(
+        extendStudioSchedule({
+          bookingId: currentBooking._id,
+          newEndTime: newEndTime.toISOString(),
+        })
+      ).unwrap();
+
+      Modal.success({ content: "Gia hạn thành công!" });
+      setExtendModalOpen(false);
+      setDetailModalOpen(false);
+    } catch (err) {
+      Modal.error({ content: err.message || "Gia hạn thất bại" });
+    } finally {
+      setExtendLoading(false);
+    }
   };
 
   const bookingsColumns = useMemo(
@@ -352,50 +335,49 @@ const UserBookingsPage = () => {
             </Card>
 
             <Card className="border border-gray-100 rounded-2xl shadow-sm bg-gradient-to-br from-amber-50 to-white">
-              <Title level={5} className="mb-3 text-amber-700">Tài chính (Financials)</Title>
-              <div className="grid grid-cols-2 gap-4 text-sm mb-4 border-b border-gray-200 pb-4">
-                 <div>
-                    <div className="text-gray-500">Giá gốc (Original):</div>
-                    <div className="font-bold text-gray-900">{formatCurrency(currentBooking.financials?.originalAmount)}</div>
-                 </div>
-                 <div>
-                    <div className="text-gray-500">Phạt/Phí (Charge):</div>
-                    <div className="font-bold text-red-500">{formatCurrency(currentBooking.financials?.chargeAmount)}</div>
-                 </div>
-                 <div>
-                    <div className="text-gray-500">Hoàn tiền (Refund):</div>
-                    <div className="font-bold text-green-600">{formatCurrency(currentBooking.financials?.refundAmount)}</div>
-                 </div>
-                 <div>
-                    <div className="text-gray-500">Thực thu (Net):</div>
-                    <div className="font-bold text-blue-600">{formatCurrency(currentBooking.financials?.netAmount)}</div>
-                 </div>
-              </div>
-
-              <Title level={5} className="mb-3 text-amber-700">Thanh toán (Payment Summary)</Title>
+              <Title level={5} className="mb-3 text-amber-700">Tóm tắt thanh toán</Title>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <div className="text-gray-500">Tổng cộng (Total):</div>
-                  <div className="font-bold text-amber-600 text-lg">{formatCurrency(currentBooking.paymentSummary?.totalAmount)}</div>
+                  <div className="text-gray-500">Tổng phí (trước giảm):</div>
+                  <div className="font-bold text-gray-900">{formatCurrency(currentBooking.totalBeforeDiscount)}</div>
                 </div>
                 <div>
-                  <div className="text-gray-500">Đã thanh toán (Paid):</div>
+                  <div className="text-gray-500">Giảm giá:</div>
+                  <div className="font-bold text-green-600">-{formatCurrency(currentBooking.discountAmount)}</div>
+                </div>
+                <div>
+                  <div className="text-gray-500">Thành tiền cần thanh toán:</div>
+                  <div className="font-bold text-amber-600 text-lg">{formatCurrency(currentBooking.finalAmount)}</div>
+                </div>
+                <div>
+                  <div className="text-gray-500">Đã thanh toán:</div>
                   <div className="font-bold text-blue-600">
                     {formatCurrency(currentBooking.paymentSummary?.paidAmount)}
                   </div>
                 </div>
                 <div>
-                  <div className="text-gray-500">Còn lại (Remaining):</div>
+                  <div className="text-gray-500">Còn lại phải trả:</div>
                   <div className="font-bold text-orange-600 text-xl">
                     {formatCurrency(currentBooking.paymentSummary?.remainingAmount)}
                   </div>
                 </div>
                 <div>
-                  <div className="text-gray-500">Tỷ lệ thanh toán:</div>
-                  <Tag color={currentBooking.paymentSummary?.isPaidFully ? "green" : "orange"}>
-                      {currentBooking.paymentSummary?.paidPercentage}% 
-                      {currentBooking.paymentSummary?.isPaidFully ? " (Đủ)" : ""}
-                  </Tag>
+                  <div className="text-gray-500">Tỷ lệ đã thanh toán:</div>
+                  <div className="font-bold text-blue-500">
+                    {currentBooking.paymentSummary?.paidPercentage != null
+                      ? `${currentBooking.paymentSummary.paidPercentage}%`
+                      : currentBooking.finalAmount && currentBooking.paymentSummary?.paidAmount
+                        ? `${Math.round((currentBooking.paymentSummary.paidAmount / currentBooking.finalAmount) * 100)}%`
+                        : "-"}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-gray-500">Hoàn tiền:</div>
+                  <div className="font-bold text-green-600">{formatCurrency(currentBooking.financials?.refundAmount)}</div>
+                </div>
+                <div>
+                  <div className="text-gray-500">Phí phát sinh/phạt:</div>
+                  <div className="font-bold text-red-500">{formatCurrency(currentBooking.financials?.chargeAmount)}</div>
                 </div>
                 <div className="col-span-2">
                   <div className="text-gray-500">Tiền tệ:</div>
@@ -404,16 +386,10 @@ const UserBookingsPage = () => {
                   </div>
                 </div>
               </div>
-
               <div className="mt-4 flex justify-end gap-3 pt-4 border-t border-gray-200">
-                {currentBooking.status === "cancelled" && (
-                   <Button onClick={handleRefund}>
-                     Yêu cầu hoàn tiền
-                   </Button>
-                )}
                 {["pending", "confirmed"].includes(currentBooking.status) && (
-                  <Button danger onClick={handleCancel}>
-                    Hủy đặt phòng
+                  <Button onClick={handleOpenExtend}>
+                    Gia hạn
                   </Button>
                 )}
                 <Button type="primary" danger disabled={
@@ -566,48 +542,31 @@ const UserBookingsPage = () => {
         )}
       </Modal>
 
-      {/* Refund Modal */}
+      {/* Extend Modal */}
       <Modal
-         title="Yêu cầu hoàn tiền"
-         open={refundModalOpen}
-         onCancel={() => {
-            setRefundModalOpen(false);
-            refundForm.resetFields();
-         }}
-         footer={[
-            <Button key="cancel" onClick={() => setRefundModalOpen(false)}>Thoát</Button>,
-            <Button key="submit" type="primary" loading={refundLoading} onClick={submitRefund}>Đồng ý</Button>
-         ]}
+        title="Gia hạn thời gian đặt"
+        open={extendModalOpen}
+        onCancel={() => setExtendModalOpen(false)}
+        confirmLoading={extendLoading}
+        onOk={submitExtend}
       >
-         <Form form={refundForm} layout="vertical">
-            <Form.Item
-               name="bankName"
-               label="Tên ngân hàng"
-               rules={[{ required: true, message: "Vui lòng nhập tên ngân hàng" }]}
-            >
-               <Input placeholder="Ví dụ: Vietcombank, Techcombank..." />
-            </Form.Item>
-            <Form.Item
-               name="accountNumber"
-               label="Số tài khoản"
-               rules={[{ required: true, message: "Vui lòng nhập số tài khoản" }]}
-            >
-               <Input placeholder="0123456789" />
-            </Form.Item>
-            <Form.Item
-               name="accountName"
-               label="Tên chủ tài khoản"
-               rules={[{ required: true, message: "Vui lòng nhập tên chủ tài khoản" }]}
-            >
-               <Input placeholder="NGUYEN VAN A" style={{ textTransform: 'uppercase'}} />
-            </Form.Item>
-            <Form.Item
-               name="reason"
-               label="Lý do (Tùy chọn)"
-            >
-               <Input.TextArea rows={3} placeholder="Lý do hoàn tiền..." />
-            </Form.Item>
-         </Form>
+        <div className="py-4">
+          <p className="mb-2 font-medium">Chọn thời gian kết thúc mới:</p>
+          <DatePicker
+            showTime
+            className="w-full"
+            placeholder="Chọn thời gian kết thúc mới"
+            format="DD/MM/YYYY HH:mm"
+            value={newEndTime}
+            onChange={(val) => setNewEndTime(val)}
+            disabledDate={(current) =>
+              current && current < dayjs().endOf("day")
+            }
+          />
+           <p className="mt-2 text-xs text-gray-500">
+            Lưu ý: Việc gia hạn tùy thuộc vào tính khả dụng của studio.
+          </p>
+        </div>
       </Modal>
     </div>
   );
