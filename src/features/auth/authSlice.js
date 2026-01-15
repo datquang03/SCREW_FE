@@ -2,11 +2,10 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../../api/axiosInstance";
 
-// === UTILS ===
+/* ================= UTILS ================= */
 const saveToStorage = (user, token) => {
   if (user) localStorage.setItem("user", JSON.stringify(user));
   if (token) localStorage.setItem("token", token);
-  // refreshToken lưu riêng
 };
 
 const loadFromStorage = () => {
@@ -29,7 +28,7 @@ const clearStorage = () => {
   localStorage.removeItem("pendingEmail");
 };
 
-// === INITIAL STATE ===
+/* ================= INITIAL STATE ================= */
 const { user: storedUser, token: storedToken } = loadFromStorage();
 
 const initialState = {
@@ -39,16 +38,13 @@ const initialState = {
   error: null,
 };
 
-// === THUNKS ===
+/* ================= THUNKS ================= */
 export const register = createAsyncThunk(
   "auth/register",
   async (data, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.post(
-        "/auth/register/customer",
-        data
-      );
-      return response.data;
+      const res = await axiosInstance.post("/auth/register/customer", data);
+      return res.data;
     } catch (err) {
       return rejectWithValue(
         err.response?.data || { message: "Đăng ký thất bại" }
@@ -61,11 +57,8 @@ export const verifyOtp = createAsyncThunk(
   "auth/verifyOtp",
   async ({ email, code }, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.post("/auth/verify", {
-        email,
-        code,
-      });
-      return response.data;
+      const res = await axiosInstance.post("/auth/verify", { email, code });
+      return res.data;
     } catch (err) {
       return rejectWithValue(
         err.response?.data || { message: "Mã OTP không hợp lệ" }
@@ -78,8 +71,8 @@ export const resendOtp = createAsyncThunk(
   "auth/resendOtp",
   async ({ email }, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.post("/auth/resend-code", { email });
-      return response.data;
+      const res = await axiosInstance.post("/auth/resend-code", { email });
+      return res.data;
     } catch (err) {
       return rejectWithValue(
         err.response?.data || { message: "Gửi lại OTP thất bại" }
@@ -92,11 +85,11 @@ export const login = createAsyncThunk(
   "auth/login",
   async ({ username, password }, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.post("/auth/login", {
+      const res = await axiosInstance.post("/auth/login", {
         username,
         password,
       });
-      const { user, accessToken, refreshToken } = response.data.data;
+      const { user, accessToken, refreshToken } = res.data.data;
       localStorage.setItem("refreshToken", refreshToken);
       saveToStorage(user, accessToken);
       return { user, accessToken, refreshToken };
@@ -107,16 +100,17 @@ export const login = createAsyncThunk(
     }
   }
 );
+
 export const getCurrentUser = createAsyncThunk(
   "auth/getCurrentUser",
   async (_, { getState, rejectWithValue }) => {
     try {
       const { token } = getState().auth;
-      if (!token) throw new Error("No token available");
-      const response = await axiosInstance.get("/auth/me", {
+      if (!token) throw new Error("No token");
+      const res = await axiosInstance.get("/auth/me", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      return response.data;
+      return res.data;
     } catch (err) {
       return rejectWithValue(
         err.response?.data || { message: "Không thể lấy thông tin user" }
@@ -124,22 +118,20 @@ export const getCurrentUser = createAsyncThunk(
     }
   }
 );
-// === THUNKS (đã có) ===
+
 export const changePassword = createAsyncThunk(
   "auth/changePassword",
   async ({ oldPassword, newPassword }, { getState, rejectWithValue }) => {
     try {
       const { token } = getState().auth;
-      if (!token) throw new Error("Không có token để xác thực");
-
-      const response = await axiosInstance.post(
+      if (!token) throw new Error("No token");
+      const res = await axiosInstance.post(
         "/auth/change-password",
         { oldPassword, newPassword },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      return response.data; // <-- thành công
+      return res.data;
     } catch (err) {
-      // trả về lỗi chi tiết + status
       const payload = err.response?.data || {
         message: "Đổi mật khẩu thất bại",
       };
@@ -148,13 +140,13 @@ export const changePassword = createAsyncThunk(
     }
   }
 );
-// === THUNKS (THÊM MỚI) ===
+
 export const registerStaff = createAsyncThunk(
   "auth/registerStaff",
   async (data, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.post("/auth/register/staff", data);
-      return response.data;
+      const res = await axiosInstance.post("/auth/register/staff", data);
+      return res.data;
     } catch (err) {
       return rejectWithValue(
         err.response?.data || { message: "Đăng ký nhân viên thất bại" }
@@ -163,30 +155,23 @@ export const registerStaff = createAsyncThunk(
   }
 );
 
-// === UPLOAD AVATAR ===
 export const uploadAvatar = createAsyncThunk(
   "auth/uploadAvatar",
   async ({ avatar }, { getState, rejectWithValue }) => {
     try {
       const { token } = getState().auth;
-      if (!token) throw new Error("Không có token để xác thực");
+      if (!token) throw new Error("No token");
 
-      // Tạo FormData và append file avatar
       const formData = new FormData();
-      if (avatar instanceof File) {
-        formData.append("avatar", avatar);
-      } else {
-        throw new Error("Avatar phải là File object");
-      }
+      formData.append("avatar", avatar);
 
-      const response = await axiosInstance.post("/upload/avatar", formData, {
+      const res = await axiosInstance.post("/upload/avatar", formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
         },
       });
-
-      return response.data; // { success: true, data: { avatarUrl: "..." } }
+      return res.data;
     } catch (err) {
       return rejectWithValue(
         err.response?.data || { message: "Upload avatar thất bại" }
@@ -195,7 +180,26 @@ export const uploadAvatar = createAsyncThunk(
   }
 );
 
-// === SLICE ===
+/* ======= FORGOT PASSWORD (THÊM MỚI) ======= */
+export const forgotPassword = createAsyncThunk(
+  "auth/forgotPassword",
+  async ({ email }, { rejectWithValue }) => {
+    try {
+      const res = await axiosInstance.post("/api/auth/forgot-password", {
+        email,
+      });
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || {
+          message: "Gửi email khôi phục mật khẩu thất bại",
+        }
+      );
+    }
+  }
+);
+
+/* ================= SLICE ================= */
 const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -212,145 +216,152 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // === REGISTER ===
-      .addCase(register.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+      /* REGISTER */
+      .addCase(register.pending, (s) => {
+        s.loading = true;
+        s.error = null;
       })
-      .addCase(register.fulfilled, (state, action) => {
-        state.loading = false;
-        const email = action.meta.arg.email;
-        state.user = { ...action.payload.user, email, verified: false };
-        saveToStorage(state.user, null);
+      .addCase(register.fulfilled, (s, a) => {
+        s.loading = false;
+        const email = a.meta.arg.email;
+        s.user = { ...a.payload.user, email, verified: false };
+        saveToStorage(s.user, null);
         localStorage.setItem("pendingEmail", email);
       })
-      .addCase(register.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
+      .addCase(register.rejected, (s, a) => {
+        s.loading = false;
+        s.error = a.payload;
       })
 
-      // === VERIFY OTP ===
-      .addCase(verifyOtp.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+      /* VERIFY OTP */
+      .addCase(verifyOtp.pending, (s) => {
+        s.loading = true;
+        s.error = null;
       })
-      .addCase(verifyOtp.fulfilled, (state, action) => {
-        state.loading = false;
-        if (state.user) {
-          state.user.verified = true;
-          saveToStorage(state.user, null); // token = null
+      .addCase(verifyOtp.fulfilled, (s) => {
+        s.loading = false;
+        if (s.user) {
+          s.user.verified = true;
+          saveToStorage(s.user, null);
         }
         localStorage.removeItem("pendingEmail");
       })
-      .addCase(verifyOtp.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
+      .addCase(verifyOtp.rejected, (s, a) => {
+        s.loading = false;
+        s.error = a.payload;
       })
 
-      // === RESEND OTP ===
-      .addCase(resendOtp.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+      /* RESEND OTP */
+      .addCase(resendOtp.pending, (s) => {
+        s.loading = true;
+        s.error = null;
       })
-      .addCase(resendOtp.fulfilled, (state) => {
-        state.loading = false;
+      .addCase(resendOtp.fulfilled, (s) => {
+        s.loading = false;
       })
-      .addCase(resendOtp.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
+      .addCase(resendOtp.rejected, (s, a) => {
+        s.loading = false;
+        s.error = a.payload;
       })
 
-      // === LOGIN ===
-      .addCase(login.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+      /* LOGIN */
+      .addCase(login.pending, (s) => {
+        s.loading = true;
+        s.error = null;
       })
-      .addCase(login.fulfilled, (state, action) => {
-        state.loading = false;
-        state.user = { ...action.payload.user, verified: true };
-        state.token = action.payload.accessToken;
-        localStorage.setItem("refreshToken", action.payload.refreshToken);
-        saveToStorage(state.user, state.token);
+      .addCase(login.fulfilled, (s, a) => {
+        s.loading = false;
+        s.user = { ...a.payload.user, verified: true };
+        s.token = a.payload.accessToken;
+        saveToStorage(s.user, s.token);
       })
-      .addCase(login.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
+      .addCase(login.rejected, (s, a) => {
+        s.loading = false;
+        s.error = a.payload;
       })
-      .addCase(getCurrentUser.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      // === GET CURRENT USER ===
-      .addCase(getCurrentUser.fulfilled, (state, action) => {
-        state.loading = false;
-        state.user = { ...state.user, ...action.payload };
-        saveToStorage(state.user, state.token);
-      })
-      .addCase(getCurrentUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
 
-        if (action.payload?.status === 401) {
-        }
+      /* GET CURRENT USER */
+      .addCase(getCurrentUser.pending, (s) => {
+        s.loading = true;
+        s.error = null;
       })
-      // === CHANGE PASSWORD ===
-      .addCase(changePassword.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+      .addCase(getCurrentUser.fulfilled, (s, a) => {
+        s.loading = false;
+        s.user = { ...s.user, ...a.payload };
+        saveToStorage(s.user, s.token);
       })
-      .addCase(changePassword.fulfilled, (state) => {
-        state.loading = false;
-        // có thể lưu message thành công nếu backend trả về
-        // state.success = action.payload.message;
+      .addCase(getCurrentUser.rejected, (s, a) => {
+        s.loading = false;
+        s.error = a.payload;
       })
-      .addCase(changePassword.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload; // { message, status, ... }
 
-        // 401 → token hết hạn → logout tự động
-        if (action.payload?.status === 401) {
-          state.user = null;
-          state.token = null;
+      /* CHANGE PASSWORD */
+      .addCase(changePassword.pending, (s) => {
+        s.loading = true;
+        s.error = null;
+      })
+      .addCase(changePassword.fulfilled, (s) => {
+        s.loading = false;
+      })
+      .addCase(changePassword.rejected, (s, a) => {
+        s.loading = false;
+        s.error = a.payload;
+        if (a.payload?.status === 401) {
+          s.user = null;
+          s.token = null;
           clearStorage();
         }
       })
-      // === REGISTER STAFF ===
-      .addCase(registerStaff.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+
+      /* REGISTER STAFF */
+      .addCase(registerStaff.pending, (s) => {
+        s.loading = true;
+        s.error = null;
       })
-      .addCase(registerStaff.fulfilled, (state, action) => {
-        state.loading = false;
-        const email = action.meta.arg.email;
-        state.user = { ...action.payload.user, email, verified: false };
-        saveToStorage(state.user, null);
+      .addCase(registerStaff.fulfilled, (s, a) => {
+        s.loading = false;
+        const email = a.meta.arg.email;
+        s.user = { ...a.payload.user, email, verified: false };
+        saveToStorage(s.user, null);
         localStorage.setItem("pendingEmail", email);
       })
-      .addCase(registerStaff.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
+      .addCase(registerStaff.rejected, (s, a) => {
+        s.loading = false;
+        s.error = a.payload;
       })
-      // === UPLOAD AVATAR ===
-      .addCase(uploadAvatar.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+
+      /* UPLOAD AVATAR */
+      .addCase(uploadAvatar.pending, (s) => {
+        s.loading = true;
+        s.error = null;
       })
-      .addCase(uploadAvatar.fulfilled, (state, action) => {
-        state.loading = false;
-        // Cập nhật avatar trong user state
-        const avatarUrl =
-          action.payload?.data?.avatarUrl ||
-          action.payload?.avatarUrl ||
-          action.payload?.data?.avatar ||
-          action.payload?.avatar;
-        if (avatarUrl && state.user) {
-          state.user.avatar = avatarUrl;
-          saveToStorage(state.user, state.token);
+      .addCase(uploadAvatar.fulfilled, (s, a) => {
+        s.loading = false;
+        const avatar =
+          a.payload?.data?.avatarUrl ||
+          a.payload?.avatarUrl ||
+          a.payload?.avatar;
+        if (avatar && s.user) {
+          s.user.avatar = avatar;
+          saveToStorage(s.user, s.token);
         }
       })
-      .addCase(uploadAvatar.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
+      .addCase(uploadAvatar.rejected, (s, a) => {
+        s.loading = false;
+        s.error = a.payload;
+      })
+
+      /* FORGOT PASSWORD */
+      .addCase(forgotPassword.pending, (s) => {
+        s.loading = true;
+        s.error = null;
+      })
+      .addCase(forgotPassword.fulfilled, (s) => {
+        s.loading = false;
+      })
+      .addCase(forgotPassword.rejected, (s, a) => {
+        s.loading = false;
+        s.error = a.payload;
       });
   },
 });
