@@ -247,6 +247,30 @@ export const requestRefund = createAsyncThunk(
   }
 );
 
+// 13) Extend Studio Schedule
+export const extendStudioSchedule = createAsyncThunk(
+  "booking/extendStudioSchedule",
+  async ({ bookingId, newEndTime }, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+
+      const res = await axiosInstance.post(
+        `/bookings/${bookingId}/extend`,
+        { newEndTime },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      return res.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Không thể gia hạn lịch đặt" }
+      );
+    }
+  }
+);
+
 // =========================================================
 // ================       INITIAL STATE     =================
 // =========================================================
@@ -461,6 +485,25 @@ const bookingSlice = createSlice({
         );
       })
       .addCase(requestRefund.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // ================= EXTEND SCHEDULE =================
+      .addCase(extendStudioSchedule.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(extendStudioSchedule.fulfilled, (state, action) => {
+        state.loading = false;
+        const updated = action.payload.booking || action.payload;
+
+        state.currentBooking = updated;
+        state.myBookings = state.myBookings.map((b) =>
+          b._id === updated._id ? updated : b
+        );
+      })
+      .addCase(extendStudioSchedule.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
