@@ -333,10 +333,11 @@ const StaffStudiosPage = () => {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
+      width: 200,
       render: (status, record) => (
         <Select
           defaultValue={status}
-          style={{ width: 160 }}
+          style={{ width: 180 }}
           onChange={(value) => handleStatusChange(record._id, value)}
           options={[
             { value: "active", label: "Hoạt động" },
@@ -392,7 +393,7 @@ const StaffStudiosPage = () => {
   ];
 
   return (
-    <div className="space-y-6 max-w-[1400px] mx-auto px-4 md:px-6 overflow-hidden">
+    <div className="space-y-6 max-w-[1400px] mx-auto px-4 md:px-6">
       {/* Header */}
       <div className="relative overflow-hidden rounded-2xl p-6 md:p-8 bg-gradient-to-br from-violet-100 via-purple-50 to-white shadow-lg border border-violet-200/50">
         <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full bg-purple-300/30 blur-3xl" />
@@ -415,7 +416,7 @@ const StaffStudiosPage = () => {
       </div>
 
       {/* Table */}
-      <Card className="overflow-x-auto rounded-2xl shadow-lg border border-gray-100">
+      <Card className="rounded-2xl shadow-lg border border-gray-100">
           <Table
           columns={studiosColumns}
           dataSource={studios.map((s) => ({ key: s._id, ...s }))}
@@ -425,7 +426,7 @@ const StaffStudiosPage = () => {
             showSizeChanger: false,
           }}
             loading={loading}
-            scroll={{ x: 800 }}
+            scroll={{ x: 1000 }}
             className="responsive-table"
           />
       </Card>
@@ -692,7 +693,7 @@ const StaffStudiosPage = () => {
                 </Title>
                 <Select
                   value={detailStudio.status}
-                  style={{ width: 160 }}
+                  style={{ width: 180 }}
                   disabled
                   options={[
                     { value: "active", label: "Hoạt động" },
