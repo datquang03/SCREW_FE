@@ -185,7 +185,7 @@ export const forgotPassword = createAsyncThunk(
   "auth/forgotPassword",
   async ({ email }, { rejectWithValue }) => {
     try {
-      const res = await axiosInstance.post("/api/auth/forgot-password", {
+      const res = await axiosInstance.post("/auth/forgot-password", {
         email,
       });
       return res.data;
