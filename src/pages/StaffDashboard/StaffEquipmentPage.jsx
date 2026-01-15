@@ -36,7 +36,7 @@ import {
 } from "../../features/equipment/equipmentSlice";
 
 import {
-  uploadEquipmentImage,
+  uploadImages,
   clearUploadError,
 } from "../../features/upload/uploadSlice";
 
@@ -146,19 +146,19 @@ const StaffEquipmentPage = () => {
         })
       ).unwrap();
 
-      // Bước 2: Upload ảnh
+      // Bước 2: Upload ảnh bằng uploadImages
       const file = createFileList[0];
-      const uploadResult = await dispatch(
-        uploadEquipmentImage({ equipmentId: newEquipment._id, file })
-      ).unwrap();
+      const uploadResult = await dispatch(uploadImages([file])).unwrap();
 
       // Bước 3: Cập nhật lại equipment với URL ảnh mới
-      await dispatch(
-        updateEquipment({
-          equipmentId: newEquipment._id,
-          updateData: { image: uploadResult.image || uploadResult.url },
-        })
-      ).unwrap();
+      if (uploadResult && uploadResult.images && uploadResult.images.length > 0) {
+        await dispatch(
+          updateEquipment({
+            equipmentId: newEquipment._id,
+            updateData: { image: uploadResult.images[0].url },
+          })
+        ).unwrap();
+      }
 
       displayToast("success", "Thêm thiết bị thành công!");
       setIsCreateModalOpen(false);
