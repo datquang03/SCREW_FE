@@ -9,6 +9,7 @@ import {
 } from "react-icons/fi";
 import DataTable from "../../components/dashboard/DataTable";
 import { getAllMyBookings, getBookingById, extendStudioSchedule } from "../../features/booking/bookingSlice";
+import { createRemainingPayment } from "../../features/payment/paymentSlice";
 import { getStudioById } from '../../features/studio/studioSlice';
 
 const { Title, Text } = Typography;
@@ -114,6 +115,27 @@ const UserBookingsPage = () => {
       Modal.error({ content: err.message || "Gia hạn thất bại" });
     } finally {
       setExtendLoading(false);
+    }
+  };
+
+  const handlePayRemaining = async () => {
+    try {
+      if (!currentBooking) return;
+      
+      const res = await dispatch(
+        createRemainingPayment({ bookingId: currentBooking._id })
+      ).unwrap();
+
+      if (res?.qrCodeUrl) {
+         // Nếu có link thanh toán, chuyển hướng
+         window.location.href = res.qrCodeUrl;
+      } else {
+         Modal.success({ content: "Tạo thanh toán thành công!" });
+         setDetailModalOpen(false);
+         dispatch(getAllMyBookings());
+      }
+    } catch (err) {
+       Modal.error({ content: err.message || "Không thể tạo thanh toán phần còn lại" });
     }
   };
 
@@ -392,9 +414,14 @@ const UserBookingsPage = () => {
                     Gia hạn
                   </Button>
                 )}
-                <Button type="primary" danger disabled={
-                  (currentBooking.paymentSummary?.remainingAmount ?? currentBooking.financials?.netAmount) <= 0
-                }>
+                <Button 
+                  type="primary"
+                  danger
+                  onClick={handlePayRemaining}
+                  disabled={
+                    (currentBooking.paymentSummary?.remainingAmount ?? currentBooking.financials?.netAmount) <= 0
+                  }
+                >
                   Tạo phí trả còn lại
                 </Button>
               </div>
