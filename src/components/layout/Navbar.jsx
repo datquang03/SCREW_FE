@@ -272,7 +272,7 @@ const Navbar = () => {
       transition={{ duration: 0.5, ease: "easeOut" }}
       className={`${headerClass} z-[100] transition-all duration-300`}
     >
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-8 py-4 md:py-6">
+      <div className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-8 py-1 md:py-2">
         {/* ===== LOGO ===== */}
         <Link to="/" className="navbar-logo">
           <motion.img

@@ -4,6 +4,8 @@ import { useSelector } from "react-redux";
 import { Menu } from "antd";
 import { FiHome, FiCalendar, FiVideo, FiClock, FiUser } from "react-icons/fi";
 import { AiOutlineAudit } from "react-icons/ai";
+import { GoBookmark } from "react-icons/go";
+
 
 const roleTextMap = {
   customer: "Người dùng",
@@ -27,7 +29,7 @@ const UserSidebar = ({ variant = "customer" }) => {
       {
         key: "history",
         icon: <FiClock />,
-        label: "Lịch sử thuê",
+        label: "Lịch sử giao dịch",
         path: "/dashboard/customer/history",
       },
         {
@@ -36,6 +38,13 @@ const UserSidebar = ({ variant = "customer" }) => {
         label: "Yêu cầu Set Design",
         path: "/dashboard/customer/custom-requests",
       },
+      {
+        key: "/set-designs/bookings",
+        icon: <GoBookmark />,
+        label: "Lịch sử giao dịch Set Design",
+        path: "/dashboard/customer/set-designs/bookings",
+      },
+
       {
         key: "profile",
         icon: <FiUser />,
