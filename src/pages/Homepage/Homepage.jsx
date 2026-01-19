@@ -23,7 +23,7 @@ const Homepage = () => {
           <div className="flex items-center gap-4">
             {[
               { icon: <CameraOutlined />, label: "Đặt studio", href: "/studio" },
-              { icon: <ShoppingOutlined />, label: "Set design", href: "/set-design" },
+              { icon: <ShoppingOutlined />, label: "Set design", href: "/set-designs" },
               { icon: <MessageOutlined />, label: "Liên hệ tư vấn", href: "/contact" },
             ].map((item) => (
               <a
