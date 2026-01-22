@@ -2,11 +2,44 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { createMessage } from "../../../features/message/messageSlice";
+import { getSocket } from "../../../api/socketInstance";
 import { PaperClipOutlined, SendOutlined } from "@ant-design/icons";
 
 const MessageInput = ({ conversation, currentUserId }) => {
   const dispatch = useDispatch();
   const [content, setContent] = useState("");
+  const typingTimeoutRef = React.useRef(null);
+
+  // Emit typing event
+  const handleTyping = (text) => {
+    setContent(text);
+    
+    const socket = getSocket();
+    if (socket && socket.connected) {
+      if (!typingTimeoutRef.current) {
+        socket.emit("typing", {
+          room: conversation.bookingId || conversation.conversationId || conversation._id,
+          userId: currentUserId,
+          isTyping: true
+        });
+      }
+
+      // Clear existing timeout
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+
+      // Set new timeout to stop typing
+      typingTimeoutRef.current = setTimeout(() => {
+        socket.emit("typing", {
+           room: conversation.bookingId || conversation.conversationId || conversation._id,
+           userId: currentUserId,
+           isTyping: false
+        });
+        typingTimeoutRef.current = null;
+      }, 2000);
+    }
+  };
 
   // Lấy partnerId từ nhiều nguồn khác nhau
   const getPartnerId = () => {
@@ -82,7 +115,7 @@ const MessageInput = ({ conversation, currentUserId }) => {
       </button>
       <input
         value={content}
-        onChange={(e) => setContent(e.target.value)}
+        onChange={(e) => handleTyping(e.target.value)}
         placeholder="Nhập tin nhắn..."
         className="flex-1 px-4 py-3 bg-gray-50 rounded-2xl outline-none focus:bg-white focus:border-amber-300 border"
       />

@@ -127,9 +127,40 @@ export const deletePromotion = createAsyncThunk(
   }
 );
 
+// GET PROMOTION FOR CUSTOMER (ACTIVE)
+export const getPromotionForCustomer = createAsyncThunk(
+  "promotion/getPromotionForCustomer",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get("/promotions/active");
+      return response.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Không thể lấy danh sách khuyến mãi" }
+      );
+    }
+  }
+);
+
+// GET PROMOTION FOR CUSTOMER BY ID (ACTIVE)
+export const getPromotionForCustomerById = createAsyncThunk(
+  "promotion/getPromotionForCustomerById",
+  async (promotionId, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get(`/promotions/active/${promotionId}`);
+      return response.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Không thể lấy chi tiết khuyến mãi" }
+      );
+    }
+  }
+);
+
 // INITIAL STATE
 const initialState = {
   promotions: [],
+  activePromotions: [],
   currentPromotion: null,
   promotionStats: null, // ← THÊM MỚI: lưu thống kê
   statsLoading: false, // ← loading riêng cho stats
@@ -243,6 +274,34 @@ const promotionSlice = createSlice({
         }
       })
       .addCase(deletePromotion.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // GET PROMOTION FOR CUSTOMER
+      .addCase(getPromotionForCustomer.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getPromotionForCustomer.fulfilled, (state, action) => {
+        state.loading = false;
+        state.activePromotions = action.payload || [];
+      })
+      .addCase(getPromotionForCustomer.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // GET PROMOTION FOR CUSTOMER BY ID
+      .addCase(getPromotionForCustomerById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getPromotionForCustomerById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentPromotion = action.payload;
+      })
+      .addCase(getPromotionForCustomerById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

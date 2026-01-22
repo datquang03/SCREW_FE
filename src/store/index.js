@@ -21,6 +21,8 @@ import aiReducer from "../features/AI/AISlice";
 import messageReducer from "../features/message/messageSlice";
 import uploadReducer from "../features/upload/uploadSlice";
 import searchReducer from "../features/search/searchSlice";
+import reportReducer from "../features/report/reportSlice";
+
 const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -44,6 +46,7 @@ const store = configureStore({
     message: messageReducer,
     upload: uploadReducer,
     search: searchReducer,
+    report: reportReducer,
   },
 });
 

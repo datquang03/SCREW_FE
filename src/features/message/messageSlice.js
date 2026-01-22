@@ -45,7 +45,22 @@ const normalizeIdFormat = (id) => {
 const normalizeConversationId = (conv) => {
   if (!conv) return "";
 
-  // Kiểm tra conversationId trước (nếu có và hợp lệ)
+  // 1. Nếu có bookingId, ưu tiên dùng nó
+  if (conv.bookingId) return conv.bookingId;
+
+  // 2. Nếu conversationId là ID đơn (24 chars) -> Booking Chat / Group
+  // (Chúng ta kiểm tra độ dài và không chứa ký tự nối "-" hoặc "_")
+  if (typeof conv.conversationId === "string" && conv.conversationId.length === 24 && !conv.conversationId.includes("-")) {
+    return conv.conversationId;
+  }
+  if (typeof conv._id === "string" && conv._id.length === 24 && !conv._id.includes("-") && !conv._id.startsWith("ObjectId")) {
+     // Lưu ý: conv._id thường là 24 chars. Nhưng nếu logic Direct Message yêu cầu user-user, 
+     // ta phải cẩn thận. Tuy nhiên các đoạn code dưới sẽ xử lý user-user nếu cần.
+     // Ở đây nếu backend trả về object conversation (booking) có _id mà không phải user-user, ta có thể muốn dùng nó?
+     // Tuy nhiên logic cũ ưu tiên tìm participants.
+  }
+
+  // Kiểm tra conversationId trước (nếu có và hợp lệ theo format user-user)
   if (typeof conv.conversationId === "string" && isValidConversationId(conv.conversationId)) {
     return normalizeIdFormat(conv.conversationId);
   }
@@ -164,10 +179,13 @@ export const getConversations = createAsyncThunk(
 
 export const getMessagesByConversation = createAsyncThunk(
   "message/getMessagesByConversation",
-  async (conversationId, { rejectWithValue, getState }) => {
+  async (arg, { rejectWithValue, getState }) => {
     try {
       const { token } = getState().auth;
       if (!token) throw new Error("No token found");
+
+      // Support passing object with options or just string ID
+      const conversationId = typeof arg === 'object' ? arg.conversationId : arg;
 
       const response = await axiosInstance.get(
         `/messages/conversation/${conversationId}`,
@@ -267,9 +285,25 @@ const messageSlice = createSlice({
       const message = action.payload;
       const fromId = message.fromUserId?._id || message.fromUserId;
       const toId = message.toUserId?._id || message.toUserId;
-      const convId = 
-        normalizeIdFormat(message.conversationId) ||
-        (fromId && toId ? [String(fromId).trim(), String(toId).trim()].filter(Boolean).sort().join("-") : "");
+      
+      let convId = "";
+
+      // 1. Nếu có bookingId, ưu tiên dùng nó
+      if (message.bookingId) {
+        convId = message.bookingId;
+      }
+      // 2. Nếu conversationId là ID đơn (24 chars) -> Booking Chat / Group
+      else if (message.conversationId && message.conversationId.length === 24) {
+        convId = message.conversationId;
+      }
+      // 3. Logic cũ: Direct Message -> Tạo ID từ 2 user ID
+      else if (fromId && toId) {
+        convId = [String(fromId).trim(), String(toId).trim()].sort().join("-");
+      } 
+      // 4. Fallback
+      else {
+        convId = normalizeIdFormat(message.conversationId);
+      }
 
       if (!convId) return;
 
@@ -352,9 +386,21 @@ const messageSlice = createSlice({
         // Đảm bảo conversationId được tính đúng (dùng format "-" để nhất quán với backend)
         const fromId = message.fromUserId?._id || message.fromUserId;
         const toId = message.toUserId?._id || message.toUserId;
-        const convId = 
-          normalizeIdFormat(message.conversationId) || 
-          (fromId && toId ? [String(fromId).trim(), String(toId).trim()].filter(Boolean).sort().join("-") : normalizeConversationId(message));
+        
+        let convId = "";
+        
+        // 1. Ưu tiên Booking ID / Single ID phù hợp socket
+        if (message.bookingId) {
+          convId = message.bookingId;
+        } else if (message.conversationId && message.conversationId.length === 24) {
+          convId = message.conversationId;
+        } 
+        // 2. Fallback sang logic User-User
+        else if (fromId && toId) {
+          convId = [String(fromId).trim(), String(toId).trim()].sort().join("-");
+        } else {
+           convId = normalizeIdFormat(message.conversationId) || normalizeConversationId(message);
+        }
 
         // Lưu message vào state với đầy đủ thông tin từ backend (không có _currentUserId)
         if (!state.messages[convId]) state.messages[convId] = [];
@@ -441,8 +487,12 @@ const messageSlice = createSlice({
       })
 
       // GET MESSAGES BY CONVERSATION
-      .addCase(getMessagesByConversation.pending, (state) => {
-        state.loadingMessages = true;
+      .addCase(getMessagesByConversation.pending, (state, action) => {
+        // Only set loading if not silent
+        const isSilent = typeof action.meta.arg === 'object' ? action.meta.arg.isSilent : false;
+        if (!isSilent) {
+           state.loadingMessages = true;
+        }
       })
       .addCase(getMessagesByConversation.fulfilled, (state, action) => {
         state.loadingMessages = false;

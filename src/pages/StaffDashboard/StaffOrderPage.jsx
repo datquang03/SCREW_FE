@@ -23,7 +23,8 @@ import {
   FiMail,
   FiCalendar,
   FiClock,
-  FiCheckCircle, // ĐÃ THÊM ICON NÀY ĐỂ FIX LỖI!
+  FiCheckCircle,
+  FiBox,
 } from "react-icons/fi";
 import DataTable from "../../components/dashboard/DataTable";
 import {
@@ -79,7 +80,14 @@ const getStatusDisplay = (booking) => {
   const hasNoShow = booking.events?.some((e) => e.type === "NO_SHOW");
   if (hasNoShow)
     return { label: "Không đến (No-Show)", color: "red", icon: <FiUserX /> };
-  if (booking.checkOutAt)
+
+  // Kiểm tra đã check-out
+  const hasCheckOut =
+    booking.checkOutAt ||
+    booking.status === "completed" ||
+    booking.events?.some((e) => e.type === "CHECK_OUT");
+
+  if (hasCheckOut)
     return { label: "Đã check-out", color: "green", icon: <FiLogOut /> };
 
   // Kiểm tra status "checked_in" hoặc có event CHECK_IN
@@ -153,6 +161,12 @@ const StaffOrderPage = () => {
       record.events?.some((e) => e.type === "CHECK_IN") ||
       checkInAt;
 
+    // Kiểm tra đã check-out
+    const hasCheckOut =
+      status === "completed" ||
+      record.events?.some((e) => e.type === "CHECK_OUT") ||
+      checkOutAt;
+
     const items = [
       {
         key: "view",
@@ -164,26 +178,27 @@ const StaffOrderPage = () => {
         label: <span className="text-blue-600 font-medium">Xác nhận đơn</span>,
         onClick: () => handleAction(confirmBooking, _id),
       },
-      (status === "confirmed" || status === "checked_in") &&
-        !hasCheckIn && {
-          key: "checkin",
-          label: (
-            <div className="flex items-center gap-2 text-green-600 font-medium">
-              <FiLogIn /> Check-in khách
-            </div>
-          ),
-          onClick: () => handleAction(checkInBooking, _id),
-        },
-      hasCheckIn &&
-        !checkOutAt && {
-          key: "checkout",
-          label: (
-            <div className="flex items-center gap-2 text-purple-600 font-medium">
-              <FiLogOut /> Check-out hoàn tất
-            </div>
-          ),
-          onClick: () => handleAction(checkOutBooking, _id),
-        },
+      // (status === "confirmed" || status === "checked_in") &&
+      //   !hasCheckIn && {
+      //     key: "checkin",
+      //     label: (
+      //       <div className="flex items-center gap-2 text-green-600 font-medium">
+      //         <FiLogIn /> Check-in khách
+      //       </div>
+      //     ),
+      //     onClick: () => handleAction(checkInBooking, _id),
+      //   },
+      (status === "confirmed" ||
+        status === "checked_in" ||
+        (hasCheckIn && !hasCheckOut)) && {
+        key: "checkout",
+        label: (
+          <div className="flex items-center gap-2 text-purple-600 font-medium">
+            <FiLogOut /> Check-out hoàn tất
+          </div>
+        ),
+        onClick: () => handleAction(checkOutBooking, _id),
+      },
     ].filter(Boolean);
 
     return { items };
@@ -442,44 +457,18 @@ const StaffOrderPage = () => {
                 <div className="bg-red-50 border border-red-200 rounded-xl p-3 flex items-center gap-3">
                   <FiUserX className="text-3xl text-red-600 flex-shrink-0" />
                   <div>
-                    <h3 className="text-sm font-bold text-red-800 m-0">KHÁCH KHÔNG ĐẾN</h3>
+                    <h3 className="text-sm font-bold text-red-800 m-0">
+                      KHÁCH KHÔNG ĐẾN
+                    </h3>
                     <p className="text-xs text-red-700 m-0">
-                      Phạt: <span className="font-bold">{formatCurrency(currentBooking.finalAmount)}</span>
+                      Phạt:{" "}
+                      <span className="font-bold">
+                        {formatCurrency(currentBooking.finalAmount)}
+                      </span>
                     </p>
                   </div>
                 </div>
               )}
-
-              {/* CHECK-IN/OUT STATUS COMPACT */}
-              {(() => {
-                const checkInEvent = currentBooking.events?.find((e) => e.type === "CHECK_IN");
-                const checkInTime = currentBooking.checkInAt || checkInEvent?.timestamp;
-                const hasCheckIn = checkInTime || currentBooking.status === "checked_in";
-                const hasCheckOut = currentBooking.checkOutAt;
-
-                if (hasCheckIn || hasCheckOut) {
-                   return (
-                    <div className="grid grid-cols-2 gap-3">
-                      {hasCheckIn && (
-                        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center">
-                          <div className="text-emerald-700 text-xs font-bold uppercase mb-1">Check-in</div>
-                           <div className="text-lg font-bold text-emerald-800">{dayjs(checkInTime).format("HH:mm")}</div>
-                           <div className="text-xs text-gray-500">{dayjs(checkInTime).format("DD/MM")}</div>
-                        </div>
-                      )}
-                      {hasCheckOut && (
-                        <div className="bg-purple-50 border border-purple-200 rounded-xl p-3 text-center">
-                           <div className="text-purple-700 text-xs font-bold uppercase mb-1">Check-out</div>
-                           <div className="text-lg font-bold text-purple-800">{dayjs(currentBooking.checkOutAt).format("HH:mm")}</div>
-                           <div className="text-xs text-gray-500">{dayjs(currentBooking.checkOutAt).format("DD/MM")}</div>
-                        </div>
-                      )}
-                    </div>
-                   );
-                }
-                return null;
-              })()}
-
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* LEFT COL */}
@@ -526,57 +515,218 @@ const StaffOrderPage = () => {
                           </div>
                       </div>
                    </div>
+
+                   {/* EVENTS TIMELINE (Moved from Right Col to Left Col) */}
+                   <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                    <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-100">
+                      <FiClock className="text-purple-500" />
+                      <span className="font-bold text-gray-700 text-sm">
+                        Lịch sử sự kiện
+                      </span>
+                    </div>
+                    {currentBooking.events &&
+                    currentBooking.events.length > 0 ? (
+                      <div className="space-y-3 relative before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-100 pl-1">
+                        {currentBooking.events.map((event, idx) => (
+                          <div key={idx} className="relative pl-6">
+                            <div
+                              className={`absolute left-0 top-1 w-4 h-4 rounded-full border-2 bg-white z-10 ${
+                                event.type === "CHECK_IN"
+                                  ? "border-purple-500"
+                                  : event.type === "CHECK_OUT"
+                                  ? "border-green-500"
+                                  : event.type === "NO_SHOW"
+                                  ? "border-red-500"
+                                  : "border-gray-400"
+                              }`}
+                            />
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <div className="text-xs font-bold text-gray-800 uppercase">
+                                  {event.type.replace("_", " ")}
+                                </div>
+                                <div className="text-[10px] text-gray-500">
+                                  {dayjs(event.timestamp).format(
+                                    "HH:mm:ss DD/MM/YYYY"
+                                  )}
+                                </div>
+                              </div>
+                              {event.amount > 0 && (
+                                <div className="text-[10px] font-mono text-gray-600 bg-gray-50 px-1 rounded">
+                                  {formatCurrency(event.amount)}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-sm text-gray-400 text-center py-2">
+                        Chưa có sự kiện nào
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* RIGHT COL */}
                 <div className="space-y-4">
-                    {/* FINANCE */}
-                    <div className="bg-emerald-50/50 rounded-xl p-4 shadow-sm border border-emerald-100">
-                         <div className="flex items-center gap-2 mb-3 pb-2 border-b border-emerald-100">
-                            <span className="font-bold text-emerald-800 text-sm">Chi tiết tài chính</span>
-                         </div>
-                         <div className="space-y-2 text-sm">
-                            <div className="flex justify-between text-gray-500">
-                               <span>Trước giảm giá</span>
-                               <span className="line-through">{formatCurrency(currentBooking.totalBeforeDiscount)}</span>
+                  {/* FINANCE & PAYMENT SUMMARY */}
+                  <div className="bg-emerald-50/50 rounded-xl p-4 shadow-sm border border-emerald-100">
+                    <div className="flex items-center gap-2 mb-3 pb-2 border-b border-emerald-100">
+                      <span className="font-bold text-emerald-800 text-sm">
+                        Tài chính & Thanh toán
+                      </span>
+                    </div>
+                    <div className="space-y-2 text-sm">
+                      {/* Financials (nếu có) hoặc Fallback */}
+                      {currentBooking.financials ? (
+                        <>
+                          <div className="flex justify-between text-gray-600">
+                            <span>Giá gốc</span>
+                            <span>
+                              {formatCurrency(
+                                currentBooking.financials.originalAmount ||
+                                  currentBooking.totalBeforeDiscount
+                              )}
+                            </span>
+                          </div>
+                          {currentBooking.financials.chargeAmount > 0 && (
+                            <div className="flex justify-between text-red-600">
+                              <span>Phạt phát sinh</span>
+                              <span>
+                                +
+                                {formatCurrency(
+                                  currentBooking.financials.chargeAmount
+                                )}
+                              </span>
                             </div>
-                            {currentBooking.discountAmount > 0 && (
-                               <div className="flex justify-between text-green-600">
-                                  <span>Giảm giá</span>
-                                  <span>-{formatCurrency(currentBooking.discountAmount)}</span>
-                               </div>
-                            )}
-                             <Divider className="my-1" />
-                             <div className="flex justify-between items-end">
-                                <span className="font-bold text-gray-800">Thành tiền</span>
-                                <span className="text-xl font-extrabold text-emerald-600">{formatCurrency(currentBooking.finalAmount)}</span>
-                             </div>
-                             
-                             <div className="flex justify-center mt-2">
-                                <Tag className="m-0 bg-blue-100 text-blue-800 border-0 font-medium text-xs">
-                                  Thanh toán: {currentBooking.payType === "full" ? "Toàn bộ" : currentBooking.payType}
-                                </Tag>
-                             </div>
-                         </div>
-                    </div>
+                          )}
+                          {currentBooking.financials.refundAmount > 0 && (
+                            <div className="flex justify-between text-orange-600">
+                              <span>Hoàn tiền</span>
+                              <span>
+                                -
+                                {formatCurrency(
+                                  currentBooking.financials.refundAmount
+                                )}
+                              </span>
+                            </div>
+                          )}
+                          <div className="flex justify-between font-bold text-emerald-700 pt-1 border-t border-emerald-100">
+                            <span>Thực thu (Net)</span>
+                            <span>
+                              {formatCurrency(
+                                currentBooking.financials.netAmount ??
+                                  currentBooking.finalAmount
+                              )}
+                            </span>
+                          </div>
+                        </>
+                      ) : (
+                        // Fallback cũ
+                        <>
+                          <div className="flex justify-between text-gray-500">
+                            <span>Trước giảm giá</span>
+                            <span className="line-through">
+                              {formatCurrency(
+                                currentBooking.totalBeforeDiscount
+                              )}
+                            </span>
+                          </div>
+                          {currentBooking.discountAmount > 0 && (
+                            <div className="flex justify-between text-green-600">
+                              <span>Giảm giá</span>
+                              <span>
+                                -{formatCurrency(currentBooking.discountAmount)}
+                              </span>
+                            </div>
+                          )}
+                          <div className="flex justify-between items-end pt-1 border-t border-emerald-100">
+                            <span className="font-bold text-gray-800">
+                              Thành tiền
+                            </span>
+                            <span className="text-xl font-extrabold text-emerald-600">
+                              {formatCurrency(currentBooking.finalAmount)}
+                            </span>
+                          </div>
+                        </>
+                      )}
 
-                    {/* POLICY & EVENTS */}
-                    <div className="grid grid-cols-2 gap-2">
-                        <div className="bg-white rounded-xl p-3 border border-gray-100">
-                           <div className="text-xs font-bold text-gray-500 mb-1">Chính sách hủy</div>
-                           <div className="text-[10px] text-gray-700 space-y-1">
-                              <div><strong>48h trước:</strong> hoàn 100%</div>
-                              <div><strong>24h trước:</strong> hoàn 50%</div>
-                           </div>
+                      {/* Payment Summary */}
+                      {currentBooking.paymentSummary && (
+                        <div className="mt-3 pt-3 border-t border-dashed border-emerald-200 bg-white/60 p-2 rounded-lg">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-xs font-bold text-emerald-800">
+                              Thanh toán (
+                              {currentBooking.paymentSummary.paidPercentage}%)
+                            </span>
+                            <Tag
+                              className={`m-0 text-[10px] border-0 font-bold ${
+                                currentBooking.paymentSummary.isPaidFully
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-orange-100 text-orange-700"
+                              }`}
+                            >
+                              {currentBooking.paymentSummary.isPaidFully
+                                ? "ĐỦ"
+                                : "THIẾU"}
+                            </Tag>
+                          </div>
+                          <div className="flex justify-between text-xs mb-1">
+                            <span className="text-gray-600">Đã trả:</span>
+                            <span className="font-bold text-green-600">
+                              {formatCurrency(
+                                currentBooking.paymentSummary.paidAmount
+                              )}
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-xs">
+                            <span className="text-gray-600">Còn lại:</span>
+                            <span className="font-bold text-orange-600">
+                              {formatCurrency(
+                                currentBooking.paymentSummary.remainingAmount
+                              )}
+                            </span>
+                          </div>
                         </div>
-                        <div className="bg-white rounded-xl p-3 border border-gray-100">
-                           <div className="text-xs font-bold text-gray-500 mb-1">No-Show</div>
-                           <div className="text-[10px] text-gray-700 space-y-1">
-                              <div><strong>Phạt:</strong> 100%</div>
-                              <div><strong>Ân hạn:</strong> 1 giờ</div>
-                           </div>
-                        </div>
+                      )}
                     </div>
+                  </div>
+
+                  {/* DETAILS LIST - SERVICES & EQUIPMENT */}
+                  {currentBooking.details && currentBooking.details.length > 0 && (
+                    <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                      <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-100">
+                        <FiBox className="text-amber-500" />
+                        <span className="font-bold text-gray-700 text-sm">
+                          Dịch vụ & Thiết bị
+                        </span>
+                      </div>
+                      <div className="space-y-3">
+                        {currentBooking.details.map((item) => (
+                          <div
+                            key={item._id}
+                            className="flex justify-between items-start text-sm"
+                          >
+                            <div>
+                              <div className="font-medium text-gray-800">
+                                {item.detailType === "extra_service"
+                                  ? item.service?.name || item.description
+                                  : item.equipment?.name || item.description}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                SL: {item.quantity} x{" "}
+                                {formatCurrency(item.pricePerUnit)}
+                              </div>
+                            </div>
+                            <div className="font-bold text-gray-700">
+                              {formatCurrency(item.subtotal)}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
               

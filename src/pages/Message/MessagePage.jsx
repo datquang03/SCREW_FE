@@ -1,5 +1,5 @@
 // src/pages/Message/MessagePage.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Spin } from "antd";
@@ -11,7 +11,7 @@ import {
   initializeSocket,
   setupSocketListeners,
 } from "../../features/message/messageSlice";
-import { disconnectSocket } from "../../api/socketInstance";
+import { disconnectSocket, getSocket } from "../../api/socketInstance";
 
 import MessageSidebar from "./components/MessageSidebar";
 import MessageHeader from "./components/MessageHeader";
@@ -30,7 +30,14 @@ const MessagePage = () => {
     useSelector((state) => state.message || {});
 
   const [activeConversation, setActiveConversation] = useState(null);
+  const activeConversationRef = useRef(activeConversation);
+  const [isTyping, setIsTyping] = useState(false);
   const targetUserId = searchParams.get("user");
+
+  // Update ref when activeConversation changes
+  useEffect(() => {
+    activeConversationRef.current = activeConversation;
+  }, [activeConversation]);
 
   // Helper: normalize conversation id from various shapes
   const extractIdsFromString = (str) => {
@@ -55,6 +62,10 @@ const MessagePage = () => {
   // Normalize về format "-" để nhất quán với backend
   const normalizeConversationId = (conv) => {
     if (!conv) return "";
+
+    // Ưu tiên sử dụng bookingId hoặc conversationId nếu đó là ID đơn (ví dụ 24 ký tự - cho booking/group chat)
+    if (conv.bookingId) return conv.bookingId;
+    if (conv.conversationId && conv.conversationId.length === 24) return conv.conversationId;
 
     // Nếu _id hoặc conversationId đã có, normalize format (chuyển "_" thành "-")
     if (typeof conv._id === "string") {
@@ -90,7 +101,7 @@ const MessagePage = () => {
     return "";
   };
 
-  const displayConversations = React.useMemo(() => {
+  const displayConversations = useMemo(() => {
     const myId = user?._id || user?.id;
     return (conversations || []).map((conv) => {
       const convId = normalizeConversationId(conv);
@@ -127,7 +138,69 @@ const MessagePage = () => {
     if (!token) return;
 
     // Initialize socket với token
-    initializeSocket(token);
+    const socket = initializeSocket(token);
+
+    // Kích hoạt user room (thử các event name phổ biến để đảm bảo backend nhận diện)
+    if (socket && user?._id) {
+      socket.emit("setup", user._id);
+      socket.emit("join", user._id);
+      socket.emit("addUser", user._id);
+      
+      // Debug lắng nghe tất cả sự kiện
+      socket.onAny((event, ...args) => {
+        console.log(`[Socket Debug] Event: ${event}`, args);
+      });
+
+      // Listen for typing events
+      socket.on("typing", ({ room, userId, isTyping }) => {
+          // Check if typing event is for the CURRENT active conversation
+          // If room is provided, compare it. If not, use generic check.
+          // The sender sends: { room, userId, isTyping }
+          
+          if (userId === user?._id || userId === user?.id) return;
+          
+          const currentConv = activeConversationRef.current;
+          if (!currentConv) return;
+          
+          const currentRoomId = currentConv.bookingId || currentConv.conversationId || normalizeConversationId(currentConv);
+          const normalizedRoom = normalizeConversationId(currentConv); // fallback format
+          
+          // Match room logic:
+          // 1. Exact match with room ID sent from client
+          // 2. Match with normalized conversation ID
+          if (room === currentRoomId || room === normalizedRoom || isTyping === false) { 
+             setIsTyping(isTyping);
+          }
+      });
+      
+      // Lắng nghe notification để refresh tin nhắn khi có thông báo mới (fallback nếu realtime message fail)
+      socket.on("notification", (data) => {
+        console.log("Received notification via socket:", data);
+        // NẾU notification có chứa dữ liệu message đầy đủ -> gọi action addMessage
+        if (data && data.messageData) {
+            dispatch(addMessageFromSocket(data.messageData));
+            return;
+        }
+
+        // Kiểm tra nếu là thông báo tin nhắn mới
+        if (data && (data.title === "Tin nhắn mới" || (typeof data.message === 'string' && data.message.includes("tin nhắn")))) {
+          // Chỉ refresh conversation list để update thứ tự
+          dispatch(getConversations());
+          
+          // Fetch message mới nhất (nhưng không hiện loading spinner) để đảm bảo message được thêm vào
+          const currentConv = activeConversationRef.current;
+          if (currentConv) {
+            const convId = normalizeConversationId(currentConv);
+            if (convId) {
+              dispatch(getMessagesByConversation({ 
+                conversationId: convId, 
+                isSilent: true 
+              }));
+            }
+          }
+        }
+      });
+    }
 
     // Setup listeners với dispatch và getState
     setupSocketListeners(dispatch, () => {
@@ -137,9 +210,13 @@ const MessagePage = () => {
 
     // Cleanup khi unmount
     return () => {
+      if (socket) {
+        socket.offAny(); 
+        socket.off("notification");
+      }
       disconnectSocket();
     };
-  }, [dispatch, token]);
+  }, [dispatch, token, user]);
 
   // Load danh sách chat
   useEffect(() => {
@@ -166,16 +243,40 @@ const MessagePage = () => {
     const convId = normalizeConversationId(activeConversation);
     if (convId) {
       dispatch(getMessagesByConversation(convId));
+
+      // Tham gia vào room chat (Booking hoặc Private)
+      const socket = getSocket();
+      if (socket && socket.connected) {
+        // Nếu là booking chat thì dùng bookingId, ngược lại dùng ID conversation
+        // Lưu ý: với DM, Backend đang emit tới room "userid-userid" nên emit join với convId (đã normalized là userid-userid) là đúng.
+        const roomId = activeConversation?.bookingId || convId;
+        console.log("Clients joining socket room:", roomId);
+        socket.emit("join", roomId);
+      }
     }
   }, [activeConversation, dispatch]);
 
   // Đánh dấu đã đọc
   useEffect(() => {
-    if (!activeConversation || !messages[activeConversation._id]) return;
-    const myId = user?._id;
-    messages[activeConversation._id].forEach((msg) => {
+    // 1. Xác định ID conversation chuẩn
+    const convId = normalizeConversationId(activeConversation);
+    if (!activeConversation || !convId) return;
+    
+    // 2. Lấy list message từ store theo ID chuẩn
+    const currentMessages = messages[convId];
+    if (!currentMessages || !Array.isArray(currentMessages)) return;
+
+    const myId = user?._id || user?.id;
+    if (!myId) return;
+
+    // 3. Lọc và mark read
+    currentMessages.forEach((msg) => {
       const fromId = msg.fromUserId?._id || msg.fromUserId;
-      if (fromId !== myId && !msg.isRead) {
+      // Convert to String để so sánh chính xác (tránh lỗi ObjectId object vs string)
+      const isPartnerMessage = fromId && String(fromId) !== String(myId);
+      const isUnread = !msg.isRead && !msg.read; // Check cả 2 trường hợp key
+
+      if (isPartnerMessage && isUnread) {
         dispatch(markMessageAsRead(msg._id));
       }
     });
@@ -239,7 +340,7 @@ const MessagePage = () => {
                     _id: normalizeConversationId(conv),
                   })
                 }
-                loading={loadingConversations}
+                loading={loadingConversations}isTyping={isTyping} 
               />
             </div>
 

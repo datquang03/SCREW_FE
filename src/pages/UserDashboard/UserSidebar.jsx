@@ -2,10 +2,9 @@ import React, { useMemo } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Menu } from "antd";
-import { FiHome, FiCalendar, FiVideo, FiClock, FiUser } from "react-icons/fi";
+import { FiHome, FiCalendar, FiVideo, FiClock, FiUser, FiDollarSign } from "react-icons/fi";
+import { FaRepeat } from "react-icons/fa6";
 import { AiOutlineAudit } from "react-icons/ai";
-import { GoBookmark } from "react-icons/go";
-
 
 const roleTextMap = {
   customer: "Người dùng",
@@ -29,7 +28,7 @@ const UserSidebar = ({ variant = "customer" }) => {
       {
         key: "history",
         icon: <FiClock />,
-        label: "Lịch sử giao dịch",
+        label: "Lịch sử thuê",
         path: "/dashboard/customer/history",
       },
         {
@@ -39,12 +38,11 @@ const UserSidebar = ({ variant = "customer" }) => {
         path: "/dashboard/customer/custom-requests",
       },
       {
-        key: "/set-designs/bookings",
-        icon: <GoBookmark />,
-        label: "Lịch sử giao dịch Set Design",
-        path: "/dashboard/customer/set-designs/bookings",
+        key: "refund-requests",
+        icon: <FaRepeat />,
+        label: "Yêu cầu hoàn tiền",
+        path: "/dashboard/customer/refund-requests",
       },
-
       {
         key: "profile",
         icon: <FiUser />,

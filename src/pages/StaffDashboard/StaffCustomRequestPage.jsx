@@ -45,6 +45,7 @@ import {
   deleteSetDesign,
 } from "../../features/setDesign/setDesignSlice";
 import { createMessage } from "../../features/message/messageSlice";
+import { getCustomerById } from "../../features/admin/admin.customerSlice";
 import StaffPageHeader from "./components/StaffPageHeader";
 import StaffStatCard from "./components/StaffStatCard";
 import StaffSectionCard from "./components/StaffSectionCard";
@@ -61,6 +62,8 @@ const statusConfig = {
   completed: { color: "green", label: "Hoàn thành", icon: FiCheckCircle },
   rejected: { color: "red", label: "Từ chối", icon: FiXCircle },
 };
+
+const DEFAULT_AVATAR = "https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fveM07aaKSJN96ZUggs.jpg";
 
 const StaffCustomRequestPage = () => {
   const dispatch = useDispatch();
@@ -107,6 +110,7 @@ const StaffCustomRequestPage = () => {
   const [updateLoading, setUpdateLoading] = useState(false);
   const [selectedSetDesignForMessage, setSelectedSetDesignForMessage] =
     useState(null);
+  const [userAvatars, setUserAvatars] = useState({});
 
   useEffect(() => {
     dispatch(getCustomRequestSetDesign());
@@ -206,6 +210,62 @@ const StaffCustomRequestPage = () => {
     const start = (currentPage - 1) * 10;
     return filteredRequests.slice(start, start + 10);
   }, [filteredRequests, currentPage]);
+
+  // Fetch missing avatars for visible items
+  useEffect(() => {
+    const fetchMissingAvatars = async () => {
+      const idsToFetch = new Set();
+      paginatedData.forEach((item) => {
+        // Check if avatar is already avail in record or fetched map
+        const hasAvatar = item.customerAvatar || item.customerId?.avatar;
+        if (hasAvatar) return;
+
+        let uid = item.customerId;
+        if (typeof uid === "object" && uid !== null) {
+          uid = uid._id || uid.id;
+        }
+
+        // If valid ID and not already fetched/fetching
+        // (Check userAvatars[uid] === undefined to allow re-fetching if failed/null before, or just check simple existence)
+        if (uid && !userAvatars[uid]) {
+          idsToFetch.add(uid);
+        }
+      });
+
+      if (idsToFetch.size === 0) return;
+
+      const promises = Array.from(idsToFetch).map((id) =>
+        dispatch(getCustomerById(id))
+          .unwrap()
+          .then((res) => {
+            // Adjust based on actual API structure. User showed: { data: { avatar: "..." } }
+            const avatar = res.data?.avatar || res.avatar;
+            return { id, avatar };
+          })
+          .catch(() => ({ id, avatar: null }))
+      );
+
+      try {
+        const results = await Promise.all(promises);
+        const newAvatars = {};
+        results.forEach((r) => {
+          if (r.avatar) {
+            newAvatars[r.id] = r.avatar;
+          }
+        });
+        
+        if (Object.keys(newAvatars).length > 0) {
+            setUserAvatars((prev) => ({ ...prev, ...newAvatars }));
+        }
+      } catch (error) {
+        console.error("Error fetching avatars", error);
+      }
+    };
+
+    if (paginatedData.length > 0) {
+      fetchMissingAvatars();
+    }
+  }, [paginatedData, dispatch]); // Keep dependency simple to avoid loops
 
   const handleViewDetail = async (id) => {
     try {
@@ -518,23 +578,38 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
     {
       title: "Khách hàng",
       key: "customer",
-      render: (_, record) => (
-        <div className="flex items-center gap-3">
-          <Avatar
-            src={record.customerId?.avatar}
-            className="bg-gradient-to-br from-purple-500 to-pink-500 text-white"
-          >
-            {record.customerName?.charAt(0).toUpperCase() || "K"}
-          </Avatar>
-          <div>
-            <Text strong>{record.customerName || "Khách vãng lai"}</Text>
-            <br />
-            <Text type="secondary" className="text-xs">
-              {dayjs(record.createdAt).fromNow()}
-            </Text>
+      render: (_, record) => {
+        let avatarUrl = record.customerAvatar || record.customerId?.avatar;
+        
+        // If not found in record, check fetched map
+        if (!avatarUrl) {
+           let uid = record.customerId;
+           if (typeof uid === "object" && uid !== null) uid = uid._id || uid.id;
+           if (uid && userAvatars[uid]) {
+               avatarUrl = userAvatars[uid];
+           }
+        }
+
+        const finalAvatar = avatarUrl || DEFAULT_AVATAR;
+        const createdAt = record.createdAt || record.requestedAt;
+
+        return (
+          <div className="flex items-center gap-3">
+            <Avatar
+              src={finalAvatar}
+              key={finalAvatar} 
+              className="bg-gray-200"
+            />
+            <div>
+              <Text strong>{record.customerName || "Khách vãng lai"}</Text>
+              <br />
+              <Text type="secondary" className="text-xs">
+                {createdAt ? dayjs(createdAt).fromNow() : ""}
+              </Text>
+            </div>
           </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       title: "Liên hệ",
@@ -721,13 +796,25 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
             {/* Header */}
             <div className="text-center mb-10">
               <div className="relative inline-block">
-                <Avatar
-                  size={100}
-                  src={selectedRequest.customerId?.avatar}
-                  className="border-4 border-white shadow-2xl"
-                >
-                  {selectedRequest.customerName?.charAt(0).toUpperCase()}
-                </Avatar>
+                {(() => {
+                   let avatarUrl = selectedRequest.customerAvatar || selectedRequest.customerId?.avatar;
+                    if (!avatarUrl) {
+                      let uid = selectedRequest.customerId;
+                      if (typeof uid === "object" && uid !== null) uid = uid._id || uid.id;
+                      if (uid && userAvatars[uid]) {
+                          avatarUrl = userAvatars[uid];
+                      }
+                    }
+                    const finalAvatar = avatarUrl || DEFAULT_AVATAR;
+                    return (
+                      <Avatar
+                        size={100}
+                        src={finalAvatar}
+                        key={finalAvatar}
+                        className="border-4 border-white shadow-2xl bg-gray-200"
+                      />
+                    );
+                })()}
                 {selectedRequest.status === "pending" && (
                   <div className="absolute -top-1 -right-1 rounded-full bg-red-500 px-3 py-1 text-xs font-bold text-white shadow-lg animate-pulse">
                     MỚI
