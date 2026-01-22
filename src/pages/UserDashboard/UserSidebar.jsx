@@ -5,6 +5,7 @@ import { Menu } from "antd";
 import { FiHome, FiCalendar, FiVideo, FiClock, FiUser } from "react-icons/fi";
 import { AiOutlineAudit } from "react-icons/ai";
 import { GoBookmark } from "react-icons/go";
+import { TbFileReport } from "react-icons/tb";
 
 
 const roleTextMap = {
@@ -32,6 +33,14 @@ const UserSidebar = ({ variant = "customer" }) => {
         label: "Lịch sử giao dịch",
         path: "/dashboard/customer/history",
       },
+       {
+        key: "reports",
+        icon: <TbFileReport />,
+        label: "Đơn báo cáo",
+        path: "/dashboard/customer/reports",
+      },
+      
+
         {
         key: "custom-requests",
         icon: <AiOutlineAudit />,

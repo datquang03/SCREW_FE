@@ -65,6 +65,7 @@ import ContactSetDesignRequestPage from "./pages/BookingSetDesign/ContactSetDesi
 import StaffCustomRequestPage from "./pages/StaffDashboard/StaffCustomRequestPage";
 import UserCustomSetDesignPage from "./pages/UserDashboard/UserCustomSetDesignPage";
 import SearchPage from "./pages/Search/SearchPage";
+import UserReportPage from "./pages/UserDashboard/UserReportPage";
 
 const pageVariants = {
   initial: { opacity: 0, y: 10 },
@@ -156,6 +157,7 @@ const AppContent = () => {
               <Route path="bookings" element={<UserBookingsPage />} />
               <Route path="studios" element={<UserStudiosPage />} />
               <Route path="history" element={<UserHistoryPage />} />
+              <Route path="reports" element={<UserReportPage />} />
               <Route
                 path="custom-requests"
                 element={<UserCustomSetDesignPage />}
