@@ -6,6 +6,7 @@ import { Button, Modal, Menu } from "antd";
 import {
   FiLogOut,
   FiChevronDown,
+  FiMenu,
   FiHome,
   FiShoppingBag,
   FiCalendar,
@@ -108,7 +109,7 @@ const getMenuItems = (role) => {
   return roleMenus[role] || [];
 };
 
-const DashboardNavbar = ({ variant = "default" }) => {
+const DashboardNavbar = ({ variant = "default", onMenuClick }) => {
   const theme = THEMES[variant] || THEMES.default;
   const { user } = useSelector((state) => state.auth);
   const { notifications, loading: notificationsLoading } = useSelector(
@@ -326,15 +327,23 @@ const DashboardNavbar = ({ variant = "default" }) => {
       className={`fixed top-0 left-0 lg:left-64 xl:left-72 right-0 z-30 border-b border-white/40 shadow backdrop-blur-xl ${theme.bg}`}
     >
       <div className="flex items-center justify-between px-4 sm:px-6 lg:px-10 py-3">
-        <button onClick={() => navigate("/")} className="group cursor-pointer">
-          <motion.img
-            src={SPlusLogo}
-            alt="S+ logo"
-            className="h-20 md:h-24 w-auto object-contain drop-shadow-xl"
-            whileHover={{ rotate: [-4, 4, -2, 0], scale: 1.05 }}
-            transition={{ duration: 0.5 }}
-          />
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onMenuClick}
+            className="lg:hidden p-1 text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <FiMenu  size={24} />
+          </button>
+          <button onClick={() => navigate("/")} className="group cursor-pointer">
+            <motion.img
+              src={SPlusLogo}
+              alt="S+ logo"
+              className="h-20 md:h-24 w-auto object-contain drop-shadow-xl"
+              whileHover={{ rotate: [-4, 4, -2, 0], scale: 1.05 }}
+              transition={{ duration: 0.5 }}
+            />
+          </button>
+        </div>
 
         <div className="flex items-center gap-3">
           {/* Notification Icon */}

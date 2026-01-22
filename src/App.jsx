@@ -65,8 +65,9 @@ import ContactSetDesignRequestPage from "./pages/BookingSetDesign/ContactSetDesi
 import StaffCustomRequestPage from "./pages/StaffDashboard/StaffCustomRequestPage";
 import UserCustomSetDesignPage from "./pages/UserDashboard/UserCustomSetDesignPage";
 import SearchPage from "./pages/Search/SearchPage";
-import UserReportPage from "./pages/UserDashboard/UserReportPage";
-
+import PromotionPage from "./pages/Promotion/PromotionPage";
+import UserRequestRefundPage from "./pages/UserDashboard/UserRequestRefundPage";
+import StaffReportPage from "./pages/StaffDashboard/StaffReportPage";
 const pageVariants = {
   initial: { opacity: 0, y: 10 },
   in: { opacity: 1, y: 0 },
@@ -110,6 +111,7 @@ const AppContent = () => {
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/studio" element={<StudioPage />} />
               <Route path="/search" element={<SearchPage />} />
+              <Route path="/promotion" element={<PromotionPage />} />
               <Route
                 path="/set-design-request"
                 element={<ContactSetDesignRequestPage />}
@@ -167,7 +169,12 @@ const AppContent = () => {
                 element={<UserSetDesignBookingsPage />}
               />
               <Route path="profile" element={<UserProfilePage />} />
+              <Route
+                path="refund-requests"
+                element={<UserRequestRefundPage />}
+              />
             </Route>
+
             {/* CUSTOMER ONLY PAGES */}
             <Route
               path="/studio/customer/liked"
@@ -211,6 +218,7 @@ const AppContent = () => {
               <Route path="promotion" element={<StaffPromotionPage />} />
               <Route path="transaction" element={<StaffTransactionPage />} />
               <Route path="refunds" element={<CustomerRefundPage />} />
+              <Route path="report" element={<StaffReportPage />} />
             </Route>
 
             {/* ADMIN DASHBOARD */}

@@ -265,6 +265,24 @@ export const confirmRefundPayment = createAsyncThunk(
   }
 );
 
+// 14) Lấy danh sách yêu cầu hoàn tiền của tôi
+export const getMyRequestRefund = createAsyncThunk(
+  "payment/getMyRequestRefund",
+  async (_, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+      const res = await axiosInstance.get(`/refunds/my-requests`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return res.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Lấy danh sách yêu cầu hoàn tiền thất bại" }
+      );
+    }
+  }
+);
+
 // ========================== INITIAL STATE ==========================
 const initialState = {
   paymentData: null,
@@ -272,6 +290,7 @@ const initialState = {
   refundsList: [],
   refundDetail: null,
   approvedRefunds: [],
+  myRefundRequests: [],
   loading: false,
   error: null,
   pagination: {},
@@ -465,6 +484,38 @@ const paymentSlice = createSlice({
         state.loading = false;
       })
       .addCase(confirmRefundPayment.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // getMyRequestRefund
+      .addCase(getMyRequestRefund.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getMyRequestRefund.fulfilled, (state, action) => {
+        state.loading = false;
+        const payload = action.payload;
+        
+        if (Array.isArray(payload)) {
+            state.myRefundRequests = payload;
+        } else if (payload && Array.isArray(payload.refunds)) {
+             // Case: { refunds: [], total: ... }
+             state.myRefundRequests = payload.refunds;
+             if (payload.pagination || payload.total) {
+                state.pagination = {
+                    total: payload.total,
+                    page: payload.page,
+                    pages: payload.pages
+                };
+             }
+        } else if (payload && Array.isArray(payload.data)) {
+            state.myRefundRequests = payload.data;
+        } else {
+             state.myRefundRequests = [];
+        }
+      })
+      .addCase(getMyRequestRefund.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

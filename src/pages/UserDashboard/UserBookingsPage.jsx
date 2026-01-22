@@ -473,6 +473,9 @@ const UserBookingsPage = () => {
                     </Button>
                   </>
                 )}
+                {currentBooking.status === "cancelled" && (
+                  <Button onClick={openRefundModal}>Yêu cầu hoàn tiền</Button>
+                )}
                 <Button 
                   type="primary"
                   danger

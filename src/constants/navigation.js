@@ -4,6 +4,7 @@ export const NAV_LINKS = [
   { path: "/equipment", label: "Thiết bị", key: "equipment" },
   { path: "/about", label: "Về chúng tôi", key: "about" },
   { path: "/contact", label: "Liên hệ", key: "contact" },
+  { path: "/promotion", label: "Khuyến mãi", key: "promotion" },
 ];
 
 export const BREAKPOINTS = {

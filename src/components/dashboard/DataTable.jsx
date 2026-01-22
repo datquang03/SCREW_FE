@@ -25,8 +25,7 @@ const DataTable = ({ columns = [], data = [], title }) => {
               {columns.map((c, i) => (
                 <th
                   key={c.key || c.dataIndex || i}
-                  className={`py-3 px-4 text-left font-semibold text-gray-600 whitespace-nowrap ${c.className || ""}`}
-                  style={c.width ? { width: c.width } : {}}
+                  className="py-3 px-4 text-left font-semibold text-gray-600"
                 >
                   {c.title}
                 </th>

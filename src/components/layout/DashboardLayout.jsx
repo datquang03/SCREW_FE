@@ -1,5 +1,6 @@
-import React, { useLayoutEffect, useRef } from "react";
+import React, { useLayoutEffect, useRef, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
+import { Drawer } from "antd";
 import gsap from "gsap";
 import DashboardNavbar from "./NavbarDashboard";
 
@@ -26,6 +27,7 @@ const DashboardLayout = ({
   const sidebarRef = useRef(null);
   const contentRef = useRef(null);
   const location = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useLayoutEffect(() => {
     if (sidebarRef.current) {
@@ -51,6 +53,19 @@ const DashboardLayout = ({
 
   return (
     <div className="min-h-screen bg-slate-50">
+      <Drawer
+        title={null}
+        placement="left"
+        closable={false}
+        onClose={() => setMobileOpen(false)}
+        open={mobileOpen}
+        styles={{ body: { padding: 0 } }}
+        width={280}
+        className="lg:hidden block" 
+      >
+        {SidebarComponent && <SidebarComponent variant={variant} />}
+      </Drawer>
+
       <aside
         ref={sidebarRef}
         className="hidden lg:flex lg:w-64 xl:w-72 fixed inset-y-0 left-0 z-50 bg-gradient-to-b from-gray-950 via-gray-900 to-black shadow-2xl"
@@ -59,7 +74,7 @@ const DashboardLayout = ({
       </aside>
 
       <div className="flex flex-col lg:ml-64 xl:ml-72">
-        <DashboardNavbar variant={variant} />
+        <DashboardNavbar variant={variant} onMenuClick={() => setMobileOpen(true)} />
         <main
           ref={contentRef}
           className="px-2 sm:px-4 lg:px-6 py-6 min-h-screen pt-32 md:pt-40 transition-all duration-300 ease-in-out"

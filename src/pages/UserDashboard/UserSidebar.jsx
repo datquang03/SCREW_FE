@@ -2,7 +2,8 @@ import React, { useMemo } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Menu } from "antd";
-import { FiHome, FiCalendar, FiVideo, FiClock, FiUser } from "react-icons/fi";
+import { FiHome, FiCalendar, FiVideo, FiClock, FiUser, FiDollarSign } from "react-icons/fi";
+import { FaRepeat } from "react-icons/fa6";
 import { AiOutlineAudit } from "react-icons/ai";
 import { GoBookmark } from "react-icons/go";
 import { TbFileReport } from "react-icons/tb";
@@ -46,6 +47,12 @@ const UserSidebar = ({ variant = "customer" }) => {
         icon: <AiOutlineAudit />,
         label: "Yêu cầu Set Design",
         path: "/dashboard/customer/custom-requests",
+      },
+      {
+        key: "refund-requests",
+        icon: <FaRepeat />,
+        label: "Yêu cầu hoàn tiền",
+        path: "/dashboard/customer/refund-requests",
       },
       {
         key: "/set-designs/bookings",
