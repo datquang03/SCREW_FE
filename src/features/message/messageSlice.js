@@ -517,6 +517,13 @@ const messageSlice = createSlice({
           const msg = conv.find((m) => m._id === messageId);
           if (msg) msg.isRead = true;
         });
+        // Emit event qua socket để bên kia nhận được cập nhật đã đọc
+        const socket = getSocket();
+        if (socket?.connected) {
+          // Lấy userId hiện tại từ localStorage hoặc redux nếu cần
+          const userId = (window?.store?.getState?.()?.auth?.user?._id) || localStorage.getItem("userId");
+          socket.emit("messageRead", { messageId, userId });
+        }
       })
       .addCase(markMessageAsRead.rejected, (state, action) => {
         state.loading = false;
@@ -588,6 +595,18 @@ export const setupSocketListeners = (dispatch) => {
     console.log("Conversation updated via socket:", conversation);
     // Refresh conversations list
     dispatch(getConversations());
+  });
+
+  // Lắng nghe message đã đọc
+  socket.on("messageRead", ({ messageId }) => {
+    // Cập nhật trạng thái đã đọc cho message
+    Object.keys(window.store.getState().message.messages).forEach((convId) => {
+      const conv = window.store.getState().message.messages[convId];
+      const msg = conv.find((m) => m._id === messageId);
+      if (msg) {
+        dispatch(updateMessageFromSocket({ messageId, updates: { isRead: true } }));
+      }
+    });
   });
 };
 

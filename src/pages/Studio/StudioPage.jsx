@@ -1,7 +1,7 @@
 // src/pages/Studio/StudioPage.jsx
 import React, { useEffect } from "react";
 import { Typography, Button, Spin, Carousel } from "antd";
-import { FiStar, FiMapPin, FiUsers } from "react-icons/fi";
+import { FiStar, FiMapPin, FiUsers, FiShoppingCart } from "react-icons/fi";
 import { motion } from "framer-motion";
 import Section from "../../components/common/Section";
 import { useDispatch, useSelector } from "react-redux";
@@ -36,58 +36,46 @@ const StudioPage = () => {
 
   return (
     <>
-      <div className="px-4 md:px-6 lg:px-12 mt-4 md:mt-8">
-        <div className="studio-hero w-full text-white py-10 md:py-14 px-6 md:px-10 lg:px-14">
-          <div className="studio-hero__glass inline-flex items-center gap-3 px-4 py-2 mb-4 text-sm font-semibold uppercase tracking-widest">
-            <span className="h-2 w-2 rounded-full bg-emerald-300 shadow-glow"></span>
-            Studio tuyển chọn bởi S+ Studio
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-center relative z-10">
-            <div className="lg:col-span-3 space-y-4">
-              <Title level={1} className="!text-4xl md:!text-5xl !text-white font-black drop-shadow-lg leading-[1.05]">
-                Trải nghiệm không gian sáng tạo chuẩn điện ảnh
-              </Title>
-              <Paragraph className="!text-lg md:!text-xl text-gray-200 max-w-3xl leading-relaxed">
-                Những studio được tuyển chọn kỹ lưỡng, ánh sáng đẹp, tiêu chuẩn âm thanh và dịch vụ chuyên nghiệp. Chỉ cần mang concept, còn lại để S+ Studio lo.
-              </Paragraph>
-              <div className="flex flex-wrap gap-3">
-                <span className="studio-badge">Hỗ trợ setup ánh sáng</span>
-                <span className="studio-badge">Phòng chờ VIP</span>
-                <span className="studio-badge">Đội ngũ onsite</span>
-              </div>
-              <div className="flex flex-wrap gap-3 pt-2">
-                <a href="#studio-list" className="inline-flex items-center gap-2 rounded-full bg-white text-slate-900 font-semibold px-5 py-3 shadow-lg hover:-translate-y-0.5 transition-transform">
-                  Khám phá ngay
-                </a>
-                <button
-                  type="button"
-                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                  className="inline-flex items-center gap-2 rounded-full border border-white/40 text-white px-5 py-3 font-semibold hover:bg-white/10 transition"
-                >
-                  Sắp xếp theo gợi ý
-                </button>
-              </div>
+      <div className="relative overflow-hidden rounded-3xl bg-[#f5ede6] shadow-xl">
+        <div
+          className="absolute inset-0 pointer-events-none rounded-3xl"
+          style={{
+            background:
+              "radial-gradient(circle at 60% 40%,rgba(99,102,241,0.08),transparent 35%)",
+          }}
+        />
+        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-5 gap-10 items-center px-6 md:px-10 py-14">
+          {/* LEFT CONTENT */}
+          <div className="lg:col-span-3 space-y-5">
+            <div className="uppercase tracking-widest text-xs font-bold text-blue-700 mb-2">
+              SEASONAL OFFERS
             </div>
-
-            <div className="lg:col-span-2 grid grid-cols-2 gap-3">
-              <div className="studio-chip w-full justify-between">
-                <div className="text-xs uppercase tracking-[0.2em] text-amber-700/80">Studio đang mở</div>
-                <div className="text-3xl font-black text-amber-900">{studios.length || 0}</div>
-              </div>
-              <div className="studio-chip w-full justify-between">
-                <div className="text-xs uppercase tracking-[0.2em] text-amber-700/80">Xếp hạng trung bình</div>
-                <div className="text-3xl font-black text-amber-900">4.8</div>
-              </div>
-              <div className="studio-chip w-full justify-between col-span-2">
-                <div>
-                  <div className="text-xs uppercase tracking-[0.2em] text-amber-700/80">Trải nghiệm nổi bật</div>
-                  <div className="text-lg font-bold text-amber-900">Ánh sáng, âm thanh, dịch vụ đồng bộ</div>
-                </div>
-                <div className="h-10 w-10 rounded-full bg-white/80 flex items-center justify-center text-amber-700 font-black shadow">
-                  S+
-                </div>
-              </div>
+            <Title
+              level={1}
+              className="!text-4xl md:!text-5xl !text-gray-900 font-black leading-[1.05] mb-2"
+            >
+              Ưu Đãi Đặc Biệt Từ <br />
+              <span className="italic font-serif text-4xl md:text-5xl text-gray-900">
+                S+ Studio
+              </span>
+            </Title>
+            <Paragraph className="!text-base md:!text-lg text-gray-700 max-w-2xl leading-relaxed mb-6">
+              Nâng tầm sáng tạo với những gói dịch vụ cao cấp và ưu đãi độc
+              quyền dành riêng cho cộng đồng nghệ sĩ đương đại.
+            </Paragraph>
+            <div className="flex flex-wrap gap-4 pt-2">
+              <a
+                href="#studio-list"
+                className="inline-flex items-center gap-2 rounded-full bg-black text-white font-semibold px-6 py-3 shadow hover:-translate-y-0.5 transition-all"
+              >
+                Khám phá bộ sưu tập
+              </a>
+              <a
+                href="#pricing"
+                className="inline-flex items-center gap-2 rounded-full bg-white text-gray-900 font-semibold px-6 py-3 shadow border border-gray-300 hover:bg-gray-50 transition-all"
+              >
+                Xem bảng giá
+              </a>
             </div>
           </div>
         </div>
@@ -96,10 +84,10 @@ const StudioPage = () => {
       {/* Studios List */}
       <Section
         id="studio-list"
-        className="bg-gradient-to-b from-white via-gray-50 to-white py-12 md:py-16 px-4 md:px-6 lg:px-16"
-        containerClass="container mx-auto"
-        title="Danh sách Studio cho thuê"
-        subtitle="Chọn studio phù hợp với dự án của bạn - từ chụp ảnh sản phẩm đến quay phim chuyên nghiệp"
+        className="py-12 md:py-20 bg-white"
+        containerClass="max-w-7xl mx-auto px-4"
+        title="Studio Nổi Bật"
+        subtitle="Không gian được khách hàng yêu thích nhất"
       >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           {studios.length === 0 ? (
@@ -108,131 +96,78 @@ const StudioPage = () => {
             </div>
           ) : (
             studios.map((studio, index) => (
-              <motion.div
+              <div
                 key={studio._id}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                whileHover={{
-                  scale: 1.02,
-                  boxShadow: "0px 16px 32px rgba(15,23,42,0.12)",
-                }}
-                onClick={() => navigate(`/studio/${studio._id}`)}
-                className="studio-card rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 h-full flex flex-col"
+                className="flex-shrink-0 flex flex-col"
+                style={{ minWidth: 340, maxWidth: 340, margin: "0 auto" }}
               >
-                {/* Hình ảnh + Carousel */}
-                <div className="relative h-60 md:h-64 overflow-hidden studio-card__image">
-                  {studio.images && studio.images.length > 0 ? (
-                    <Carousel
-                      autoplay
-                      autoplaySpeed={4000}
-                      dots
-                      className="h-full"
-                    >
-                      {studio.images.map((img, idx) => (
-                        <img
-                          key={idx}
-                          src={img}
-                          alt={studio.name}
-                          className="h-60 md:h-64 w-full object-cover"
-                        />
-                      ))}
-                    </Carousel>
-                  ) : (
-                    <div className="h-full w-full flex items-center justify-center bg-gray-700 text-white/60 text-5xl">
-                      📷
-                    </div>
-                  )}
-
-                  {/* Overlay gradient */}
-                  <div className="studio-card__overlay" />
-
-                  {/* Rating badge */}
-                  <div className="absolute top-3 right-3 flex items-center gap-1 px-3 py-1 rounded-full shadow-sm studio-rating-badge">
-                    <FiStar className="text-amber-300" />
-                    <Text strong className="text-sm text-white">
-                      {(studio.avgRating || studio.rating || 0).toFixed
-                        ? (studio.avgRating || studio.rating || 0).toFixed(1)
-                        : studio.avgRating || studio.rating || 0 || "—"}
-                    </Text>
-                  </div>
-
-                  {/* Info bottom */}
-                  <div className="absolute bottom-4 left-4 right-4">
-                    <Title
-                      level={3}
-                      className="mb-2 text-xl md:text-2xl font-bold line-clamp-1"
-                    >
-                      <span className="bg-white/90 text-slate-900 px-2.5 py-1 rounded-lg shadow-sm">
-                      {studio.name}
+                <div
+                  className="h-full rounded-[28px] border border-amber-100 bg-white shadow-[0_16px_40px_-20px_rgba(0,0,0,0.15)] transition-all duration-300 hover:-translate-y-1.5 group flex flex-col"
+                  onClick={() => navigate(`/studio/${studio._id}`)}
+                >
+                  {/* IMAGE */}
+                  <div className="relative w-full h-48 rounded-[24px] overflow-hidden mb-4 flex-shrink-0">
+                    {studio.images?.[0] ? (
+                      <img
+                        src={studio.images[0]}
+                        alt={studio.name}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-amber-50 flex items-center justify-center font-bold text-amber-600">
+                        {studio.name}
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="absolute top-3 left-3 bg-white/95 px-3 py-1 rounded-full flex items-center gap-1.5 shadow">
+                      <FiStar className="text-amber-500" size={14} />
+                      <span className="text-sm font-bold text-amber-700">
+                        {studio.rating?.toFixed(1) || "5.0"}
                       </span>
-                    </Title>
-                    <div className="flex flex-wrap items-center gap-3 text-white/90 text-sm">
-                      <div className="flex items-center gap-1">
-                        <FiMapPin size={14} />
-                        <span className="line-clamp-1">
-                          {studio.location || "Không xác định"}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <FiUsers size={14} />
-                        <span>{studio.capacity || "—"} người</span>
-                      </div>
                     </div>
+                  </div>
+                  {/* BODY */}
+                  <div className="flex-1 flex flex-col justify-between px-4 py-2">
+                    <span className="inline-flex w-fit px-3 py-1 bg-amber-50 border border-amber-100 rounded-full text-xs font-semibold text-amber-700 mb-2">
+                      Studio nổi bật
+                    </span>
+                    <h3 className="text-lg font-bold text-gray-900 line-clamp-2 mb-2 min-h-[48px] flex items-center">
+                      {studio.name}
+                    </h3>
+                    <p className="text-sm text-gray-600 line-clamp-2 mb-2 min-h-[40px] flex items-center">
+                      {studio.description?.length > 80
+                        ? studio.description.slice(0, 80) + "..."
+                        : studio.description}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 mb-2 min-h-[24px]">
+                      {studio.capacity && (
+                        <span className="inline-block bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full font-semibold">
+                          <FiUsers className="inline-block mr-1" size={14} />
+                          {studio.capacity} người
+                        </span>
+                      )}
+                      <span className="inline-block bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-semibold">
+                        {studio.basePricePerHour?.toLocaleString()}đ/giờ
+                      </span>
+                    </div>
+                  </div>
+                  {/* PRICE + CTA */}
+                  <div className="px-4 pb-6 flex flex-col gap-2">
+                    <div className="text-xs text-gray-500">Giá từ</div>
+                    <div className="text-2xl font-extrabold text-amber-600 mb-1">
+                      {studio.basePricePerHour?.toLocaleString("vi-VN")}₫
+                      <span className="text-sm text-gray-500 ml-1">/ giờ</span>
+                    </div>
+                    <a
+                      href={`/studio/${studio._id}`}
+                      className="w-full h-12 bg-amber-500 hover:bg-amber-600 border-none rounded-2xl font-semibold text-base flex items-center justify-center gap-2 shadow-none text-white transition-all py-2 px-4"
+                      style={{ marginTop: "auto" }}
+                    >
+                      <FiShoppingCart size={16} /> Đặt ngay
+                    </a>
                   </div>
                 </div>
-
-                {/* Card Content */}
-                <div className="p-5 md:p-6 flex flex-col gap-4 flex-1">
-                  <div className="space-y-2">
-                    <Text className="text-gray-500 text-xs uppercase tracking-wide">Mô tả</Text>
-                    <Paragraph className="text-gray-800 text-sm mt-1 line-clamp-3 leading-relaxed">
-                      {studio.description || "Chưa có mô tả chi tiết."}
-                    </Paragraph>
-                  </div>
-
-                  <div className="studio-card__footer flex items-center justify-between pt-4 border border-amber-50 px-4 py-3">
-                    <div className="space-y-1">
-                      <Text className="text-gray-500 text-xs uppercase tracking-wide">Giá thuê</Text>
-                      <div className="flex items-baseline gap-2 flex-wrap text-slate-900 leading-none">
-                        <span className="text-2xl font-extrabold whitespace-nowrap">
-                          {formatPrice(studio.basePricePerHour)}
-                        </span>
-                        <span className="text-sm text-gray-600 whitespace-nowrap">
-                          VNĐ /giờ
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 flex-wrap justify-end">
-                      {/* Nút đặt lịch */}
-                      <Button
-                        size="large"
-                        className="bg-gradient-to-r from-indigo-500 to-sky-500 text-white border-none shadow-lg px-4"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/booking/${studio._id}`);
-                        }}
-                      >
-                        Đặt lịch
-                      </Button>
-
-                      {/* Nút xem chi tiết */}
-                      <Button
-                        type="primary"
-                        size="large"
-                        className="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:opacity-95 border-none shadow-lg px-4 text-white"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/studio/${studio._id}`);
-                        }}
-                      >
-                        Xem chi tiết
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
+              </div>
             ))
           )}
         </div>

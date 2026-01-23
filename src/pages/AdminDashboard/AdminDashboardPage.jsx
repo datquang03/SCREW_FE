@@ -2,6 +2,8 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import CountUp from "react-countup";
+import { Chart, ArcElement, CategoryScale, LinearScale, BarElement, Tooltip, Legend } from 'chart.js';
+import { Doughnut, Bar } from 'react-chartjs-2';
 
 import KPIStat from "../../components/dashboard/KPIStat";
 import {
@@ -14,6 +16,9 @@ import {
   FiTrendingUp,
 } from "react-icons/fi";
 import { getAdminAnalytics } from "../../features/admin/admin.analyticSlice";
+
+// Đăng ký các thành phần cần thiết cho chartjs
+Chart.register(ArcElement, CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
 const AdminDashboardPage = () => {
   const dispatch = useDispatch();
@@ -35,7 +40,7 @@ const AdminDashboardPage = () => {
     );
   }
 
-  const { users, studios, equipment, promotions, notifications, revenue } =
+  const { users, studios, equipment, promotions, notifications, revenue, bookings } =
     data;
 
   // === Helpers filter ===
@@ -80,6 +85,48 @@ const AdminDashboardPage = () => {
       equipmentFilter === "all"
         ? equipment.total
         : equipment.byStatus[equipmentFilter] || 0,
+  };
+
+  // Chart data
+  const equipmentStatusData = {
+    labels: ['Có sẵn', 'Đang dùng', 'Bảo trì'],
+    datasets: [
+      {
+        data: [equipment.byStatus.available, equipment.byStatus.in_use, equipment.byStatus.maintenance],
+        backgroundColor: ['#22c55e', '#f59e42', '#ef4444'],
+      },
+    ],
+  };
+
+  const studioStatusData = {
+    labels: ['Hoạt động', 'Bảo trì'],
+    datasets: [
+      {
+        data: [studios.byStatus.active, studios.byStatus.maintenance],
+        backgroundColor: ['#6366f1', '#f43f5e'],
+      },
+    ],
+  };
+
+  const bookingStatusData = {
+    labels: ['Đã xác nhận', 'Hoàn thành', 'Đã hủy'],
+    datasets: [
+      {
+        data: [bookings.byStatus.confirmed, bookings.byStatus.completed, bookings.byStatus.cancelled],
+        backgroundColor: ['#3b82f6', '#22c55e', '#ef4444'],
+      },
+    ],
+  };
+
+  const revenueBarData = {
+    labels: ['Tháng này', 'Tháng trước', 'Năm nay'],
+    datasets: [
+      {
+        label: 'Doanh thu (VND)',
+        data: [revenue.monthly, revenue.lastMonth, revenue.yearly],
+        backgroundColor: ['#6366f1', '#f59e42', '#22c55e'],
+      },
+    ],
   };
 
   // === KPI Groups ===
@@ -155,91 +202,95 @@ const AdminDashboardPage = () => {
     { key: "revenue", label: "Revenue" },
   ];
 
+  // Thay đổi layout, card, chart, bảng, badge, màu sắc, spacing cho giống UI mẫu hiện đại
   return (
-    <div className="space-y-6 p-4 md:p-6">
-      {/* HEADER */}
-      <div className="relative overflow-hidden rounded-2xl p-6 md:p-8 bg-gradient-to-br from-indigo-100 via-purple-50 to-white shadow-lg border border-indigo-200/50">
-        <div className="absolute -top-10 -left-10 w-40 h-40 rounded-full bg-indigo-300/30 blur-2xl" />
-        <div className="absolute -bottom-12 -right-10 w-60 h-60 rounded-full bg-purple-400/30 blur-3xl" />
-        <div className="relative z-10">
-          <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3 tracking-tight">
-            Bảng điều khiển quản trị
-          </h1>
-          <p className="text-base md:text-lg text-gray-700 font-medium">
-            Quản trị Users, Studios, Equipment, Khuyến mãi, Thông báo và Doanh
-            thu.
-          </p>
+    <div className="space-y-8 p-4 md:p-8 bg-gray-50 min-h-screen">
+      {/* KPI GRID */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
+        <div className="bg-white rounded-2xl shadow flex flex-col items-start p-6">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="bg-blue-50 p-2 rounded-full text-blue-600 text-xl"><FiTrendingUp /></span>
+            <span className="text-green-500 font-bold text-xs">+{revenue.growth}%</span>
+          </div>
+          <div className="text-gray-500 text-xs mb-1">Tổng Doanh Thu</div>
+          <div className="text-2xl font-extrabold text-gray-900 mb-1">{revenue.total.toLocaleString()} VND</div>
+        </div>
+        <div className="bg-white rounded-2xl shadow flex flex-col items-start p-6">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="bg-blue-50 p-2 rounded-full text-blue-600 text-xl"><FiBell /></span>
+          </div>
+          <div className="text-gray-500 text-xs mb-1">Tổng Đơn Đặt</div>
+          <div className="text-2xl font-extrabold text-gray-900 mb-1">{bookings.total}</div>
+          <div className="text-xs text-gray-400">Tháng này</div>
+        </div>
+        <div className="bg-white rounded-2xl shadow flex flex-col items-start p-6">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="bg-blue-50 p-2 rounded-full text-blue-600 text-xl"><FiUser /></span>
+          </div>
+          <div className="text-gray-500 text-xs mb-1">Người Dùng Hoạt Động</div>
+          <div className="text-2xl font-extrabold text-gray-900 mb-1">{users.active}/{users.total}</div>
+          <div className="text-xs text-gray-400">Hôm nay</div>
+        </div>
+        <div className="bg-white rounded-2xl shadow flex flex-col items-start p-6">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="bg-blue-50 p-2 rounded-full text-blue-600 text-xl"><FiHardDrive /></span>
+          </div>
+          <div className="text-gray-500 text-xs mb-1">Tỉ Lệ Sử Dụng Thiết Bị</div>
+          <div className="text-2xl font-extrabold text-gray-900 mb-1">{equipment.byStatus.in_use} / {equipment.byStatus.available} thiết bị</div>
         </div>
       </div>
 
-      {/* TABS */}
-      <div className="flex flex-wrap gap-3">
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-2 rounded-xl font-semibold transition-colors duration-200 ${
-              activeTab === tab.key
-                ? "bg-indigo-500 text-white shadow-md"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+      {/* CHARTS & TABLES */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Revenue Bar Chart */}
+        <div className="bg-white rounded-2xl shadow p-6 flex flex-col items-center">
+          <h3 className="font-bold text-lg mb-2">Doanh Thu</h3>
+          <Bar data={revenueBarData} options={{ plugins: { legend: { display: false } } }} height={220} />
+        </div>
+        {/* Booking Status Doughnut Chart */}
+        <div className="bg-white rounded-2xl shadow p-6 flex flex-col items-center">
+          <h3 className="font-bold text-lg mb-2">Trạng Thái Đơn Hàng</h3>
+          <Doughnut data={bookingStatusData} options={{ cutout: '80%', plugins: { legend: { display: false } } }} width={160} height={160} />
+          <div className="mt-4 text-center">
+            <div className="font-bold text-xl text-gray-900">{bookings.total} Đơn Hàng</div>
+            <div className="flex justify-center gap-4 mt-2 text-xs">
+              <span className="text-green-600">Hoàn thành: {bookings.byStatus.completed}</span>
+              <span className="text-blue-600">Xác nhận: {bookings.byStatus.confirmed}</span>
+              <span className="text-red-500">Đã hủy: {bookings.byStatus.cancelled}</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* DROPDOWN FILTER */}
-      <div className="mt-4">
-        {activeTab === "users" && (
-          <select
-            className="border rounded-md px-3 py-2 text-gray-700"
-            value={userFilter}
-            onChange={(e) => setUserFilter(e.target.value)}
-          >
-            <option value="all">Tất cả</option>
-            <option value="active">Đang hoạt động</option>
-            <option value="inactive">Ngưng hoạt động</option>
-          </select>
-        )}
-
-        {activeTab === "studios" && (
-          <select
-            className="border rounded-md px-3 py-2 text-gray-700"
-            value={equipmentFilter}
-            onChange={(e) => setEquipmentFilter(e.target.value)}
-          >
-            <option value="all">Tất cả</option>
-            <option value="available">Có sẵn</option>
-            <option value="in_use">Đang dùng</option>
-            <option value="maintenance">Bảo trì</option>
-          </select>
-        )}
-
-        {activeTab === "promotions" && (
-          <select
-            className="border rounded-md px-3 py-2 text-gray-700"
-            value={promoFilter}
-            onChange={(e) => setPromoFilter(e.target.value)}
-          >
-            <option value="all">Tất cả</option>
-            <option value="active">Đang hoạt động</option>
-            <option value="inactive">Ngưng hoạt động</option>
-          </select>
-        )}
-      </div>
-
-      {/* KPI GRID */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5 mt-4">
-        {kpiGroups[activeTab].map((kpi) => (
-          <KPIStat
-            key={kpi.title}
-            title={kpi.title}
-            value={<CountUp end={kpi.value || 0} duration={1.5} />}
-            icon={kpi.icon}
-            gradient={kpi.gradient}
-          />
-        ))}
+      {/* User Distribution only */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+        <div className="bg-white rounded-2xl shadow p-6">
+          <h3 className="font-bold text-lg mb-2">Phân Bố Người Dùng</h3>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="w-24 text-gray-700">Khách hàng</span>
+              <div className="flex-1 bg-gray-100 rounded-full h-3">
+                <div className="bg-blue-500 h-3 rounded-full" style={{ width: `${users.byRole.customers.total / users.total * 100}%` }}></div>
+              </div>
+              <span className="text-xs text-gray-700 font-bold ml-2">{users.byRole.customers.total}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-24 text-gray-700">Nhân viên</span>
+              <div className="flex-1 bg-gray-100 rounded-full h-3">
+                <div className="bg-green-500 h-3 rounded-full" style={{ width: `${users.byRole.staff.total / users.total * 100}%` }}></div>
+              </div>
+              <span className="text-xs text-gray-700 font-bold ml-2">{users.byRole.staff.total}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-24 text-gray-700">Quản trị viên</span>
+              <div className="flex-1 bg-gray-100 rounded-full h-3">
+                <div className="bg-gray-500 h-3 rounded-full" style={{ width: `${users.byRole.admins.total / users.total * 100}%` }}></div>
+              </div>
+              <span className="text-xs text-gray-700 font-bold ml-2">{users.byRole.admins.total}</span>
+            </div>
+          </div>
+          <div className="mt-3 text-xs text-gray-500 flex items-center gap-2"><span className="text-blue-500 font-bold">i</span> Tỉ lệ người dùng hoạt động trong 24h qua là {((users.active / users.total) * 100).toFixed(1)}%.</div>
+        </div>
       </div>
     </div>
   );

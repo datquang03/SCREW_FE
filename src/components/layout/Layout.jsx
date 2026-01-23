@@ -1,9 +1,18 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { initSocket } from "../../api/socketInstance";
+import { useSelector } from "react-redux";
 import NavbarWrapper from "./NavbarWrapper";
 import Footer from "./Footer";
 import { Outlet } from "react-router-dom";
 
 const Layout = ({ children }) => {
+  const token = useSelector(state => state.auth?.token);
+  useEffect(() => {
+    if (token) {
+      initSocket(token);
+    }
+  }, [token]);
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-amber-50 via-white to-indigo-50">
       {/* Soft glowing blobs */}

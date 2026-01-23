@@ -76,7 +76,7 @@ const StudioCommentList = ({ targetId }) => {
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-full hover:opacity-90 disabled:opacity-50"
+            className=" border bg-amber-200 px-4 py-2 rounded-full hover:opacity-90 disabled:opacity-50 hover:scale-3d cursor-pointer font-semibold text-slate-800"
           >
             Gửi
           </button>

@@ -30,12 +30,7 @@ import StaffStudiosPage from "./pages/StaffDashboard/StaffStudiosPage";
 import StaffEquipmentPage from "./pages/StaffDashboard/StaffEquipmentPage";
 import StaffProfilePage from "./pages/StaffDashboard/StaffProfilePage";
 import AdminDashboardPage from "./pages/AdminDashboard/AdminDashboardPage";
-import AdminUserPage from "./pages/AdminDashboard/AdminUserPage";
 import AdminStaffPage from "./pages/AdminDashboard/AdminStaffPage";
-import AdminStudiosPage from "./pages/AdminDashboard/AdminStudiosPage";
-import AdminRevenuePage from "./pages/AdminDashboard/AdminRevenuePage";
-import AdminReportsPage from "./pages/AdminDashboard/AdminReportsPage";
-import AdminSettingsPage from "./pages/AdminDashboard/AdminSettingsPage";
 import ScrollToTop from "./components/ScrollToTop";
 import Layout from "./components/layout/Layout";
 import MessagePage from "./pages/Message/MessagePage";
@@ -65,9 +60,11 @@ import ContactSetDesignRequestPage from "./pages/BookingSetDesign/ContactSetDesi
 import StaffCustomRequestPage from "./pages/StaffDashboard/StaffCustomRequestPage";
 import UserCustomSetDesignPage from "./pages/UserDashboard/UserCustomSetDesignPage";
 import SearchPage from "./pages/Search/SearchPage";
-import PromotionPage from "./pages/Promotion/PromotionPage";
 import UserRequestRefundPage from "./pages/UserDashboard/UserRequestRefundPage";
 import StaffReportPage from "./pages/StaffDashboard/StaffReportPage";
+import UserReportPage from "./pages/UserDashboard/UserReportPage";
+import SetDesignPage from "./pages/SetDesign/SetDesignPage";
+import AdminProfilePage from "./pages/AdminDashboard/AdminProfilePage";
 const pageVariants = {
   initial: { opacity: 0, y: 10 },
   in: { opacity: 1, y: 0 },
@@ -111,7 +108,7 @@ const AppContent = () => {
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/studio" element={<StudioPage />} />
               <Route path="/search" element={<SearchPage />} />
-              <Route path="/promotion" element={<PromotionPage />} />
+              <Route path="/set-designs" element={<SetDesignPage />} />
               <Route
                 path="/set-design-request"
                 element={<ContactSetDesignRequestPage />}
@@ -231,12 +228,8 @@ const AppContent = () => {
               }
             >
               <Route index element={<AdminDashboardPage />} />
-              <Route path="users" element={<AdminUserPage />} />
               <Route path="staff" element={<AdminStaffPage />} />
-              <Route path="studios" element={<AdminStudiosPage />} />
-              <Route path="revenue" element={<AdminRevenuePage />} />
-              <Route path="reports" element={<AdminReportsPage />} />
-              <Route path="settings" element={<AdminSettingsPage />} />
+              <Route path="profile" element={<AdminProfilePage />} />
             </Route>
 
             {/* FALLBACK */}

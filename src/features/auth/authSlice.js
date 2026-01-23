@@ -1,6 +1,7 @@
 // src/features/auth/authSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../../api/axiosInstance";
+import { initSocket, getSocket } from "../../api/socketInstance";
 
 /* ================= UTILS ================= */
 const saveToStorage = (user, token) => {
@@ -274,6 +275,8 @@ const authSlice = createSlice({
         s.user = { ...a.payload.user, verified: true };
         s.token = a.payload.accessToken;
         saveToStorage(s.user, s.token);
+        // Tự động kết nối socket sau khi đăng nhập thành công
+        initSocket(a.payload.accessToken);
       })
       .addCase(login.rejected, (s, a) => {
         s.loading = false;

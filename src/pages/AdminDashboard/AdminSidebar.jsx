@@ -11,6 +11,7 @@ import {
   FiBriefcase,
   FiBarChart2,
 } from "react-icons/fi";
+import { AiOutlineProfile } from "react-icons/ai";
 
 const AdminSidebar = () => {
   const location = useLocation();
@@ -20,12 +21,8 @@ const AdminSidebar = () => {
   const menuItems = useMemo(
     () => [
       { key: "dashboard", icon: <FiHome />, label: "Bảng điều khiển", path: "/dashboard/admin" },
-      { key: "users", icon: <FiUsers />, label: "Người dùng", path: "/dashboard/admin/users" },
       { key: "staff", icon: <FiBriefcase />, label: "Nhân sự", path: "/dashboard/admin/staff" },
-      { key: "studios", icon: <FiVideo />, label: "Studio", path: "/dashboard/admin/studios" },
-      { key: "revenue", icon: <FiTrendingUp />, label: "Doanh thu", path: "/dashboard/admin/revenue" },
-      { key: "reports", icon: <FiBarChart2 />, label: "Báo cáo", path: "/dashboard/admin/reports" },
-      { key: "settings", icon: <FiSettings />, label: "Cài đặt", path: "/dashboard/admin/settings" },
+      { key: "profile", icon: <AiOutlineProfile />, label: "Hồ sơ", path: "/dashboard/admin/profile" },
     ],
     []
   );

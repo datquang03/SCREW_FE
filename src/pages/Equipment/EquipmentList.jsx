@@ -129,8 +129,8 @@ export default function EquipmentListPage() {
             <Row gutter={[16, 24]}>
               {[...Array(6)].map((_, i) => (
                 <Col xs={24} sm={12} lg={8} key={i}>
-                  <Card className="rounded-2xl h-[520px]">
-                    <Skeleton.Image className="w-full h-[220px] rounded-xl" />
+                  <Card className="rounded-3xl h-[520px] shadow-xl border-0 bg-gradient-to-br from-indigo-100 via-white to-blue-100">
+                    <Skeleton.Image className="w-full h-[220px] rounded-2xl" />
                     <Skeleton active paragraph={{ rows: 4 }} className="mt-4" />
                   </Card>
                 </Col>
@@ -161,7 +161,7 @@ export default function EquipmentListPage() {
                             setSelectedEquipment(equip);
                             setIsModalOpen(true);
                           }}
-                          className="h-[520px] rounded-2xl flex flex-col"
+                          className="h-[520px] rounded-3xl shadow-xl border-0 bg-gradient-to-br from-white via-indigo-50 to-blue-50 flex flex-col group transition-all duration-300 hover:shadow-2xl hover:-translate-y-1.5"
                           styles={{
                             body: {
                               flex: 1,
@@ -170,17 +170,17 @@ export default function EquipmentListPage() {
                             },
                           }}
                           cover={
-                            <div className="h-[220px] overflow-hidden">
+                            <div className="h-[220px] overflow-hidden rounded-2xl shadow-lg">
                               <img
                                 src={equip.image}
                                 alt={equip.name}
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                               />
                             </div>
                           }
                         >
                           {/* CONTENT */}
-                          <Title level={4} className="mb-1 line-clamp-2">
+                          <Title level={4} className="mb-1 line-clamp-2 font-bold text-gray-900">
                             {equip.name}
                           </Title>
                           <Text className="text-gray-500 text-sm line-clamp-2 mb-3">
@@ -188,24 +188,18 @@ export default function EquipmentListPage() {
                           </Text>
 
                           {/* STOCK */}
-                          <Progress percent={stockPercent} size="small" />
+                          <Progress percent={stockPercent} size="small" className="rounded-full" strokeColor="#22c55e" trailColor="#e0e7ff" />
                           <div className="flex flex-wrap gap-2 text-xs mt-2">
-                            <Tag color="green">
-                              Còn: {equip.availableQty}
-                            </Tag>
-                            <Tag color="blue">Tổng: {equip.totalQty}</Tag>
-                            <Tag color="orange">
-                              Đang dùng: {equip.inUseQty}
-                            </Tag>
+                            <Tag color="green" className="rounded-full px-3 py-1 font-semibold">Còn: {equip.availableQty}</Tag>
+                            <Tag color="blue" className="rounded-full px-3 py-1 font-semibold">Tổng: {equip.totalQty}</Tag>
+                            <Tag color="orange" className="rounded-full px-3 py-1 font-semibold">Đang dùng: {equip.inUseQty}</Tag>
                             {equip.maintenanceQty > 0 && (
-                              <Tag color="red">
-                                Bảo trì: {equip.maintenanceQty}
-                              </Tag>
+                              <Tag color="red" className="rounded-full px-3 py-1 font-semibold">Bảo trì: {equip.maintenanceQty}</Tag>
                             )}
                           </div>
 
                           {/* PRICE */}
-                          <div className="mt-auto pt-4 border-t">
+                          <div className="mt-auto pt-4 border-t border-gray-100">
                             <Text className="text-2xl font-bold text-amber-600">
                               {formatPrice(equip.pricePerHour)}
                             </Text>
@@ -230,6 +224,7 @@ export default function EquipmentListPage() {
                         Math.min(p + 6, filteredEquipments.length)
                       )
                     }
+                    className="rounded-full px-8 h-12 font-bold shadow-lg"
                   >
                     Xem thêm
                   </Button>
@@ -247,18 +242,20 @@ export default function EquipmentListPage() {
         footer={null}
         width={900}
         centered
+        className="rounded-3xl shadow-2xl border-0 bg-gradient-to-br from-white via-indigo-50 to-blue-50"
+        bodyStyle={{ borderRadius: 24, padding: 32 }}
       >
         {selectedEquipment && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <img
               src={selectedEquipment.image}
               alt={selectedEquipment.name}
-              className="w-full h-[360px] object-cover rounded-xl"
+              className="w-full h-[360px] object-cover rounded-2xl shadow-lg"
             />
 
-            <div>
-              <Title level={2}>{selectedEquipment.name}</Title>
-              <Text>{selectedEquipment.description}</Text>
+            <div className="flex flex-col justify-center">
+              <Title level={2} className="font-bold text-gray-900 mb-2">{selectedEquipment.name}</Title>
+              <Text className="text-gray-600 mb-4 text-base">{selectedEquipment.description}</Text>
 
               <Divider />
 
@@ -267,24 +264,21 @@ export default function EquipmentListPage() {
                   selectedEquipment.availableQty,
                   selectedEquipment.totalQty
                 )}
+                className="rounded-full"
+                strokeColor="#22c55e"
+                trailColor="#e0e7ff"
               />
 
               <div className="flex flex-wrap gap-3 mt-4">
-                <Tag color="blue">Tổng: {selectedEquipment.totalQty}</Tag>
-                <Tag color="green">
-                  Còn: {selectedEquipment.availableQty}
-                </Tag>
-                <Tag color="orange">
-                  Đang dùng: {selectedEquipment.inUseQty}
-                </Tag>
-                <Tag color="red">
-                  Bảo trì: {selectedEquipment.maintenanceQty}
-                </Tag>
+                <Tag color="blue" className="rounded-full px-3 py-1 font-semibold">Tổng: {selectedEquipment.totalQty}</Tag>
+                <Tag color="green" className="rounded-full px-3 py-1 font-semibold">Còn: {selectedEquipment.availableQty}</Tag>
+                <Tag color="orange" className="rounded-full px-3 py-1 font-semibold">Đang dùng: {selectedEquipment.inUseQty}</Tag>
+                <Tag color="red" className="rounded-full px-3 py-1 font-semibold">Bảo trì: {selectedEquipment.maintenanceQty}</Tag>
               </div>
 
               <Divider />
 
-              <Title level={1} className="text-amber-600">
+              <Title level={1} className="text-amber-600 font-extrabold">
                 {formatPrice(selectedEquipment.pricePerHour)} / giờ
               </Title>
             </div>

@@ -58,6 +58,27 @@ export const getReportById = createAsyncThunk(
   }
 );
 
+// GET MY REPORTS
+export const getMyReport = createAsyncThunk(
+  "report/getMyReport",
+  async (_, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+      const response = await axiosInstance.get(
+        "/reports/my-reports",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      return response.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Lấy danh sách báo cáo của tôi thất bại" }
+      );
+    }
+  }
+);
+
 // UPDATE REPORT (Status & Compensation)
 export const updateReport = createAsyncThunk(
   "report/updateReport",
@@ -157,6 +178,30 @@ const reportSlice = createSlice({
         state.currentReport = action.payload;
       })
       .addCase(getReportById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // GET MY REPORTS
+      .addCase(getMyReport.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getMyReport.fulfilled, (state, action) => {
+        state.loading = false;
+        const payload = action.payload;
+        if (Array.isArray(payload)) {
+          state.reports = payload;
+        } else if (payload && (Array.isArray(payload.data) || Array.isArray(payload.reports))) {
+          state.reports = payload.data || payload.reports || [];
+          if (payload.pagination || payload.total) {
+            state.total = payload.pagination?.totalItems || payload.total || 0;
+          }
+        } else {
+          state.reports = [];
+        }
+      })
+      .addCase(getMyReport.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

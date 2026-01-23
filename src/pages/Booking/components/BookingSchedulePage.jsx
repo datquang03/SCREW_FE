@@ -1,13 +1,28 @@
 // src/pages/Booking/components/BookingSchedulePage.jsx
 import React, { useState, useEffect, useMemo } from "react";
-import { TimePicker, Button, Card, Typography, Tag, message, Skeleton, Radio, DatePicker } from "antd";
+import {
+  TimePicker,
+  Button,
+  Card,
+  Typography,
+  Tag,
+  message,
+  Skeleton,
+  Radio,
+  DatePicker,
+} from "antd";
 import { ArrowRightOutlined, ClockCircleOutlined } from "@ant-design/icons";
 import { useSelector, useDispatch } from "react-redux";
 import dayjs from "dayjs";
+import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import { motion } from "framer-motion";
 import { setBookingTime } from "../../../features/booking/bookingSlice";
 import { getStudioSchedule } from "../../../features/studio/studioSlice";
 import ScheduleTable from "./ScheduleTable";
+
+dayjs.extend(isSameOrAfter);
+dayjs.extend(isSameOrBefore);
 
 const { Title, Text } = Typography;
 const { RangePicker } = TimePicker;
@@ -38,7 +53,7 @@ const BookingSchedulePage = ({ onNext }) => {
   // Lấy lịch studio khi có studioId
   useEffect(() => {
     if (studioId) {
-      dispatch(getStudioSchedule({ studioId }));
+      dispatch(getStudioSchedule());
     }
   }, [studioId, dispatch]);
 
@@ -50,7 +65,11 @@ const BookingSchedulePage = ({ onNext }) => {
   // Reset timeRange khi đổi chế độ hoặc dateRange
   useEffect(() => {
     setTimeRange([null, null]);
-  }, [dateRangeMode, dateRange[0]?.format("YYYY-MM-DD"), dateRange[1]?.format("YYYY-MM-DD")]);
+  }, [
+    dateRangeMode,
+    dateRange[0]?.format("YYYY-MM-DD"),
+    dateRange[1]?.format("YYYY-MM-DD"),
+  ]);
 
   useEffect(() => {
     if (draft.startTime && draft.endTime) {
@@ -62,33 +81,94 @@ const BookingSchedulePage = ({ onNext }) => {
   }, [draft.startTime, draft.endTime]);
 
   // Tìm studio hiện tại trong danh sách
-  const currentStudioSchedule = useMemo(() => {
+  const currentStudioAvailability = useMemo(() => {
     if (!studioSchedule?.studios || !Array.isArray(studioSchedule.studios))
       return null;
     return studioSchedule.studios.find((s) => s._id === studioId) || null;
   }, [studioSchedule, studioId]);
 
+  // Tổng hợp scheduleByDate của tất cả studio
+  const scheduleByDateAllStudios = useMemo(() => {
+    const result = {};
+    if (!studioSchedule?.studios || !Array.isArray(studioSchedule.studios)) return result;
+    studioSchedule.studios.forEach((studio) => {
+      Object.entries(studio.scheduleByDate || {}).forEach(([dateKey, slotArr]) => {
+        if (!result[dateKey]) result[dateKey] = [];
+        result[dateKey] = result[dateKey].concat(slotArr);
+      });
+    });
+    return result;
+  }, [studioSchedule]);
+
+  // Debug log
+  console.log("studioId:", studioId);
+  console.log(
+    "studios _id:",
+    (studioSchedule?.studios || []).map((s) => s._id)
+  );
+  console.log("currentStudioAvailability:", currentStudioAvailability);
+  console.log("studioSchedule.studios:", studioSchedule?.studios);
+  console.log("scheduleByDate:", currentStudioAvailability?.scheduleByDate);
+
+  // selectedDateKey cho bookedSlots
   const selectedDateKey = selectedDate
     ? selectedDate.format("YYYY-MM-DD")
     : null;
 
-  // Lấy các booked slots - nếu là range, lấy từ nhiều ngày
+  // Lấy tất cả các slot đã đặt của mọi studio, lọc theo ngày hoặc khoảng ngày đã chọn
   const bookedSlots = useMemo(() => {
+    if (!studioSchedule?.studios || !Array.isArray(studioSchedule.studios))
+      return [];
+    let slots = [];
+    studioSchedule.studios.forEach((studio) => {
+      Object.entries(studio.scheduleByDate || {}).forEach(
+        ([dateKey, slotArr]) => {
+          slotArr.forEach((slot) => {
+            if (slot.status === "booked") {
+              slots.push({
+                ...slot,
+                studioId: studio._id,
+                studioName: studio.name,
+                date: dateKey,
+              });
+            }
+          });
+        }
+      );
+    });
     if (dateRangeMode === "single" && selectedDate) {
-      return currentStudioSchedule?.scheduleByDate?.[selectedDateKey] || [];
-    } else if (dateRangeMode === "range" && dateRange[0] && dateRange[1]) {
-      let slots = [];
-      let current = dateRange[0];
-      while (current.isBefore(dateRange[1]) || current.isSame(dateRange[1], "day")) {
-        const key = current.format("YYYY-MM-DD");
-        const daySlots = currentStudioSchedule?.scheduleByDate?.[key] || [];
-        slots = [...slots, ...daySlots];
-        current = current.add(1, "day");
-      }
-      return slots;
+      const key = selectedDate.format("YYYY-MM-DD");
+      return slots.filter((slot) => slot.date === key);
     }
-    return [];
-  }, [currentStudioSchedule, selectedDate, dateRange, dateRangeMode, selectedDateKey]);
+    if (dateRangeMode === "range" && dateRange[0] && dateRange[1]) {
+      const start = dateRange[0].startOf("day");
+      const end = dateRange[1].endOf("day");
+      return slots.filter((slot) => {
+        const slotDate = dayjs(slot.date);
+        return slotDate.isValid() && slotDate.isSameOrAfter(start, "day") && slotDate.isSameOrBefore(end, "day");
+      });
+    }
+    return slots;
+  }, [studioSchedule, dateRangeMode, selectedDate, dateRange]);
+
+  // Tính số lịch đã đặt cho từng ngày
+  const bookedCountByDate = useMemo(() => {
+    const result = {};
+    if (!studioSchedule?.studios || !Array.isArray(studioSchedule.studios))
+      return result;
+    studioSchedule.studios.forEach((studio) => {  
+      const byDate = studio.scheduleByDate || {};
+      Object.keys(byDate).forEach((dateKey) => {
+        const count = byDate[dateKey].filter(
+          (slot) => slot.status === "booked"
+        ).length;
+        if (count > 0) {
+          result[dateKey] = (result[dateKey] || 0) + count;
+        }
+      });
+    });
+    return result;
+  }, [studioSchedule]);
 
   const durationHours =
     timeRange[0] && timeRange[1]
@@ -97,7 +177,8 @@ const BookingSchedulePage = ({ onNext }) => {
 
   const handleNext = () => {
     // Kiểm tra đã chọn ngày
-    const hasDateSelection = dateRangeMode === "single" ? selectedDate : (dateRange[0] && dateRange[1]);
+    const hasDateSelection =
+      dateRangeMode === "single" ? selectedDate : dateRange[0] && dateRange[1];
     if (!hasDateSelection) {
       return message.warning("Vui lòng chọn ngày đặt phòng!");
     }
@@ -119,6 +200,18 @@ const BookingSchedulePage = ({ onNext }) => {
         .minute(timeRange[1].minute())
         .second(0)
         .millisecond(0);
+
+      // Đảm bảo là dayjs object
+      startTime = dayjs(startTime);
+      endTime = dayjs(endTime);
+
+      // Nếu endTime <= startTime thì cộng thêm 1 ngày cho endTime (qua đêm)
+      if (
+        typeof endTime.isSameOrBefore === "function" &&
+        endTime.isSameOrBefore(startTime)
+      ) {
+        endTime = endTime.add(1, "day");
+      }
     } else {
       // Chế độ range: giờ bắt đầu từ ngày đầu, giờ kết thúc đến ngày cuối
       startTime = dateRange[0]
@@ -217,7 +310,9 @@ const BookingSchedulePage = ({ onNext }) => {
                 <span className="font-semibold">📅 Chọn 1 ngày (1 slot)</span>
               </Radio.Button>
               <Radio.Button value="range" className="flex-1">
-                <span className="font-semibold">📆 Chọn khoảng (nhiều ngày)</span>
+                <span className="font-semibold">
+                  📆 Chọn khoảng (nhiều ngày)
+                </span>
               </Radio.Button>
             </Radio.Group>
           </Card>
@@ -225,51 +320,21 @@ const BookingSchedulePage = ({ onNext }) => {
           <Card
             title={
               <Title level={4} className="font-bold mb-0">
-                {dateRangeMode === "single" ? "Chọn ngày đặt phòng" : "Chọn khoảng ngày đặt phòng"}
+                {dateRangeMode === "single"
+                  ? "Chọn ngày đặt phòng"
+                  : "Chọn khoảng ngày đặt phòng"}
               </Title>
             }
             className="shadow-sm border border-slate-200 rounded-2xl"
           >
-            {dateRangeMode === "single" ? (
-              <ScheduleTable
-                value={selectedDate}
-                onChange={setSelectedDate}
-                scheduleByDate={currentStudioSchedule?.scheduleByDate || {}}
-                disabledDate={(current) =>
-                  current && current < dayjs().startOf("day")
-                }
-              />
-            ) : (
-              <div className="space-y-4">
-                <DatePicker.RangePicker
-                  format="DD/MM/YYYY"
-                  value={dateRange[0] && dateRange[1] ? dateRange : null}
-                  onChange={(dates) => {
-                    if (dates && dates[0] && dates[1]) {
-                      setDateRange([dates[0], dates[1]]);
-                    } else {
-                      setDateRange([null, null]);
-                    }
-                  }}
-                  className="w-full"
-                  size="large"
-                  style={{ height: 48 }}
-                  placeholder={["Ngày bắt đầu", "Ngày kết thúc"]}
-                  disabledDate={(current) =>
-                    current && current < dayjs().startOf("day")
-                  }
-                />
-                {dateRange[0] && dateRange[1] && (
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <Text className="text-sm">
-                      <strong>Khoảng thời gian chọn:</strong> {dateRange[0].format("DD/MM/YYYY")} → {dateRange[1].format("DD/MM/YYYY")}
-                      <br />
-                      <span className="text-blue-600">{dateRange[1].diff(dateRange[0], "day") + 1} ngày</span>
-                    </Text>
-                  </div>
-                )}
-              </div>
-            )}
+            <ScheduleTable
+              value={dateRangeMode === "single" ? selectedDate : dateRange}
+              onChange={dateRangeMode === "single" ? setSelectedDate : setDateRange}
+              scheduleByDate={scheduleByDateAllStudios}
+              bookedCountByDate={bookedCountByDate}
+              disabledDate={(current) => current && current < dayjs().startOf("day")}
+              isRange={dateRangeMode === "range"}
+            />
           </Card>
         </div>
 
@@ -286,7 +351,12 @@ const BookingSchedulePage = ({ onNext }) => {
           >
             {scheduleLoading ? (
               <div className="space-y-4">
-                <Skeleton.Input active size="large" block style={{ height: 56 }} />
+                <Skeleton.Input
+                  active
+                  size="large"
+                  block
+                  style={{ height: 56 }}
+                />
                 <Skeleton active paragraph={{ rows: 3 }} />
               </div>
             ) : (
@@ -301,7 +371,8 @@ const BookingSchedulePage = ({ onNext }) => {
                           Lưu ý: Đặt phòng 1 ngày tối thiểu 4 giờ
                         </Text>
                         <Text className="text-xs text-amber-700">
-                          Ví dụ: {now.add(1, "hour").format("HH:00")} → {now.add(5, "hour").format("HH:00")}
+                          Ví dụ: {now.add(1, "hour").format("HH:00")} →{" "}
+                          {now.add(5, "hour").format("HH:00")}
                         </Text>
                       </div>
                     </div>
@@ -309,7 +380,11 @@ const BookingSchedulePage = ({ onNext }) => {
                 )}
 
                 {/* Chỉ render RangePicker khi đã chọn ngày */}
-                {(dateRangeMode === "single" ? selectedDate : (dateRange[0] && dateRange[1])) ? (
+                {(
+                  dateRangeMode === "single"
+                    ? selectedDate
+                    : dateRange[0] && dateRange[1]
+                ) ? (
                   <RangePicker
                     format="HH:mm"
                     minuteStep={30}
@@ -326,10 +401,11 @@ const BookingSchedulePage = ({ onNext }) => {
                       }
                     }}
                     disabledTime={(dateInfo, type) => {
-                      const isToday = dateRangeMode === "single" 
-                        ? selectedDate?.isSame(dayjs(), "day")
-                        : dateRange[0]?.isSame(dayjs(), "day");
-                      
+                      const isToday =
+                        dateRangeMode === "single"
+                          ? selectedDate?.isSame(dayjs(), "day")
+                          : dateRange[0]?.isSame(dayjs(), "day");
+
                       const currentHour = now.hour();
                       const currentMinute = now.minute();
 
@@ -341,7 +417,7 @@ const BookingSchedulePage = ({ onNext }) => {
 
                       if (type === "start") {
                         // Disable start time: tất cả giờ < giờ hiện tại nếu hôm nay
-                        const disabledHours = isToday 
+                        const disabledHours = isToday
                           ? Array.from({ length: currentHour + 1 }, (_, i) => i)
                           : [];
                         return {
@@ -349,10 +425,13 @@ const BookingSchedulePage = ({ onNext }) => {
                           disabledMinutes: (selectedHour) => {
                             // Nếu chọn giờ = giờ hiện tại, disable các phút < phút hiện tại
                             if (isToday && selectedHour === currentHour) {
-                              return Array.from({ length: currentMinute }, (_, i) => i);
+                              return Array.from(
+                                { length: currentMinute },
+                                (_, i) => i
+                              );
                             }
                             return [];
-                          }
+                          },
                         };
                       } else {
                         // Disable end time: phải >= start time + 4 giờ
@@ -363,17 +442,26 @@ const BookingSchedulePage = ({ onNext }) => {
                           minEndHour = currentHour + 4;
                         }
 
-                        const disabledHours = Array.from({ length: minEndHour }, (_, i) => i);
+                        const disabledHours = Array.from(
+                          { length: minEndHour },
+                          (_, i) => i
+                        );
                         return {
                           disabledHours: () => disabledHours,
                           disabledMinutes: (selectedHour) => {
                             // Nếu chọn giờ = minEndHour, disable các phút < phút bắt đầu
-                            if (startHour !== null && selectedHour === startHour + 4) {
+                            if (
+                              startHour !== null &&
+                              selectedHour === startHour + 4
+                            ) {
                               const startMinute = timeRange[0].minute();
-                              return Array.from({ length: startMinute }, (_, i) => i);
+                              return Array.from(
+                                { length: startMinute },
+                                (_, i) => i
+                              );
                             }
                             return [];
-                          }
+                          },
                         };
                       }
                     }}
@@ -393,23 +481,29 @@ const BookingSchedulePage = ({ onNext }) => {
                           <ClockCircleOutlined className="text-white text-lg" />
                         </div>
                         <div>
-                          <Text className="text-xs text-gray-600 block">Thời lượng thuê</Text>
+                          <Text className="text-xs text-gray-600 block">
+                            Thời lượng thuê
+                          </Text>
                           <Text className="text-xl font-bold text-blue-700">
                             {durationHours.toFixed(1)} giờ
                           </Text>
                         </div>
                       </div>
                       <div className="text-right">
-                        <Text className="text-xs text-gray-600 block">Khung giờ</Text>
+                        <Text className="text-xs text-gray-600 block">
+                          Khung giờ
+                        </Text>
                         <Text className="text-sm font-bold text-gray-800">
-                          {timeRange[0].format("HH:mm")} - {timeRange[1].format("HH:mm")}
+                          {timeRange[0].format("HH:mm")} -{" "}
+                          {timeRange[1].format("HH:mm")}
                         </Text>
                       </div>
                     </div>
                     {dateRangeMode === "single" && durationHours < 4 && (
                       <div className="mt-3 pt-3 border-t border-blue-200">
                         <Text className="text-xs text-red-600 font-semibold">
-                          ⚠️ Cần thêm {(4 - durationHours).toFixed(1)} giờ nữa (tối thiểu 4 giờ)
+                          ⚠️ Cần thêm {(4 - durationHours).toFixed(1)} giờ nữa
+                          (tối thiểu 4 giờ)
                         </Text>
                       </div>
                     )}
@@ -419,143 +513,88 @@ const BookingSchedulePage = ({ onNext }) => {
             )}
 
             {/* Các khung giờ đã được đặt */}
-            {bookedSlots.length > 0 && (dateRangeMode === "single" ? selectedDate : (dateRange[0] && dateRange[1])) && (
-              <div className="mt-6 p-5 rounded-2xl border border-rose-200 bg-white shadow-inner">
-                <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-                  <div>
-                    <Text strong className="text-red-600 text-base md:text-lg">
-                      {dateRangeMode === "single" 
-                        ? "Khung giờ đã được đặt trong ngày"
-                        : `Khung giờ đã được đặt từ ${dateRange[0]?.format("DD/MM")} đến ${dateRange[1]?.format("DD/MM")}`
-                      }
-                    </Text>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Khi chọn khung giờ, tránh các khoảng thời gian dưới đây
-                    </p>
-                  </div>
-                  <Tag color="red" className="font-semibold text-sm px-4 py-1">
-                    {bookedSlots.length} khung giờ
-                  </Tag>
-                </div>
-                <div className={`grid gap-3 ${bookedSlots.length === 1 ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
-                  {bookedSlots.map((slot) => (
-                    <div
-                      key={slot._id}
-                      className="rounded-2xl border border-red-200 bg-white/90 px-4 py-3 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+            {bookedSlots.length > 0 &&
+              (dateRangeMode === "single"
+                ? selectedDate
+                : dateRange[0] && dateRange[1]) && (
+                <div className="mt-6 p-5 rounded-2xl border border-rose-200 bg-white shadow-inner">
+                  <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                    <div>
+                      <Text
+                        strong
+                        className="text-red-600 text-base md:text-lg"
+                      >
+                        {dateRangeMode === "single"
+                          ? "Khung giờ đã được đặt trong ngày"
+                          : `Khung giờ đã được đặt từ ${dateRange[0]?.format(
+                              "DD/MM"
+                            )} đến ${dateRange[1]?.format("DD/MM")}`}
+                      </Text>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Khi chọn khung giờ, tránh các khoảng thời gian dưới đây
+                      </p>
+                    </div>
+                    <Tag
+                      color="red"
+                      className="font-semibold text-sm px-4 py-1"
                     >
-                      <div>
-                        {/* Header của thẻ */}
-                        <div className="flex items-center justify-between mb-3 border-b border-gray-100 pb-2">
-                          <Text className="text-xl font-extrabold text-red-600 tracking-tight">
-                            {slot.timeRange ||
-                              `${dayjs(slot.startTime).format("HH:mm")} - ${dayjs(
-                                slot.endTime
-                              ).format("HH:mm")}`}
-                          </Text>
-                          <Tag color="red" className="text-[10px] font-bold uppercase m-0">
-                            ĐÃ ĐẶT
-                          </Tag>
-                        </div>
+                      {bookedSlots.length} khung giờ
+                    </Tag>
+                  </div>
+                  <div
+                    className={`grid gap-3 ${
+                      bookedSlots.length === 1
+                        ? "grid-cols-1"
+                        : "grid-cols-1 md:grid-cols-2"
+                    }`}
+                  >
+                    {bookedSlots.map((slot) => (
+                      <div
+                        key={slot._id}
+                        className="rounded-2xl border border-red-200 bg-white/90 px-4 py-3 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+                      >
+                        <div>
+                          {/* Header của thẻ */}
+                          <div className="flex items-center justify-between mb-3 border-b border-gray-100 pb-2">
+                            <Text className="text-xl font-extrabold text-red-600 tracking-tight">
+                              {slot.timeRange ||
+                                `${dayjs(slot.startTime).format(
+                                  "HH:mm"
+                                )} - ${dayjs(slot.endTime).format("HH:mm")}`}
+                            </Text>
+                            <Tag
+                              color="red"
+                              className="text-[10px] font-bold uppercase m-0"
+                            >
+                              ĐÃ ĐẶT
+                            </Tag>
+                          </div>
 
-                        {/* Thân thẻ - dùng grid nếu full width */}
-                        <div className={`${bookedSlots.length === 1 ? 'grid grid-cols-1 md:grid-cols-2 gap-4' : 'space-y-3'}`}>
+                          {/* Thân thẻ - dùng grid nếu full width */}
+                          <div
+                            className={`${
+                              bookedSlots.length === 1
+                                ? "grid grid-cols-1 md:grid-cols-2 gap-4"
+                                : "space-y-3"
+                            }`}
+                          >
                             {/* Cột trái (hoặc hàng trên) */}
                             <div className="space-y-3">
-                                {/* Ngày nếu chế độ range */}
-                                {dateRangeMode === "range" && (
-                                  <div className="text-sm text-gray-700 font-semibold bg-gray-50 p-2 rounded-lg inline-block">
-                                    📅 {dayjs(slot.startTime).format("DD/MM/YYYY")}
-                                  </div>
-                                )}
-
-                                {/* Thông tin khách hàng */}
-                                {slot.booking?.customer && (
-                                  <div className="bg-gray-50 rounded-lg p-2.5">
-                                      <div className="text-xs text-gray-500 font-medium mb-1">Khách hàng</div>
-                                      <div className="font-bold text-gray-900 text-sm">
-                                        {slot.booking.customer.fullName ||
-                                          slot.booking.customer.username ||
-                                          "Khách"}
-                                      </div>
-                                    {slot.booking.customer.phone && (
-                                       <div className="text-xs text-gray-500 mt-0.5">
-                                          {slot.booking.customer.phone}
-                                       </div>
-                                    )}
-                                  </div>
-                                )}
-                            </div>
-
-                            {/* Cột phải (hoặc hàng dưới) */}
-                            <div className="space-y-2">
-                                {/* Trạng thái & Thanh toán */}
-                                <div className="flex flex-wrap gap-2">
-                                    {slot.booking?.status && (
-                                        <Tag
-                                          color={
-                                            slot.booking.status === "completed"
-                                              ? "green"
-                                              : slot.booking.status === "confirmed"
-                                              ? "blue"
-                                              : slot.booking.status === "pending"
-                                              ? "orange"
-                                              : "default"
-                                          }
-                                          className="text-[11px] font-medium px-2 py-0.5 m-0 rounded-md"
-                                        >
-                                          {slot.booking.status === "completed"
-                                            ? "Hoàn thành"
-                                            : slot.booking.status === "confirmed"
-                                            ? "Đã xác nhận"
-                                            : slot.booking.status === "pending"
-                                            ? "Chờ xác nhận"
-                                            : slot.booking.status}
-                                        </Tag>
-                                    )}
-                                    {slot.booking?.payType && (
-                                        <Tag
-                                          color={
-                                            slot.booking.payType === "full"
-                                              ? "green" // Tag xanh lá
-                                              : slot.booking.payType.startsWith("prepay")
-                                              ? "orange"
-                                              : "default"
-                                          }
-                                          className={`text-[11px] font-medium px-2 py-0.5 m-0 rounded-md ${slot.booking.payType === 'full' ? '!text-white' : ''}`} // Text trắng nếu là full
-                                          style={slot.booking.payType === 'full' ? {backgroundColor: '#52c41a', color: 'white', borderColor: 'transparent'} : {}}
-                                        >
-                                          {slot.booking.payType === "full"
-                                            ? "Thanh toán đủ"
-                                            : slot.booking.payType === "prepay_50"
-                                            ? "Cọc 50%"
-                                            : slot.booking.payType === "prepay_30"
-                                            ? "Cọc 30%"
-                                            : slot.booking.payType}
-                                        </Tag>
-                                    )}
+                              {/* Ngày nếu chế độ range */}
+                              {dateRangeMode === "range" && (
+                                <div className="text-sm text-gray-700 font-semibold bg-gray-50 p-2 rounded-lg inline-block">
+                                  📅{" "}
+                                  {dayjs(slot.startTime).format("DD/MM/YYYY")}
                                 </div>
+                              )}
                             </div>
+                          </div>
                         </div>
                       </div>
-
-                      {/* Footer thẻ */}
-                      <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100 bg-gray-50/50 -mx-4 -mb-3 px-4 py-2 rounded-b-2xl">
-                        {slot.duration && (
-                          <div className="text-xs text-gray-500 font-medium">
-                            ⏱️ {slot.duration} giờ
-                          </div>
-                        )}
-                        {slot.booking?.finalAmount && (
-                          <div className="text-sm font-bold text-gray-800">
-                            {slot.booking.finalAmount.toLocaleString()}₫
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {selectedDate && bookedSlots.length === 0 && (
               <div className="mt-6 p-5 rounded-2xl border border-emerald-200 bg-emerald-50 text-emerald-700 text-sm md:text-base">
@@ -564,10 +603,12 @@ const BookingSchedulePage = ({ onNext }) => {
               </div>
             )}
 
-            {(dateRange[0] && dateRange[1]) && bookedSlots.length === 0 && (
+            {dateRange[0] && dateRange[1] && bookedSlots.length === 0 && (
               <div className="mt-6 p-5 rounded-2xl border border-emerald-200 bg-emerald-50 text-emerald-700 text-sm md:text-base">
-                <strong>Khoảng thời gian này hiện chưa có lịch đặt trước.</strong> Bạn có
-                thể chọn khung giờ phù hợp.
+                <strong>
+                  Khoảng thời gian này hiện chưa có lịch đặt trước.
+                </strong>{" "}
+                Bạn có thể chọn khung giờ phù hợp.
               </div>
             )}
           </Card>
@@ -583,15 +624,19 @@ const BookingSchedulePage = ({ onNext }) => {
                 {/* Decorative elements */}
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
                 <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12"></div>
-                
+
                 <div className="flex items-center gap-4 relative z-10">
                   <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
                     <span className="text-blue-600 font-black text-2xl">
-                      {dateRangeMode === "single" ? selectedDate?.date() : dateRange[0]?.date()}
+                      {dateRangeMode === "single"
+                        ? selectedDate?.date()
+                        : dateRange[0]?.date()}
                     </span>
                   </div>
                   <div className="flex-1">
-                    <span className="text-xs !text-blue-100 block mb-1 font-semibold">📅 Ngày đặt phòng</span>
+                    <span className="text-xs !text-blue-100 block mb-1 font-semibold">
+                      📅 Ngày đặt phòng
+                    </span>
                     {dateRangeMode === "single" ? (
                       <>
                         <span className="text-lg md:text-xl font-black !text-white block">
@@ -604,7 +649,8 @@ const BookingSchedulePage = ({ onNext }) => {
                     ) : (
                       <>
                         <span className="text-lg md:text-xl font-black !text-white block">
-                          {dateRange[0]?.format("DD/MM")} → {dateRange[1]?.format("DD/MM/YYYY")}
+                          {dateRange[0]?.format("DD/MM")} →{" "}
+                          {dateRange[1]?.format("DD/MM/YYYY")}
                         </span>
                         <span className="text-xs !text-blue-100 block mt-1">
                           {dateRange[1]?.diff(dateRange[0], "day") + 1} ngày
@@ -624,8 +670,14 @@ const BookingSchedulePage = ({ onNext }) => {
             onClick={handleNext}
             disabled={
               dateRangeMode === "single"
-                ? !selectedDate || !timeRange[0] || !timeRange[1] || durationHours < 4
-                : !dateRange[0] || !dateRange[1] || !timeRange[0] || !timeRange[1]
+                ? !selectedDate ||
+                  !timeRange[0] ||
+                  !timeRange[1] ||
+                  durationHours < 4
+                : !dateRange[0] ||
+                  !dateRange[1] ||
+                  !timeRange[0] ||
+                  !timeRange[1]
             }
             className="h-16 text-xl font-bold rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 bg-gradient-to-r from-blue-500 to-indigo-600 border-0"
             icon={<ArrowRightOutlined className="text-2xl" />}

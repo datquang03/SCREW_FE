@@ -14,6 +14,7 @@ import { GiMoneyStack } from "react-icons/gi";
 import { AiOutlineProfile } from "react-icons/ai";
 import { RiCustomerService2Fill, RiRefund2Line } from "react-icons/ri";
 import { LuNotebookPen } from "react-icons/lu";
+import { FaUsers } from "react-icons/fa";
 
 const StaffSidebar = () => {
   const location = useLocation();
@@ -24,6 +25,7 @@ const StaffSidebar = () => {
     () => [
       { key: "dashboard", icon: <FiHome />, label: "Bảng điều khiển", path: "/dashboard/staff" },
       { key: "orders", icon: <FiShoppingBag />, label: "Quản lý đơn", path: "/dashboard/staff/order" },
+      { key: "users", icon: <FaUsers />, label: "Quản lý người dùng", path: "/dashboard/staff/user" },
       { key: "schedule", icon: <FiCalendar />, label: "Lịch làm việc", path: "/dashboard/staff/schedule" },
       { key: "studios", icon: <FiVideo />, label: "Quản lý Studio", path: "/dashboard/staff/studios" },
       { key: "setdesign", icon: <MdDesignServices />, label: "Quản lý Set Design", path: "/dashboard/staff/setdesign" },

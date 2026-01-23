@@ -105,6 +105,23 @@ export const getStudioById = createAsyncThunk(
   }
 );
 
+// GET STUDIO AVAILABILITY
+export const getStudioAvailability = createAsyncThunk(
+  "studio/getStudioAvailability",
+  async (params = {}, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get("/studios/availability", {
+        params,
+      });
+      return response.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Lấy trạng thái phòng thất bại" }
+      );
+    }
+  }
+);
+
 // UPDATE
 export const updateStudio = createAsyncThunk(
   "studio/updateStudio",
@@ -235,6 +252,7 @@ const initialState = {
   studios: [],
   currentStudio: null,
   studioSchedule: [],
+  studioAvailability: null, // Thêm state cho availability
   total: 0,
   loading: false,
   error: null,
@@ -318,6 +336,18 @@ const studioSlice = createSlice({
         };
       })
       .addCase(getStudioSchedule.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      .addCase(getStudioAvailability.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getStudioAvailability.fulfilled, (state, action) => {
+        state.loading = false;
+        state.studioAvailability = action.payload;
+      })
+      .addCase(getStudioAvailability.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

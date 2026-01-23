@@ -10,6 +10,7 @@ import StudioSection from "./components/StudioSection";
 import WhyChooseUsSection from "./components/WhyChooseUsSection";
 import GallerySection from "./components/GallerySection";
 import SetDesignSection from "./components/SetDesignSection";
+import PromotionSection from "./components/PromotionSection";
 
 const Homepage = () => {
   return (
@@ -41,6 +42,7 @@ const Homepage = () => {
 
       <main className="relative container mx-auto px-4 md:px-6 lg:px-10 py-12 md:py-16 lg:py-20 space-y-16 lg:space-y-24">
         <IntroSection />
+        <PromotionSection />
         <StudioSection />
         <SetDesignSection />
         <WhyChooseUsSection />

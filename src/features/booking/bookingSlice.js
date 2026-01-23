@@ -271,6 +271,25 @@ export const extendStudioSchedule = createAsyncThunk(
   }
 );
 
+// GET EXTENSION OPTIONS FOR BOOKING
+export const getBookingExtensionOptions = createAsyncThunk(
+  "booking/getBookingExtensionOptions",
+  async (bookingId, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+      const res = await axiosInstance.get(`/bookings/${bookingId}/extension-options`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      // Trả về { maxEndTime, availableSlots, ... }
+      return res.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Không thể lấy thông tin gia hạn" }
+      );
+    }
+  }
+);
+
 // =========================================================
 // ================       INITIAL STATE     =================
 // =========================================================
@@ -289,6 +308,7 @@ const initialState = {
   currentBooking: null,
   myBookings: [],
   staffBookings: [],
+  extensionOptions: null,
 
   loading: false,
   error: null,
@@ -506,6 +526,21 @@ const bookingSlice = createSlice({
       .addCase(extendStudioSchedule.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+
+      // ================= GET EXTENSION OPTIONS =================
+      .addCase(getBookingExtensionOptions.pending, (state) => {
+        state.loading = true;
+        state.extensionOptions = null;
+      })
+      .addCase(getBookingExtensionOptions.fulfilled, (state, action) => {
+        state.loading = false;
+        state.extensionOptions = action.payload;
+      })
+      .addCase(getBookingExtensionOptions.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.extensionOptions = null;
       });
   },
 });
