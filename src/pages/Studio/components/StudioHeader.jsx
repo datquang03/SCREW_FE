@@ -16,7 +16,7 @@ export default function StudioHeader({ studio }) {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
           <div className="lg:col-span-2 space-y-4">
-            <h1 className="text-4xl md:text-5xl font-black tracking-tight drop-shadow-[0_8px_30px_rgba(0,0,0,0.45)]">
+            <h1 className="text-4xl md:text-5xl font-black drop-shadow-[0_8px_30px_rgba(0,0,0,0.45)]">
               {studio.name || "Studio"}
             </h1>
             <p className="text-lg text-gray-100/90 max-w-3xl leading-relaxed">

@@ -51,8 +51,8 @@ const StaffSidebar = () => {
   const selectedKeys = matchedItem ? [matchedItem.key] : [menuItems[0].key];
 
   return (
-    <div className="flex h-full w-full flex-col bg-gradient-to-b from-gray-950 via-gray-900 to-black text-white">
-      <div className="px-5 pb-5 pt-10 border-b border-white/10">
+    <div className="flex h-full w-full flex-col bg-gradient-to-b from-gray-950 via-gray-900 to-black text-white overflow-hidden">
+      <div className="px-5 pb-5 pt-10 border-b border-white/10 flex-shrink-0">
         <div className="flex items-center gap-3">
           <div className="rounded-xl bg-gradient-to-tr from-teal-400 to-cyan-500 px-3 py-2 shadow-lg shadow-teal-500/30">
             <span className="text-xl font-black text-white">S+</span>
@@ -66,38 +66,41 @@ const StaffSidebar = () => {
         </div>
       </div>
 
-      <div className="px-5 py-3">
+      <div className="px-5 py-3 flex-shrink-0">
         <span className="inline-flex w-full items-center justify-center rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-cyan-200">
           {roleText}
         </span>
       </div>
 
-      <Menu
-        theme="dark"
-        mode="inline"
-        selectedKeys={selectedKeys}
-        items={menuItems.map((item) => ({
-          key: item.key,
-          icon: item.icon,
-          label: (
-            <NavLink
-              to={item.path}
-              className={({ isActive }) =>
-                [
-                  "flex items-center justify-between w-full text-sm",
-                  isActive
-                    ? "text-cyan-300 font-semibold"
-                    : "text-white/70 hover:text-white",
-                ].join(" ")
-              }
-            >
-              {item.label}
-            </NavLink>
-          ),
-        }))}
-        className="flex-1 overflow-y-auto bg-transparent border-0 px-4 pb-6 [&_.ant-menu-item]:rounded-2xl [&_.ant-menu-item]:py-2"
-        inlineIndent={16}
-      />
+      <div className="flex-1 overflow-y-auto px-4 pb-6 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent hover:scrollbar-thumb-white/30">
+        <Menu
+          theme="dark"
+          mode="inline"
+          selectedKeys={selectedKeys}
+          items={menuItems.map((item) => ({
+            key: item.key,
+            icon: item.icon,
+            label: (
+              <NavLink
+                to={item.path}
+                className={({ isActive }) =>
+                  [
+                    "flex items-center justify-between w-full text-sm",
+                    isActive
+                      ? "text-cyan-300 font-semibold"
+                      : "text-white/70 hover:text-white",
+                  ].join(" ")
+                }
+              >
+                {item.label}
+              </NavLink>
+            ),
+          }))}
+          className="bg-transparent border-0 [&_.ant-menu-item]:rounded-2xl [&_.ant-menu-item]:py-2"
+          style={{ backgroundColor: "transparent" }}
+          inlineIndent={16}
+        />
+      </div>
     </div>
   );
 };

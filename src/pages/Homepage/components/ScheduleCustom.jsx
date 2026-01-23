@@ -26,12 +26,12 @@ const ScheduleCustom = () => {
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="w-full h-[56px] px-4 rounded-2xl bg-[#0e172a] border border-slate-700/60 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.12)] flex items-center justify-between text-left hover:border-yellow-400/50 focus:outline-none focus:ring-4 focus:ring-yellow-500/20 transition-all"
+        className="w-full h-[56px] px-4 bg-[#0F172A] border border-[#C5A267] shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] flex items-center justify-between text-left hover:border-[#C5A267] hover:bg-[#C5A267]/10 focus:outline-none focus:ring-4 focus:ring-[#C5A267]/20 transition-all uppercase tracking-[0.2em]"
       >
-        <span className={`text-slate-200 ${date === todayStr ? "bg-yellow-500/20 text-yellow-200 px-2.5 py-1 rounded-lg" : ""}`}>
+        <span className={`text-white ${date === todayStr ? "bg-[#C5A267]/20 text-[#C5A267] px-2.5 py-1" : ""}`}>
           {formattedDisplay}
         </span>
-        <FiCalendar className="text-yellow-400" />
+        <FiCalendar className="text-[#C5A267]" />
       </button>
 
       <AnimatePresence>
@@ -41,12 +41,12 @@ const ScheduleCustom = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.22 }}
-            className="absolute z-20 mt-2 w-full bg-[#0b1120]/95 backdrop-blur-xl border border-slate-700/60 rounded-2xl shadow-[0_18px_56px_rgba(0,0,0,0.45)] p-4"
+            className="absolute z-20 mt-2 w-full bg-white border border-slate-100 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] p-4"
           >
             <div className="flex items-center justify-between mb-3">
-              <p className="text-yellow-400 font-semibold">Chọn ngày</p>
+              <p className="text-[#C5A267] font-semibold uppercase tracking-[0.2em] text-xs">Chọn ngày</p>
               <FiX
-                className="cursor-pointer text-gray-400 hover:text-yellow-400"
+                className="cursor-pointer text-slate-400 hover:text-[#C5A267]"
                 onClick={() => setOpen(false)}
               />
             </div>
@@ -59,7 +59,7 @@ const ScheduleCustom = () => {
                 setDate(e.target.value);
                 setOpen(false);
               }}
-              className="w-full h-[44px] px-3 rounded-xl bg-[#0e172a] border border-slate-600 focus:ring-2 focus:ring-yellow-400/70 outline-none text-gray-200"
+              className="w-full h-[44px] px-3 bg-white border border-slate-200 focus:ring-2 focus:ring-[#C5A267]/70 outline-none text-[#0F172A]"
             />
           </motion.div>
         )}

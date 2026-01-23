@@ -25,71 +25,28 @@ const ContactPage = () => {
       icon: FiMail,
       title: "Email",
       content: "contact@splusstudio.com",
-      color: "from-yellow-400 to-yellow-500",
     },
     {
       icon: FiPhone,
       title: "Hotline",
       content: "(+84) 123 456 789",
-      color: "from-blue-400 to-blue-500",
     },
     {
       icon: FiMapPin,
       title: "Địa chỉ Studio",
       content: "Quận 4, TP. Hồ Chí Minh",
-      color: "from-purple-400 to-purple-500",
     },
   ];
 
   return (
-    <div className="relative bg-gradient-to-b from-gray-50 via-white to-gray-50 min-h-screen">
-        {/* Background decoration */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <motion.div
-            className="absolute top-0 right-0 w-96 h-96 bg-yellow-400/10 rounded-full blur-3xl"
-            animate={{
-              scale: [1, 1.2, 1],
-              x: [0, 50, 0],
-            }}
-            transition={{
-              duration: 15,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-          <motion.div
-            className="absolute bottom-0 left-0 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl"
-            animate={{
-              scale: [1, 1.3, 1],
-              x: [0, -50, 0],
-            }}
-            transition={{
-              duration: 20,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-
-          {/* Decorative geometric shapes */}
-          <div className="absolute top-1/4 right-1/4 w-24 h-24 border-2 border-yellow-400/20 rounded-lg rotate-45 opacity-30" />
-          <div className="absolute bottom-1/4 left-1/4 w-32 h-32 border-2 border-blue-400/20 rounded-full opacity-30" />
-
-          {/* Pattern overlay */}
+    <div className="bg-[#FCFBFA] min-h-screen selection:bg-[#C5A267]/20">
+        {/* EXECUTIVE HEADER */}
+        <div className="bg-[#0F172A] py-24 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-[#C5A267]/5"></div>
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#C5A267]/5"></div>
+          
           <div
-            className="absolute inset-0 opacity-5"
-            style={{
-              backgroundImage:
-                "radial-gradient(circle at 2px 2px, rgba(234, 179, 8, 0.3) 1px, transparent 0)",
-              backgroundSize: "40px 40px",
-            }}
-          />
-        </div>
-
-        {/* Decorative image placeholder - Hidden to avoid ugly display */}
-        <div className="hidden"></div>
-
-        <div
-          className="container mx-auto py-20 md:py-32 px-6 relative z-10"
+          className="container mx-auto px-6 relative z-10"
           ref={ref}
         >
           {/* Header Section */}
@@ -97,50 +54,46 @@ const ContactPage = () => {
             initial={{ opacity: 0, y: 50 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.8 }}
-            className="text-center mb-16"
+            className="text-center space-y-6"
           >
-            <motion.span
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={isInView ? { opacity: 1, scale: 1 } : {}}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="inline-block px-4 py-2 bg-yellow-400/20 text-yellow-600 rounded-full text-sm font-semibold mb-4"
-            >
-              Đặt lịch thuê Studio
-            </motion.span>
+            <p className="text-[10px] uppercase tracking-[0.5em] text-[#C5A267] font-bold">
+              Get In Touch
+            </p>
             <Title
               level={1}
-              className="text-4xl md:text-6xl font-extrabold text-gray-900 mb-6"
-              style={{
-                textShadow: "0 4px 20px rgba(0,0,0,0.1)",
-              }}
+              className="!text-5xl md:!text-6xl !font-semibold !text-white !mb-0"
             >
-              Liên hệ{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600">
-                S+ Studio
-              </span>
+              Liên hệ với chúng tôi
             </Title>
-            <Paragraph className="text-lg md:text-xl text-gray-700 max-w-2xl mx-auto font-semibold drop-shadow-sm">
-              Đặt lịch thuê studio, tư vấn về thiết bị hoặc bất kỳ câu hỏi nào
-              về dịch vụ. Chúng tôi sẽ phản hồi trong vòng{" "}
-              <span className="text-yellow-600 font-bold">2 giờ làm việc</span>.
+            <div className="h-px w-24 bg-[#C5A267] mx-auto opacity-40"></div>
+            <Paragraph className="text-slate-400 text-sm uppercase tracking-widest max-w-2xl mx-auto">
+              Phản hồi trong vòng 2 giờ làm việc
             </Paragraph>
           </motion.div>
+        </div>
+      </div>
 
-          <Row gutter={[48, 48]} justify="center">
+        <div className="container mx-auto px-6 py-24">
+          <Row gutter={[48, 48]}>
             {/* Contact Info Cards */}
-            <Col xs={24} md={10}>
+            <Col xs={24} lg={10}>
               <motion.div
                 initial={{ opacity: 0, x: -50 }}
                 animate={isInView ? { opacity: 1, x: 0 } : {}}
                 transition={{ duration: 0.8, delay: 0.3 }}
               >
-                <Title
-                  level={3}
-                  className="text-2xl md:text-3xl font-extrabold mb-8 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent"
-                >
-                  Thông tin liên hệ
-                </Title>
-                <div className="space-y-6 mb-8">
+                <div className="mb-12">
+                  <p className="text-[10px] uppercase tracking-[0.4em] text-[#C5A267] font-bold mb-4">
+                    Contact Information
+                  </p>
+                  <Title
+                    level={3}
+                    className="!text-3xl !font-semibold !text-[#0F172A] !mb-0"
+                  >
+                    Thông tin liên hệ
+                  </Title>
+                </div>
+                <div className="space-y-6 mb-12">
                   {contactInfo.map((info, index) => {
                     const IconComponent = info.icon;
                     return (
@@ -149,33 +102,23 @@ const ContactPage = () => {
                         initial={{ opacity: 0, y: 30 }}
                         animate={isInView ? { opacity: 1, y: 0 } : {}}
                         transition={{ duration: 0.6, delay: 0.4 + index * 0.1 }}
-                        whileHover={{ scale: 1.05, x: 10 }}
+                        className="group"
                       >
-                        <Card
-                          className="rounded-2xl border-0 shadow-[0_10px_40px_rgba(0,0,0,0.1)] hover:shadow-[0_20px_60px_rgba(234,179,8,0.3)] transition-all duration-300 bg-gradient-to-br from-white to-gray-50"
-                          style={{ transformStyle: "preserve-3d" }}
-                        >
-                          <div className="flex items-start gap-4">
-                            <motion.div
-                              whileHover={{ rotate: [0, -10, 10, -10, 0] }}
-                              transition={{ duration: 0.5 }}
-                              className={`w-14 h-14 rounded-xl bg-gradient-to-br ${info.color} flex items-center justify-center shadow-lg flex-shrink-0`}
-                            >
-                              <IconComponent size={24} className="text-white" />
-                            </motion.div>
+                        <div className="bg-white border border-slate-100 p-8 transition-all duration-500 hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)] hover:border-[#C5A267]">
+                          <div className="flex items-start gap-6">
+                            <div className="w-14 h-14 bg-[#0F172A] flex items-center justify-center flex-shrink-0 group-hover:bg-[#C5A267] transition-colors duration-500">
+                              <IconComponent size={24} className="text-[#C5A267] group-hover:text-[#0F172A] transition-colors duration-500" />
+                            </div>
                             <div className="flex-1">
-                              <Title
-                                level={5}
-                                className="mb-2 text-gray-900 font-extrabold text-lg"
-                              >
+                              <p className="text-[9px] uppercase tracking-[0.3em] text-slate-400 font-bold mb-2">
                                 {info.title}
-                              </Title>
-                              <Paragraph className="text-gray-700 mb-0 font-semibold text-base">
+                              </p>
+                              <p className="text-[#0F172A] font-semibold text-lg">
                                 {info.content}
-                              </Paragraph>
+                              </p>
                             </div>
                           </div>
-                        </Card>
+                        </div>
                       </motion.div>
                     );
                   })}
@@ -186,45 +129,36 @@ const ContactPage = () => {
                   initial={{ opacity: 0, y: 30 }}
                   animate={isInView ? { opacity: 1, y: 0 } : {}}
                   transition={{ duration: 0.6, delay: 0.7 }}
-                  whileHover={{ scale: 1.02 }}
-                  className="rounded-2xl overflow-hidden shadow-2xl"
+                  className="overflow-hidden border border-slate-100 transition-all duration-700"
                 >
                   <iframe
                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.63179!2d106.6926!3d10.7626!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752f1b8a0e0b0f%3A0x5809332b0b5c8b5a!2sHo%20Chi%20Minh%20City!5e0!3m2!1sen!2s!4v1620049219123!5m2!1sen!2s"
                     width="100%"
-                    height="300"
+                    height="400"
                     style={{ border: 0 }}
                     allowFullScreen=""
                     loading="lazy"
-                    className="rounded-2xl"
                   ></iframe>
                 </motion.div>
               </motion.div>
             </Col>
 
             {/* Contact Form */}
-            <Col xs={24} md={14}>
+            <Col xs={24} lg={14}>
               <motion.div
                 initial={{ opacity: 0, x: 50 }}
                 animate={isInView ? { opacity: 1, x: 0 } : {}}
                 transition={{ duration: 0.8, delay: 0.3 }}
-                whileHover={{ scale: 1.01 }}
               >
-                <Card
-                  className="rounded-2xl border-0 shadow-2xl bg-white/80 backdrop-blur-lg"
-                  style={{ transformStyle: "preserve-3d" }}
-                >
-                  <div className="flex items-center gap-3 mb-8">
-                    <motion.div
-                      whileHover={{ rotate: [0, -10, 10, -10, 0] }}
-                      transition={{ duration: 0.5 }}
-                      className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center shadow-lg"
-                    >
-                      <FiMessageCircle size={24} className="text-white" />
-                    </motion.div>
+                <div className="bg-white border border-slate-100 p-12 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)]">
+                  <div className="mb-12">
+                    <p className="text-[10px] uppercase tracking-[0.4em] text-[#C5A267] font-bold mb-4 flex items-center gap-2">
+                      <FiMessageCircle className="text-[#C5A267]" />
+                      Send Message
+                    </p>
                     <Title
                       level={3}
-                      className="text-2xl font-bold mb-0 text-gray-900"
+                      className="!text-3xl !font-semibold !text-[#0F172A] !mb-0"
                     >
                       Gửi tin nhắn
                     </Title>
@@ -242,7 +176,7 @@ const ContactPage = () => {
                         <Form.Item
                           name="name"
                           label={
-                            <span className="font-semibold text-gray-700">
+                            <span className="text-[9px] uppercase tracking-[0.3em] text-slate-400 font-bold">
                               Họ và tên
                             </span>
                           }
@@ -252,7 +186,7 @@ const ContactPage = () => {
                         >
                           <Input
                             placeholder="Nguyễn Văn A"
-                            className="rounded-lg border-gray-300 hover:border-yellow-400 focus:border-yellow-400"
+                            className="!h-14 !border-slate-200 hover:!border-[#C5A267] focus:!border-[#C5A267] !shadow-none"
                           />
                         </Form.Item>
                       </Col>
@@ -260,7 +194,7 @@ const ContactPage = () => {
                         <Form.Item
                           name="email"
                           label={
-                            <span className="font-semibold text-gray-700">
+                            <span className="text-[9px] uppercase tracking-[0.3em] text-slate-400 font-bold">
                               Email
                             </span>
                           }
@@ -274,7 +208,7 @@ const ContactPage = () => {
                         >
                           <Input
                             placeholder="example@email.com"
-                            className="rounded-lg border-gray-300 hover:border-yellow-400 focus:border-yellow-400"
+                            className="!h-14 !border-slate-200 hover:!border-[#C5A267] focus:!border-[#C5A267] !shadow-none"
                           />
                         </Form.Item>
                       </Col>
@@ -282,7 +216,7 @@ const ContactPage = () => {
                     <Form.Item
                       name="message"
                       label={
-                        <span className="font-semibold text-gray-700">
+                        <span className="text-[9px] uppercase tracking-[0.3em] text-slate-400 font-bold">
                           Nội dung
                         </span>
                       }
@@ -293,28 +227,23 @@ const ContactPage = () => {
                       <TextArea
                         rows={6}
                         placeholder="Nội dung tin nhắn của bạn..."
-                        className="rounded-lg border-gray-300 hover:border-yellow-400 focus:border-yellow-400"
+                        className="!border-slate-200 hover:!border-[#C5A267] focus:!border-[#C5A267] !shadow-none"
                       />
                     </Form.Item>
                     <Form.Item>
-                      <motion.div
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                      <Button
+                        type="primary"
+                        htmlType="submit"
+                        size="large"
+                        className="!h-16 !px-16 !bg-[#0F172A] hover:!bg-[#C5A267] !border-none !text-white !shadow-2xl !text-[10px] !uppercase !tracking-[0.3em] !font-bold transition-all duration-500"
+                        icon={<FiSend />}
+                        iconPosition="end"
                       >
-                        <Button
-                          type="primary"
-                          htmlType="submit"
-                          size="large"
-                          className="bg-gradient-to-r from-yellow-400 to-yellow-500 border-none shadow-lg shadow-yellow-500/30 hover:shadow-yellow-500/50 font-semibold rounded-xl px-8 py-6 h-auto"
-                          icon={<FiSend />}
-                          iconPosition="end"
-                        >
-                          Gửi tin nhắn
-                        </Button>
-                      </motion.div>
+                        Gửi tin nhắn
+                      </Button>
                     </Form.Item>
                   </Form>
-                </Card>
+                </div>
               </motion.div>
             </Col>
           </Row>

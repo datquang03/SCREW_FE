@@ -1,5 +1,3 @@
-// src/pages/Booking/components/BookingPaymentPage.jsx
-
 import React, { useEffect, useState } from "react";
 import {
   Card,
@@ -10,20 +8,18 @@ import {
   Skeleton,
   message,
   Modal,
-  Radio,
-  Table,
   Space,
 } from "antd";
 import { useSelector, useDispatch } from "react-redux";
 import CheckCircleOutlined from "@ant-design/icons/CheckCircleOutlined";
 import InfoCircleOutlined from "@ant-design/icons/InfoCircleOutlined";
-
+import ArrowRightOutlined from "@ant-design/icons/ArrowRightOutlined";
 import {
   createSinglePayment,
   resetPaymentState,
 } from "../../../features/payment/paymentSlice";
 
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 
 export default function BookingPaymentPage({
   bookingResult,
@@ -40,15 +36,12 @@ export default function BookingPaymentPage({
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedPercent, setSelectedPercent] = useState(30);
 
-  // Load booking
   useEffect(() => {
     const normalizeBooking = (raw) => (raw?.booking ? raw.booking : raw);
 
     if (bookingResult) {
-      // bookingResult có thể là { booking, paymentOptions } hoặc booking thuần
       setBooking(normalizeBooking(bookingResult));
     } else if (reduxBooking) {
-      // currentBooking trong redux đã là booking thuần, nhưng để an toàn vẫn normalize
       setBooking(normalizeBooking(reduxBooking));
     } else {
       const saved = localStorage.getItem("latestBooking");
@@ -57,7 +50,7 @@ export default function BookingPaymentPage({
           const parsed = JSON.parse(saved);
           setBooking(normalizeBooking(parsed));
         } catch (e) {
-          console.error("Cannot parse latestBooking from localStorage", e);
+          console.error("Cannot parse latestBooking", e);
         }
       }
     }
@@ -69,19 +62,9 @@ export default function BookingPaymentPage({
 
   if (!booking || !currentStudio) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
-        <div className="max-w-4xl mx-auto px-4 py-8">
-          <Skeleton active paragraph={{ rows: 2 }} />
-          <Card className="mt-6">
-            <Skeleton active paragraph={{ rows: 6 }} />
-          </Card>
-          <Card className="mt-6">
-            <Skeleton active paragraph={{ rows: 4 }} />
-          </Card>
-          <div className="mt-6 flex gap-4">
-            <Skeleton.Button active size="large" style={{ width: 150, height: 48 }} />
-            <Skeleton.Button active size="large" style={{ width: 200, height: 48 }} />
-          </div>
+      <div className="min-h-screen bg-[#FCFBFA] py-20 px-4">
+        <div className="max-w-4xl mx-auto">
+          <Skeleton active paragraph={{ rows: 8 }} />
         </div>
       </div>
     );
@@ -93,7 +76,6 @@ export default function BookingPaymentPage({
     discountAmount = 0,
     finalAmount = 0,
     policySnapshots = {},
-    financials = {},
   } = booking;
 
   const hasDiscount = discountAmount > 0;
@@ -111,23 +93,17 @@ export default function BookingPaymentPage({
         createSinglePayment({ bookingId, percentage })
       ).unwrap();
 
-      // Ưu tiên dùng url trả về từ BE
       const payUrl =
         result?.qrCodeUrl ||
         result?.payUrl ||
         result?.paymentLink ||
-        result?.gatewayResponse?.qrCodeUrl ||
         result?.gatewayResponse?.checkoutUrl;
 
       if (payUrl) {
         window.open(payUrl, "_blank", "noopener,noreferrer");
-        message.success(
-          `Đang chuyển tới trang thanh toán PayOS (${percentage}%)`
-        );
+        message.success(`Đang chuyển tới trang thanh toán (${percentage}%)`);
       } else {
-        message.warning(
-          "Tạo payment thành công nhưng không tìm thấy đường dẫn thanh toán."
-        );
+        message.warning("Không tìm thấy đường dẫn thanh toán.");
       }
     } catch (err) {
       message.error(err?.message || "Thanh toán thất bại!");
@@ -137,255 +113,250 @@ export default function BookingPaymentPage({
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-6 px-4">
-      <Card className="shadow-2xl rounded-2xl overflow-hidden border-0">
-        {/* Header Compact */}
-        <div className="text-center py-6 bg-gradient-to-r from-purple-600 to-pink-600 text-white">
-          <CheckCircleOutlined className="text-5xl mb-2" />
-          <Title level={2} className="text-white m-0 !text-white">
-            ĐẶT PHÒNG THÀNH CÔNG
-          </Title>
-          <Text className="text-white/80">
-            Mã: <strong>{bookingId}</strong>
-          </Text>
+    <div className="max-w-5xl mx-auto py-12 px-4 selection:bg-[#C5A267]/20">
+      <div className="bg-white shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] border border-slate-100 overflow-hidden rounded-sm">
+        {/* EXECUTIVE SUCCESS HEADER */}
+        <div className="text-center py-16 bg-[#0F172A] relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-32 h-32 bg-[#C5A267]/5 rounded-br-full"></div>
+          <div className="relative z-10 flex flex-col items-center">
+            <div className="w-16 h-16 bg-[#C5A267]/10 flex items-center justify-center rounded-full mb-6 border border-[#C5A267]/20">
+              <CheckCircleOutlined className="text-[#C5A267] text-2xl" />
+            </div>
+            <Title
+              level={2}
+              className="!text-4xl !font-semibold !text-white !mb-2"
+            >
+              Đặt phòng thành công
+            </Title>
+            <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500 font-bold">
+              Mã giao dịch: <span className="text-white">{bookingId}</span>
+            </p>
+          </div>
         </div>
 
-        <div className="p-6">
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Cột trái: Thông tin & Giá */}
-            <div className="flex flex-col gap-4">
-              {/* Studio Info (Compact) */}
-              <div className="bg-gradient-to-br from-purple-50 to-white rounded-2xl p-4 border border-purple-100 shadow-sm flex gap-4 items-center">
-                 {currentStudio?.images?.[0] ? (
-                    <img 
-                      src={currentStudio.images[0]} 
-                      alt={currentStudio.name} 
-                      className="w-20 h-20 rounded-xl object-cover border border-purple-100 shadow-sm flex-shrink-0"
-                    />
-                 ) : (
-                    <div className="w-20 h-20 rounded-xl bg-purple-100 flex-shrink-0 flex items-center justify-center text-purple-400">
-                       <CheckCircleOutlined className="text-2xl" />
-                    </div>
-                 )}
-                 <div className="min-w-0 flex-1">
-                    <Text type="secondary" className="text-[10px] font-bold uppercase tracking-wider text-purple-500 bg-purple-100 px-2 py-0.5 rounded-full">
-                      Studio
-                    </Text>
-                    <h4 className="m-0 text-gray-800 font-bold text-lg mt-1 truncate">
-                      {currentStudio?.name || "Tên Studio"}
-                    </h4>
-                    <p className="m-0 text-xs text-gray-500 truncate mt-1 flex items-center gap-1">
-                       <InfoCircleOutlined className="text-[10px]" />
-                       {currentStudio?.location || "Địa chỉ đang cập nhật"}
-                    </p>
-                 </div>
+        <div className="p-12 md:p-16">
+          <div className="grid md:grid-cols-2 gap-16">
+            {/* LEFT: STUDIO & PRICING */}
+            <div className="space-y-10">
+              <div className="flex gap-6 items-center p-6 border border-slate-50 bg-[#F8F9FA]">
+                {currentStudio?.images?.[0] ? (
+                  <img
+                    src={currentStudio.images[0]}
+                    alt={currentStudio.name}
+                    className="w-24 h-24 object-cover transition-all duration-700"
+                  />
+                ) : (
+                  <div className="w-24 h-24 bg-slate-100" />
+                )}
+                <div>
+                  <span className="text-[9px] uppercase tracking-widest text-[#C5A267] font-bold block mb-1">
+                    Cơ sở thực hiện
+                  </span>
+                  <h4 className="m-0 text-[#0F172A] text-xl font-semibold">
+                    {currentStudio?.name}
+                  </h4>
+                  <p className="text-xs text-slate-400 font-light mt-1">
+                    {currentStudio?.location}
+                  </p>
+                </div>
               </div>
 
-              {/* Bảng giá (Compact) */}
-              <div className="bg-gray-50 rounded-xl p-4 border border-gray-200 flex-1">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>Tạm tính</span>
-                    <strong className="text-gray-800">{formatted(totalBeforeDiscount)}</strong>
+              <div className="space-y-4 pt-4">
+                <div className="flex justify-between items-center text-xs text-slate-400 uppercase tracking-widest">
+                  <span>Giá tạm tính</span>
+                  <span className="font-bold text-slate-700">
+                    {formatted(totalBeforeDiscount)}
+                  </span>
+                </div>
+                {hasDiscount && (
+                  <div className="flex justify-between items-center text-[10px] uppercase tracking-widest font-bold text-emerald-600">
+                    <span>Chiết khấu ưu đãi</span>
+                    <span>-{formatted(discountAmount)}</span>
                   </div>
-                  {hasDiscount && (
-                    <div className="flex justify-between text-sm text-green-600 font-bold">
-                      <span>Giảm giá</span>
-                      <span>-{formatted(discountAmount)}</span>
-                    </div>
+                )}
+                <div className="h-px bg-slate-50 my-6" />
+                <div className="flex justify-between items-end">
+                  <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-[#0F172A]">
+                    Tổng thanh toán
+                  </span>
+                  <span className="text-4xl font-semibold text-[#C5A267]">
+                    {formatted(finalAmount)}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* RIGHT: POLICIES */}
+            <div className="space-y-8">
+              <div className="p-8 border border-slate-100 relative group overflow-hidden">
+                <div className="absolute top-0 right-0 w-1 h-16 bg-[#C5A267]"></div>
+                <h5 className="text-[10px] uppercase tracking-[0.3em] font-bold text-slate-400 mb-6 flex items-center gap-2">
+                  <InfoCircleOutlined className="text-[#C5A267]" />
+                  Chính sách hoàn hủy
+                </h5>
+                <ul className="space-y-4 m-0 p-0 list-none">
+                  {cancellationTiers.length > 0 ? (
+                    cancellationTiers.map((tier) => (
+                      <li
+                        key={tier._id}
+                        className="flex justify-between items-center border-b border-slate-50 pb-2"
+                      >
+                        <span className="text-xs text-slate-500 font-light">
+                          Trước {tier.hoursBeforeBooking} giờ
+                        </span>
+                        <span className="text-xs font-bold text-[#0F172A]">
+                          Hoàn {tier.refundPercentage}%
+                        </span>
+                      </li>
+                    ))
+                  ) : (
+                    <li className="text-xs text-slate-400 italic font-light">
+                      Không áp dụng hoàn phí
+                    </li>
                   )}
-                  <div className="h-px bg-gray-200 my-2" />
-                  <div className="flex justify-between items-baseline">
-                    <span className="font-bold text-gray-700">TỔNG CỘNG</span>
-                    <span className="text-2xl font-extrabold text-purple-700">
-                      {formatted(finalAmount)}
+                </ul>
+              </div>
+
+              <div className="p-8 border border-slate-100 bg-[#F8F9FA]">
+                <h5 className="text-[10px] uppercase tracking-[0.3em] font-bold text-slate-400 mb-6 flex items-center gap-2">
+                  <InfoCircleOutlined className="text-rose-500" />
+                  Điều khoản vắng mặt
+                </h5>
+                <div className="grid grid-cols-2 gap-8">
+                  <div>
+                    <span className="text-[9px] uppercase tracking-widest text-slate-400 block mb-1">
+                      Mức phí phạt
+                    </span>
+                    <span className="text-lg font-bold text-[#0F172A]">
+                      {noShowRules.chargePercentage || 100}%
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[9px] uppercase tracking-widest text-slate-400 block mb-1">
+                      Thời gian ân hạn
+                    </span>
+                    <span className="text-lg font-bold text-[#0F172A]">
+                      {noShowRules.graceMinutes || 15} phút
                     </span>
                   </div>
                 </div>
               </div>
             </div>
-
-            {/* Cột phải: Chính sách (Condensed) */}
-            <div className="flex flex-col gap-4">
-              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-                <div className="flex items-center gap-2 mb-2 text-gray-700 font-bold text-sm">
-                  <InfoCircleOutlined className="text-blue-500" />
-                  <span>Chính sách hủy</span>
-                </div>
-                <ul className="text-xs space-y-1 text-gray-600 pl-5 list-disc">
-                   {cancellationTiers.length > 0 ? cancellationTiers.map(tier => (
-                     <li key={tier._id}>
-                        Trước <strong>{tier.hoursBeforeBooking}h</strong>: hoàn <strong>{tier.refundPercentage}%</strong>
-                     </li>
-                   )) : <li>Không có thông tin</li>}
-                </ul>
-              </div>
-
-              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-                <div className="flex items-center gap-2 mb-2 text-gray-700 font-bold text-sm">
-                  <InfoCircleOutlined className="text-red-500" />
-                  <span>No-Show (Không đến)</span>
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                   <div className="bg-red-50 p-2 rounded text-center">
-                      <div className="text-gray-500">Phạt</div>
-                      <div className="font-bold text-red-600">{noShowRules.chargePercentage || 100}%</div>
-                   </div>
-                   <div className="bg-orange-50 p-2 rounded text-center">
-                      <div className="text-gray-500">Ân hạn</div>
-                      <div className="font-bold text-orange-600">{noShowRules.graceMinutes || 15}p</div>
-                   </div>
-                </div>
-              </div>
-            </div>
           </div>
 
-          {/* Actions */}
-          <div className="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
-            <Button size="large" onClick={onBack} className="min-w-[120px]">
-              Về trang chủ
+          {/* ACTIONS */}
+          <div className="mt-20 flex flex-col md:flex-row justify-center items-center gap-6 pt-10 border-t border-slate-100">
+            <Button
+              onClick={onBack}
+              className="!h-16 !px-12 !rounded-none !border-slate-200 !text-[10px] !uppercase !tracking-widest !font-bold hover:!border-[#0F172A]"
+            >
+              Quay lại trang chủ
             </Button>
             <Button
               type="primary"
-              size="large"
-              className="bg-amber-500 hover:bg-amber-600 border-none font-bold px-8 shadow-amber-200 shadow-lg min-w-[200px]"
               loading={localLoading || paymentLoading}
-              disabled={!bookingId}
               onClick={() => setIsModalVisible(true)}
-            >
-              Thanh toán ngay
-            </Button>
-          </div>
-          
-          <div className="text-center mt-4">
-            <Text type="secondary" className="text-xs">
-               Hotline hỗ trợ: <strong>0909 888 999</strong>
-            </Text>
-          </div>
-        </div>
-      </Card>
-
-      {/* Modal chọn % */}
-      <Modal
-        centered
-        title={
-          <div className="text-center pt-6 pb-2">
-            <h3 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 m-0 uppercase tracking-tight">
-              Chọn mức thanh toán
-            </h3>
-            <p className="text-gray-400 text-sm mt-1 font-medium">
-              Vui lòng chọn số tiền bạn muốn thanh toán ngay
-            </p>
-          </div>
-        }
-        open={isModalVisible}
-        onCancel={() => setIsModalVisible(false)}
-        footer={
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
-            <Button
-              size="large"
-              className="rounded-xl font-semibold border-0 text-gray-500 hover:bg-gray-100"
-              onClick={() => setIsModalVisible(false)}
-            >
-              Để sau
-            </Button>
-            <Button
-              size="large"
-              type="primary"
-              className="rounded-xl px-8 font-bold bg-gradient-to-r from-purple-600 to-pink-600 border-0 shadow-xl shadow-purple-200 hover:shadow-purple-300 hover:scale-[1.02] transition-all"
-              onClick={() => {
-                handlePayPercent(selectedPercent);
-                setIsModalVisible(false);
-              }}
+              className="!h-16 !px-16 !bg-[#0F172A] hover:!bg-[#C5A267] !border-none !text-white !font-bold !rounded-none !shadow-2xl !text-[10px] !uppercase !tracking-[0.3em] transition-all duration-500"
             >
               Tiến hành thanh toán
+              <ArrowRightOutlined className="ml-4 text-xs" />
             </Button>
           </div>
-        }
-        width={500}
-        styles={{
-          content: { borderRadius: "24px", padding: "0 24px 24px" },
-          header: { borderBottom: "none" },
-        }}
+        </div>
+      </div>
+
+      {/* LUXURY PAYMENT MODAL */}
+      <Modal
+        centered
+        open={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        footer={null}
+        width={550}
+        className="executive-modal"
       >
-        <div className="py-2">
-          <div className="flex flex-col gap-4">
+        <div className="p-10">
+          <div className="text-center mb-10">
+            <p className="text-[10px] uppercase tracking-[0.4em] text-[#C5A267] font-bold mb-4">
+              Phương thức chi trả
+            </p>
+            <Title level={3} className="!text-[#0F172A] !font-semibold !m-0">
+              Chọn mức thanh toán
+            </Title>
+          </div>
+
+          <div className="space-y-4">
             {[30, 50, 100].map((p) => {
               const isActive = selectedPercent === p;
               const amount = (finalAmount * p) / 100;
-
               return (
                 <div
                   key={p}
                   onClick={() => setSelectedPercent(p)}
-                  className={`relative cursor-pointer rounded-2xl p-5 border-2 transition-all duration-300 group
-                  ${
+                  className={`p-6 border cursor-pointer transition-all duration-500 relative flex justify-between items-center group ${
                     isActive
-                      ? "border-purple-500 bg-purple-50 shadow-lg shadow-purple-100 translate-x-1"
-                      : "border-gray-100 bg-white hover:border-purple-200 hover:shadow-md"
+                      ? "border-[#C5A267] bg-[#F8F6F3]"
+                      : "border-slate-100 hover:border-slate-300"
                   }`}
                 >
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-4">
-                      {/* Radio Circle Simulation */}
-                      <div
-                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all
-                        ${
-                          isActive
-                            ? "border-purple-600 bg-purple-600"
-                            : "border-gray-300 bg-white"
-                        }`}
-                      >
-                        {isActive && (
-                          <div className="w-2.5 h-2.5 rounded-full bg-white" />
-                        )}
-                      </div>
-
-                      <div className="flex flex-col">
-                        <span
-                          className={`text-base font-bold transition-colors ${
-                            isActive ? "text-purple-900" : "text-gray-700"
-                          }`}
-                        >
-                          Thanh toán trước {p}%
-                        </span>
-                        <span className="text-xs text-gray-400 font-medium">
-                          {p === 100
-                            ? "Hoàn tất đơn hàng ngay"
-                            : "Giữ chỗ và thanh toán sau"}
-                        </span>
-                      </div>
+                  <div className="flex items-center gap-5">
+                    <div
+                      className={`w-5 h-5 border transition-all flex items-center justify-center ${
+                        isActive
+                          ? "bg-[#0F172A] border-[#0F172A]"
+                          : "border-slate-200"
+                      }`}
+                    >
+                      {isActive && (
+                        <div className="w-1.5 h-1.5 bg-[#C5A267]"></div>
+                      )}
                     </div>
-
-                    <div className="text-right">
+                    <div>
                       <span
-                        className={`block text-xl font-extrabold transition-colors ${
-                          isActive ? "text-purple-600" : "text-gray-900"
+                        className={`text-xs uppercase tracking-widest font-bold transition-colors ${
+                          isActive ? "text-[#0F172A]" : "text-slate-400"
                         }`}
                       >
-                        {formatted(amount)}
+                        Thanh toán {p}%
+                      </span>
+                      <span className="block text-[9px] text-slate-400 mt-1 uppercase">
+                        {p === 100
+                          ? "Xác nhận toàn bộ dịch vụ"
+                          : `Giữ chỗ tạm tính (${p}%)`}
                       </span>
                     </div>
                   </div>
-
-                  {isActive && (
-                    <div className="absolute -left-[2px] top-6 w-[4px] h-10 bg-purple-600 rounded-r-lg" />
-                  )}
-
-                  {p === 30 && (
-                    <div className="absolute -top-3 right-6 bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-md">
-                      PHỔ BIẾN NHẤT
-                    </div>
-                  )}
-                  {p === 100 && (
-                    <div className="absolute -top-3 right-6 bg-gradient-to-r from-emerald-500 to-green-500 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-md">
-                      TIỆN LỢI NHẤT
-                    </div>
-                  )}
+                  <div className="text-right">
+                    <span
+                      className={`text-lg font-bold ${
+                        isActive ? "text-[#C5A267]" : "text-slate-700"
+                      }`}
+                    >
+                      {formatted(amount)}
+                    </span>
+                  </div>
                 </div>
               );
             })}
           </div>
+
+          <Button
+            block
+            type="primary"
+            onClick={() => {
+              handlePayPercent(selectedPercent);
+              setIsModalVisible(false);
+            }}
+            className="!h-16 !mt-10 !bg-[#0F172A] hover:!bg-[#C5A267] !border-none !text-white !font-bold !rounded-none !shadow-2xl !text-[10px] !uppercase !tracking-[0.3em] transition-all duration-500"
+          >
+            Xác nhận chi trả
+          </Button>
+          <Button
+            type="text"
+            onClick={() => setIsModalVisible(false)}
+            className="w-full !mt-4 !text-[10px] !uppercase !tracking-widest !text-slate-400"
+          >
+            Để sau
+          </Button>
         </div>
       </Modal>
     </div>

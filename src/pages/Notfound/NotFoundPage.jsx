@@ -21,16 +21,16 @@ const NotFoundPage = () => {
   }));
 
   return (
-    <div className="relative min-h-screen bg-black flex items-center justify-center overflow-hidden font-sans">
+    <div className="relative min-h-screen bg-[#0F172A] flex items-center justify-center overflow-hidden font-sans">
 
       {/* Stars Layer */}
       <div className="absolute inset-0 pointer-events-none">
         {stars.map((s, i) => (
           <motion.div
             key={i}
-            className="absolute rounded-full bg-white opacity-80"
+            className="absolute bg-[#C5A267] opacity-30"
             style={{ width: s.size, height: s.size, top: s.top, left: s.left }}
-            animate={{ opacity: [0, 1, 0] }}
+            animate={{ opacity: [0, 0.3, 0] }}
             transition={{
               duration: s.duration,
               repeat: Infinity,
@@ -42,7 +42,7 @@ const NotFoundPage = () => {
       </div>
 
       {/* Glow behind content */}
-      <div className="absolute w-[500px] h-[500px] bg-green-500 opacity-20 blur-[180px] rounded-full"></div>
+      <div className="absolute w-[500px] h-[500px] bg-[#C5A267] opacity-10 blur-[180px]"></div>
 
       {/* Main content */}
       <motion.div
@@ -58,7 +58,7 @@ const NotFoundPage = () => {
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.7 }}
         >
-          <h1 className="text-9xl md:text-[180px] font-extrabold text-white drop-shadow-[0_0_25px_rgba(0,255,150,0.7)]">
+          <h1 className="text-9xl md:text-[180px] font-semibold text-white drop-shadow-[0_0_25px_rgba(197,162,103,0.4)]">
             404
           </h1>
         </motion.div>
@@ -71,7 +71,7 @@ const NotFoundPage = () => {
         >
           <div
             level={2}
-            className="text-white !text-3xl md:!text-4xl font-bold tracking-wide"
+            className="text-white !text-3xl md:!text-4xl font-semibold tracking-wide"
           >
             Trang bạn tìm kiếm không tồn tại
           </div>
@@ -79,7 +79,7 @@ const NotFoundPage = () => {
 
         {/* Subtitle */}
         <motion.p
-          className="text-gray-300 text-lg md:text-xl mt-4"
+          className="text-slate-300 text-lg md:text-xl mt-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1.2 }}
@@ -96,9 +96,9 @@ const NotFoundPage = () => {
           <Button
             type="primary"
             size="large"
-            className="bg-green-500 border-green-500 hover:bg-green-600
-                      shadow-[0_0_15px_rgba(0,255,150,0.6)] hover:shadow-[0_0_25px_rgba(0,255,150,1)]
-                      flex items-center gap-2 px-6 py-6 text-lg"
+            className="!bg-[#C5A267] !border-[#C5A267] hover:!bg-white !text-[#0F172A] hover:!text-[#C5A267]
+                      shadow-[0_0_15px_rgba(197,162,103,0.3)] hover:shadow-[0_0_25px_rgba(197,162,103,0.5)]
+                      flex items-center gap-2 px-6 py-6 text-lg !font-semibold !uppercase !tracking-[0.2em]"
             onClick={handleGoHome}
           >
             <FiArrowLeft /> Quay về trang chủ

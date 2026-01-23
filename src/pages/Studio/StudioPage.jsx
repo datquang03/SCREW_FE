@@ -36,43 +36,43 @@ const StudioPage = () => {
 
   return (
     <>
-      <div className="relative overflow-hidden rounded-3xl bg-[#f5ede6] shadow-xl">
+      <div className="relative overflow-hidden bg-[#0F172A] shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)]">
         <div
-          className="absolute inset-0 pointer-events-none rounded-3xl"
+          className="absolute inset-0 pointer-events-none"
           style={{
             background:
-              "radial-gradient(circle at 60% 40%,rgba(99,102,241,0.08),transparent 35%)",
+              "radial-gradient(circle at 60% 40%,rgba(197,162,103,0.08),transparent 35%)",
           }}
         />
-        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-5 gap-10 items-center px-6 md:px-10 py-14">
+        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-5 gap-10 items-center px-6 md:px-10 py-24">
           {/* LEFT CONTENT */}
           <div className="lg:col-span-3 space-y-5">
-            <div className="uppercase tracking-widest text-xs font-bold text-blue-700 mb-2">
+            <div className="uppercase tracking-[0.3em] text-xs font-semibold text-[#C5A267] mb-2">
               SEASONAL OFFERS
             </div>
             <Title
               level={1}
-              className="!text-4xl md:!text-5xl !text-gray-900 font-black leading-[1.05] mb-2"
+              className="!text-4xl md:!text-5xl !text-white font-semibold leading-[1.05] mb-2"
             >
               Ưu Đãi Đặc Biệt Từ <br />
-              <span className="italic font-serif text-4xl md:text-5xl text-gray-900">
+              <span className="font-semibold text-4xl md:text-5xl text-[#C5A267]">
                 S+ Studio
               </span>
             </Title>
-            <Paragraph className="!text-base md:!text-lg text-gray-700 max-w-2xl leading-relaxed mb-6">
+            <Paragraph className="!text-base md:!text-lg text-slate-300 max-w-2xl leading-relaxed mb-6">
               Nâng tầm sáng tạo với những gói dịch vụ cao cấp và ưu đãi độc
               quyền dành riêng cho cộng đồng nghệ sĩ đương đại.
             </Paragraph>
             <div className="flex flex-wrap gap-4 pt-2">
               <a
                 href="#studio-list"
-                className="inline-flex items-center gap-2 rounded-full bg-black text-white font-semibold px-6 py-3 shadow hover:-translate-y-0.5 transition-all"
+                className="inline-flex items-center gap-2 bg-[#A0826D] text-white font-semibold px-6 py-3 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] hover:bg-[#8B7355] transition-all uppercase tracking-[0.2em]"
               >
                 Khám phá bộ sưu tập
               </a>
               <a
                 href="#pricing"
-                className="inline-flex items-center gap-2 rounded-full bg-white text-gray-900 font-semibold px-6 py-3 shadow border border-gray-300 hover:bg-gray-50 transition-all"
+                className="inline-flex items-center gap-2 bg-white text-[#0F172A] font-semibold px-6 py-3 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] border border-slate-200 hover:bg-slate-100 transition-all uppercase tracking-[0.2em]"
               >
                 Xem bảng giá
               </a>
@@ -84,11 +84,12 @@ const StudioPage = () => {
       {/* Studios List */}
       <Section
         id="studio-list"
-        className="py-12 md:py-20 bg-white"
+        className="py-24 bg-[#FCFBFA]"
         containerClass="max-w-7xl mx-auto px-4"
         title="Studio Nổi Bật"
         subtitle="Không gian được khách hàng yêu thích nhất"
       >
+        <p className="text-xs font-semibold text-[#C5A267] uppercase tracking-[0.3em] text-center mb-6">STUDIO NỔI BẬT</p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           {studios.length === 0 ? (
             <div className="col-span-full text-center text-gray-500 py-20">
@@ -102,11 +103,11 @@ const StudioPage = () => {
                 style={{ minWidth: 340, maxWidth: 340, margin: "0 auto" }}
               >
                 <div
-                  className="h-full rounded-[28px] border border-amber-100 bg-white shadow-[0_16px_40px_-20px_rgba(0,0,0,0.15)] transition-all duration-300 hover:-translate-y-1.5 group flex flex-col"
+                  className="h-full border border-slate-100 bg-white shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1.5 hover:border-[#C5A267] group flex flex-col cursor-pointer"
                   onClick={() => navigate(`/studio/${studio._id}`)}
                 >
                   {/* IMAGE */}
-                  <div className="relative w-full h-48 rounded-[24px] overflow-hidden mb-4 flex-shrink-0">
+                  <div className="relative w-full h-48 overflow-hidden mb-4 flex-shrink-0">
                     {studio.images?.[0] ? (
                       <img
                         src={studio.images[0]}
@@ -114,53 +115,53 @@ const StudioPage = () => {
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />
                     ) : (
-                      <div className="w-full h-full bg-amber-50 flex items-center justify-center font-bold text-amber-600">
+                      <div className="w-full h-full bg-[#FCFBFA] flex items-center justify-center font-semibold text-[#C5A267]">
                         {studio.name}
                       </div>
                     )}
                     <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <div className="absolute top-3 left-3 bg-white/95 px-3 py-1 rounded-full flex items-center gap-1.5 shadow">
-                      <FiStar className="text-amber-500" size={14} />
-                      <span className="text-sm font-bold text-amber-700">
+                    <div className="absolute top-3 left-3 bg-[#0F172A] px-3 py-1 flex items-center gap-1.5 shadow">
+                      <FiStar className="text-[#C5A267]" size={14} />
+                      <span className="text-sm font-semibold text-white">
                         {studio.rating?.toFixed(1) || "5.0"}
                       </span>
                     </div>
                   </div>
                   {/* BODY */}
-                  <div className="flex-1 flex flex-col justify-between px-4 py-2">
-                    <span className="inline-flex w-fit px-3 py-1 bg-amber-50 border border-amber-100 rounded-full text-xs font-semibold text-amber-700 mb-2">
+                  <div className="flex-1 flex flex-col justify-between px-6 py-2">
+                    <span className="inline-flex w-fit px-3 py-1 bg-white border border-[#C5A267] text-xs font-semibold text-[#C5A267] uppercase tracking-[0.2em] mb-2">
                       Studio nổi bật
                     </span>
-                    <h3 className="text-lg font-bold text-gray-900 line-clamp-2 mb-2 min-h-[48px] flex items-center">
+                    <h3 className="text-lg font-semibold text-[#0F172A] line-clamp-2 mb-2 min-h-[48px] flex items-center">
                       {studio.name}
                     </h3>
-                    <p className="text-sm text-gray-600 line-clamp-2 mb-2 min-h-[40px] flex items-center">
+                    <p className="text-sm text-slate-600 line-clamp-2 mb-2 min-h-[40px] flex items-center">
                       {studio.description?.length > 80
                         ? studio.description.slice(0, 80) + "..."
                         : studio.description}
                     </p>
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 mb-2 min-h-[24px]">
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600 mb-2 min-h-[24px]">
                       {studio.capacity && (
-                        <span className="inline-block bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full font-semibold">
+                        <span className="inline-block bg-[#FCFBFA] text-slate-700 px-2 py-0.5 border border-slate-200 font-semibold">
                           <FiUsers className="inline-block mr-1" size={14} />
                           {studio.capacity} người
                         </span>
                       )}
-                      <span className="inline-block bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-semibold">
+                      <span className="inline-block bg-[#FCFBFA] text-[#C5A267] px-2 py-0.5 border border-[#C5A267] font-semibold">
                         {studio.basePricePerHour?.toLocaleString()}đ/giờ
                       </span>
                     </div>
                   </div>
                   {/* PRICE + CTA */}
-                  <div className="px-4 pb-6 flex flex-col gap-2">
-                    <div className="text-xs text-gray-500">Giá từ</div>
-                    <div className="text-2xl font-extrabold text-amber-600 mb-1">
+                  <div className="px-6 pb-6 flex flex-col gap-2">
+                    <div className="text-xs text-slate-500 uppercase tracking-[0.2em]">Giá từ</div>
+                    <div className="text-2xl font-semibold text-[#C5A267] mb-1">
                       {studio.basePricePerHour?.toLocaleString("vi-VN")}₫
-                      <span className="text-sm text-gray-500 ml-1">/ giờ</span>
+                      <span className="text-sm text-slate-500 ml-1">/ giờ</span>
                     </div>
                     <a
                       href={`/studio/${studio._id}`}
-                      className="w-full h-12 bg-amber-500 hover:bg-amber-600 border-none rounded-2xl font-semibold text-base flex items-center justify-center gap-2 shadow-none text-white transition-all py-2 px-4"
+                      className="w-full h-12 bg-[#A0826D] hover:bg-[#8B7355] text-white border-none font-semibold text-base flex items-center justify-center gap-2 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] transition-all py-2 px-4 uppercase tracking-[0.2em]"
                       style={{ marginTop: "auto" }}
                     >
                       <FiShoppingCart size={16} /> Đặt ngay

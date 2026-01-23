@@ -31,7 +31,7 @@ const PaymentCancelPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-red-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-[#FCFBFA] p-4">
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -39,52 +39,52 @@ const PaymentCancelPage = () => {
         className="max-w-md w-full"
       >
         <Card
-          className="bg-white rounded-3xl shadow-xl border border-red-200 p-8 text-center"
+          className="bg-white border border-slate-100 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] p-8 text-center"
         >
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.2, duration: 0.5, type: "spring" }}
-            className="flex justify-center mb-6 text-red-500"
+            className="flex justify-center mb-6 text-slate-400"
           >
             <FiXCircle className="text-8xl" />
           </motion.div>
 
-          <Title level={2} className="text-red-600 mb-2">
+          <Title level={2} className="!text-[#0F172A] !mb-2 !font-semibold">
             Thanh toán bị hủy
           </Title>
-          <Text className="text-gray-700 mb-4 block">
+          <Text className="text-slate-600 mb-4 block">
             Đơn của bạn chưa được thanh toán hoặc đã bị hủy.
           </Text>
 
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
-            <Text strong className="block mb-1">
-              Mã đơn: <span className="text-red-700">{orderId || "—"}</span>
+          <div className="bg-white border border-slate-100 p-6 mb-6">
+            <Text strong className="block mb-2 text-slate-700">
+              Mã đơn: <span className="text-slate-500 font-semibold">{orderId || "—"}</span>
             </Text>
-            <Text strong className="block">
-              Mã giao dịch: <span className="text-red-700">{orderCode}</span>
+            <Text strong className="block mb-2 text-slate-700">
+              Mã giao dịch: <span className="text-slate-500 font-semibold">{orderCode}</span>
             </Text>
             {txId && (
-              <Text className="block">
-                Transaction ID: <span className="text-red-700">{txId}</span>
+              <Text className="block mb-2 text-slate-700">
+                Transaction ID: <span className="text-slate-500 font-semibold">{txId}</span>
               </Text>
             )}
             {code && (
-              <Text className="block">
-                Code: <span className="text-red-700">{code}</span>
+              <Text className="block mb-2 text-slate-700">
+                Code: <span className="text-slate-500 font-semibold">{code}</span>
               </Text>
             )}
             {amount && (
-              <Text className="block">
+              <Text className="block mb-2 text-slate-700">
                 Số tiền:{" "}
-                <span className="text-red-700">
+                <span className="text-slate-500 font-semibold">
                   {Number(amount).toLocaleString("vi-VN")}₫
                 </span>
               </Text>
             )}
-            <Text className="block mt-2">
+            <Text className="block mt-3 text-slate-700">
               Trạng thái:{" "}
-              <span className="text-red-600">{status || (cancel && "cancelled")}</span>
+              <span className="text-slate-500 font-semibold uppercase tracking-wider">{status || (cancel && "cancelled")}</span>
             </Text>
           </div>
 
@@ -95,7 +95,7 @@ const PaymentCancelPage = () => {
             <Button
               type="primary"
               size="large"
-              className="bg-red-600 border-red-600 hover:bg-red-700"
+              className="!bg-[#0F172A] !border-[#0F172A] hover:!bg-slate-700 !text-white !font-semibold !h-12 !uppercase !tracking-[0.2em]"
               onClick={handleGoDashboard}
             >
               Quay về trang đơn của tôi

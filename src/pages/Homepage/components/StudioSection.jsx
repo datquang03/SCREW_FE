@@ -82,11 +82,12 @@ const StudioSection = () => {
     <Section
       title="Studio Nổi Bật"
       subtitle="Không gian được khách hàng yêu thích nhất"
-      className="py-12 md:py-20 bg-white"
+      className="py-24 bg-white"
     >
       <div className="relative max-w-7xl mx-auto px-4">
+        <p className="text-xs font-semibold text-[#C5A267] uppercase tracking-[0.3em] text-center mb-6">STUDIO NỔI BẬT</p>
         <div
-          className="relative overflow-hidden rounded-[36px]"
+          className="relative overflow-hidden"
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
         >
@@ -102,63 +103,63 @@ const StudioSection = () => {
                   style={{ width: `${100 / itemsPerView}%`, minWidth: 340, maxWidth: 340, marginRight: 24 }}
                 >
                   <div
-                    className="h-full rounded-[28px] border border-amber-100 bg-white shadow-[0_16px_40px_-20px_rgba(0,0,0,0.15)] transition-all duration-300 hover:-translate-y-1.5 group flex flex-col"
+                    className="h-full border border-slate-100 bg-white shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1.5 hover:border-[#C5A267] group flex flex-col cursor-pointer"
                     onClick={() => (window.location.href = `/studio/${studio._id}`)}
                   >
                     {/* IMAGE */}
-                    <div className="relative w-full h-48 rounded-[24px] overflow-hidden mb-4 flex-shrink-0">
+                    <div className="relative w-full h-48 overflow-hidden mb-4 flex-shrink-0">
                       {studio.images?.[0] ? (
                         <img
                           src={studio.images[0]}
                           alt={studio.name}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                          className="w-full h-full object-cover transition-all duration-500"
                         />
                       ) : (
-                        <div className="w-full h-full bg-amber-50 flex items-center justify-center font-bold text-amber-600">
+                        <div className="w-full h-full bg-[#FCFBFA] flex items-center justify-center font-semibold text-[#C5A267]">
                           {studio.name}
                         </div>
                       )}
                       <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      <div className="absolute top-3 left-3 bg-white/95 px-3 py-1 rounded-full flex items-center gap-1.5 shadow">
-                        <FiStar className="text-amber-500" size={14} />
-                        <span className="text-sm font-bold text-amber-700">
+                      <div className="absolute top-3 left-3 bg-[#0F172A] px-3 py-1 flex items-center gap-1.5 shadow">
+                        <FiStar className="text-[#C5A267]" size={14} />
+                        <span className="text-sm font-semibold text-white">
                           {studio.rating?.toFixed(1) || "5.0"}
                         </span>
                       </div>
                     </div>
                     {/* BODY */}
-                    <div className="flex-1 flex flex-col justify-between px-4 py-2">
-                      <span className="inline-flex w-fit px-3 py-1 bg-amber-50 border border-amber-100 rounded-full text-xs font-semibold text-amber-700 mb-2">
+                    <div className="flex-1 flex flex-col justify-between px-6 py-2">
+                      <span className="inline-flex w-fit px-3 py-1 bg-white border border-[#C5A267] text-xs font-semibold text-[#C5A267] uppercase tracking-[0.2em] mb-2">
                         Studio nổi bật
                       </span>
-                      <h3 className="text-lg font-bold text-gray-900 line-clamp-2 mb-2 min-h-[48px] flex items-center">
+                      <h3 className="text-lg font-semibold text-[#0F172A] line-clamp-2 mb-2 min-h-[48px] flex items-center">
                         {studio.name}
                       </h3>
-                      <p className="text-sm text-gray-600 line-clamp-2 mb-2 min-h-[40px] flex items-center">
+                      <p className="text-sm text-slate-600 line-clamp-2 mb-2 min-h-[40px] flex items-center">
                         {studio.description?.length > 80 ? studio.description.slice(0, 80) + '...' : studio.description}
                       </p>
-                      <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 mb-2 min-h-[24px]">
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600 mb-2 min-h-[24px]">
                         {studio.capacity && (
-                          <span className="inline-block bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full font-semibold">
+                          <span className="inline-block bg-[#FCFBFA] text-slate-700 px-2 py-0.5 border border-slate-200 font-semibold">
                             <FiUsers className="inline-block mr-1" size={14} />
                             {studio.capacity} người
                           </span>
                         )}
-                        <span className="inline-block bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-semibold">
+                        <span className="inline-block bg-[#FCFBFA] text-[#C5A267] px-2 py-0.5 border border-[#C5A267] font-semibold">
                           {studio.basePricePerHour?.toLocaleString()}đ/giờ
                         </span>
                       </div>
                     </div>
                     {/* PRICE + CTA */}
-                    <div className="px-4 pb-6 flex flex-col gap-2">
-                      <div className="text-xs text-gray-500">Giá từ</div>
-                      <div className="text-2xl font-extrabold text-amber-600 mb-1">
+                    <div className="px-6 pb-6 flex flex-col gap-2">
+                      <div className="text-xs text-slate-500 uppercase tracking-[0.2em]">Giá từ</div>
+                      <div className="text-2xl font-semibold text-[#C5A267] mb-1">
                         {studio.basePricePerHour?.toLocaleString("vi-VN")}₫
-                        <span className="text-sm text-gray-500 ml-1">/ giờ</span>
+                        <span className="text-sm text-slate-500 ml-1">/ giờ</span>
                       </div>
                       <a
                         href={`/studio/${studio._id}`}
-                        className="w-full h-12 bg-amber-500 hover:bg-amber-600 border-none rounded-2xl font-semibold text-base flex items-center justify-center gap-2 shadow-none text-white transition-all py-2 px-4"
+                        className="w-full h-12 bg-[#0F172A] hover:bg-[#C5A267] text-[#C5A267] hover:text-[#0F172A] border-none font-semibold text-base flex items-center justify-center gap-2 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] transition-all py-2 px-4 uppercase tracking-[0.2em]"
                         style={{ marginTop: 'auto' }}
                       >
                         <FiShoppingCart size={16} /> Đặt ngay
@@ -174,15 +175,15 @@ const StudioSection = () => {
             <>
               <button
                 onClick={goPrev}
-                className="absolute left-5 top-1/2 -translate-y-1/2 bg-white/90 rounded-full p-4 shadow-lg"
+                className="absolute left-5 top-1/2 -translate-y-1/2 bg-[#0F172A] p-4 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)]"
               >
-                <FiChevronLeft size={30} className="text-amber-700" />
+                <FiChevronLeft size={30} className="text-[#C5A267]" />
               </button>
               <button
                 onClick={goNext}
-                className="absolute right-5 top-1/2 -translate-y-1/2 bg-white/90 rounded-full p-4 shadow-lg"
+                className="absolute right-5 top-1/2 -translate-y-1/2 bg-[#0F172A] p-4 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)]"
               >
-                <FiChevronRight size={30} className="text-amber-700" />
+                <FiChevronRight size={30} className="text-[#C5A267]" />
               </button>
             </>
           )}
@@ -194,7 +195,10 @@ const StudioSection = () => {
             size="large"
             href="/studio"
             icon={<FiArrowRight size={22} />}
-            className="bg-gradient-to-r from-amber-500 to-orange-500 px-14 py-7 rounded-2xl font-bold text-lg"
+            style={{ backgroundColor: '#A0826D', borderColor: '#A0826D', color: 'white' }}
+            className="px-14 py-7 font-semibold text-lg uppercase tracking-[0.2em] shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)]"
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#8B7355'; e.currentTarget.style.borderColor = '#8B7355'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#A0826D'; e.currentTarget.style.borderColor = '#A0826D'; }}
           >
             Xem tất cả Studio
           </Button>

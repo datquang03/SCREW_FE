@@ -110,7 +110,30 @@ const UserCustomSetDesignPage = () => {
         title: "Nhân viên",
         dataIndex: "processedBy",
         className: "hidden 2xl:table-cell",
-        render: (p) => p?.email || "Chưa có",
+        render: (p) => (
+          <span className="text-sm">
+            {p?.email || <span className="text-gray-400">Chưa có</span>}
+          </span>
+        ),
+      },
+      {
+        title: "Design ID",
+        dataIndex: "convertedToDesignId",
+        className: "hidden xl:table-cell",
+        render: (design) => (
+          design ? (
+            <div className="space-y-1">
+              <div className="font-medium text-xs text-gray-800 line-clamp-1">
+                {design.name}
+              </div>
+              <div className="text-xs font-semibold text-green-600">
+                {design.price?.toLocaleString('vi-VN')}₫
+              </div>
+            </div>
+          ) : (
+            <span className="text-gray-400 text-xs">Chưa có</span>
+          )
+        ),
       },
       {
         title: "Ảnh",
@@ -353,10 +376,24 @@ const UserCustomSetDesignPage = () => {
                         : "Không rõ"}
                     </div>
                   </div>
+                  {detail.estimatedPrice && (
+                    <div>
+                      <Text type="secondary">Giá ước tính</Text>
+                      <div className="text-base font-semibold text-blue-600">
+                        {detail.estimatedPrice.toLocaleString("vi-VN")}₫
+                      </div>
+                    </div>
+                  )}
                   <div>
                     <Text type="secondary">Nhân viên xử lý</Text>
                     <div className="font-medium">
                       {detail.processedBy?.email || "Chưa có"}
+                    </div>
+                  </div>
+                  <div>
+                    <Text type="secondary">AI Model</Text>
+                    <div className="font-mono text-xs text-gray-600">
+                      {detail.aiModel || "N/A"}
                     </div>
                   </div>
                 </div>
@@ -370,6 +407,45 @@ const UserCustomSetDesignPage = () => {
                 {detail.description || "Không có mô tả"}
               </div>
             </Card>
+
+            {/* ================= CONVERTED DESIGN ================= */}
+            {detail.convertedToDesignId && (
+              <Card className="rounded-xl border border-green-200 bg-green-50/30">
+                <Title level={5} className="!text-green-700">
+                  ✓ Đã chuyển đổi thành Set Design
+                </Title>
+                <div className="space-y-2 text-sm">
+                  <div>
+                    <Text type="secondary">Tên Design</Text>
+                    <div className="font-semibold text-base">
+                      {detail.convertedToDesignId.name}
+                    </div>
+                  </div>
+                  <div>
+                    <Text type="secondary">Giá</Text>
+                    <div className="text-xl font-bold text-green-600">
+                      {detail.convertedToDesignId.price?.toLocaleString("vi-VN")}₫
+                    </div>
+                  </div>
+                  <div>
+                    <Text type="secondary">Design ID</Text>
+                    <div className="font-mono text-xs text-gray-600">
+                      {detail.convertedToDesignId._id}
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            )}
+
+            {/* ================= STAFF NOTES ================= */}
+            {detail.staffNotes && (
+              <Card className="rounded-xl border border-gray-100 bg-amber-50/30">
+                <Title level={5}>Ghi chú từ nhân viên</Title>
+                <div className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
+                  {detail.staffNotes}
+                </div>
+              </Card>
+            )}
 
             {/* ================= IMAGES ================= */}
             {detail.referenceImages?.length > 0 && (

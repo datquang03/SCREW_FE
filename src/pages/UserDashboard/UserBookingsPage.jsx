@@ -8,7 +8,7 @@ import {
   FiCheckCircle,
 } from "react-icons/fi";
 import DataTable from "../../components/dashboard/DataTable";
-import { getAllMyBookings, getBookingById, extendStudioSchedule, cancelBooking } from "../../features/booking/bookingSlice";
+import { getAllMyBookings, getBookingById, extendStudioSchedule, cancelBooking, getExtendStatus } from "../../features/booking/bookingSlice";
 import { createRemainingPayment, refundPayment } from "../../features/payment/paymentSlice";
 import { getStudioById } from '../../features/studio/studioSlice';
 
@@ -60,6 +60,8 @@ const UserBookingsPage = () => {
   const [extendModalOpen, setExtendModalOpen] = useState(false);
   const [extendLoading, setExtendLoading] = useState(false);
   const [newEndTime, setNewEndTime] = useState(null);
+  const [extensionOptions, setExtensionOptions] = useState(null);
+  const [loadingExtensionOptions, setLoadingExtensionOptions] = useState(false);
 
   // Refund Modal State
   const [refundModalOpen, setRefundModalOpen] = useState(false);
@@ -93,9 +95,23 @@ const UserBookingsPage = () => {
     }
   };
 
-  const handleOpenExtend = () => {
-    setExtendModalOpen(true);
-    setNewEndTime(null);
+  const handleOpenExtend = async () => {
+    if (!currentBooking?._id) return;
+    
+    try {
+      setLoadingExtensionOptions(true);
+      const result = await dispatch(getExtendStatus(currentBooking._id)).unwrap();
+      setExtensionOptions(result);
+      setExtendModalOpen(true);
+      setNewEndTime(null);
+    } catch (err) {
+      Modal.error({ 
+        title: "Không thể lấy thông tin gia hạn",
+        content: err.message || "Vui lòng thử lại sau" 
+      });
+    } finally {
+      setLoadingExtensionOptions(false);
+    }
   };
 
   const submitExtend = async () => {
@@ -465,7 +481,10 @@ const UserBookingsPage = () => {
               <div className="mt-4 flex justify-end gap-3 pt-4 border-t border-gray-200">
                 {["pending", "confirmed"].includes(currentBooking.status) && (
                   <>
-                    <Button onClick={handleOpenExtend}>
+                    <Button 
+                      onClick={handleOpenExtend}
+                      loading={loadingExtensionOptions}
+                    >
                       Gia hạn
                     </Button>
                     <Button danger onClick={handleRefund}>
@@ -638,23 +657,96 @@ const UserBookingsPage = () => {
         onCancel={() => setExtendModalOpen(false)}
         confirmLoading={extendLoading}
         onOk={submitExtend}
+        okText="Xác nhận gia hạn"
+        cancelText="Hủy"
       >
-        <div className="py-4">
-          <p className="mb-2 font-medium">Chọn thời gian kết thúc mới:</p>
-          <DatePicker
-            showTime
-            className="w-full"
-            placeholder="Chọn thời gian kết thúc mới"
-            format="DD/MM/YYYY HH:mm"
-            value={newEndTime}
-            onChange={(val) => setNewEndTime(val)}
-            disabledDate={(current) =>
-              current && current < dayjs().endOf("day")
-            }
-          />
-           <p className="mt-2 text-xs text-gray-500">
-            Lưu ý: Việc gia hạn tùy thuộc vào tính khả dụng của studio.
-          </p>
+        <div className="py-4 space-y-6">
+          {extensionOptions ? (
+            <>
+              {extensionOptions.canExtend ? (
+                <>
+                  {/* Thông tin hiện tại */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <FiClock className="text-blue-600" />
+                      <span className="font-semibold text-blue-900">Thời gian hiện tại</span>
+                    </div>
+                    <div className="text-sm text-gray-700">
+                      <div className="flex justify-between py-1">
+                        <span>Kết thúc hiện tại:</span>
+                        <span className="font-bold">{dayjs(extensionOptions.currentEndTime).format("DD/MM/YYYY HH:mm")}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Thông tin gia hạn */}
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <FiCheckCircle className="text-green-600" />
+                      <span className="font-semibold text-green-900">Có thể gia hạn</span>
+                    </div>
+                    <div className="text-sm space-y-2">
+                      <div className="flex justify-between py-1">
+                        <span className="text-gray-600">Thời gian tối đa:</span>
+                        <span className="font-bold text-green-700">
+                          {dayjs(extensionOptions.maxEndTime).format("DD/MM/YYYY HH:mm")}
+                        </span>
+                      </div>
+                      <div className="flex justify-between py-1">
+                        <span className="text-gray-600">Số phút có thể gia hạn:</span>
+                        <span className="font-bold text-green-700">
+                          {extensionOptions.availableMinutes} phút 
+                          <span className="text-xs text-gray-500 ml-1">
+                            (~{Math.floor(extensionOptions.availableMinutes / 60)}h {extensionOptions.availableMinutes % 60}m)
+                          </span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Chọn thời gian mới */}
+                  <div>
+                    <p className="mb-2 font-medium text-gray-700">Chọn thời gian kết thúc mới:</p>
+                    <DatePicker
+                      showTime
+                      className="w-full"
+                      placeholder="Chọn thời gian kết thúc mới"
+                      format="DD/MM/YYYY HH:mm"
+                      value={newEndTime}
+                      onChange={(val) => setNewEndTime(val)}
+                      disabledDate={(current) =>
+                        current && (
+                          current < dayjs(extensionOptions.currentEndTime) ||
+                          current > dayjs(extensionOptions.maxEndTime)
+                        )
+                      }
+                      minDate={dayjs(extensionOptions.currentEndTime)}
+                      maxDate={dayjs(extensionOptions.maxEndTime)}
+                    />
+                    <p className="mt-2 text-xs text-gray-500">
+                      * Chọn thời gian từ {dayjs(extensionOptions.currentEndTime).format("HH:mm DD/MM")} đến {dayjs(extensionOptions.maxEndTime).format("HH:mm DD/MM")}
+                    </p>
+                  </div>
+                </>
+              ) : (
+                /* Không thể gia hạn */
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <FiClock className="text-red-600" />
+                    <span className="font-semibold text-red-900">Không thể gia hạn</span>
+                  </div>
+                  <p className="text-sm text-gray-700">
+                    {extensionOptions.reason || "Studio không khả dụng để gia hạn thêm"}
+                  </p>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="text-center py-4">
+              <Spin />
+              <p className="mt-2 text-gray-500">Đang tải thông tin gia hạn...</p>
+            </div>
+          )}
         </div>
       </Modal>
 

@@ -111,7 +111,7 @@ const PaymentSuccessPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-green-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-[#FCFBFA] p-4">
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -119,46 +119,46 @@ const PaymentSuccessPage = () => {
         className="max-w-md w-full"
       >
         <Card
-          className="bg-white rounded-3xl shadow-xl border border-green-200 p-8 text-center"
+          className="bg-white border border-slate-100 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] p-8 text-center"
         >
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.2, duration: 0.5, type: "spring" }}
-            className="flex justify-center mb-6 text-green-500"
+            className="flex justify-center mb-6 text-[#C5A267]"
           >
             <FiCheckCircle className="text-8xl" />
           </motion.div>
 
-          <Title level={2} className="text-green-600 mb-2">
+          <Title level={2} className="!text-[#0F172A] !mb-2 !font-semibold">
             Thanh toán thành công!
           </Title>
-          <Text className="text-gray-700 mb-4 block">
+          <Text className="text-slate-600 mb-4 block">
             Đơn của bạn đã được thanh toán thành công.
           </Text>
 
-          <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
-            <Text strong className="block mb-1">
-              Mã đơn: <span className="text-green-700">{orderId || "—"}</span>
+          <div className="bg-white border border-slate-100 p-6 mb-6">
+            <Text strong className="block mb-2 text-slate-700">
+              Mã đơn: <span className="text-[#C5A267] font-semibold">{orderId || "—"}</span>
             </Text>
-            <Text strong className="block">
-              Mã giao dịch: <span className="text-green-700">{orderCode}</span>
+            <Text strong className="block mb-2 text-slate-700">
+              Mã giao dịch: <span className="text-[#C5A267] font-semibold">{orderCode}</span>
             </Text>
             {paymentCode && (
-              <Text className="block">
-                Payment code: <span className="text-green-700">{paymentCode}</span>
+              <Text className="block mb-2 text-slate-700">
+                Payment code: <span className="text-[#C5A267] font-semibold">{paymentCode}</span>
               </Text>
             )}
             {amount && (
-              <Text className="block">
+              <Text className="block mb-2 text-slate-700">
                 Số tiền:{" "}
-                <span className="text-green-700">
+                <span className="text-[#C5A267] font-semibold">
                   {Number(amount).toLocaleString("vi-VN")}₫
                 </span>
               </Text>
             )}
-            <Text className="block mt-2">
-              Trạng thái: <span className="text-green-600">{status}</span>
+            <Text className="block mt-3 text-slate-700">
+              Trạng thái: <span className="text-[#C5A267] font-semibold uppercase tracking-wider">{status}</span>
             </Text>
           </div>
 
@@ -169,7 +169,7 @@ const PaymentSuccessPage = () => {
             <Button
               type="primary"
               size="large"
-              className="bg-green-600 border-green-600 hover:bg-green-700"
+              className="!bg-[#0F172A] !border-[#0F172A] hover:!bg-[#C5A267] !text-[#C5A267] hover:!text-[#0F172A] !font-semibold !h-12 !uppercase !tracking-[0.2em]"
               onClick={handleGoDashboard}
             >
               Quay về trang đơn của tôi

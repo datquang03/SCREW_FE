@@ -1,4 +1,3 @@
-// src/pages/Equipment/EquipmentListPage.jsx
 import React, { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -18,13 +17,18 @@ import {
 } from "antd";
 import { motion } from "framer-motion";
 import { FiSearch } from "react-icons/fi";
+import {
+  CalendarOutlined,
+  InfoCircleOutlined,
+  LayoutOutlined,
+} from "@ant-design/icons";
 import Section from "../../components/common/Section";
 import {
   getAvailableEquipment,
   clearEquipmentError,
 } from "../../features/equipment/equipmentSlice";
 
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
 
 export default function EquipmentListPage() {
@@ -88,26 +92,38 @@ export default function EquipmentListPage() {
     total > 0 ? Math.round((available / total) * 100) : 0;
 
   return (
-    <>
-      <Section className="bg-gradient-to-br from-indigo-50 via-white to-blue-50 py-20 pb-32">
-        <div className="container mx-auto px-4">
-          <Title level={1} className="text-center mb-12 font-extrabold">
-            Danh sách thiết bị thuê
-          </Title>
+    <div className="bg-[#FCFBFA] min-h-screen selection:bg-[#C5A267]/20">
+      <Section className="py-24">
+        <div className="max-w-7xl mx-auto px-6">
+          {/* EXECUTIVE HEADER */}
+          <div className="text-center mb-20 space-y-4">
+            <p className="text-[10px] uppercase tracking-[0.5em] text-[#C5A267] font-bold">
+              Luxe Equipment Rental
+            </p>
+            <Title
+              level={1}
+              className="!text-5xl md:!text-6xl !font-semibold !text-[#0F172A] !mb-0"
+            >
+              Danh sách thiết bị thuê
+            </Title>
+            <div className="h-px w-24 bg-[#C5A267] mx-auto mt-8 opacity-40"></div>
+          </div>
 
-          {/* Search & Sort */}
-          <div className="max-w-4xl mx-auto mb-12 flex flex-col sm:flex-row gap-4">
+          {/* REFINED SEARCH & SORT */}
+          <div className="max-w-5xl mx-auto mb-20 flex flex-col md:flex-row gap-6 p-2 bg-white border border-slate-100 shadow-sm">
             <Input
               size="large"
               allowClear
-              prefix={<FiSearch />}
-              placeholder="Tìm kiếm thiết bị..."
+              prefix={<FiSearch className="text-slate-400" />}
+              placeholder="TÌM KIẾM THEO TÊN THIẾT BỊ..."
               value={searchTerm}
+              className="!border-none !shadow-none !text-[10px] !uppercase !tracking-widest !font-bold flex-1 !h-14"
               onChange={(e) => {
                 setSearchTerm(e.target.value);
                 setVisibleCount(6);
               }}
             />
+            <div className="w-px h-10 bg-slate-100 hidden md:block self-center"></div>
             <Select
               size="large"
               value={sortBy}
@@ -115,99 +131,141 @@ export default function EquipmentListPage() {
                 setSortBy(v);
                 setVisibleCount(6);
               }}
-              className="sm:w-[200px]"
+              className="md:w-[240px] !border-none custom-select-luxury"
+              variant="borderless"
             >
-              <Option value="default">Mặc định</Option>
-              <Option value="price-asc">Giá thấp → cao</Option>
-              <Option value="price-desc">Giá cao → thấp</Option>
-              <Option value="name-asc">Tên A → Z</Option>
+              <Option value="default">
+                <span className="text-[10px] uppercase tracking-widest font-bold">
+                  Mặc định
+                </span>
+              </Option>
+              <Option value="price-asc">
+                <span className="text-[10px] uppercase tracking-widest font-bold">
+                  Giá thấp → cao
+                </span>
+              </Option>
+              <Option value="price-desc">
+                <span className="text-[10px] uppercase tracking-widest font-bold">
+                  Giá cao → thấp
+                </span>
+              </Option>
+              <Option value="name-asc">
+                <span className="text-[10px] uppercase tracking-widest font-bold">
+                  Tên A → Z
+                </span>
+              </Option>
             </Select>
           </div>
 
-          {/* ===== LOADING SKELETON ===== */}
+          {/* LISTING GRID */}
           {loading ? (
-            <Row gutter={[16, 24]}>
+            <Row gutter={[32, 48]}>
               {[...Array(6)].map((_, i) => (
                 <Col xs={24} sm={12} lg={8} key={i}>
-                  <Card className="rounded-3xl h-[520px] shadow-xl border-0 bg-gradient-to-br from-indigo-100 via-white to-blue-100">
-                    <Skeleton.Image className="w-full h-[220px] rounded-2xl" />
-                    <Skeleton active paragraph={{ rows: 4 }} className="mt-4" />
-                  </Card>
+                  <div className="bg-white border border-slate-100 p-4 h-[500px]">
+                    <Skeleton active paragraph={{ rows: 6 }} />
+                  </div>
                 </Col>
               ))}
             </Row>
           ) : filteredEquipments.length === 0 ? (
-            <Empty description="Không tìm thấy thiết bị nào" />
+            <Empty
+              description={
+                <span className="text-[10px] uppercase tracking-widest font-bold text-slate-400">
+                  Không tìm thấy thiết bị nào phù hợp
+                </span>
+              }
+            />
           ) : (
             <>
-              <Row gutter={[16, 24]}>
+              <Row gutter={[32, 64]}>
                 {visibleEquipments.map((equip, index) => {
                   const stockPercent = getStockPercent(
                     equip.availableQty,
                     equip.totalQty
                   );
-
                   return (
                     <Col xs={24} sm={12} lg={8} key={equip._id}>
                       <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.08 }}
-                        className="h-full"
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{
+                          duration: 0.8,
+                          delay: (index % 3) * 0.1,
+                        }}
+                        viewport={{ once: true }}
                       >
-                        <Card
-                          hoverable
+                        <div
                           onClick={() => {
                             setSelectedEquipment(equip);
                             setIsModalOpen(true);
                           }}
-                          className="h-[520px] rounded-3xl shadow-xl border-0 bg-gradient-to-br from-white via-indigo-50 to-blue-50 flex flex-col group transition-all duration-300 hover:shadow-2xl hover:-translate-y-1.5"
-                          styles={{
-                            body: {
-                              flex: 1,
-                              display: "flex",
-                              flexDirection: "column",
-                            },
-                          }}
-                          cover={
-                            <div className="h-[220px] overflow-hidden rounded-2xl shadow-lg">
-                              <img
-                                src={equip.image}
-                                alt={equip.name}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                              />
-                            </div>
-                          }
+                          className="group cursor-pointer bg-white border border-slate-100 transition-all duration-700 hover:shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] rounded-sm overflow-hidden"
                         >
-                          {/* CONTENT */}
-                          <Title level={4} className="mb-1 line-clamp-2 font-bold text-gray-900">
-                            {equip.name}
-                          </Title>
-                          <Text className="text-gray-500 text-sm line-clamp-2 mb-3">
-                            {equip.description}
-                          </Text>
-
-                          {/* STOCK */}
-                          <Progress percent={stockPercent} size="small" className="rounded-full" strokeColor="#22c55e" trailColor="#e0e7ff" />
-                          <div className="flex flex-wrap gap-2 text-xs mt-2">
-                            <Tag color="green" className="rounded-full px-3 py-1 font-semibold">Còn: {equip.availableQty}</Tag>
-                            <Tag color="blue" className="rounded-full px-3 py-1 font-semibold">Tổng: {equip.totalQty}</Tag>
-                            <Tag color="orange" className="rounded-full px-3 py-1 font-semibold">Đang dùng: {equip.inUseQty}</Tag>
-                            {equip.maintenanceQty > 0 && (
-                              <Tag color="red" className="rounded-full px-3 py-1 font-semibold">Bảo trì: {equip.maintenanceQty}</Tag>
-                            )}
+                          <div className="aspect-[4/5] overflow-hidden transition-all duration-1000">
+                            <img
+                              src={equip.image}
+                              alt={equip.name}
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
+                            />
                           </div>
+                          <div className="p-8 space-y-6">
+                            <div className="space-y-2">
+                              <h3 className="font-semibold text-2xl text-[#0F172A] leading-tight group-hover:text-[#C5A267] transition-colors">
+                                {equip.name}
+                              </h3>
+                              <p className="text-xs text-slate-400 font-light line-clamp-2 leading-relaxed h-10">
+                                {equip.description}
+                              </p>
+                            </div>
 
-                          {/* PRICE */}
-                          <div className="mt-auto pt-4 border-t border-gray-100">
-                            <Text className="text-2xl font-bold text-amber-600">
-                              {formatPrice(equip.pricePerHour)}
-                            </Text>
-                            <Text className="block text-sm text-gray-500">
-                              / giờ
-                            </Text>
+                            <div className="space-y-4">
+                              <div className="flex justify-between items-center">
+                                <span className="text-[9px] uppercase tracking-widest font-bold text-slate-300">
+                                  Tính khả dụng
+                                </span>
+                                <span className="text-[9px] font-bold text-[#C5A267] uppercase tracking-widest">
+                                  {equip.availableQty} Sẵn sàng
+                                </span>
+                              </div>
+                              <Progress
+                                percent={stockPercent}
+                                showInfo={false}
+                                strokeColor="#C5A267"
+                                trailColor="#F8F9FA"
+                                size={[null, 2]}
+                                className="m-0"
+                              />
+                              <div className="flex flex-wrap gap-2 pt-2 opacity-60 group-hover:opacity-100 transition-opacity">
+                                <span className="text-[8px] uppercase tracking-widest font-bold border border-slate-100 px-2 py-1">
+                                  TỔNG: {equip.totalQty}
+                                </span>
+                                <span className="text-[8px] uppercase tracking-widest font-bold border border-slate-100 px-2 py-1 text-blue-400">
+                                  DÙNG: {equip.inUseQty}
+                                </span>
+                                {equip.maintenanceQty > 0 && (
+                                  <span className="text-[8px] uppercase tracking-widest font-bold border border-rose-50 px-2 py-1 text-rose-300">
+                                    BẢO TRÌ: {equip.maintenanceQty}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="pt-6 border-t border-slate-50 flex justify-between items-end">
+                              <div>
+                                <p className="text-[9px] uppercase tracking-widest text-slate-300 font-bold mb-1">
+                                  Chi phí niêm yết
+                                </p>
+                                <span className="text-xl font-light text-[#0F172A]">
+                                  {formatPrice(equip.pricePerHour)}
+                                </span>
+                              </div>
+                              <span className="text-[10px] text-[#C5A267]">
+                                / giờ
+                              </span>
+                            </div>
                           </div>
-                        </Card>
+                        </div>
                       </motion.div>
                     </Col>
                   );
@@ -215,18 +273,16 @@ export default function EquipmentListPage() {
               </Row>
 
               {visibleCount < filteredEquipments.length && (
-                <div className="text-center mt-16">
+                <div className="text-center mt-24">
                   <Button
-                    type="primary"
-                    size="large"
                     onClick={() =>
                       setVisibleCount((p) =>
                         Math.min(p + 6, filteredEquipments.length)
                       )
                     }
-                    className="rounded-full px-8 h-12 font-bold shadow-lg"
+                    className="!h-16 !px-16 !bg-[#0F172A] hover:!bg-[#C5A267] !text-white !rounded-none !border-none !shadow-2xl !text-[10px] !uppercase !tracking-[0.3em] !font-bold transition-all duration-500"
                   >
-                    Xem thêm
+                    Xem thêm danh mục
                   </Button>
                 </div>
               )}
@@ -235,56 +291,95 @@ export default function EquipmentListPage() {
         </div>
       </Section>
 
-      {/* ================= MODAL CHI TIẾT ================= */}
+      {/* EXECUTIVE DETAIL MODAL */}
       <Modal
         open={isModalOpen}
         onCancel={() => setIsModalOpen(false)}
         footer={null}
-        width={900}
+        width={1000}
         centered
-        className="rounded-3xl shadow-2xl border-0 bg-gradient-to-br from-white via-indigo-50 to-blue-50"
-        bodyStyle={{ borderRadius: 24, padding: 32 }}
+        className="executive-modal"
       >
         {selectedEquipment && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <img
-              src={selectedEquipment.image}
-              alt={selectedEquipment.name}
-              className="w-full h-[360px] object-cover rounded-2xl shadow-lg"
-            />
-
-            <div className="flex flex-col justify-center">
-              <Title level={2} className="font-bold text-gray-900 mb-2">{selectedEquipment.name}</Title>
-              <Text className="text-gray-600 mb-4 text-base">{selectedEquipment.description}</Text>
-
-              <Divider />
-
-              <Progress
-                percent={getStockPercent(
-                  selectedEquipment.availableQty,
-                  selectedEquipment.totalQty
-                )}
-                className="rounded-full"
-                strokeColor="#22c55e"
-                trailColor="#e0e7ff"
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 p-6">
+            <div className="aspect-[4/5] overflow-hidden">
+              <img
+                src={selectedEquipment.image}
+                alt={selectedEquipment.name}
+                className="w-full h-full object-cover"
               />
-
-              <div className="flex flex-wrap gap-3 mt-4">
-                <Tag color="blue" className="rounded-full px-3 py-1 font-semibold">Tổng: {selectedEquipment.totalQty}</Tag>
-                <Tag color="green" className="rounded-full px-3 py-1 font-semibold">Còn: {selectedEquipment.availableQty}</Tag>
-                <Tag color="orange" className="rounded-full px-3 py-1 font-semibold">Đang dùng: {selectedEquipment.inUseQty}</Tag>
-                <Tag color="red" className="rounded-full px-3 py-1 font-semibold">Bảo trì: {selectedEquipment.maintenanceQty}</Tag>
+            </div>
+            <div className="flex flex-col justify-center space-y-10">
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.4em] text-[#C5A267] font-bold mb-4">
+                  Thông số thiết bị
+                </p>
+                <Title
+                  level={2}
+                  className="!text-4xl !font-semibold !text-[#0F172A] !m-0"
+                >
+                  {selectedEquipment.name}
+                </Title>
               </div>
 
-              <Divider />
+              <Paragraph className="text-slate-400 text-sm font-light leading-relaxed">
+                {selectedEquipment.description}
+              </Paragraph>
 
-              <Title level={1} className="text-amber-600 font-extrabold">
-                {formatPrice(selectedEquipment.pricePerHour)} / giờ
-              </Title>
+              <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <LayoutOutlined className="text-[#C5A267]" />
+                  <span className="text-[10px] uppercase tracking-widest font-bold text-slate-400">
+                    Dữ liệu kho vận
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-y-6">
+                  <div>
+                    <span className="text-[9px] uppercase tracking-widest text-slate-300 block mb-1">
+                      Tổng thiết bị
+                    </span>
+                    <span className="text-sm font-bold text-[#0F172A]">
+                      {selectedEquipment.totalQty}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[9px] uppercase tracking-widest text-[#C5A267] block mb-1">
+                      Đang sẵn sàng
+                    </span>
+                    <span className="text-sm font-bold text-[#C5A267]">
+                      {selectedEquipment.availableQty}
+                    </span>
+                  </div>
+                </div>
+                <Progress
+                  percent={getStockPercent(
+                    selectedEquipment.availableQty,
+                    selectedEquipment.totalQty
+                  )}
+                  showInfo={false}
+                  strokeColor="#C5A267"
+                  size={[null, 2]}
+                />
+              </div>
+
+              <div className="pt-10 border-t border-slate-100 flex justify-between items-end">
+                <div>
+                  <span className="text-[10px] uppercase tracking-widest text-slate-400 font-bold block mb-2">
+                    Giá thuê đặc quyền
+                  </span>
+                  <Title
+                    level={1}
+                    className="!text-[#0F172A] !m-0 !font-light !text-4xl"
+                  >
+                    {formatPrice(selectedEquipment.pricePerHour)}{" "}
+                    <span className="text-sm text-[#C5A267]">/ giờ</span>
+                  </Title>
+                </div>
+              </div>
             </div>
           </div>
         )}
       </Modal>
-    </>
+    </div>
   );
 }

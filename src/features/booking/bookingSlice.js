@@ -290,6 +290,48 @@ export const getBookingExtensionOptions = createAsyncThunk(
   }
 );
 
+// 14) Get Extend Status - lấy thông tin gia hạn có thể
+export const getExtendStatus = createAsyncThunk(
+  "booking/getExtendStatus",
+  async (bookingId, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+      const res = await axiosInstance.get(`/bookings/${bookingId}/extension-options`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return res.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Không thể lấy trạng thái gia hạn" }
+      );
+    }
+  }
+);
+
+// 15) Extend Studio - gia hạn studio
+export const extendStudio = createAsyncThunk(
+  "booking/extendStudio",
+  async ({ bookingId, newEndTime }, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+
+      const res = await axiosInstance.post(
+        `/bookings/${bookingId}/extend`,
+        { newEndTime },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      return res.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Không thể gia hạn studio" }
+      );
+    }
+  }
+);
+
 // =========================================================
 // ================       INITIAL STATE     =================
 // =========================================================
@@ -541,6 +583,40 @@ const bookingSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
         state.extensionOptions = null;
+      })
+
+      // ================= GET EXTEND STATUS =================
+      .addCase(getExtendStatus.pending, (state) => {
+        state.loading = true;
+        state.extensionOptions = null;
+      })
+      .addCase(getExtendStatus.fulfilled, (state, action) => {
+        state.loading = false;
+        state.extensionOptions = action.payload;
+      })
+      .addCase(getExtendStatus.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.extensionOptions = null;
+      })
+
+      // ================= EXTEND STUDIO =================
+      .addCase(extendStudio.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(extendStudio.fulfilled, (state, action) => {
+        state.loading = false;
+        const updated = action.payload.booking || action.payload;
+
+        state.currentBooking = updated;
+        state.myBookings = state.myBookings.map((b) =>
+          b._id === updated._id ? updated : b
+        );
+      })
+      .addCase(extendStudio.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });

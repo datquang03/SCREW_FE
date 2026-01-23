@@ -36,7 +36,7 @@ const TestimonialsSection = () => {
   return (
     <Section
       ref={ref}
-      className="relative bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 py-12 md:py-16 px-4 md:px-6 lg:px-16 overflow-hidden"
+      className="relative bg-[#0F172A] py-24 px-4 md:px-6 lg:px-16 overflow-hidden"
       badge="Phản hồi từ khách hàng"
       title="Khách hàng nói gì về S+ Studio"
       subtitle="Những chia sẻ từ các khách hàng đã thuê studio tại S+ Studio"
@@ -45,7 +45,7 @@ const TestimonialsSection = () => {
       {/* Animated background */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
-          className="absolute top-0 left-1/4 w-96 h-96 bg-yellow-400/10 rounded-full blur-3xl"
+          className="absolute top-0 left-1/4 w-96 h-96 bg-[#C5A267]/10 rounded-full blur-3xl"
           animate={{
             x: [0, 50, 0],
             y: [0, 30, 0],
@@ -58,7 +58,7 @@ const TestimonialsSection = () => {
           }}
         />
         <motion.div
-          className="absolute bottom-0 right-1/4 w-96 h-96 bg-yellow-500/10 rounded-full blur-3xl"
+          className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#C5A267]/10 rounded-full blur-3xl"
           animate={{
             x: [0, -50, 0],
             y: [0, -30, 0],
@@ -78,16 +78,16 @@ const TestimonialsSection = () => {
         {/* Buttons */}
         <button
           onClick={scrollLeft}
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-20 bg-white/20 hover:bg-white/40 p-3 rounded-full backdrop-blur-md transition"
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-20 bg-[#0F172A] hover:bg-[#C5A267] p-3 backdrop-blur-md transition border border-[#C5A267]"
         >
-          ◀
+          <span className="text-[#C5A267] hover:text-[#0F172A]">◀</span>
         </button>
 
         <button
           onClick={scrollRight}
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-20 bg-white/20 hover:bg-white/40 p-3 rounded-full backdrop-blur-md transition"
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-20 bg-[#0F172A] hover:bg-[#C5A267] p-3 backdrop-blur-md transition border border-[#C5A267]"
         >
-          ▶
+          <span className="text-[#C5A267] hover:text-[#0F172A]">▶</span>
         </button>
 
         {/* Horizontal slider */}
@@ -122,7 +122,7 @@ const TestimonialsSection = () => {
                 style={{ perspective: 1000, transformStyle: "preserve-3d" }}
                 className="h-full"
               >
-                <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-8 text-center h-full shadow-2xl hover:bg-white/15 transition-all duration-300">
+                <div className="bg-white border border-slate-100 p-8 text-center h-full shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] hover:border-[#C5A267] transition-all duration-300">
 
                   {/* Quote icon */}
                   <motion.div
@@ -131,12 +131,12 @@ const TestimonialsSection = () => {
                     transition={{ delay: index * 0.15 + 0.3, type: "spring" }}
                     className="flex justify-center mb-6"
                   >
-                    <div className="w-16 h-16 rounded-full bg-yellow-400/20 flex items-center justify-center">
-                      <span className="text-5xl text-yellow-400 font-serif leading-none">"</span>
+                    <div className="w-16 h-16 bg-[#C5A267]/20 flex items-center justify-center">
+                      <span className="text-5xl text-[#C5A267] font-serif leading-none">"</span>
                     </div>
                   </motion.div>
 
-                  <Paragraph className="italic text-gray-200 text-base leading-relaxed mb-6 min-h-[100px]">
+                  <Paragraph className="italic text-slate-700 text-base leading-relaxed mb-6 min-h-[100px]">
                     "{testimonial.quote}"
                   </Paragraph>
 
@@ -144,7 +144,7 @@ const TestimonialsSection = () => {
                     <Rate
                       disabled
                       defaultValue={testimonial.rating}
-                      className="text-yellow-400"
+                      className="text-[#C5A267]"
                     />
                   </div>
 
@@ -155,15 +155,15 @@ const TestimonialsSection = () => {
                     <Avatar
                       size={64}
                       src={testimonial.avatar}
-                      className="border-2 border-yellow-400/50 shadow-lg"
+                      className="border-2 border-[#C5A267] shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)]"
                     />
                   </motion.div>
 
-                  <Title level={5} className="mt-4 mb-1 font-bold text-white text-lg">
+                  <Title level={5} className="mt-4 mb-1 font-semibold text-[#0F172A] text-lg">
                     {testimonial.name}
                   </Title>
 
-                  <Paragraph className="text-gray-400 text-sm">
+                  <Paragraph className="text-slate-600 text-sm">
                     {testimonial.title}
                   </Paragraph>
 

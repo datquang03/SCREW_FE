@@ -31,6 +31,8 @@ import {
 import { GiMoneyStack } from "react-icons/gi";
 import { AiOutlineProfile, AiOutlineAudit } from "react-icons/ai";
 import { RiCustomerService2Fill, RiRefund2Line } from "react-icons/ri";
+import { LuNotebookPen } from "react-icons/lu";
+import { FaUsers } from "react-icons/fa";
 import { logout } from "../../features/auth/authSlice";
 import {
   getNotifications,
@@ -79,6 +81,7 @@ const getMenuItems = (role) => {
     staff: [
       { key: "dashboard", icon: <FiHome />, label: "Bảng điều khiển", path: "/dashboard/staff" },
       { key: "orders", icon: <FiShoppingBag />, label: "Quản lý đơn", path: "/dashboard/staff/order" },
+      { key: "users", icon: <FaUsers />, label: "Quản lý người dùng", path: "/dashboard/staff/user" },
       { key: "schedule", icon: <FiCalendar />, label: "Lịch làm việc", path: "/dashboard/staff/schedule" },
       { key: "studios", icon: <FiVideo />, label: "Quản lý Studio", path: "/dashboard/staff/studios" },
       { key: "setdesign", icon: <MdDesignServices />, label: "Quản lý Set Design", path: "/dashboard/staff/setdesign" },
@@ -88,12 +91,16 @@ const getMenuItems = (role) => {
       { key: "promotion", icon: <MdOutlineDiscount />, label: "Mã giảm giá", path: "/dashboard/staff/promotion" },
       { key: "transaction", icon: <GiMoneyStack />, label: "Quản lý giao dịch", path: "/dashboard/staff/transaction" },
       { key: "refunds", icon: <RiRefund2Line />, label: "Yêu cầu hoàn tiền", path: "/dashboard/staff/refunds" },
+      { key: "report", icon: <LuNotebookPen />, label: "Báo cáo", path: "/dashboard/staff/report" },
       { key: "profile", icon: <AiOutlineProfile />, label: "Hồ sơ", path: "/dashboard/staff/profile" },
     ],
     customer: [
       { key: "bookings", icon: <FiCalendar />, label: "Đơn của tôi", path: "/dashboard/customer/bookings" },
-      { key: "history", icon: <FiClock />, label: "Lịch sử thuê", path: "/dashboard/customer/history" },
-      { key: "custom-requests", icon: <RiCustomerService2Fill />, label: "Yêu cầu Set Design", path: "/dashboard/customer/custom-requests" },
+      { key: "history", icon: <FiClock />, label: "Lịch sử giao dịch", path: "/dashboard/customer/history" },
+      { key: "reports", icon: <FiBriefcase />, label: "Đơn báo cáo", path: "/dashboard/customer/reports" },
+      { key: "custom-requests", icon: <AiOutlineAudit />, label: "Yêu cầu Set Design", path: "/dashboard/customer/custom-requests" },
+      { key: "refund-requests", icon: <RiRefund2Line />, label: "Yêu cầu hoàn tiền", path: "/dashboard/customer/refund-requests" },
+      { key: "set-designs-bookings", icon: <MdDesignServices />, label: "Lịch sử giao dịch Set Design", path: "/dashboard/customer/set-designs/bookings" },
       { key: "profile", icon: <FiUser />, label: "Hồ sơ", path: "/dashboard/customer/profile" },
     ],
     admin: [

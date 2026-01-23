@@ -65,10 +65,25 @@ const SetDesignPage = () => {
   }
 
   return (
-    <div className="py-12 md:py-20 bg-white">
-      <div className="relative max-w-7xl mx-auto px-4">
+    <div className="bg-[#FCFBFA] min-h-screen py-24">
+      {/* Navy Header */}
+      <div className="bg-[#0F172A] py-24 mb-16">
+        <div className="max-w-7xl mx-auto px-6 text-center">
+          <p className="text-[10px] uppercase tracking-[0.4em] text-[#C5A267] font-bold mb-4">
+            Set Designs
+          </p>
+          <h1 className="text-5xl font-semibold text-white mb-4">
+            Set Design
+          </h1>
+          <p className="text-lg text-white max-w-3xl mx-auto">
+            Khám phá các thiết kế set chuyên nghiệp cho dự án của bạn
+          </p>
+        </div>
+      </div>
+
+      <div className="relative max-w-7xl mx-auto px-6">
         <div
-          className="relative overflow-hidden rounded-[36px]"
+          className="relative overflow-hidden"
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
         >
@@ -89,13 +104,13 @@ const SetDesignPage = () => {
                   }}
                 >
                   <div
-                    className="h-full rounded-[28px] border border-amber-100 bg-white shadow-[0_16px_40px_-20px_rgba(0,0,0,0.15)] transition-all duration-300 hover:-translate-y-1.5 group flex flex-col"
+                    className="h-full bg-white border border-slate-100 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] transition-all duration-300 hover:border-[#C5A267] group flex flex-col"
                     onClick={() =>
                       (window.location.href = `/set-design/${design._id}`)
                     }
                   >
                     {/* IMAGE */}
-                    <div className="relative w-full h-48 rounded-[24px] overflow-hidden mb-4 flex-shrink-0">
+                    <div className="relative w-full h-48 overflow-hidden flex-shrink-0 transition-all duration-500">
                       {design.images?.[0] ? (
                         <img
                           src={design.images[0]}
@@ -103,48 +118,47 @@ const SetDesignPage = () => {
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                         />
                       ) : (
-                        <div className="w-full h-full bg-amber-50 flex items-center justify-center font-bold text-amber-600">
+                        <div className="w-full h-full bg-slate-100 flex items-center justify-center font-semibold text-slate-600">
                           {design.name}
                         </div>
                       )}
-                      <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
                     {/* BODY */}
-                    <div className="flex-1 flex flex-col justify-between px-4 py-2">
-                      <span className="inline-flex w-fit px-3 py-1 bg-amber-50 border border-amber-100 rounded-full text-xs font-semibold text-amber-700 mb-2">
+                    <div className="flex-1 flex flex-col justify-between px-6 py-6">
+                      <span className="inline-flex w-fit text-[9px] uppercase tracking-[0.3em] text-[#C5A267] font-bold mb-3">
                         Set Design nổi bật
                       </span>
-                      <h3 className="text-lg font-bold text-gray-900 line-clamp-2 mb-2 min-h-[48px] flex items-center">
+                      <h3 className="text-xl font-semibold text-[#0F172A] line-clamp-2 mb-3 min-h-[48px] flex items-center">
                         {design.name}
                       </h3>
-                      <p className="text-sm text-gray-600 line-clamp-2 mb-2 min-h-[40px] flex items-center">
+                      <p className="text-sm text-slate-600 line-clamp-2 mb-4 min-h-[40px] flex items-center">
                         {design.description?.length > 80
                           ? design.description.slice(0, 80) + "..."
                           : design.description}
                       </p>
-                      <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 mb-2 min-h-[24px]">
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 mb-2 min-h-[24px]">
                         {design.category && (
-                          <span className="inline-block bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full font-semibold">
+                          <span className="inline-block border border-slate-200 px-3 py-1 font-semibold uppercase tracking-wider">
                             {design.category}
                           </span>
                         )}
-                        <span className="inline-block bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-semibold">
+                        <span className="inline-block border border-slate-200 px-3 py-1 font-semibold uppercase tracking-wider">
                           {design.price?.toLocaleString()}đ
                         </span>
                       </div>
                     </div>
                     {/* PRICE + CTA */}
-                    <div className="px-4 pb-6 flex flex-col gap-2">
-                      <div className="text-xs text-gray-500">Giá từ</div>
-                      <div className="text-2xl font-extrabold text-amber-600 mb-1">
+                    <div className="px-6 pb-6 flex flex-col gap-3">
+                      <div className="text-[9px] uppercase tracking-[0.3em] text-slate-400 font-bold">Giá từ</div>
+                      <div className="text-2xl font-semibold text-[#C5A267] mb-2">
                         {design.price?.toLocaleString("vi-VN")}₫
-                        <span className="text-sm text-gray-500 ml-1">
+                        <span className="text-sm text-slate-500 ml-1">
                           / thiết kế
                         </span>
                       </div>
                       <a
                         href={`/set-design/${design._id}`}
-                        className="w-full h-12 bg-amber-500 hover:bg-amber-600 border-none rounded-2xl font-semibold text-base flex items-center justify-center gap-2 shadow-none text-white transition-all py-2 px-4"
+                        className="w-full h-12 bg-[#0F172A] hover:bg-[#C5A267] font-semibold text-sm uppercase tracking-[0.2em] flex items-center justify-center gap-2 text-[#C5A267] hover:text-[#0F172A] transition-all duration-300"
                         style={{ marginTop: "auto" }}
                       >
                         Xem chi tiết
@@ -160,15 +174,15 @@ const SetDesignPage = () => {
             <>
               <button
                 onClick={goPrev}
-                className="absolute left-5 top-1/2 -translate-y-1/2 bg-white/90 rounded-full p-4 shadow-lg"
+                className="absolute left-5 top-1/2 -translate-y-1/2 bg-[#0F172A] hover:bg-[#C5A267] p-4 shadow-lg transition-colors duration-300"
               >
-                <FiChevronLeft size={30} className="text-amber-700" />
+                <FiChevronLeft size={30} className="text-[#C5A267] hover:text-[#0F172A]" />
               </button>
               <button
                 onClick={goNext}
-                className="absolute right-5 top-1/2 -translate-y-1/2 bg-white/90 rounded-full p-4 shadow-lg"
+                className="absolute right-5 top-1/2 -translate-y-1/2 bg-[#0F172A] hover:bg-[#C5A267] p-4 shadow-lg transition-colors duration-300"
               >
-                <FiChevronRight size={30} className="text-amber-700" />
+                <FiChevronRight size={30} className="text-[#C5A267] hover:text-[#0F172A]" />
               </button>
             </>
           )}

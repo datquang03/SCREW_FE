@@ -14,11 +14,11 @@ import PromotionSection from "./components/PromotionSection";
 
 const Homepage = () => {
   return (
-    <div className="relative min-h-screen text-gray-900 overflow-hidden bg-white">
+    <div className="relative min-h-screen text-gray-900 overflow-hidden bg-[#FCFBFA]">
       {/* Quick actions */}
       <div className="relative container mx-auto px-4 md:px-6 lg:px-10 pt-8 md:pt-10">
-        <div className="hidden lg:flex items-center justify-between gap-6 rounded-3xl bg-white shadow-sm border border-slate-100 px-8 py-6">
-          <div className="flex items-center gap-3 text-base md:text-lg font-bold text-amber-600">
+        <div className="hidden lg:flex items-center justify-between gap-6 bg-white shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] border border-slate-100 px-8 py-6">
+          <div className="flex items-center gap-3 text-base md:text-lg font-semibold text-[#C5A267] uppercase tracking-[0.2em]">
             <ArrowRightOutlined className="text-xl" /> Khám phá nhanh
           </div>
           <div className="flex items-center gap-4">
@@ -30,7 +30,7 @@ const Homepage = () => {
               <a
                 key={item.label}
                 href={item.href}
-                className="group inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-white border border-slate-200 text-slate-800 font-semibold text-sm md:text-base hover:border-amber-300 hover:text-amber-700"
+                className="group inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 text-slate-800 font-semibold text-sm md:text-base hover:border-[#C5A267] hover:text-[#C5A267] transition-all"
               >
                 <span className="text-lg md:text-xl">{item.icon}</span>
                 <span>{item.label}</span>

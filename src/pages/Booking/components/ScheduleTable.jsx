@@ -148,7 +148,7 @@ const ScheduleTable = ({
         </button>
         
         <div className="flex flex-col items-center">
-          <h3 className="text-xl font-extrabold text-gray-800 m-0 uppercase tracking-tight">
+          <h3 className="text-xl font-extrabold text-gray-800 m-0 uppercase">
             Tháng {currentMonth.format("MM / YYYY")}
           </h3>
           <span className="text-xs text-gray-500 font-medium mt-0.5">Lịch đặt studio</span>

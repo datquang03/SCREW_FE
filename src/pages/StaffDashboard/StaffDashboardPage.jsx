@@ -36,7 +36,7 @@ const StaffDashboardPage = () => {
         <div className="absolute -top-10 -left-10 w-40 h-40 rounded-full bg-teal-300/30 blur-2xl" />
         <div className="absolute -bottom-12 -right-10 w-60 h-60 rounded-full bg-emerald-400/30 blur-3xl" />
         <div className="relative z-10">
-          <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3 tracking-tight">
+          <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3">
             Bảng điều khiển nhân viên
         </h1>
           <p className="text-base md:text-lg text-gray-700 font-medium">

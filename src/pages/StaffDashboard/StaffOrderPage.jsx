@@ -425,7 +425,7 @@ const StaffOrderPage = () => {
             <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-5 text-white relative">
               <div className="flex justify-between items-center z-10 relative">
                 <div>
-                  <h2 className="text-xl font-extrabold tracking-tight m-0">
+                  <h2 className="text-xl font-extrabold m-0">
                     ĐƠN ĐẶT CHỖ
                   </h2>
                   <p className="text-sm font-mono opacity-90 m-0">

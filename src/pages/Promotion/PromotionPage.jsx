@@ -24,12 +24,14 @@ const PromotionPage = () => {
       key: 'info',
       width: '30%',
       render: (_, record) => (
-        <div className="flex flex-col gap-1 pr-4">
-          <div className="flex items-center gap-2 flex-wrap">
-            <Text strong className="text-base">{record.name}</Text>
-            <Tag color="blue" className="m-0 font-bold">{record.code}</Tag>
+        <div className="flex flex-col gap-2 pr-4">
+          <div className="flex items-center gap-3 flex-wrap">
+            <Text strong className="text-base text-[#0F172A] font-semibold">{record.name}</Text>
+            <div className="bg-[#0F172A] px-3 py-1">
+              <span className="text-[#C5A267] text-xs font-bold tracking-widest uppercase">{record.code}</span>
+            </div>
           </div>
-          <Text type="secondary" className="text-sm text-gray-500 break-words whitespace-normal text-justify">
+          <Text className="text-sm text-slate-500 font-light leading-relaxed">
             {record.description}
           </Text>
         </div>
@@ -42,13 +44,13 @@ const PromotionPage = () => {
       align: 'center',
       render: (_, record) => (
         <div className="flex flex-col items-center justify-center h-full">
-          <Text type="danger" strong style={{ fontSize: '20px' }}>
+          <Text strong className="text-2xl text-[#C5A267] font-semibold">
             {record.discountValue?.toLocaleString('vi-VN')}
             {record.discountType === 'percentage' ? '%' : '₫'}
           </Text>
-          <div className="text-xs text-gray-500">
-            {record.discountType === 'percentage' ? 'Giảm theo %' : 'Giảm trực tiếp'}
-          </div>
+          <span className="text-[9px] text-slate-400 uppercase tracking-widest font-bold mt-1">
+            {record.discountType === 'percentage' ? 'Phần trăm' : 'Trực tiếp'}
+          </span>
         </div>
       )
     },
@@ -57,20 +59,22 @@ const PromotionPage = () => {
       key: 'conditions',
       width: '30%',
       render: (_, record) => (
-        <div className="text-sm space-y-2 bg-gray-50 p-2 rounded-lg border border-gray-100">
-          <div className="flex justify-between items-center border-b border-gray-200 pb-1 border-dashed">
-             <span className="text-gray-500 text-xs">Đơn tối thiểu</span>
-             <Text strong>{record.minOrderValue?.toLocaleString('vi-VN')}₫</Text>
+        <div className="text-sm space-y-3 bg-[#F8F9FA] p-4 border border-slate-100">
+          <div className="flex justify-between items-center border-b border-slate-200 pb-2">
+             <span className="text-[9px] uppercase tracking-widest text-slate-400 font-bold">Đơn tối thiểu</span>
+             <Text strong className="text-[#0F172A]">{record.minOrderValue?.toLocaleString('vi-VN')}₫</Text>
           </div>
           {record.maxDiscount && (
-             <div className="flex justify-between items-center border-b border-gray-200 pb-1 border-dashed">
-                <span className="text-gray-500 text-xs">Giảm tối đa</span>
-                <Text strong>{record.maxDiscount?.toLocaleString('vi-VN')}₫</Text>
+             <div className="flex justify-between items-center border-b border-slate-200 pb-2">
+                <span className="text-[9px] uppercase tracking-widest text-slate-400 font-bold">Giảm tối đa</span>
+                <Text strong className="text-[#0F172A]">{record.maxDiscount?.toLocaleString('vi-VN')}₫</Text>
              </div>
           )}
-          <div className="pt-1">
-             <span className="text-gray-500 text-xs mr-2">Phạm vi:</span>
-             <span className="font-medium">{record.applicableFor === 'all' ? 'Tất cả dịch vụ' : record.applicableFor}</span>
+          <div className="pt-2">
+             <span className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mr-2">Phạm vi:</span>
+             <span className="text-sm font-semibold text-[#0F172A]">
+               {record.applicableFor === 'all' ? 'Tất cả dịch vụ' : record.applicableFor}
+             </span>
           </div>
         </div>
       )
@@ -80,22 +84,34 @@ const PromotionPage = () => {
       key: 'meta',
       width: '25%',
       render: (_, record) => (
-        <div className="text-sm space-y-3">
+        <div className="text-sm space-y-4">
           <div>
-            <div className="flex items-center text-xs text-gray-500 mb-1 gap-1">
-                <FiClock /> Thời gian hiệu lực
+            <div className="flex items-center text-[9px] text-slate-400 uppercase tracking-widest font-bold mb-2 gap-2">
+                <FiClock className="text-[#C5A267]" /> Hiệu lực
             </div>
-            <div className="font-medium">{dayjs(record.startDate).format('DD/MM/YYYY')} - {dayjs(record.endDate).format('DD/MM/YYYY')}</div>
+            <div className="font-semibold text-[#0F172A]">
+              {dayjs(record.startDate).format('DD/MM/YYYY')} - {dayjs(record.endDate).format('DD/MM/YYYY')}
+            </div>
           </div>
           <div className="flex gap-2 flex-wrap">
              {record.usageLimit ? (
-                 <Tag color="orange" className="m-0 border-0">{record.usageLimit} lượt</Tag>
+                 <div className="bg-[#0F172A] px-3 py-1 border border-slate-100">
+                   <span className="text-[#C5A267] text-xs font-bold tracking-widest uppercase">
+                     {record.usageLimit} lượt
+                   </span>
+                 </div>
              ) : (
-                 <Tag color="cyan" className="m-0 border-0">Không giới hạn</Tag>
+                 <div className="bg-[#C5A267] px-3 py-1">
+                   <span className="text-[#0F172A] text-xs font-bold tracking-widest uppercase">
+                     Không giới hạn
+                   </span>
+                 </div>
              )}
-             <Tag color={record.isActive ? 'success' : 'error'} className="m-0 border-0">
-                 {record.isActive ? 'Đang hoạt động' : 'Ngưng hoạt động'}
-             </Tag>
+             <div className={`px-3 py-1 border ${record.isActive ? 'border-emerald-500 bg-emerald-50' : 'border-rose-500 bg-rose-50'}`}>
+               <span className={`text-xs font-bold tracking-widest uppercase ${record.isActive ? 'text-emerald-700' : 'text-rose-700'}`}>
+                 {record.isActive ? 'Hoạt động' : 'Ngưng'}
+               </span>
+             </div>
           </div>
         </div>
       )
@@ -103,107 +119,160 @@ const PromotionPage = () => {
   ]
 
   return (
-      <div className="pb-10">
-        {/* HERO SECTION */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-12 mb-8 shadow-lg">
-           <div className="container mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center justify-between">
-              <div className="mb-6 md:mb-0">
-                  <div className="flex items-center gap-3 mb-2">
-                       <FiGift className="text-3xl text-yellow-300 animate-bounce" />
-                       <Title level={2} style={{ color: 'white', margin: 0 }}>Kho Ưu Đãi & Khuyến Mãi</Title>
-                  </div>
-                  <Paragraph className="text-lg max-w-2xl" style={{ color: 'white' }}>
-                    Khám phá các mã giảm giá và chương trình ưu đãi độc quyền dành riêng cho bạn tại S+ Studio. 
-                    Lưu ngay mã để sử dụng cho lần đặt lịch tiếp theo!
+      <div className="bg-[#FCFBFA] min-h-screen selection:bg-[#C5A267]/20">
+        {/* EXECUTIVE HEADER */}
+        <div className="bg-[#0F172A] py-24 relative overflow-hidden">
+           <div className="absolute top-0 right-0 w-64 h-64 bg-[#C5A267]/5 rounded-bl-full"></div>
+           <div className="container mx-auto px-6 relative z-10">
+              <div className="max-w-4xl mx-auto text-center space-y-6">
+                  <p className="text-[10px] uppercase tracking-[0.5em] text-[#C5A267] font-bold">
+                    Exclusive Offers
+                  </p>
+                  <Title level={1} className="!text-5xl md:!text-6xl !font-semibold !text-white !mb-0">
+                    Ưu Đãi & Khuyến Mãi
+                  </Title>
+                  <div className="h-px w-24 bg-[#C5A267] mx-auto opacity-40"></div>
+                  <Paragraph className="text-slate-400 text-sm uppercase tracking-widest max-w-2xl mx-auto">
+                    Khám phá các mã giảm giá độc quyền dành riêng cho bạn
                   </Paragraph>
-              </div>
-              <div className="hidden md:block">
-                  <FiTag className="text-[120px] text-white opacity-20 rotate-12" />
               </div>
            </div>
         </div>
 
-        <div className="container mx-auto px-4 md:px-6">
+        <div className="container mx-auto px-6 py-24">
             {/* DESKTOP TABLE VIEW */}
             <div className="hidden md:block">
-                <Card className="shadow-lg rounded-2xl border-0 overflow-hidden">
-                    <div className="p-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
-                        <Title level={4} className="m-0 text-gray-700">Danh sách mã hiệu lực</Title>
-                        <Tag color="blue">{dataSource.length} mã khả dụng</Tag>
+                <div className="bg-white border border-slate-100 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] overflow-hidden">
+                    <div className="px-10 py-8 bg-[#F8F9FA] border-b border-slate-100 flex items-center justify-between">
+                        <div>
+                          <p className="text-[9px] uppercase tracking-[0.4em] text-[#C5A267] font-bold mb-2">
+                            Danh mục ưu đãi
+                          </p>
+                          <Title level={4} className="!m-0 !text-[#0F172A] !font-semibold">Mã khuyến mãi hiệu lực</Title>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-[9px] uppercase tracking-widest text-slate-400 font-bold block mb-1">
+                            Tổng cộng
+                          </span>
+                          <span className="text-2xl font-semibold text-[#C5A267]">{dataSource.length}</span>
+                          <span className="text-sm text-slate-400 ml-2">mã</span>
+                        </div>
                     </div>
                     <Table 
                     columns={columns} 
                     dataSource={dataSource} 
                     rowKey="_id"
                     loading={loading}
-                    pagination={{ pageSize: 10 }}
+                    pagination={{ 
+                      pageSize: 10,
+                      className: "!px-10 !py-6"
+                    }}
+                    className="executive-table"
                     />
-                </Card>
+                </div>
             </div>
 
             {/* MOBILE CARD VIEW */}
-            <div className="block md:hidden space-y-4">
-                <div className="flex items-center justify-between mb-4">
-                     <Title level={4} className="m-0">Mã ưu đãi của bạn</Title>
-                     <span className="text-gray-500 text-sm">{dataSource.length} mã</span>
+            <div className="block md:hidden space-y-6">
+                <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+                     <div>
+                       <p className="text-[9px] uppercase tracking-[0.4em] text-[#C5A267] font-bold mb-1">
+                         Danh mục
+                       </p>
+                       <Title level={4} className="!m-0 !font-semibold !text-[#0F172A]">Mã ưu đãi</Title>
+                     </div>
+                     <div className="text-right">
+                       <span className="text-[9px] uppercase tracking-widest text-slate-400 font-bold block">Tổng</span>
+                       <span className="text-xl font-semibold text-[#C5A267]">{dataSource.length}</span>
+                     </div>
                 </div>
                 {loading ? (
-                    <div className="text-center py-10"><Spin size="large" /></div>
+                    <div className="text-center py-20 bg-white border border-slate-100">
+                      <Spin size="large" />
+                      <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mt-4">Đang tải dữ liệu...</p>
+                    </div>
                 ) : dataSource.length === 0 ? (
-                    <div className="text-center text-gray-500 py-10 bg-gray-50 rounded-lg">Hiện chưa có khuyến mãi nào</div>
+                    <div className="text-center py-20 bg-white border border-slate-100">
+                      <FiGift className="text-5xl text-slate-300 mx-auto mb-4" />
+                      <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">
+                        Hiện chưa có khuyến mãi
+                      </p>
+                    </div>
                 ) : (
                     dataSource.map((item) => (
-                        <Card key={item._id} className="shadow-md rounded-xl border-l-[6px] border-blue-600 overflow-hidden transition-all active:scale-[0.98]">
-                        <div className="flex justify-between items-start mb-3">
-                            <div className="flex-1 mr-2">
-                                <Text strong className="text-lg block mb-1">{item.name}</Text>
-                                <Tag color="blue" className="text-sm font-mono">{item.code}</Tag>
+                        <div key={item._id} className="bg-white border border-slate-100 overflow-hidden shadow-sm transition-all duration-500 hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)] active:scale-[0.98]">
+                        <div className="p-6 space-y-6">
+                          {/* Header */}
+                          <div className="flex justify-between items-start gap-4 pb-6 border-b border-slate-50">
+                            <div className="flex-1">
+                                <p className="text-[9px] uppercase tracking-[0.3em] text-[#C5A267] font-bold mb-2">
+                                  Chương trình
+                                </p>
+                                <Text strong className="text-lg block mb-3 text-[#0F172A]">{item.name}</Text>
+                                <div className="inline-block bg-[#0F172A] px-4 py-1.5">
+                                  <span className="text-[#C5A267] text-xs font-bold tracking-widest uppercase">{item.code}</span>
+                                </div>
                             </div>
-                            <div className="text-right whitespace-nowrap">
-                                <Text type="danger" strong className="text-xl block">
+                            <div className="text-right">
+                                <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-1">
+                                  Mức giảm
+                                </p>
+                                <Text strong className="text-3xl block text-[#C5A267]">
                                     {item.discountValue?.toLocaleString('vi-VN')}
                                     {item.discountType === 'percentage' ? '%' : '₫'}
                                 </Text>
-                                <Text type="secondary" className="text-xs">
-                                    {item.discountType === 'percentage' ? 'Giảm' : 'Giảm trực tiếp'}
-                                </Text>
                             </div>
-                        </div>
+                          </div>
 
                         {item.description && (
-                            <div className="bg-gray-50 p-2 rounded text-sm text-gray-600 mb-3 flex items-start gap-2">
-                                <FiInfo className="mt-1 flex-shrink-0 text-blue-400" />
-                                <span>{item.description}</span>
+                            <div className="bg-[#F8F9FA] p-4 border-l-2 border-[#C5A267] text-sm text-slate-600 flex items-start gap-3">
+                                <FiInfo className="mt-0.5 flex-shrink-0 text-[#C5A267]" />
+                                <span className="font-light leading-relaxed">{item.description}</span>
                             </div>
                         )}
 
-                        <div className="grid grid-cols-2 gap-2 text-sm mb-3">
-                            <div className="bg-gray-50 p-2 rounded">
-                                <span className="text-gray-500 text-xs block">Đơn tối thiểu</span>
-                                <Text strong>{item.minOrderValue?.toLocaleString('vi-VN')}₫</Text>
+                        {/* Conditions */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="bg-[#F8F9FA] p-4 border border-slate-100">
+                                <span className="text-[9px] uppercase tracking-widest text-slate-400 font-bold block mb-2">
+                                  Đơn tối thiểu
+                                </span>
+                                <Text strong className="text-[#0F172A]">{item.minOrderValue?.toLocaleString('vi-VN')}₫</Text>
                             </div>
                             {item.maxDiscount && (
-                                <div className="bg-gray-50 p-2 rounded">
-                                    <span className="text-gray-500 text-xs block">Giảm tối đa</span>
-                                    <Text strong>{item.maxDiscount?.toLocaleString('vi-VN')}₫</Text>
+                                <div className="bg-[#F8F9FA] p-4 border border-slate-100">
+                                    <span className="text-[9px] uppercase tracking-widest text-slate-400 font-bold block mb-2">
+                                      Giảm tối đa
+                                    </span>
+                                    <Text strong className="text-[#0F172A]">{item.maxDiscount?.toLocaleString('vi-VN')}₫</Text>
                                 </div>
                             )}
                         </div>
 
-                        <div className="pt-3 border-t border-gray-100 flex justify-between items-center text-xs text-gray-500">
-                             <div className="flex items-center gap-1">
-                                <FiClock />
-                                <span>HSD: {dayjs(item.endDate).format('DD/MM/YYYY')}</span>
+                        {/* Footer */}
+                        <div className="pt-6 border-t border-slate-100 flex justify-between items-center">
+                             <div className="flex items-center gap-2 text-xs text-slate-400 uppercase tracking-widest">
+                                <FiClock className="text-[#C5A267]" />
+                                <span className="font-bold">HSD: {dayjs(item.endDate).format('DD/MM')}</span>
                              </div>
                              <div>
                                 {item.usageLimit ? (
-                                    <Tag color="orange" className="m-0 text-xs rounded-full px-2">{item.usageLimit} lượt</Tag>
+                                    <div className="bg-[#0F172A] px-3 py-1">
+                                      <span className="text-[#C5A267] text-xs font-bold tracking-widest uppercase">
+                                        {item.usageLimit} lượt
+                                      </span>
+                                    </div>
                                 ) : (
-                                    <Tag color="green" className="m-0 text-xs rounded-full px-2">Không giới hạn</Tag>
+                                    <div className="bg-[#C5A267] px-3 py-1">
+                                      <span className="text-[#0F172A] text-xs font-bold tracking-widest uppercase">
+                                        Không giới hạn
+                                      </span>
+                                    </div>
                                 )}
                              </div>
                         </div>
-                    </Card>
+                      </div>
+                    </div>
                 ))
             )}
         </div>

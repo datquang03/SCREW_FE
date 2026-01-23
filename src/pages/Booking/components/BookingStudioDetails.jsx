@@ -1,4 +1,3 @@
-// src/pages/Booking/components/BookingStudioDetails.jsx
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   Card,
@@ -22,11 +21,11 @@ import {
   CheckOutlined,
   ClockCircleOutlined,
   ArrowRightOutlined,
+  PlusCircleOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { motion } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
-
 import { getAvailableEquipment } from "../../../features/equipment/equipmentSlice";
 import { getActiveServices } from "../../../features/service/serviceSlice";
 import {
@@ -36,15 +35,12 @@ import {
 } from "../../../features/booking/bookingSlice";
 import { applyPromotionCode } from "../../../features/promotion/promotionSlice";
 
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 
 export default function BookingStudioDetails({ onNext, onBack }) {
   const dispatch = useDispatch();
-
-  // Lấy dữ liệu từ Redux
   const { currentStudio: studio } = useSelector((state) => state.studio);
   const draft = useSelector((state) => state.booking.draft);
-
   const { availableEquipments = [], loading: equipmentLoading } = useSelector(
     (state) => state.equipment
   );
@@ -58,7 +54,6 @@ export default function BookingStudioDetails({ onNext, onBack }) {
   const [applyingPromo, setApplyingPromo] = useState(false);
   const [discountAmount, setDiscountAmount] = useState(0);
 
-  // Lấy từ Redux draft
   const { startTime, endTime, details = [], promoId } = draft;
 
   const duration =
@@ -66,7 +61,6 @@ export default function BookingStudioDetails({ onNext, onBack }) {
       ? (new Date(endTime) - new Date(startTime)) / (1000 * 60 * 60)
       : 0;
 
-  // Tính giá
   const roomPrice = (studio?.basePricePerHour || 0) * duration;
 
   const equipmentPrice = details.reduce((sum, item) => {
@@ -87,31 +81,22 @@ export default function BookingStudioDetails({ onNext, onBack }) {
     return sum;
   }, 0);
 
-  // Load dữ liệu khi vào bước này
   useEffect(() => {
     if (studio?._id && startTime && endTime) {
       dispatch(
-        getAvailableEquipment({
-          studioId: studio._id,
-          startTime,
-          endTime,
-        })
+        getAvailableEquipment({ studioId: studio._id, startTime, endTime })
       );
     }
     dispatch(getActiveServices());
   }, [dispatch, studio?._id, startTime, endTime]);
 
-  // Khi chọn thiết bị
   const handleSelectEquipment = (equipment) => {
     const exists = details.find((d) => d.equipmentId === equipment._id);
-
     if (exists) {
-      // Bỏ chọn
       const newDetails = details.filter((d) => d.equipmentId !== equipment._id);
       dispatch(setBookingDetails(newDetails));
       message.info(`Đã bỏ ${equipment.name}`);
     } else {
-      // Thêm mới (ghi đè các thiết bị trước cùng loại)
       const newDetails = [
         ...details.filter((d) => d.detailType !== "equipment"),
         {
@@ -127,10 +112,8 @@ export default function BookingStudioDetails({ onNext, onBack }) {
     }
   };
 
-  // Khi chọn dịch vụ
   const handleServiceChange = (checked, service) => {
     let newDetails = [...details];
-
     if (checked) {
       newDetails.push({
         detailType: "extra_service",
@@ -139,31 +122,21 @@ export default function BookingStudioDetails({ onNext, onBack }) {
         pricePerUse: service.pricePerUse,
         quantity: 1,
       });
-      message.success(`Đã chọn dịch vụ ${service.name}`);
+      message.success(`Đã chọn ${service.name}`);
     } else {
       newDetails = newDetails.filter((d) => d.extraServiceId !== service._id);
-      message.info(`Đã bỏ dịch vụ ${service.name}`);
+      message.info(`Đã bỏ ${service.name}`);
     }
-
     dispatch(setBookingDetails(newDetails));
   };
 
-  // Tính lại totalPrice khi có thay đổi
   const totalPrice = roomPrice + equipmentPrice + servicePrice;
   const finalPrice = totalPrice - discountAmount;
 
-  // Áp dụng mã giảm giá với API thật
   const handleApplyPromo = async () => {
     const code = promoCode.trim().toUpperCase();
-    if (!code) {
-      message.warning("Vui lòng nhập mã giảm giá!");
-      return;
-    }
-
-    if (totalPrice <= 0) {
-      message.warning("Tổng tiền phải lớn hơn 0 để áp dụng mã giảm giá!");
-      return;
-    }
+    if (!code) return message.warning("Vui lòng nhập mã giảm giá!");
+    if (totalPrice <= 0) return message.warning("Tổng tiền không hợp lệ!");
 
     try {
       setApplyingPromo(true);
@@ -171,10 +144,10 @@ export default function BookingStudioDetails({ onNext, onBack }) {
         applyPromotionCode({ code, subtotal: totalPrice })
       ).unwrap();
 
-      // result có thể chứa: { discountAmount, promotion, ... }
       const discount = result.discountAmount || result.discount || 0;
       setDiscountAmount(discount);
       setAppliedPromotion(result.promotion || result);
+
       dispatch(
         applyPromo({
           promoId: result._id || result.id || result.promotion?._id,
@@ -182,10 +155,11 @@ export default function BookingStudioDetails({ onNext, onBack }) {
           discountAmount: discount,
         })
       );
-      message.success(`Áp dụng mã ${code} thành công! Giảm ${discount.toLocaleString()}₫`);
+
+      message.success(`Áp dụng thành công!`);
       setPromoCode("");
     } catch (err) {
-      message.error(err?.message || "Mã giảm giá không hợp lệ hoặc đã hết hạn!");
+      message.error(err?.message || "Mã giảm giá không hợp lệ!");
       setDiscountAmount(0);
       setAppliedPromotion(null);
     } finally {
@@ -193,7 +167,6 @@ export default function BookingStudioDetails({ onNext, onBack }) {
     }
   };
 
-  // Xóa mã giảm giá
   const handleRemovePromo = () => {
     setDiscountAmount(0);
     setAppliedPromotion(null);
@@ -203,19 +176,16 @@ export default function BookingStudioDetails({ onNext, onBack }) {
   };
 
   const formatTime = (iso) =>
-    iso ? dayjs(iso).format("HH:mm - dddd, DD/MM/YYYY") : "...";
+    iso ? dayjs(iso).format("HH:mm - DD/MM/YYYY") : "...";
 
-  // ------------- Custom horizontal slider logic -------------
   const scrollRef = useRef(null);
   const [visibleCount, setVisibleCount] = useState(3);
-  const gap = 24; // px gap between cards
-  const cardMinWidth = 260; // min width for each card
+  const gap = 32;
 
   const updateVisibleCount = useCallback(() => {
     const w = window.innerWidth;
-    // breakpoints similar to previous behavior
     if (w < 640) setVisibleCount(1);
-    else if (w < 768) setVisibleCount(2);
+    else if (w < 1024) setVisibleCount(2);
     else setVisibleCount(3);
   }, []);
 
@@ -228,307 +198,323 @@ export default function BookingStudioDetails({ onNext, onBack }) {
   const scrollByOne = (dir = "next") => {
     const el = scrollRef.current;
     if (!el) return;
-    // compute scroll amount by container width / visibleCount + gap
     const amount = Math.floor(el.clientWidth / visibleCount) + gap;
     el.scrollBy({ left: dir === "next" ? amount : -amount, behavior: "smooth" });
   };
-
-  // Optional: keyboard navigation for better accessibility
-  useEffect(() => {
-    const handler = (e) => {
-      if (e.key === "ArrowRight") scrollByOne("next");
-      if (e.key === "ArrowLeft") scrollByOne("prev");
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [visibleCount]);
-
-  // ensure scroll snaps nicely on mouse up / touch end
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    let isDown = false;
-    let startX = 0;
-    let scrollLeft = 0;
-
-    const onDown = (e) => {
-      isDown = true;
-      el.classList.add("grabbed");
-      startX = e.pageX ?? e.touches?.[0]?.pageX;
-      scrollLeft = el.scrollLeft;
-    };
-    const onMove = (e) => {
-      if (!isDown) return;
-      const x = e.pageX ?? e.touches?.[0]?.pageX;
-      const walk = startX - x;
-      el.scrollLeft = scrollLeft + walk;
-    };
-    const onUp = () => {
-      isDown = false;
-      el.classList.remove("grabbed");
-      // snap to nearest card (approx)
-      const cardWidth = Math.floor(el.clientWidth / visibleCount) + gap;
-      const idx = Math.round(el.scrollLeft / cardWidth);
-      el.scrollTo({ left: idx * cardWidth, behavior: "smooth" });
-    };
-
-    el.addEventListener("mousedown", onDown);
-    el.addEventListener("touchstart", onDown, { passive: true });
-    window.addEventListener("mousemove", onMove);
-    window.addEventListener("touchmove", onMove, { passive: true });
-    window.addEventListener("mouseup", onUp);
-    window.addEventListener("touchend", onUp);
-
-    return () => {
-      el.removeEventListener("mousedown", onDown);
-      el.removeEventListener("touchstart", onDown);
-      window.removeEventListener("mousemove", onMove);
-      window.removeEventListener("touchmove", onMove);
-      window.removeEventListener("mouseup", onUp);
-      window.removeEventListener("touchend", onUp);
-    };
-  }, [visibleCount, gap]);
-
-  // -----------------------------------------------------------
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      className="max-w-6xl mx-auto space-y-8 py-6"
+      className="max-w-7xl mx-auto space-y-12 py-10 px-4"
     >
-      {/* HEADER */}
-      <Card className="shadow-2xl bg-gradient-to-r from-indigo-600 to-purple-700 text-white rounded-3xl overflow-hidden">
-        <Row align="middle" justify="space-between" className="p-6">
-          <Col xs={24} md={14}>
-            <Title level={2} className="text-white mb-2">
-              {studio?.name || "Studio"}
+      {/* HEADER: Midnight Navy Luxury */}
+      <div className="bg-[#0F172A] border border-[#C5A267]/20 p-10 relative overflow-hidden shadow-2xl">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-[#C5A267]/5 rounded-full -mr-32 -mt-32"></div>
+        <Row align="middle" gutter={[32, 32]}>
+          <Col xs={24} md={16}>
+            <p className="text-[10px] uppercase tracking-[0.5em] text-[#C5A267] font-bold mb-4">
+              Lựa chọn dịch vụ
+            </p>
+            <Title
+              level={2}
+              className="!text-white !text-4xl !font-semibold !mb-6"
+            >
+              {studio?.name || "Studio không gian chuyên nghiệp"}
             </Title>
-            <Space size="large" className="text-white">
-              <Text strong className="text-lg">
-                {formatTime(startTime)} → {formatTime(endTime)}
-              </Text>
-              <Tag
-                color="white"
-                className="text-purple-700 text-lg font-bold px-4 py-1"
-              >
-                {duration.toFixed(1)} giờ
-              </Tag>
-            </Space>
+            <div className="flex flex-wrap items-center gap-6">
+              <div className="flex items-center gap-2 text-slate-400">
+                <ClockCircleOutlined className="text-[#C5A267]" />
+                <span className="text-xs uppercase tracking-widest">
+                  {formatTime(startTime)} → {formatTime(endTime)}
+                </span>
+              </div>
+              <span className="bg-[#C5A267]/10 text-[#C5A267] px-4 py-1 text-[10px] font-bold uppercase tracking-widest border border-[#C5A267]/20">
+                {duration.toFixed(1)} GIỜ THUÊ
+              </span>
+            </div>
           </Col>
-          <Col xs={24} md={10} className="text-right mt-4 md:mt-0">
-            <Text className="block text-xl opacity-90">Tiền thuê phòng</Text>
-            <Title level={1} className="m-0 text-white text-4xl">
+          <Col xs={24} md={8} className="md:text-right">
+            <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500 mb-2">
+              Tiền thuê phòng
+            </p>
+            <p className="text-4xl font-semibold text-white">
               {roomPrice.toLocaleString()}₫
-            </Title>
+            </p>
           </Col>
         </Row>
-      </Card>
+      </div>
 
-      {/* THIẾT BỊ - CUSTOM HORIZONTAL SLIDER */}
-      <Card title="Chọn thiết bị bổ sung" className="shadow-xl border-0">
-        {equipmentLoading ? (
-          <div className="relative">
-            <div className="flex gap-6 overflow-x-hidden px-14 py-4">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="flex-shrink-0 w-[260px] sm:w-[280px] md:w-[300px]">
-                  <Skeleton.Image 
-                    active 
-                    style={{ width: '100%', height: 260, borderRadius: '16px' }} 
-                  />
-                  <div className="mt-4 space-y-2">
-                    <Skeleton.Input active size="default" block />
-                    <Skeleton.Input active size="small" style={{ width: '60%' }} />
-                  </div>
-                </div>
-              ))}
-            </div>
+      {/* THIẾT BỊ SLIDER */}
+      <section className="space-y-8">
+        <div className="flex justify-between items-end">
+          <div className="space-y-2">
+            <h3 className="text-[10px] uppercase tracking-[0.4em] font-bold text-slate-400">
+              Thiết bị bổ trợ
+            </h3>
+            <p className="text-2xl font-semibold text-[#0F172A]">
+              Trang thiết bị chuyên nghiệp
+            </p>
           </div>
-        ) : availableEquipments.length === 0 ? (
-          <Empty description="Không có thiết bị nào khả dụng" />
-        ) : (
-          <div className="relative">
-            {/* Prev button */}
-            <button
-              aria-label="Prev equipment"
+          <div className="flex gap-2">
+            <Button
               onClick={() => scrollByOne("prev")}
-              className="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-white shadow-lg p-3 rounded-full hover:bg-gray-100"
-            >
-              <ArrowLeftOutlined />
-            </button>
-
-            {/* scroll container */}
-            <div
-              ref={scrollRef}
-              id="equipScroll"
-              className="flex gap-6 overflow-x-auto px-14 py-4 scrollbar-hide touch-pan-x"
-              style={{ 
-                scrollBehavior: "smooth",
-                scrollSnapType: "x mandatory"
-              }}
-            >
-              {availableEquipments.map((eq) => {
-                const isSelected = details.some(
-                  (d) => d.equipmentId === eq._id
-                );
-                const priceForDuration = Math.round(eq.pricePerHour * duration);
-
-                return (
-                  <div
-                    key={eq._id}
-                    onClick={() => setSelectedEquipment(eq)}
-                    className={`flex-shrink-0 w-[260px] sm:w-[280px] md:w-[300px] bg-white rounded-2xl overflow-hidden border-2 cursor-pointer transition-all group flex flex-col ${
-                      isSelected
-                        ? "border-blue-500 shadow-2xl ring-4 ring-blue-100"
-                        : "border-gray-200 hover:border-gray-400 hover:shadow-xl"
-                    }`}
-                    style={{ scrollSnapAlign: "start" }}
-                  >
-                    {/* Image container - Fixed height để tất cả hình ảnh cùng kích thước */}
-                    <div className="relative w-full bg-gray-50 overflow-hidden" style={{ height: '260px' }}>
-                      <img
-                        src={eq.image || "/placeholder-equipment.jpg"}
-                        alt={eq.name}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                        style={{ 
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover',
-                          objectPosition: 'center',
-                          display: 'block'
-                        }}
-                        onError={(e) => {
-                          e.target.src = "/placeholder-equipment.jpg";
-                        }}
-                      />
-                      {isSelected && (
-                        <div className="absolute inset-0 bg-blue-600/30 flex items-center justify-center z-10">
-                          <div className="bg-white rounded-full p-4 shadow-2xl">
-                            <CheckOutlined className="text-5xl text-blue-600" />
-                          </div>
-                        </div>
-                      )}
-                      <Tag
-                        color={eq.availableQty > 0 ? "green" : "red"}
-                        className="absolute bottom-3 left-3 font-bold z-10"
-                      >
-                        Còn {eq.availableQty}
-                      </Tag>
-                    </div>
-
-                    {/* Content - Fixed height để cards cùng chiều cao */}
-                    <div className="p-5 flex-1 flex flex-col justify-between min-h-[140px]">
-                      <Text strong className="block text-center text-lg mb-4 line-clamp-2">
-                        {eq.name}
-                      </Text>
-                      <div className="mt-auto flex justify-between items-center">
-                        <Tag color="green" icon={<ClockCircleOutlined />} className="text-sm">
-                          {(eq.pricePerHour / 1000).toLocaleString()}k/giờ
-                        </Tag>
-                        <Text strong className="text-blue-600 text-lg">
-                          {priceForDuration.toLocaleString()}₫
-                        </Text>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Next button */}
-            <button
-              aria-label="Next equipment"
+              icon={<ArrowLeftOutlined />}
+              className="!rounded-none !border-slate-100 hover:!border-[#C5A267]"
+            />
+            <Button
               onClick={() => scrollByOne("next")}
-              className="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-white shadow-lg p-3 rounded-full hover:bg-gray-100"
-            >
-              <ArrowRightOutlined />
-            </button>
+              icon={<ArrowRightOutlined />}
+              className="!rounded-none !border-slate-100 hover:!border-[#C5A267]"
+            />
           </div>
-        )}
-      </Card>
+        </div>
 
-      {/* DỊCH VỤ */}
-      <Card title="Dịch vụ bổ sung" className="shadow-xl border-0">
-        {serviceLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[1, 2, 3, 4].map((i) => (
-              <Card key={i} className="border border-gray-200">
-                <Skeleton active avatar paragraph={{ rows: 2 }} />
-              </Card>
-            ))}
-          </div>
-        ) : services.length === 0 ? (
-          <Empty description="Không có dịch vụ nào" />
+        {equipmentLoading ? (
+          <Skeleton active />
+        ) : availableEquipments.length === 0 ? (
+          <Empty description="Không có thiết bị" />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {services.map((svc) => {
-              const isSelected = details.some(
-                (d) => d.extraServiceId === svc._id
-              );
+          <div
+            ref={scrollRef}
+            className="flex gap-8 overflow-x-auto scrollbar-hide py-4 px-2"
+          >
+            {availableEquipments.map((eq) => {
+              const isSelected = details.some((d) => d.equipmentId === eq._id);
               return (
                 <div
-                  key={svc._id}
-                  onClick={() => handleServiceChange(!isSelected, svc)}
-                  className={`border rounded-2xl p-5 bg-white cursor-pointer transition-all hover:shadow-lg ${
+                  key={eq._id}
+                  onClick={() => setSelectedEquipment(eq)}
+                  className={`flex-shrink-0 w-[300px] bg-white border border-slate-100 group cursor-pointer transition-all duration-500 relative ${
                     isSelected
-                      ? "border-blue-500 shadow-xl ring-2 ring-blue-100"
-                      : ""
+                      ? "shadow-2xl shadow-[#C5A267]/10 !border-[#C5A267]/50"
+                      : "hover:shadow-xl"
                   }`}
                 >
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1 pr-4">
-                      <h3 className="text-lg font-bold">{svc.name}</h3>
-                      <p className="text-gray-600 mt-1">{svc.description}</p>
-                      <p className="mt-3 text-xl font-bold text-blue-600">
-                        {svc.pricePerUse.toLocaleString()}₫
-                      </p>
+                  <div className="aspect-[4/5] overflow-hidden transition-all duration-700">
+                    <img
+                      src={eq.image || "/placeholder.jpg"}
+                      alt={eq.name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
+                    />
+                  </div>
+                  {isSelected && (
+                    <div className="absolute top-4 right-4 bg-[#C5A267] text-white p-2 shadow-xl">
+                      <CheckOutlined />
                     </div>
-                    <Checkbox checked={isSelected} />
+                  )}
+                  <div className="p-6 space-y-4">
+                    <h4 className="font-semibold text-lg text-[#0F172A] leading-tight">
+                      {eq.name}
+                    </h4>
+                    <div className="flex justify-between items-center pt-4 border-t border-slate-50">
+                      <span className="text-[10px] uppercase tracking-widest font-bold text-slate-400">
+                        {(eq.pricePerHour / 1000)}K / GIỜ
+                      </span>
+                      <span className="text-sm font-bold text-[#C5A267]">
+                        {Math.round(eq.pricePerHour * duration).toLocaleString()}₫
+                      </span>
+                    </div>
                   </div>
                 </div>
               );
             })}
           </div>
         )}
-      </Card>
+      </section>
 
-      {/* MODAL CHI TIẾT THIẾT BỊ */}
+      {/* DỊCH VỤ DẠNG GRID */}
+      <section className="space-y-8">
+        <h3 className="text-[10px] uppercase tracking-[0.4em] font-bold text-slate-400">
+          Dịch vụ đặc quyền
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {services.map((svc) => {
+            const isSelected = details.some(
+              (d) => d.extraServiceId === svc._id
+            );
+            return (
+              <div
+                key={svc._id}
+                onClick={() => handleServiceChange(!isSelected, svc)}
+                className={`p-8 bg-white border border-slate-100 transition-all duration-500 cursor-pointer flex justify-between items-center group ${
+                  isSelected
+                    ? "shadow-xl !border-[#C5A267]/30 bg-[#F8F6F3]"
+                    : "hover:border-slate-300"
+                }`}
+              >
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-xl text-[#0F172A]">
+                    {svc.name}
+                  </h4>
+                  <p className="text-xs text-slate-400 font-light leading-relaxed max-w-xs">
+                    {svc.description}
+                  </p>
+                  <p className="text-[#C5A267] font-bold tracking-widest text-xs mt-4">
+                    {svc.pricePerUse.toLocaleString()}₫ / LẦN
+                  </p>
+                </div>
+                <div
+                  className={`w-8 h-8 flex items-center justify-center border transition-all ${
+                    isSelected
+                      ? "bg-[#0F172A] border-[#0F172A] text-[#C5A267]"
+                      : "border-slate-200 group-hover:border-[#C5A267]"
+                  }`}
+                >
+                  {isSelected && <CheckOutlined />}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* PROMO & TOTAL */}
+      <div className="grid lg:grid-cols-12 gap-12 pt-12 border-t border-slate-100">
+        <div className="lg:col-span-5 space-y-6">
+          <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-slate-400">
+            Mã ưu đãi
+          </h3>
+          {!appliedPromotion ? (
+            <div className="flex bg-[#F8F9FA] p-1">
+              <Input
+                placeholder="NHẬP MÃ GIẢM GIÁ..."
+                value={promoCode}
+                onChange={(e) => setPromoCode(e.target.value)}
+                className="!bg-transparent !border-none !shadow-none !text-[10px] !tracking-[0.2em] !font-bold"
+              />
+              <Button
+                onClick={handleApplyPromo}
+                loading={applyingPromo}
+                className="!bg-[#0F172A] !text-white !rounded-none !h-12 !px-8 !text-[10px] !uppercase !tracking-widest !border-none"
+              >
+                Áp dụng
+              </Button>
+            </div>
+          ) : (
+            <div className="bg-emerald-50 border border-emerald-100 p-6 flex justify-between items-center">
+              <div>
+                <p className="text-[10px] uppercase tracking-widest font-bold text-emerald-600 mb-1">
+                  Mã đã áp dụng
+                </p>
+                <p className="font-semibold text-lg">
+                  {appliedPromotion.code || promoId}
+                </p>
+              </div>
+              <Button
+                type="text"
+                onClick={handleRemovePromo}
+                className="!text-rose-500 !text-[10px] !uppercase !tracking-widest !font-bold"
+              >
+                Gỡ bỏ
+              </Button>
+            </div>
+          )}
+        </div>
+
+        <div className="lg:col-span-7">
+          <div className="bg-[#0F172A] p-10 shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-bl-full"></div>
+            <div className="space-y-6 text-white">
+              <div className="flex justify-between items-center opacity-50">
+                <span className="text-[10px] uppercase tracking-widest font-bold">
+                  Tổng cộng tạm tính
+                </span>
+                <span className="text-lg font-light tracking-tighter">
+                  {totalPrice.toLocaleString()}₫
+                </span>
+              </div>
+              {discountAmount > 0 && (
+                <div className="flex justify-between items-center text-emerald-400">
+                  <span className="text-[10px] uppercase tracking-widest font-bold">
+                    Chiết khấu ưu đãi
+                  </span>
+                  <span className="text-lg font-semibold">
+                    -{discountAmount.toLocaleString()}₫
+                  </span>
+                </div>
+              )}
+              <div className="h-px bg-white/10 my-6"></div>
+              <div className="flex justify-between items-end">
+                <div>
+                  <h3 className="text-[10px] uppercase tracking-[0.3em] text-[#C5A267] font-bold mb-2">
+                    Thành tiền cuối cùng
+                  </h3>
+                  <p className="text-5xl font-semibold text-white">
+                    {finalPrice.toLocaleString()}₫
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* NAVIGATION BUTTONS */}
+      <div className="flex justify-between pt-10">
+        <Button
+          onClick={onBack}
+          className="!h-14 !px-10 !rounded-none !border-slate-200 !text-[10px] !uppercase !tracking-widest !font-bold hover:!border-[#C5A267]"
+        >
+          Quay lại
+        </Button>
+        <Button
+          onClick={onNext}
+          className="!h-16 !px-16 !bg-[#0F172A] hover:!bg-[#C5A267] !text-white !rounded-none !border-none !shadow-2xl !text-[10px] !uppercase !tracking-[0.3em] !font-bold transition-all duration-500"
+        >
+          Tiếp tục thanh toán
+          <ArrowRightOutlined className="ml-4 text-xs" />
+        </Button>
+      </div>
+
+      {/* EQUIPMENT DETAIL MODAL */}
       <Modal
         open={!!selectedEquipment}
         onCancel={() => setSelectedEquipment(null)}
         footer={null}
-        width={900}
+        width={1000}
         centered
+        className="executive-modal"
       >
         {selectedEquipment && (
-          <div className="grid lg:grid-cols-2 gap-10">
-            <img
-              src={selectedEquipment.image || "/placeholder.jpg"}
-              alt={selectedEquipment.name}
-              className="w-full h-96 object-cover rounded-2xl"
-            />
-            <div className="space-y-6">
-              <Title level={2}>{selectedEquipment.name}</Title>
-              <Text className="text-lg block">
-                {selectedEquipment.description}
-              </Text>
-              <Divider />
-              <div className="text-lg">
-                <Text>Giá thuê/giờ: </Text>
-                <Text strong className="text-blue-600">
-                  {selectedEquipment.pricePerHour.toLocaleString()}₫
-                </Text>
+          <div className="grid lg:grid-cols-2 gap-12 p-6">
+            <div className="aspect-[4/5] overflow-hidden">
+              <img
+                src={selectedEquipment.image || "/placeholder.jpg"}
+                alt={selectedEquipment.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="space-y-8 flex flex-col justify-center">
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.4em] text-[#C5A267] font-bold mb-4">
+                  Chi tiết thiết bị
+                </p>
+                <Title
+                  level={2}
+                  className="!text-4xl !font-semibold"
+                >
+                  {selectedEquipment.name}
+                </Title>
               </div>
-              <div className="text-2xl font-bold text-blue-600">
-                Tổng:{" "}
-                {(selectedEquipment.pricePerHour * duration).toLocaleString()}₫
+              <Paragraph className="text-slate-400 font-light leading-relaxed">
+                {selectedEquipment.description}
+              </Paragraph>
+              <div className="py-8 border-y border-slate-100 flex justify-between items-baseline">
+                <span className="text-[10px] uppercase tracking-widest font-bold text-slate-400">
+                  Chi phí thuê
+                </span>
+                <span className="text-3xl font-semibold text-[#0F172A]">
+                  {(selectedEquipment.pricePerHour * duration).toLocaleString()}₫
+                </span>
               </div>
               <Button
-                type="primary"
-                size="large"
                 block
-                className="h-16 text-xl"
+                className={`!h-16 !rounded-none !text-[10px] !uppercase !tracking-[0.2em] !font-bold transition-all ${
+                  details.some((d) => d.equipmentId === selectedEquipment._id)
+                    ? "!bg-rose-500 !text-white !border-none"
+                    : "!bg-[#0F172A] !text-white !border-none hover:!bg-[#C5A267]"
+                }`}
                 onClick={() => {
                   handleSelectEquipment(selectedEquipment);
                   setSelectedEquipment(null);
@@ -536,125 +522,12 @@ export default function BookingStudioDetails({ onNext, onBack }) {
               >
                 {details.some((d) => d.equipmentId === selectedEquipment._id)
                   ? "Bỏ chọn thiết bị"
-                  : "Chọn thiết bị này"}
+                  : "Xác nhận chọn thiết bị"}
               </Button>
             </div>
           </div>
         )}
       </Modal>
-
-      {/* MÃ GIẢM GIÁ */}
-      <Card title="Mã giảm giá">
-        {!appliedPromotion ? (
-        <Space.Compact className="w-full">
-          <Input
-            placeholder="Nhập mã giảm giá..."
-            value={promoCode}
-            onChange={(e) => setPromoCode(e.target.value)}
-            prefix={<GiftOutlined />}
-            size="large"
-            onPressEnter={handleApplyPromo}
-              disabled={applyingPromo}
-          />
-            <Button
-              type="primary"
-              size="large"
-              onClick={handleApplyPromo}
-              loading={applyingPromo}
-            >
-            Áp dụng
-          </Button>
-        </Space.Compact>
-        ) : (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-4 bg-green-50 rounded-xl border border-green-200">
-              <div>
-                <Tag color="green" className="text-lg px-3 py-1 mb-2">
-                  {appliedPromotion.code || promoId}
-          </Tag>
-                <div className="text-green-700 font-semibold">
-                  Giảm {discountAmount.toLocaleString()}₫
-                </div>
-              </div>
-              <Button
-                type="text"
-                danger
-                onClick={handleRemovePromo}
-                size="small"
-              >
-                Xóa
-              </Button>
-            </div>
-          </div>
-        )}
-      </Card>
-
-      {/* TỔNG TIỀN */}
-      <Card className="bg-gradient-to-r from-purple-700 to-pink-600 text-white rounded-3xl p-8">
-        <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <div>
-            <Title level={3} className="text-white mb-0">
-              Tổng thanh toán
-            </Title>
-              <Text className="opacity-90 block mt-2">
-              {details.length > 0
-                ? `${details.filter((d) => d.detailType === "equipment").length} thiết bị + ${details.filter(
-                    (d) => d.detailType === "extra_service"
-                  ).length} dịch vụ`
-                : "Chưa chọn thêm"}
-            </Text>
-          </div>
-          </div>
-
-          <Divider className="bg-white/30 my-4" />
-
-          <div className="space-y-2">
-            <div className="flex justify-between items-center text-lg">
-              <Text className="opacity-90">Tổng tiền:</Text>
-              <Text className="font-semibold">{totalPrice.toLocaleString()}₫</Text>
-            </div>
-            {discountAmount > 0 && (
-              <div className="flex justify-between items-center text-lg">
-                <Text className="opacity-90">Giảm giá:</Text>
-                <Text className="font-semibold text-green-300">
-                  -{discountAmount.toLocaleString()}₫
-                </Text>
-              </div>
-            )}
-          </div>
-
-          <Divider className="bg-white/30 my-4" />
-
-          <div className="flex justify-between items-center">
-            <Text className="text-xl opacity-90">Thành tiền:</Text>
-            <Title level={1} className="text-white text-5xl font-bold m-0">
-              {finalPrice.toLocaleString()}₫
-          </Title>
-          </div>
-        </div>
-      </Card>
-
-      {/* NÚT ĐIỀU HƯỚNG */}
-      <div className="flex justify-between pt-6">
-        <Button size="large" icon={<ArrowLeftOutlined />} onClick={onBack}>
-          Quay lại
-        </Button>
-
-        <Button
-          type="primary"
-          size="large"
-          icon={<ArrowRightOutlined />}
-          className="px-12 text-xl font-bold rounded-xl shadow-2xl"
-          style={{
-            background: "linear-gradient(135deg, #667eea, #764ba2)",
-            border: "none",
-          }}
-          onClick={onNext}
-        >
-          Tiếp tục thanh toán
-        </Button>
-      </div>
     </motion.div>
   );
 }
