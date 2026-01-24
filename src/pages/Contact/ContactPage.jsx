@@ -66,7 +66,7 @@ const ContactPage = () => {
               Liên hệ với chúng tôi
             </Title>
             <div className="h-px w-24 bg-[#C5A267] mx-auto opacity-40"></div>
-            <Paragraph className="text-slate-400 text-sm uppercase tracking-widest max-w-2xl mx-auto">
+            <Paragraph className="!text-white text-sm uppercase tracking-widest max-w-2xl mx-auto">
               Phản hồi trong vòng 2 giờ làm việc
             </Paragraph>
           </motion.div>

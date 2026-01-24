@@ -34,10 +34,10 @@ return (
 value={value}
 onChange={(e) => setValue(e.target.value)}
 placeholder="Viết bình luận..."
-className="flex-1 p-3 rounded-2xl bg-white text-slate-900 border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-300"
+className="flex-1 p-4 bg-white text-[#0F172A] border-2 border-slate-200 outline-none focus:border-[#C5A267] focus:ring-2 focus:ring-[#C5A267]/20 transition-all"
 rows={3}
 />
-<button onClick={handleSubmit} className="bg-indigo-600 text-white px-4 py-2 rounded-full">Gửi</button>
+<button onClick={handleSubmit} className="bg-[#C5A267] hover:bg-[#A0826D] text-white px-6 py-3 font-bold transition-all shadow-md hover:shadow-lg">Gửi</button>
 </div>
 </motion.div>
 );

@@ -46,49 +46,55 @@ const SetDesignDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900/5">
-      <div className="relative isolate overflow-hidden bg-gradient-to-br from-indigo-900 via-slate-900 to-slate-950 text-white mt-4 lg:mt-6">
-        <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_20%_20%,rgba(99,102,241,0.35),transparent_35%),radial-gradient(circle_at_80%_0%,rgba(14,165,233,0.25),transparent_30%),radial-gradient(circle_at_50%_80%,rgba(16,185,129,0.2),transparent_30%)]" />
-        <div className="max-w-6xl mx-auto px-4 py-12 relative z-10">
+    <div className="min-h-screen bg-[#FCFBFA]">
+      <div className="relative isolate overflow-hidden bg-[#0F172A] text-white mt-4 lg:mt-6">
+        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_20%_20%,#1E293B_0%,transparent_50%),radial-gradient(circle_at_80%_0%,#334155_0%,transparent_40%)]" />
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#C5A267]/30 to-transparent" />
+        <div className="max-w-6xl mx-auto px-4 py-10 relative z-10">
           <div className="flex flex-col lg:flex-row items-start gap-6">
             <div className="flex-1 space-y-3">
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-200">Set Design Showcase</p>
-              <h1 className="text-3xl sm:text-4xl font-semibold leading-tight">{setDesign.name}</h1>
-              <p className="text-slate-200 max-w-2xl">
+              <p className="text-[10px] uppercase tracking-[0.5em] text-[#C5A267] font-bold">Set Design Showcase</p>
+              <h1 className="text-4xl sm:text-5xl font-bold leading-tight text-white">{setDesign.name}</h1>
+              <p className="text-slate-300 max-w-2xl text-lg">
                 {setDesign.shortDescription || "Khám phá thiết kế được tinh chỉnh cho những buổi chụp chuyên nghiệp, tối ưu ánh sáng và bố cục."}
               </p>
               <div className="flex flex-wrap gap-2">
                 {(setDesign.tags || setDesign.categories || []).slice(0, 4).map((t) => (
-                  <Tag key={t} color="geekblue" className="border-0 px-3 py-1 text-sm bg-white/10 text-white">
+                  <Tag key={t} className="border border-[#C5A267] px-3 py-1 text-sm bg-[#C5A267]/10 text-[#C5A267] font-semibold">
                     {t}
                   </Tag>
                 ))}
               </div>
-              <div className="flex flex-wrap gap-3 pt-2">
+              <div className="flex flex-wrap gap-3 pt-4">
                 <Button
                   type="primary"
                   size="large"
-                  className="bg-indigo-500 border-none shadow-lg shadow-indigo-500/30"
+                  style={{ backgroundColor: '#C5A267', borderColor: '#C5A267' }}
+                  className="!bg-[#C5A267] hover:!bg-[#B38F55] border-none shadow-2xl shadow-[#C5A267]/20 font-bold text-[10px] uppercase tracking-[0.2em] px-10 py-3 h-auto"
                   onClick={() => setOpenBookingModal(true)}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#B38F55'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#C5A267'; }}
                 >
                   Đặt lịch ngay
                 </Button>
               </div>
             </div>
-            <div className="w-full lg:w-80 bg-white/10 border border-white/20 rounded-2xl p-4 backdrop-blur">
-              <div className="text-sm text-slate-100 mb-2">Tổng quan nhanh</div>
-              <div className="space-y-3 text-white">
-                <div className="flex items-center justify-between bg-white/5 rounded-xl px-3 py-2">
-                  <span className="text-slate-200">Danh mục</span>
-                  <span className="font-semibold">{setDesign.category || "Chưa cập nhật"}</span>
+            <div className="w-full lg:w-80 bg-white/5 border border-white/10 p-6 backdrop-blur-xl">
+              <div className="text-[10px] uppercase tracking-[0.3em] text-[#C5A267] font-bold mb-6 flex items-center gap-3">
+                <div className="h-px w-6 bg-[#C5A267]"></div> Tổng quan nhanh
+              </div>
+              <div className="space-y-4 text-white">
+                <div className="flex items-center justify-between border-b border-white/5 pb-3">
+                  <span className="text-xs text-slate-400 uppercase tracking-widest">Danh mục</span>
+                  <span className="font-medium text-sm">{setDesign.category || "Chưa cập nhật"}</span>
                 </div>
-                <div className="flex items-center justify-between bg-white/5 rounded-xl px-3 py-2">
-                  <span className="text-slate-200">Giá từ</span>
-                  <span className="font-semibold">{setDesign.price ? `${setDesign.price.toLocaleString()} đ` : "Liên hệ"}</span>
+                <div className="flex items-center justify-between border-b border-white/5 pb-3">
+                  <span className="text-xs text-slate-400 uppercase tracking-widest">Giá từ</span>
+                  <span className="font-bold text-sm text-[#C5A267]">{setDesign.price ? `${setDesign.price.toLocaleString()} đ` : "Liên hệ"}</span>
                 </div>
-                <div className="flex items-center justify-between bg-white/5 rounded-xl px-3 py-2">
-                  <span className="text-slate-200">Thời lượng</span>
-                  <span className="font-semibold">{setDesign.duration || "Theo gói"}</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-400 uppercase tracking-widest">Thời lượng</span>
+                  <span className="font-medium text-sm">{setDesign.duration || "Theo gói"}</span>
                 </div>
               </div>
             </div>
@@ -96,36 +102,36 @@ const SetDesignDetail = () => {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-10">
-        <Suspense fallback={<div className="text-center py-10">Đang tải giao diện...</div>}>
-          <div className="space-y-8">
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <Suspense fallback={<div className="text-center py-10 text-slate-500">Đang tải giao diện...</div>}>
+          <div className="space-y-6">
             <div className="grid lg:grid-cols-5 gap-6">
               <div className="lg:col-span-3 space-y-6">
-                <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/40 p-4 border border-slate-100">
+                <div className="bg-white shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] p-2 border border-slate-200">
                   <SDGallery images={setDesign.images} />
                 </div>
 
-                <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/40 p-6 border border-slate-100">
-                  <h3 className="text-lg font-semibold text-slate-900 mb-4">Thông tin chi tiết</h3>
+                <div className="bg-white shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] p-8 border border-slate-200">
+                  <h3 className="text-2xl font-semibold text-[#0F172A] mb-6">Thông tin chi tiết</h3>
                   <SDInfo data={setDesign} />
                 </div>
               </div>
 
               <div className="lg:col-span-2 space-y-6">
-                <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/40 border border-slate-100 p-5">
+                <div className="bg-white shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] border border-slate-200 p-6">
                   <SDLikeShareBar setDesign={setDesign} />
                 </div>
 
-                <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/40 border border-slate-100 p-5">
+                <div className="bg-white shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] border border-slate-200 p-6">
                   <SDRelatedDesigns currentId={setDesign._id} />
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/40 border border-slate-100 p-6">
-              <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
-                <h3 className="text-lg font-semibold text-slate-800">Bình luận</h3>
-                <span className="text-sm text-slate-500">Chia sẻ cảm nhận hoặc câu hỏi của bạn</span>
+            <div className="bg-white shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] border border-slate-200 p-8">
+              <div className="flex items-center justify-between flex-wrap gap-2 mb-6 border-b border-slate-100 pb-4">
+                <h3 className="text-3xl font-bold text-[#0F172A]">Bình luận & Đánh giá</h3>
+                <span className="text-xs text-slate-400 uppercase tracking-widest">Chia sẻ cảm nhận của bạn</span>
               </div>
               <div className="space-y-6">
                 <SDCommentInput targetId={id} />
@@ -156,34 +162,34 @@ const SetDesignDetail = () => {
         className="custom-booking-modal"
       >
         <div
-          className="relative overflow-hidden rounded-2xl"
+          className="relative overflow-hidden"
           style={{
-            backgroundImage: modalBg ? `linear-gradient(rgba(15,23,42,0.75), rgba(15,23,42,0.85)), url(${modalBg})` : undefined,
+            backgroundImage: modalBg ? `linear-gradient(rgba(15,23,42,0.85), rgba(15,23,42,0.95)), url(${modalBg})` : undefined,
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
         >
-          <div className="absolute inset-0 bg-slate-900/70" />
+          <div className="absolute inset-0 bg-[#0F172A]/80" />
           <div className="relative p-5 sm:p-6 grid md:grid-cols-2 gap-4">
             <div
-              className="group bg-slate-800/80 border border-white/10 rounded-xl p-5 flex flex-col justify-between min-h-[180px] transition duration-200 transform hover:scale-[1.02] hover:bg-slate-800/95 cursor-pointer"
+              className="group bg-white/5 border border-[#C5A267]/30 p-6 flex flex-col justify-between min-h-[180px] transition-all duration-300 hover:bg-[#C5A267]/10 hover:border-[#C5A267] cursor-pointer"
               onClick={() => {
                 navigate(`/booking/set-design/${setDesign._id}`);
                 setOpenBookingModal(false);
               }}
             >
               <div className="space-y-2">
-                <h3 className="text-2xl font-semibold text-white">Đặt ngay</h3>
-                <p className="text-slate-200 text-sm">Chọn set này và tiếp tục đặt lịch với các bước đơn giản.</p>
+                <h3 className="text-2xl font-bold text-white">Đặt ngay</h3>
+                <p className="text-slate-300 text-sm leading-relaxed">Chọn set này và tiếp tục đặt lịch với các bước đơn giản.</p>
               </div>
-              <div className="flex items-center justify-between text-indigo-200 group-hover:text-white">
+              <div className="flex items-center justify-between text-[#C5A267] group-hover:text-white transition-colors">
                 <span className="font-medium">Tiếp tục</span>
                 <span className="text-lg">→</span>
               </div>
             </div>
 
             <div
-              className="group bg-slate-800/80 border border-white/10 rounded-xl p-5 flex flex-col justify-between min-h-[180px] transition duration-200 transform hover:scale-[1.02] hover:bg-slate-800/95 cursor-pointer"
+              className="group bg-white/5 border border-[#C5A267]/30 p-6 flex flex-col justify-between min-h-[180px] transition-all duration-300 hover:bg-[#C5A267]/10 hover:border-[#C5A267] cursor-pointer"
               onClick={() => {
                 navigate("/set-design-request", {
                   state: {
@@ -200,10 +206,10 @@ const SetDesignDetail = () => {
               }}
             >
               <div className="space-y-2">
-                <h3 className="text-2xl font-semibold text-white">Yêu cầu custom</h3>
-                <p className="text-slate-200 text-sm">Gửi brief và ảnh tham khảo để đội ngũ tinh chỉnh theo nhu cầu.</p>
+                <h3 className="text-2xl font-bold text-white">Yêu cầu custom</h3>
+                <p className="text-slate-300 text-sm leading-relaxed">Gửi brief và ảnh tham khảo để đội ngũ tinh chỉnh theo nhu cầu.</p>
               </div>
-              <div className="flex items-center justify-between text-indigo-200 group-hover:text-white">
+              <div className="flex items-center justify-between text-[#C5A267] group-hover:text-white transition-colors">
                 <span className="font-medium">Mở form</span>
                 <span className="text-lg">→</span>
               </div>
