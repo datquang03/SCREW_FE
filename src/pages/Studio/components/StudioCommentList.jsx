@@ -47,6 +47,13 @@ const StudioCommentList = ({ targetId }) => {
     }
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
+    }
+  };
+
   const handleReply = async (commentId) => {
     const content = replyValue[commentId]?.trim();
     if (!content) return;
@@ -110,36 +117,41 @@ const StudioCommentList = ({ targetId }) => {
   };
 
   return (
-    <div className="studio-panel p-6 md:p-7 mt-10">
-      <h2 className="text-2xl font-extrabold mb-4 text-slate-900">Bình luận</h2>
+    <div className="relative bg-[#FCFBFA] border border-slate-200 shadow-lg p-8 mt-10">
+      <div className="mb-6">
+        <h2 className="text-3xl font-extrabold text-[#0F172A] mb-2">Bình luận & Đánh giá</h2>
+        <p className="text-slate-600">Chia sẻ cảm nhận của bạn</p>
+      </div>
 
       {/* Input */}
-      <div className="mb-6">
+      <div className="mb-8">
         <div className="flex gap-4 items-start">
           <textarea
             value={value}
             onChange={(e) => setValue(e.target.value)}
+            onKeyDown={handleKeyDown}
             placeholder="Viết bình luận..."
-            className="flex-1 p-3 rounded-2xl bg-slate-50 text-slate-900 border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-300"
-            rows={3}
+            className="flex-1 p-4 bg-white text-[#0F172A] border-2 border-slate-200 outline-none focus:border-[#C5A267] focus:ring-2 focus:ring-[#C5A267]/20 transition-all"
+            rows={4}
             disabled={loading}
           />
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className=" border bg-amber-200 px-4 py-2 rounded-full hover:opacity-90 disabled:opacity-50 hover:scale-3d cursor-pointer font-semibold text-slate-800"
+            className="bg-[#C5A267] hover:bg-[#A0826D] text-white px-6 py-3 font-bold transition-all disabled:opacity-50 shadow-md hover:shadow-lg"
           >
             Gửi
           </button>
         </div>
+        <p className="text-xs text-slate-500 mt-2">Nhấn Enter để gửi, Shift+Enter để xuống dòng</p>
       </div>
 
       {/* List */}
-      <div className="space-y-4">
+      <div className="space-y-5">
         {localComments.length === 0 ? (
-          <p className="text-gray-400">
-            Chưa có bình luận nào — hãy bắt đầu!
-          </p>
+          <div className="text-center py-12 bg-white border border-slate-200">
+            <p className="text-slate-400 text-lg">Chưa có bình luận nào — hãy bắt đầu!</p>
+          </div>
         ) : (
           localComments.map((c, idx) => (
             <motion.div
@@ -147,26 +159,26 @@ const StudioCommentList = ({ targetId }) => {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.03 }}
-              className="p-4 rounded-xl studio-comment-card bg-white border border-slate-200 shadow group relative"
+              className="p-6 bg-white border-l-4 border-[#C5A267] shadow-md hover:shadow-lg transition-shadow group relative"
             >
-              <div className="flex items-center gap-3 mb-2">
+              <div className="flex items-center gap-3 mb-3">
                 <img
                   src={c.userId?.avatar || "/default-avatar.png"}
                   alt="avatar"
-                  className="w-9 h-9 rounded-full object-cover border"
+                  className="w-12 h-12 object-cover border-2 border-[#C5A267]"
                 />
-                <div>
-                  <div className="font-semibold text-slate-900 text-base">
+                <div className="flex-1">
+                  <div className="font-bold text-[#0F172A] text-lg">
                     {c.userId?.fullName || c.userId?.username || "Người dùng"}
                   </div>
-                  <div className="text-xs text-slate-500">
+                  <div className="text-sm text-slate-500">
                     {c.createdAt
                       ? dayjs(c.createdAt).format("DD/MM/YYYY HH:mm")
                       : ""}
                   </div>
                 </div>
                 <button
-                  className="ml-auto flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity text-red-500 p-1 hover:underline"
+                  className="ml-auto flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity text-red-500 px-3 py-1 hover:bg-red-50 border border-red-200"
                   title="Báo cáo bình luận này"
                   onClick={() =>
                     window.handleOpenReport && window.handleOpenReport(c)
@@ -185,17 +197,17 @@ const StudioCommentList = ({ targetId }) => {
                   <span className="text-xs font-semibold">Báo cáo</span>
                 </button>
               </div>
-              <div className="text-slate-800 text-base mb-1">{c.content}</div>
+              <div className="text-[#0F172A] text-base leading-relaxed mb-3">{c.content}</div>
               {c.rating && (
-                <div className="flex items-center gap-1 text-yellow-500 mb-1">
+                <div className="flex items-center gap-1 text-[#C5A267] mb-2">
                   {Array.from({ length: c.rating }).map((_, i) => (
                     <span key={i}>★</span>
                   ))}
                 </div>
               )}
-              <div className="mt-2 flex items-center gap-4 text-sm text-indigo-600">
+              <div className="mt-3 flex items-center gap-4">
                 <button
-                  className="hover:underline"
+                  className="text-sm font-semibold text-[#A0826D] hover:text-[#8B7355] transition-colors"
                   onClick={() =>
                     setOpenReply((prev) => (prev === c._id ? null : c._id))
                   }
@@ -204,7 +216,7 @@ const StudioCommentList = ({ targetId }) => {
                 </button>
               </div>
               {openReply === c._id && (
-                <div className="mt-2 space-y-2">
+                <div className="mt-4 space-y-3 pl-4 border-l-2 border-[#C5A267]">
                   <textarea
                     value={replyValue[c._id] || ""}
                     onChange={(e) =>
@@ -213,22 +225,22 @@ const StudioCommentList = ({ targetId }) => {
                         [c._id]: e.target.value,
                       }))
                     }
-                    rows={2}
+                    rows={3}
                     placeholder="Nhập trả lời..."
-                    className="w-full p-2 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-300 text-sm"
+                    className="w-full p-3 border-2 border-slate-200 outline-none focus:border-[#C5A267] focus:ring-2 focus:ring-[#C5A267]/20 text-sm"
                     disabled={loading}
                   />
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleReply(c._id)}
                       disabled={loading}
-                      className="px-3 py-1 rounded-lg bg-indigo-600 text-white text-sm disabled:opacity-50"
+                      className="px-4 py-2 bg-[#A0826D] hover:bg-[#8B7355] text-white font-semibold disabled:opacity-50 transition-colors"
                     >
                       Gửi
                     </button>
                     <button
                       onClick={() => setOpenReply(null)}
-                      className="px-3 py-1 rounded-lg border text-sm"
+                      className="px-4 py-2 border border-slate-300 hover:bg-slate-50 font-semibold transition-colors"
                     >
                       Hủy
                     </button>
@@ -236,20 +248,20 @@ const StudioCommentList = ({ targetId }) => {
                 </div>
               )}
               {c.replies?.length > 0 && (
-                <div className="mt-3 pl-4 border-l-2 border-gray-100 space-y-3">
+                <div className="mt-4 pl-6 border-l-2 border-slate-200 space-y-4">
                   {c.replies.map((r, ridx) => (
                     <div
                       key={r._id || ridx}
-                      className="p-3 rounded-xl bg-white border border-slate-100 group relative"
+                      className="p-4 bg-[#FCFBFA] border border-slate-200 group relative"
                     >
-                      <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
                           <img
                             src={r.userId?.avatar || "/default-avatar.png"}
                             alt="avatar"
-                            className="w-7 h-7 rounded-full object-cover border"
+                            className="w-8 h-8 object-cover border border-[#A0826D]"
                           />
-                          <div className="font-semibold text-slate-900 text-sm">
+                          <div className="font-bold text-[#0F172A] text-sm">
                             {r.userId?.fullName ||
                               r.userId?.username ||
                               "Người dùng"}
@@ -288,7 +300,7 @@ const StudioCommentList = ({ targetId }) => {
                           </button>
                         </div>
                       </div>
-                      <div className="text-slate-700 text-sm">{r.content}</div>
+                      <div className="text-[#0F172A] text-sm leading-relaxed">{r.content}</div>
                     </div>
                   ))}
                 </div>

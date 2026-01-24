@@ -28,7 +28,7 @@ const PromotionSection = () => {
   if (!promoList || promoList.length === 0) return <div className="text-center text-gray-400 py-10">Không có ưu đãi nào khả dụng.</div>;
 
   return (
-    <div className="w-full bg-[#FCFBFA] py-24 px-2 md:px-8 lg:px-16">
+    <div className="w-full bg-[#FCFBFA] py-12 px-2 md:px-8 lg:px-16">
       <div className="max-w-5xl mx-auto">
         <p className="text-xs font-semibold text-[#C5A267] uppercase tracking-[0.3em] text-center mb-4">ƯU ĐÃI ĐẶC BIỆT</p>
         <h2 className="text-2xl md:text-3xl font-semibold text-[#0F172A] mb-2 text-center">Ưu đãi đặc biệt</h2>
@@ -37,10 +37,10 @@ const PromotionSection = () => {
           {promoList.map((promo) => (
             <div
               key={promo._id}
-              className="min-w-[340px] w-full max-w-md overflow-hidden bg-white shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] border border-slate-100 flex flex-col md:flex-row items-stretch"
+              className="min-w-[320px] w-full max-w-md overflow-hidden bg-white shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] border border-slate-100 flex flex-col md:flex-row items-stretch"
             >
               {/* LEFT */}
-              <div className="flex-1 p-8 flex flex-col justify-between bg-[#0F172A] relative">
+              <div className="flex-1 p-6 flex flex-col justify-between bg-[#0F172A] relative">
                 <span className="uppercase text-xs font-semibold text-[#C5A267] tracking-[0.3em] mb-2">Ưu đãi giới hạn</span>
                 <div>
                   <div className="text-2xl md:text-3xl font-semibold text-white mb-2 leading-tight">{promo.name || 'New Year Kickstart: 20% OFF'}</div>

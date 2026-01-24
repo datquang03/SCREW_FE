@@ -91,7 +91,7 @@ const StudioSection = () => {
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
         >
-          <div className="px-6 py-10">
+          <div className="px-6 py-6">
             <div
               className="flex transition-transform duration-500 ease-out"
               style={{ transform: `translateX(${translateX}%)` }}
@@ -107,7 +107,7 @@ const StudioSection = () => {
                     onClick={() => (window.location.href = `/studio/${studio._id}`)}
                   >
                     {/* IMAGE */}
-                    <div className="relative w-full h-48 overflow-hidden mb-4 flex-shrink-0">
+                    <div className="relative w-full h-40 overflow-hidden mb-4 flex-shrink-0">
                       {studio.images?.[0] ? (
                         <img
                           src={studio.images[0]}
@@ -189,7 +189,7 @@ const StudioSection = () => {
           )}
         </div>
 
-        <div className="text-center mt-16">
+        <div className="text-center mt-10">
           <Button
             type="primary"
             size="large"

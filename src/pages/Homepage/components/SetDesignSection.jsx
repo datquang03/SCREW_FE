@@ -78,9 +78,9 @@ const SetDesignSection = () => {
   const imageUrl = item.images?.[0] || "https://images.unsplash.com/photo-1618776148559-309e0b8775d3?auto=format&fit=crop&w=1000&q=80";
 
   return (
-    <div className="relative w-full bg-white py-24">
+    <div className="relative w-full bg-white py-12">
       <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-10">
-        <div className="text-center mb-16 space-y-3">
+        <div className="text-center mb-10 space-y-3">
           <div className="inline-block px-4 py-1.5 bg-white border border-[#C5A267] text-[#C5A267] text-xs uppercase tracking-[0.3em] font-semibold">
             Tinh Lọc & Chuyên Nghiệp
           </div>
@@ -99,7 +99,7 @@ const SetDesignSection = () => {
             onMouseLeave={() => setIsHovering(false)}
             onClick={() => goToDetail(item._id)}
           >
-            <div className="relative overflow-hidden h-80 md:h-full min-h-96 bg-slate-200">
+            <div className="relative overflow-hidden h-80 md:h-full min-h-80 bg-slate-200">
               <img
                 src={imageUrl}
                 alt={item.name}
@@ -109,7 +109,7 @@ const SetDesignSection = () => {
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
             </div>
 
-            <div className="p-6 md:p-10 flex flex-col justify-between space-y-6 bg-white">
+            <div className="p-5 md:p-8 flex flex-col justify-between space-y-6 bg-white">
               <div className="space-y-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-2 flex-1">
@@ -183,7 +183,7 @@ const SetDesignSection = () => {
 
         {/* Chỉ báo slides */}
         {filteredSetDesigns.length > 1 && (
-          <div className="flex justify-center mt-12 gap-2">
+          <div className="flex justify-center mt-8 gap-2">
             {filteredSetDesigns.map((_, idx) => (
               <button
                 key={idx}

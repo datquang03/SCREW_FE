@@ -40,7 +40,7 @@ const Homepage = () => {
         </div>
       </div>
 
-      <main className="relative container mx-auto px-4 md:px-6 lg:px-10 py-12 md:py-16 lg:py-20 space-y-16 lg:space-y-24">
+      <main className="relative container mx-auto px-4 md:px-6 lg:px-10 py-8 md:py-10 lg:py-12 space-y-10 lg:space-y-12">
         <IntroSection />
         <PromotionSection />
         <StudioSection />

@@ -13,7 +13,7 @@ const IntroSection = () => {
           style={{ filter: 'brightness(0.55)' }}
         />
         <div className="absolute inset-0 bg-[#0F172A] z-0" />
-        <div className="relative z-10 w-full max-w-3xl mx-auto px-4 py-16 md:py-24 lg:py-28">
+        <div className="relative z-10 w-full max-w-3xl mx-auto px-4 py-10 md:py-14 lg:py-16">
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold text-white mb-6 leading-tight break-words">
             Tìm không gian sáng tạo lý tưởng cho bạn
           </h1>
@@ -22,7 +22,7 @@ const IntroSection = () => {
           </p>
         </div>
       </div>
-      <div className="bg-[#FCFBFA] py-24 mx-2 md:mx-6 lg:mx-10">
+      <div className="bg-[#FCFBFA] py-12 mx-2 md:mx-6 lg:mx-10">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-8 lg:px-12">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10 items-center">
             {/* LEFT: TEXT & CTA */}
