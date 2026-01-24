@@ -384,15 +384,21 @@ const UserBookingsPage = () => {
                 </span>
                 {/* Highlight thời gian booking */}
                 <div className="mt-2">
-                  <span className="inline-block bg-amber-100 text-amber-700 px-4 py-2 rounded-xl text-xl font-extrabold tracking-wide shadow border border-amber-200">
-                    {currentBooking.schedule?.date ? dayjs(currentBooking.schedule.date).format("DD/MM/YYYY") : "-"}
-                    {currentBooking.schedule?.timeRange ? (
-                      <>
-                        {" "}
-                        <span className="text-base font-bold">{currentBooking.schedule.timeRange}</span>
-                      </>
-                    ) : null}
-                  </span>
+                  {currentBooking.schedule?.startTime && currentBooking.schedule?.endTime ? (
+                    <span className="inline-block bg-amber-100 text-amber-700 px-4 py-2 rounded-xl text-xl font-extrabold tracking-wide shadow border border-amber-200">
+                      {dayjs(currentBooking.schedule.startTime).format("DD/MM/YYYY HH:mm")} → {dayjs(currentBooking.schedule.endTime).format("DD/MM/YYYY HH:mm")}
+                    </span>
+                  ) : (
+                    <span className="inline-block bg-amber-100 text-amber-700 px-4 py-2 rounded-xl text-xl font-extrabold tracking-wide shadow border border-amber-200">
+                      {currentBooking.schedule?.date ? dayjs(currentBooking.schedule.date).format("DD/MM/YYYY") : "-"}
+                      {currentBooking.schedule?.timeRange ? (
+                        <>
+                          {" "}
+                          <span className="text-base font-bold">{currentBooking.schedule.timeRange}</span>
+                        </>
+                      ) : null}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>

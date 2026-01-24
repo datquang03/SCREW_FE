@@ -247,40 +247,45 @@ export default function BookingStudioDetails({ onNext, onBack }) {
 
       {/* THIẾT BỊ SLIDER */}
       <section className="space-y-8">
-        <div className="flex justify-between items-end">
-          <div className="space-y-2">
-            <h3 className="text-[10px] uppercase tracking-[0.4em] font-bold text-slate-400">
-              Thiết bị bổ trợ
-            </h3>
-            <p className="text-2xl font-semibold text-[#0F172A]">
-              Trang thiết bị chuyên nghiệp
-            </p>
+        <div className="relative">
+          <div className="flex justify-between items-end">
+            <div className="space-y-2">
+              <h3 className="text-[10px] uppercase tracking-[0.4em] font-bold text-slate-400">
+                Thiết bị bổ trợ
+              </h3>
+              <p className="text-2xl font-semibold text-[#0F172A]">
+                Trang thiết bị chuyên nghiệp
+              </p>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <Button
-              onClick={() => scrollByOne("prev")}
-              icon={<ArrowLeftOutlined />}
-              className="!rounded-none !border-slate-100 hover:!border-[#C5A267]"
-            />
-            <Button
-              onClick={() => scrollByOne("next")}
-              icon={<ArrowRightOutlined />}
-              className="!rounded-none !border-slate-100 hover:!border-[#C5A267]"
-            />
-          </div>
-        </div>
-
-        {equipmentLoading ? (
-          <Skeleton active />
-        ) : availableEquipments.length === 0 ? (
-          <Empty description="Không có thiết bị" />
-        ) : (
+          {/* Custom slider buttons */}
+          <button
+            onClick={() => scrollByOne("prev")}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/90 border border-slate-200 shadow-lg flex items-center justify-center hover:bg-[#C5A267] hover:text-white text-[#C5A267] transition-all duration-300"
+            style={{ boxShadow: '0 2px 12px 0 #C5A26722' }}
+            aria-label="Trước"
+          >
+            <ArrowLeftOutlined className="text-2xl" />
+          </button>
+          <button
+            onClick={() => scrollByOne("next")}
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/90 border border-slate-200 shadow-lg flex items-center justify-center hover:bg-[#C5A267] hover:text-white text-[#C5A267] transition-all duration-300"
+            style={{ boxShadow: '0 2px 12px 0 #C5A26722' }}
+            aria-label="Sau"
+          >
+            <ArrowRightOutlined className="text-2xl" />
+          </button>
+          {/* Slider content */}
           <div
             ref={scrollRef}
             className="flex gap-8 overflow-x-auto scrollbar-hide py-4 px-2"
+            style={{ scrollBehavior: 'smooth' }}
           >
             {availableEquipments.map((eq) => {
               const isSelected = details.some((d) => d.equipmentId === eq._id);
+              const percentAvailable = Math.round((eq.availableQty / eq.totalQty) * 100);
+              const percentInUse = Math.round((eq.inUseQty / eq.totalQty) * 100);
+              const percentMaintenance = Math.round((eq.maintenanceQty / eq.totalQty) * 100);
               return (
                 <div
                   key={eq._id}
@@ -315,12 +320,38 @@ export default function BookingStudioDetails({ onNext, onBack }) {
                         {Math.round(eq.pricePerHour * duration).toLocaleString()}₫
                       </span>
                     </div>
+                    {/* Progress tổng thiết bị */}
+                    <div className="mt-4">
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="font-semibold text-gray-700">Tổng: {eq.totalQty}</span>
+                        <span className="text-green-600">Còn: {eq.availableQty}</span>
+                      </div>
+                      <div className="w-full h-3 bg-gray-100 rounded-full flex overflow-hidden">
+                        <div
+                          className="bg-green-400 h-full"
+                          style={{ width: `${percentAvailable}%` }}
+                        ></div>
+                        <div
+                          className="bg-yellow-400 h-full"
+                          style={{ width: `${percentInUse}%` }}
+                        ></div>
+                        <div
+                          className="bg-rose-400 h-full"
+                          style={{ width: `${percentMaintenance}%` }}
+                        ></div>
+                      </div>
+                      <div className="flex justify-between text-[10px] mt-1">
+                        <span className="text-green-600">Đang rảnh: {eq.availableQty}</span>
+                        <span className="text-yellow-600">Đang dùng: {eq.inUseQty}</span>
+                        <span className="text-rose-600">Bảo trì: {eq.maintenanceQty}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               );
             })}
           </div>
-        )}
+        </div>
       </section>
 
       {/* DỊCH VỤ DẠNG GRID */}

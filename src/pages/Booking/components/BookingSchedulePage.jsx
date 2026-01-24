@@ -138,14 +138,24 @@ const BookingSchedulePage = ({ onNext }) => {
     });
     if (dateRangeMode === "single" && selectedDate) {
       const key = selectedDate.format("YYYY-MM-DD");
-      return slots.filter((slot) => slot.date === key);
+      // Lấy tất cả slot mà selectedDate nằm trong khoảng startTime-endTime
+      return slots.filter((slot) => {
+        const start = dayjs(slot.startTime).startOf("day");
+        const end = dayjs(slot.endTime).startOf("day");
+        return selectedDate.isSame(start, "day") || selectedDate.isSame(end, "day") || (selectedDate.isAfter(start, "day") && selectedDate.isBefore(end, "day"));
+      });
     }
     if (dateRangeMode === "range" && dateRange[0] && dateRange[1]) {
       const start = dateRange[0].startOf("day");
-      const end = dateRange[1].endOf("day");
+      const end = dateRange[1].startOf("day");
+      // Lấy tất cả slot mà khoảng ngày chọn có giao với khoảng startTime-endTime của slot
       return slots.filter((slot) => {
-        const slotDate = dayjs(slot.date);
-        return slotDate.isValid() && slotDate.isSameOrAfter(start, "day") && slotDate.isSameOrBefore(end, "day");
+        const slotStart = dayjs(slot.startTime).startOf("day");
+        const slotEnd = dayjs(slot.endTime).startOf("day");
+        // Nếu khoảng [start, end] giao với [slotStart, slotEnd]
+        return (
+          (start.isSameOrBefore(slotEnd) && end.isSameOrAfter(slotStart))
+        );
       });
     }
     return slots;
@@ -170,10 +180,29 @@ const BookingSchedulePage = ({ onNext }) => {
     return result;
   }, [studioSchedule]);
 
-  const durationHours =
-    timeRange[0] && timeRange[1]
-      ? timeRange[1].diff(timeRange[0], "hour", true)
-      : 0;
+  // Tính số giờ thuê cho cả chế độ single và range
+  const durationHours = useMemo(() => {
+    if (dateRangeMode === "single" && timeRange[0] && timeRange[1] && selectedDate) {
+      // Single day: lấy diff theo giờ
+      return timeRange[1].diff(timeRange[0], "hour", true);
+    }
+    if (dateRangeMode === "range" && dateRange[0] && dateRange[1] && timeRange[0] && timeRange[1]) {
+      // Range: từ 00:00 ngày A đến 00:00 ngày B là đúng B-A ngày * 24h
+      const start = dateRange[0].hour(timeRange[0].hour()).minute(timeRange[0].minute());
+      const end = dateRange[1].hour(timeRange[1].hour()).minute(timeRange[1].minute());
+      // Nếu chọn 00:00 ngày A đến 00:00 ngày B thì là đúng B-A ngày (24h)
+      if (
+        timeRange[0].hour() === 0 && timeRange[0].minute() === 0 &&
+        timeRange[1].hour() === 0 && timeRange[1].minute() === 0
+      ) {
+        let days = dateRange[1].diff(dateRange[0], "day");
+        if (days === 0) days = 1;
+        return days * 24;
+      }
+      return end.diff(start, "hour", true);
+    }
+    return 0;
+  }, [dateRangeMode, selectedDate, dateRange, timeRange]);
 
   const handleNext = () => {
     // Kiểm tra đã chọn ngày
@@ -649,11 +678,10 @@ const BookingSchedulePage = ({ onNext }) => {
                     ) : (
                       <>
                         <span className="text-lg md:text-xl font-black !text-white block">
-                          {dateRange[0]?.format("DD/MM")} →{" "}
-                          {dateRange[1]?.format("DD/MM/YYYY")}
+                          {dateRange[0]?.format("DD/MM")} → {dateRange[1]?.format("DD/MM/YYYY")}
                         </span>
                         <span className="text-xs !text-blue-100 block mt-1">
-                          {dateRange[1]?.diff(dateRange[0], "day") + 1} ngày
+                          {dateRange[1]?.diff(dateRange[0], "day")} ngày
                         </span>
                       </>
                     )}

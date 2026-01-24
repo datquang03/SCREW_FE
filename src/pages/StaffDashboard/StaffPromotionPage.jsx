@@ -388,6 +388,7 @@ const StaffPromotionPage = () => {
         <div className="absolute top-8 right-8">
           <button
             className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-2 backdrop-blur transition"
+            onClick={() => openEditModal()}
           >
             Tạo mã mới
           </button>

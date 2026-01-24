@@ -49,21 +49,80 @@ const ScheduleTable = ({
   const handleDateClick = (date) => {
     if (disabledDate?.(date)) return;
     if (date.isBefore(dayjs().startOf("day"), "day")) return;
-    onChange?.(date);
+    // Nếu đang chọn range (array), cho phép chọn từ ngày nào đến ngày nào
+    if (Array.isArray(value)) {
+      if (!value[0] || (value[0] && value[1])) {
+        // Bắt đầu chọn mới
+        onChange?.([date, null]);
+      } else if (value[0] && !value[1]) {
+        // Đang chọn ngày kết thúc
+        if (date.isBefore(value[0], "day")) {
+          // Nếu chọn ngày trước ngày bắt đầu, đảo ngược
+          onChange?.([date, value[0]]);
+        } else {
+          onChange?.([value[0], date]);
+        }
+      }
+    } else {
+      onChange?.(date);
+    }
   };
+
+  // Tính duration cho nhiều ngày (nếu chọn range)
+  let duration = 0;
+  if (Array.isArray(value) && value[0] && value[1]) {
+    // Nếu chọn từ 00:00 ngày A đến 00:00 ngày B thì duration = số ngày giữa 2 mốc (B - A)
+    duration = dayjs(value[1]).diff(dayjs(value[0]), "day");
+    // Nếu chọn cùng ngày thì vẫn là 1 ngày
+    if (duration === 0) duration = 1;
+  } else if (value) {
+    duration = 1;
+  }
 
   const renderDateCell = (date) => {
     const key = date.format("YYYY-MM-DD");
+    // Lấy tất cả bookings của ngày này
     const bookings = scheduleByDate[key] || [];
+
+    // Kiểm tra nếu có booking kéo dài nhiều ngày (startTime, endTime khác ngày)
+    // => Ngày này nằm trong khoảng của bất kỳ booking nào thì cũng xem là booked
+    let isBooked = false;
+    let bookingsForThisDate = [];
+    // Duyệt toàn bộ scheduleByDate để tìm các booking kéo dài nhiều ngày
+    Object.keys(scheduleByDate).forEach((dateKey) => {
+      scheduleByDate[dateKey].forEach((b) => {
+        if (b.startTime && b.endTime) {
+          const start = dayjs(b.startTime).startOf("day");
+          const end = dayjs(b.endTime).startOf("day");
+          if (
+            (date.isSame(start, "day") || date.isSame(end, "day") || (date.isAfter(start, "day") && date.isBefore(end, "day")))
+          ) {
+            isBooked = true;
+            bookingsForThisDate.push(b);
+          }
+        }
+      });
+    });
+    // Ngoài ra, nếu có bookings đúng ngày này thì cũng là booked
+    if (bookings.length > 0) {
+      isBooked = true;
+      bookingsForThisDate = bookingsForThisDate.concat(bookings);
+    }
 
     const isPast = date.isBefore(dayjs().startOf("day"), "day");
     const isToday = date.isSame(dayjs(), "day");
     const isCurrentMonth = date.month() === currentMonth.month();
-    const isSelected = value && date.isSame(value, "day");
+    // Hỗ trợ chọn nhiều ngày (range)
+    let isSelected = false;
+    if (Array.isArray(value) && value.length === 2 && value[0] && value[1]) {
+      isSelected = date.isSame(value[0], "day") || date.isSame(value[1], "day") || (date.isAfter(value[0], "day") && date.isBefore(value[1], "day"));
+    } else {
+      isSelected = value && date.isSame(value, "day");
+    }
 
     const status = isPast
       ? "past"
-      : bookings.length > 0
+      : isBooked
       ? "booked"
       : "available";
 
@@ -110,12 +169,12 @@ const ScheduleTable = ({
             {status === "booked" && (
               <div className="flex flex-col items-center gap-0.5">
                 <div className="bg-red-50 text-red-600 border border-red-100 text-[10px] font-bold px-1.5 py-0.5 rounded">
-                  {bookings.length} lịch
+                  {bookingsForThisDate.length} lịch
                 </div>
                 {/* Hiện tên studio nếu có */}
-                {bookings[0]?.booking && (
+                {bookingsForThisDate[0]?.booking && (
                   <div className="hidden md:block text-[9px] text-gray-500 truncate max-w-full">
-                    {bookings[0]?.booking?.studioName || bookings[0]?.booking?.studio?.name || ''}
+                    {bookingsForThisDate[0]?.booking?.studioName || bookingsForThisDate[0]?.booking?.studio?.name || ''}
                   </div>
                 )}
               </div>

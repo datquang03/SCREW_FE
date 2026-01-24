@@ -178,19 +178,18 @@ const StaffOrderPage = () => {
         label: <span className="text-[#C5A267] font-medium">Xác nhận đơn</span>,
         onClick: () => handleAction(confirmBooking, _id),
       },
-      // (status === "confirmed" || status === "checked_in") &&
-      //   !hasCheckIn && {
-      //     key: "checkin",
-      //     label: (
-      //       <div className="flex items-center gap-2 text-green-600 font-medium">
-      //         <FiLogIn /> Check-in khách
-      //       </div>
-      //     ),
-      //     onClick: () => handleAction(checkInBooking, _id),
-      //   },
-      (status === "confirmed" ||
-        status === "checked_in" ||
-        (hasCheckIn && !hasCheckOut)) && {
+      // Thêm nút check-in nếu đủ điều kiện
+      ((status === "confirmed" && !hasCheckIn && !hasCheckOut)) && {
+        key: "checkin",
+        label: (
+          <div className="flex items-center gap-2 text-green-600 font-medium">
+            <FiLogIn /> Check-in khách
+          </div>
+        ),
+        onClick: () => handleAction(checkInBooking, _id),
+      },
+      // Chỉ hiện nút check-out nếu đã check-in và chưa check-out
+      ((hasCheckIn && !hasCheckOut)) && {
         key: "checkout",
         label: (
           <div className="flex items-center gap-2 text-[#C5A267] font-medium">
@@ -337,9 +336,9 @@ const StaffOrderPage = () => {
         title: "Trạng thái",
         width: 140,
         render: (_, r) => {
-          const { label, color, icon } = getStatusDisplay(r);
+          const { label, color } = getStatusDisplay(r);
           return (
-            <Tag color={color} icon={icon} className="font-medium">
+            <Tag color={color} className="font-medium">
               {label}
             </Tag>
           );
