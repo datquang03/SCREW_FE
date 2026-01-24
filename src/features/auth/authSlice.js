@@ -104,9 +104,9 @@ export const login = createAsyncThunk(
 
 export const loginWithGoogle = createAsyncThunk(
   "auth/loginWithGoogle",
-  async ({ token }, { rejectWithValue }) => {
+  async ({ idToken }, { rejectWithValue }) => {
     try {
-      const res = await axiosInstance.post("/auth/login/google", { token });
+      const res = await axiosInstance.post("/auth/login/google", { idToken });
       const { user, accessToken, refreshToken } = res.data.data;
       localStorage.setItem("refreshToken", refreshToken);
       saveToStorage(user, accessToken);

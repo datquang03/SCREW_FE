@@ -16,6 +16,7 @@ import {
   getMySetDesignOrder,
   getSetDesignOrderDetail,
   createPaymentFull,
+  createOrderSetDesign,
 } from "../../features/setDesignPayment/setDesignPayment";
 
 const { Title, Text } = Typography;
@@ -398,31 +399,72 @@ export default function UserSetDesignBookingsPage() {
                 </Card>
               )}
 
-              {/* Nút thanh toán phần còn lại */}
-              {order.totalAmount > order.paidAmount && (
-                <div className="flex justify-end mt-6">
-                  <Button
-                    type="primary"
-                    size="large"
-                    className="rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 border-0 shadow-lg hover:shadow-xl"
-                    onClick={async () => {
-                      try {
-                        const result = await dispatch(createPaymentFull(order._id)).unwrap();
-                        Modal.success({ content: `Thanh toán phần còn lại (${(order.totalAmount - order.paidAmount).toLocaleString("vi-VN")}₫) thành công! Đang chuyển đến trang thanh toán...` });
-                        if (result && result.checkoutUrl) {
-                          setTimeout(() => {
-                            window.location.href = result.checkoutUrl;
-                          }, 1200);
+              {/* Nút thanh toán phần còn lại hoặc tạo đơn thanh toán lại */}
+              {order.totalAmount > order.paidAmount && (() => {
+                // Kiểm tra payment cuối cùng có phải pending không
+                const lastPayment = payments.length > 0 ? payments[payments.length - 1] : null;
+                if (lastPayment && lastPayment.status === 'pending') {
+                  // Hiện nút tạo đơn thanh toán lại (gọi lại createOrderSetDesign)
+                  return (
+                    <div className="flex justify-end mt-6">
+                      <Button
+                        type="primary"
+                        size="large"
+                        className="rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 border-0 shadow-lg hover:shadow-xl"
+                        onClick={async () => {
+                          try {
+                            const result = await dispatch(
+                              createOrderSetDesign({
+                                setDesignId: order.setDesignId?._id || order.setDesignId,
+                                customerName: order.customerId?.username || order.customerName,
+                                email: order.customerId?.email || order.email,
+                                phoneNumber: order.phoneNumber,
+                                description: order.description,
+                                quantity: order.quantity,
+                              })
+                            ).unwrap();
+                            Modal.success({ content: `Tạo đơn thanh toán lại thành công! Đang chuyển đến trang chi tiết...` });
+                            if (result && result._id) {
+                              setTimeout(() => {
+                                window.location.href = `/set-design-order/detail/${result._id}`;
+                              }, 1200);
+                            }
+                          } catch (err) {
+                            Modal.error({ content: err?.message || "Tạo đơn thanh toán lại thất bại!" });
+                          }
+                        }}
+                      >
+                        Tạo đơn thanh toán lại
+                      </Button>
+                    </div>
+                  );
+                }
+                // Ngược lại, hiện nút thanh toán phần còn lại
+                return (
+                  <div className="flex justify-end mt-6">
+                    <Button
+                      type="primary"
+                      size="large"
+                      className="rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 border-0 shadow-lg hover:shadow-xl"
+                      onClick={async () => {
+                        try {
+                          const result = await dispatch(createPaymentFull(order._id)).unwrap();
+                          Modal.success({ content: `Thanh toán phần còn lại (${(order.totalAmount - order.paidAmount).toLocaleString("vi-VN")}₫) thành công! Đang chuyển đến trang thanh toán...` });
+                          if (result && result.checkoutUrl) {
+                            setTimeout(() => {
+                              window.location.href = result.checkoutUrl;
+                            }, 1200);
+                          }
+                        } catch (err) {
+                          Modal.error({ content: err?.message || "Thanh toán thất bại!" });
                         }
-                      } catch (err) {
-                        Modal.error({ content: err?.message || "Thanh toán thất bại!" });
-                      }
-                    }}
-                  >
-                    Thanh toán phần còn lại ({(order.totalAmount - order.paidAmount).toLocaleString("vi-VN")}₫)
-                  </Button>
-                </div>
-              )}
+                      }}
+                    >
+                      Thanh toán phần còn lại ({(order.totalAmount - order.paidAmount).toLocaleString("vi-VN")}₫)
+                    </Button>
+                  </div>
+                );
+              })()}
             </div>
           );
         })()}

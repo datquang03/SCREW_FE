@@ -93,7 +93,7 @@ const LoginPage = () => {
     if (!credentialResponse.credential) return;
     dispatch(clearError());
     try {
-      const result = await dispatch(loginWithGoogle({ token: credentialResponse.credential })).unwrap();
+      const result = await dispatch(loginWithGoogle({ idToken: credentialResponse.credential })).unwrap();
       setToast({
         type: "success",
         message: result.message || "Đăng nhập Google thành công!",
