@@ -70,12 +70,6 @@ const StudioPage = () => {
               >
                 Khám phá bộ sưu tập
               </a>
-              <a
-                href="#pricing"
-                className="inline-flex items-center gap-2 bg-white text-[#0F172A] font-semibold px-6 py-3 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] border border-slate-200 hover:bg-slate-100 transition-all uppercase tracking-[0.2em]"
-              >
-                Xem bảng giá
-              </a>
             </div>
           </div>
         </div>
@@ -89,7 +83,9 @@ const StudioPage = () => {
         title="Studio Nổi Bật"
         subtitle="Không gian được khách hàng yêu thích nhất"
       >
-        <p className="text-xs font-semibold text-[#C5A267] uppercase tracking-[0.3em] text-center mb-6">STUDIO NỔI BẬT</p>
+        <p className="text-xs font-semibold text-[#C5A267] uppercase tracking-[0.3em] text-center mb-6">
+          STUDIO NỔI BẬT
+        </p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           {studios.length === 0 ? (
             <div className="col-span-full text-center text-gray-500 py-20">
@@ -154,7 +150,9 @@ const StudioPage = () => {
                   </div>
                   {/* PRICE + CTA */}
                   <div className="px-6 pb-6 flex flex-col gap-2">
-                    <div className="text-xs text-slate-500 uppercase tracking-[0.2em]">Giá từ</div>
+                    <div className="text-xs text-slate-500 uppercase tracking-[0.2em]">
+                      Giá từ
+                    </div>
                     <div className="text-2xl font-semibold text-[#C5A267] mb-1">
                       {studio.basePricePerHour?.toLocaleString("vi-VN")}₫
                       <span className="text-sm text-slate-500 ml-1">/ giờ</span>
