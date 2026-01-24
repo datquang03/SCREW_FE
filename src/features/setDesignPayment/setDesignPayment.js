@@ -126,6 +126,90 @@ export const getSetDesignOrderDetail = createAsyncThunk(
   }
 );
 
+// Thanh toán số tiền còn lại cho đơn Set Design
+export const payRemainingSetDesign = createAsyncThunk(
+  "setDesignPayment/payRemainingSetDesign",
+  async (orderId, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+      if (!token) throw new Error("Bạn cần đăng nhập để thanh toán");
+      const response = await axiosInstance.post(
+        `/set-design-orders/${orderId}/payment/remaining`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return response.data.data || response.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Thanh toán số tiền còn lại thất bại" }
+      );
+    }
+  }
+);
+
+// Hủy đơn Set Design
+export const cancelSetDesignOrder = createAsyncThunk(
+  "setDesignPayment/cancelSetDesignOrder",
+  async ({ orderId, reason }, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+      if (!token) throw new Error("Bạn cần đăng nhập để hủy đơn");
+      const response = await axiosInstance.post(
+        `/set-design-orders/${orderId}/cancel`,
+        { reason },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return response.data.data || response.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Hủy đơn thất bại" }
+      );
+    }
+  }
+);
+
+// Hoàn tiền cọc thiết bị
+export const refundEquipmentDeposit = createAsyncThunk(
+  "setDesignPayment/refundEquipmentDeposit",
+  async (orderId, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+      if (!token) throw new Error("Bạn cần đăng nhập để hoàn tiền");
+      const response = await axiosInstance.post(
+        `/equipment-orders/${orderId}/refund-deposit`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return response.data.data || response.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Hoàn tiền cọc thất bại" }
+      );
+    }
+  }
+);
+
+// Thanh toán tiền phạt
+export const payReportPenalty = createAsyncThunk(
+  "setDesignPayment/payReportPenalty",
+  async (reportId, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+      if (!token) throw new Error("Bạn cần đăng nhập để thanh toán tiền phạt");
+      const response = await axiosInstance.post(
+        `/reports/${reportId}/payment`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return response.data.data || response.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Thanh toán tiền phạt thất bại" }
+      );
+    }
+  }
+);
+
 // =========================================================
 // ================          SLICE              =============
 // =========================================================

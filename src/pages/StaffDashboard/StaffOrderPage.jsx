@@ -322,7 +322,7 @@ const StaffOrderPage = () => {
           const latest = r.events[r.events.length - 1];
           return (
             <div className="text-sm space-y-1">
-              <span className="font-semibold">{latest.type}</span>
+              <span className="font-semibold">{eventTypeVN[latest.type] || latest.type}</span>
               {latest.timestamp && (
                 <div className="text-gray-500 text-xs">
                   {dayjs(latest.timestamp).format("HH:mm DD/MM/YYYY")}
@@ -534,13 +534,15 @@ const StaffOrderPage = () => {
                                   ? "border-green-500"
                                   : event.type === "NO_SHOW"
                                   ? "border-red-500"
+                                  : event.type === "EXTENDED"
+                                  ? "border-blue-500"
                                   : "border-gray-400"
                               }`}
                             />
                             <div className="flex justify-between items-start">
                               <div>
                                 <div className="text-xs font-bold text-gray-800 uppercase">
-                                  {event.type.replace("_", " ")}
+                                  {eventTypeVN[event.type] || event.type}
                                 </div>
                                 <div className="text-[10px] text-gray-500">
                                   {dayjs(event.timestamp).format(
@@ -742,6 +744,15 @@ const StaffOrderPage = () => {
       </Modal>
     </div>
   );
+};
+
+// Mapping event type to Vietnamese
+const eventTypeVN = {
+  CHECK_IN: "Nhận phòng",
+  CHECK_OUT: "Trả phòng",
+  NO_SHOW: "Không đến",
+  EXTENDED: "Gia hạn",
+  CANCELLED: "Đã hủy"
 };
 
 export default StaffOrderPage;
