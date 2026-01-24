@@ -7,37 +7,37 @@ const { Title } = Typography;
 const galleryImages = [
   {
     id: 1,
-    src: "/src/assets/room100m2(360).jpg",
+    src: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=800&q=80",
     alt: "Studio 100m²",
     title: "Studio 100m²",
   },
   {
     id: 2,
-    src: "/src/assets/SCONGSTUDIO.jpg",
+    src: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=800&q=80",
     alt: "Studio Interior",
     title: "Không gian studio",
   },
   {
     id: 3,
-    src: "/src/assets/S+Logo.png",
+    src: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80",
     alt: "Equipment Setup",
     title: "Thiết bị ánh sáng",
   },
   {
     id: 4,
-    src: "/src/assets/S+Logo.png",
+    src: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80",
     alt: "Set Design",
     title: "Set design đa dạng",
   },
   {
     id: 5,
-    src: "/src/assets/S+Logo.png",
+    src: "https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&w=800&q=80",
     alt: "Studio Workspace",
     title: "Không gian làm việc",
   },
   {
     id: 6,
-    src: "/src/assets/S+Logo.png",
+    src: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&q=80",
     alt: "Professional Setup",
     title: "Setup chuyên nghiệp",
   },
