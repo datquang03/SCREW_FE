@@ -15,7 +15,7 @@ const SDCommentList = ({ storeComments, targetId }) => {
     <div className="mt-6">
       <div className="mt-2 space-y-4">
         {comments.length === 0 ? (
-          <p className="text-gray-400">Chưa có bình luận nào — hãy bắt đầu!</p>
+          <p className="text-slate-400 text-center py-8">Chưa có bình luận nào — hãy bắt đầu!</p>
         ) : (
           comments.map((c, idx) => (
             <motion.div
