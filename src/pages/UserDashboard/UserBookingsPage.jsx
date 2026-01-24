@@ -290,16 +290,12 @@ const UserBookingsPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="relative overflow-hidden rounded-2xl p-6 md:p-8 bg-gradient-to-br from-blue-100 via-indigo-50 to-white shadow-lg border border-blue-200/50">
-        <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-blue-300/30 blur-2xl" />
-        <div className="relative z-10">
-          <Title level={2} className="mb-3 text-gray-900">
-          Đơn của tôi
-        </Title>
-          <Text className="text-base text-gray-700 font-medium">
+      <div className="relative w-full bg-[#C5A267] p-10 text-white shadow-md">
+        <div className="text-sm opacity-90 mb-2">DASHBOARD · USER</div>
+        <h1 className="text-3xl font-bold mb-2">Đơn của tôi</h1>
+        <p className="opacity-90">
           Quản lý và theo dõi tất cả các đơn đặt studio của bạn
-        </Text>
-        </div>
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
@@ -356,7 +352,7 @@ const UserBookingsPage = () => {
         ) : (
           <div className="space-y-6">
             {/* Studio Section + Thời gian (Highlight) */}
-            <div className="flex flex-row items-center gap-6 border border-amber-100 rounded-2xl shadow bg-white/90 p-4">
+            <div className="flex flex-row items-center gap-6 border border-slate-200 shadow bg-white/90 p-4">
               {studioLoading ? (
                 <div className="w-20 h-20 bg-amber-50 rounded-xl animate-pulse" />
               ) : studioDetail?.images?.[0] ? (
@@ -389,7 +385,7 @@ const UserBookingsPage = () => {
               </div>
             </div>
 
-            <Card className="border border-gray-100 rounded-2xl shadow-sm bg-gradient-to-br from-blue-50 to-white">
+            <Card className="border border-slate-200 shadow-sm bg-white">
               <Descriptions
                 column={2}
                 colon={false}
@@ -426,7 +422,7 @@ const UserBookingsPage = () => {
               </Descriptions>
             </Card>
 
-            <Card className="border border-gray-100 rounded-2xl shadow-sm bg-gradient-to-br from-amber-50 to-white">
+            <Card className="border border-slate-200 shadow-sm bg-white">
               <Title level={5} className="mb-3 text-amber-700">Tóm tắt thanh toán</Title>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
@@ -515,7 +511,7 @@ const UserBookingsPage = () => {
                 Chi tiết dịch vụ / thiết bị
               </Title>
               {currentBooking.details && currentBooking.details.length > 0 ? (
-                <div className="border border-gray-100 rounded-2xl overflow-hidden">
+                <div className="border border-slate-200 overflow-hidden">
                   <table className="w-full text-sm">
                     <thead className="bg-gray-50">
                       <tr>
@@ -579,7 +575,7 @@ const UserBookingsPage = () => {
               <div className="grid md:grid-cols-2 gap-4">
                 <Card
                   size="small"
-                  className="border border-gray-100 rounded-2xl shadow-sm"
+                  className="border border-slate-200 shadow-sm"
                   title="Chính sách hủy"
                 >
                   {currentBooking.policySnapshots?.cancellation ? (
@@ -601,7 +597,7 @@ const UserBookingsPage = () => {
                 </Card>
                 <Card
                   size="small"
-                  className="border border-gray-100 rounded-2xl shadow-sm"
+                  className="border border-slate-200 shadow-sm"
                   title="Chính sách không đến (No-Show)"
                 >
                   {currentBooking.policySnapshots?.noShow ? (

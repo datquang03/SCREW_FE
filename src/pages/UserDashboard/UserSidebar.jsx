@@ -81,14 +81,14 @@ const UserSidebar = ({ variant = "customer" }) => {
   const selectedKeys = matchedItem ? [matchedItem.key] : [menuItems[0].key];
 
   return (
-    <div className="flex h-full w-full flex-col bg-gradient-to-b from-gray-950 via-gray-900 to-black text-white">
-      <div className="px-5 pb-8 pt-10 border-b border-white/10">
+    <div className="flex h-full w-full flex-col bg-[#0F172A] text-white">
+      <div className="px-5 pb-8 pt-10 border-b border-slate-700">
         <div className="flex items-center gap-3">
-          <div className="rounded-2xl bg-gradient-to-tr from-amber-400 to-yellow-500 px-4 py-3 shadow-lg shadow-amber-500/30">
-            <span className="text-2xl font-black text-gray-900">S+</span>
+          <div className="bg-[#C5A267] px-4 py-3 shadow-md">
+            <span className="text-2xl font-black text-white">S+</span>
           </div>
           <div>
-            <p className="text-base uppercase tracking-[0.4em] text-white/60">
+            <p className="text-base uppercase tracking-[0.4em] text-slate-400">
               S+ Studio
             </p>
             <p className="text-lg font-semibold text-white">{roleText}</p>
@@ -97,7 +97,7 @@ const UserSidebar = ({ variant = "customer" }) => {
       </div>
 
       <div className="px-5 py-4">
-        <span className="inline-flex w-full items-center justify-center rounded-2xl bg-white/5 px-4 py-2 text-xs font-bold uppercase tracking-widest text-amber-200 border border-white/10">
+        <span className="inline-flex w-full items-center justify-center bg-[#C5A267] px-4 py-2 text-xs font-bold uppercase tracking-widest text-white border border-[#C5A267]">
           {roleText}
         </span>
       </div>
@@ -116,8 +116,8 @@ const UserSidebar = ({ variant = "customer" }) => {
                 [
                   "flex items-center justify-between w-full",
                   isActive
-                    ? "text-amber-300 font-semibold"
-                    : "text-white/70 hover:text-white",
+                    ? "text-[#C5A267] font-semibold"
+                    : "text-slate-300 hover:text-white",
                 ].join(" ")
               }
             >
@@ -125,7 +125,7 @@ const UserSidebar = ({ variant = "customer" }) => {
             </NavLink>
           ),
         }))}
-        className="flex-1 bg-transparent border-0 px-4 [&_.ant-menu-item]:rounded-2xl [&_.ant-menu-item]:py-2"
+        className="flex-1 bg-transparent border-0 px-4 [&_.ant-menu-item]:py-2"
         style={{ backgroundColor: "transparent" }}
         inlineIndent={16}
       />

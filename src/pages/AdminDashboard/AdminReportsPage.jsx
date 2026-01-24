@@ -25,25 +25,22 @@ const AdminReportsPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="relative overflow-hidden rounded-2xl p-6 md:p-8 bg-gradient-to-br from-slate-100 via-white to-white shadow-lg border border-slate-200/50">
-        <div className="absolute -top-10 -right-12 w-48 h-48 rounded-full bg-slate-300/30 blur-3xl" />
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-            <Title level={2} className="mb-2 text-gray-900">
-            Báo cáo & phân tích
-          </Title>
-            <Text className="text-base text-gray-700 font-medium">
-            Tổng hợp dữ liệu vận hành, khách hàng và marketing
-          </Text>
-        </div>
-          <Button type="primary" icon={<FiDownload />} size="large" className="font-semibold shadow-lg">
-          Xuất báo cáo tổng
-        </Button>
+      <div className="relative w-full bg-[#C5A267] p-10 text-white shadow-md">
+        <div className="text-sm opacity-90 mb-2">DASHBOARD · ADMIN</div>
+        <h1 className="text-3xl font-bold mb-2">Báo cáo & phân tích</h1>
+        <p className="opacity-90">
+          Tổng hợp dữ liệu vận hành, khách hàng và marketing
+        </p>
+        
+        <div className="absolute top-8 right-8">
+          <Button type="primary" icon={<FiDownload />} size="large" className="font-semibold shadow-lg bg-white/20 hover:bg-white/30 border-white/30">
+            Xuất báo cáo tổng
+          </Button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card title="Báo cáo gần đây" className="shadow-lg border border-gray-100 rounded-2xl">
+        <Card title="Báo cáo gần đây" className="shadow-lg border border-slate-200">
           <Timeline
             items={[
               {
@@ -62,7 +59,7 @@ const AdminReportsPage = () => {
             ]}
           />
         </Card>
-        <Card title="Báo cáo nổi bật" className="shadow-lg border border-gray-100 rounded-2xl">
+        <Card title="Báo cáo nổi bật" className="shadow-lg border border-slate-200">
           <div className="space-y-4">
             {reports.map((report, idx) => (
               <div

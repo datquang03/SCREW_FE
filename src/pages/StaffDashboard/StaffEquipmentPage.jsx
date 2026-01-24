@@ -353,23 +353,20 @@ const StaffEquipmentPage = () => {
   return (
     <div className="space-y-6 p-4 lg:p-8">
       {/* Header */}
-      <div className="bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-2xl p-8 shadow-xl">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <div>
-            <Title level={2} className="text-white mb-2">
-              Quản lý thiết bị
-            </Title>
-            <Text className="text-blue-100">Theo dõi và quản lý toàn bộ thiết bị studio</Text>
-          </div>
-          <Button
-            type="primary"
-            size="large"
-            icon={<FiTool />}
-            className="bg-white text-blue-600 hover:bg-gray-100 font-semibold"
+      <div className="relative w-full bg-[#C5A267] p-10 text-white shadow-md">
+        <div className="text-sm opacity-90 mb-2">DASHBOARD · STAFF</div>
+        <h1 className="text-3xl font-bold mb-2">Quản lý thiết bị</h1>
+        <p className="opacity-90">
+          Theo dõi và quản lý toàn bộ thiết bị studio
+        </p>
+
+        <div className="absolute top-8 right-8">
+          <button
+            className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-2 backdrop-blur transition"
             onClick={() => setIsCreateModalOpen(true)}
           >
             Thêm thiết bị
-          </Button>
+          </button>
         </div>
       </div>
 

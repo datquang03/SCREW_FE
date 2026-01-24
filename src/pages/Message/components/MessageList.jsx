@@ -19,20 +19,20 @@ const MessageSkeleton = ({ isMine }) => (
   <div
     className={`flex ${isMine ? "justify-end" : "justify-start"} items-start gap-2 mb-4 animate-pulse`}
   >
-    {!isMine && <div className="w-8 h-8 rounded-full bg-gray-200 flex-shrink-0" />}
+    {!isMine && <div className="w-8 h-8 bg-gray-200 flex-shrink-0" />}
     <div
-      className={`max-w-xs lg:max-w-md rounded-2xl px-4 py-3 ${
-        isMine ? "bg-amber-200" : "bg-gray-200"
+      className={`max-w-xs lg:max-w-md px-4 py-3 ${
+        isMine ? "bg-[#D4C4B0]" : "bg-gray-200"
       }`}
     >
-      <div className="h-4 bg-gray-300 rounded w-3/4 mb-2" />
-      <div className="h-4 bg-gray-300 rounded w-1/2" />
+      <div className="h-4 bg-gray-300 w-3/4 mb-2" />
+      <div className="h-4 bg-gray-300 w-1/2" />
       <div className="flex items-center justify-between mt-2">
-        <div className="h-3 bg-gray-300 rounded w-16" />
-        <div className="h-3 bg-gray-300 rounded w-12" />
+        <div className="h-3 bg-gray-300 w-16" />
+        <div className="h-3 bg-gray-300 w-12" />
       </div>
     </div>
-    {isMine && <div className="w-8 h-8 rounded-full bg-gray-200 flex-shrink-0" />}
+    {isMine && <div className="w-8 h-8 bg-gray-200 flex-shrink-0" />}
   </div>
 );
 
@@ -80,10 +80,13 @@ const MessageList = ({ messages, currentUserId, loading }) => {
   }
 
   if (messages.length === 0)
-    return <p className="text-center text-gray-400 py-10">Chưa có tin nhắn nào.</p>;
+    return <p className="text-center text-slate-400 py-10">Chưa có tin nhắn nào.</p>;
 
   return (
-    <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar bg-[radial-gradient(circle_at_20%_20%,rgba(255,214,102,0.08),transparent_25%),radial-gradient(circle_at_80%_0%,rgba(96,165,250,0.08),transparent_25%)]">
+    <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-[#FCFBFA]" style={{
+      scrollbarWidth: 'thin',
+      scrollbarColor: '#C5A267 #f1f5f9'
+    }}>
       {messages.map((msg) => {
         const isMine = msg.fromUserId?._id === currentUserId || msg.fromUserId === currentUserId;
         const name = msg.fromUserId?.fullName || msg.fromUserId?.username || "Người dùng";
@@ -101,7 +104,7 @@ const MessageList = ({ messages, currentUserId, loading }) => {
                   e.stopPropagation();
                   handleDeleteClick(msg._id);
                 }}
-                className="opacity-0 group-hover:opacity-100 transition-all duration-200 w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 hover:bg-red-500 text-gray-600 hover:text-white shadow-sm hover:shadow-md mt-1 flex-shrink-0"
+                className="opacity-0 group-hover:opacity-100 transition-all duration-200 w-8 h-8 flex items-center justify-center bg-slate-200 hover:bg-red-500 text-slate-600 hover:text-white shadow-sm hover:shadow-md mt-1 flex-shrink-0"
                 title="Xóa tin nhắn"
               >
                 <DeleteOutlined className="text-sm" />
@@ -109,13 +112,13 @@ const MessageList = ({ messages, currentUserId, loading }) => {
             )}
             
             <div
-              className={`relative max-w-xs lg:max-w-md rounded-2xl px-4 py-3 shadow-sm transition-all ${
+              className={`relative max-w-xs lg:max-w-md px-4 py-3 shadow-sm transition-all ${
                 isMine
-                  ? "bg-amber-500 text-white"
-                  : "bg-gray-100 text-gray-800 border border-gray-200"
+                  ? "bg-[#A0826D] text-white border border-[#A0826D]"
+                  : "bg-white text-[#0F172A] border border-slate-200"
               }`}
             >
-              {!isMine && <p className="text-xs font-bold text-amber-600 mb-1">{name}</p>}
+              {!isMine && <p className="text-xs font-bold text-[#C5A267] mb-1">{name}</p>}
               
               {/* Parse và hiển thị Set Design card nếu có */}
               {(() => {
@@ -148,23 +151,25 @@ const MessageList = ({ messages, currentUserId, loading }) => {
               })()}
 
               <div className="mt-1 flex items-center justify-between gap-3">
-                <span className={`text-xs ${isMine ? "text-amber-100" : "text-gray-500"}`}>
+                <span className={`text-xs ${
+                  isMine ? "text-white/80" : "text-slate-500"
+                }`}>
                   {formatTime(msg.createdAt)}
                 </span>
                 <div className="flex items-center gap-2 text-xs">
                   {isMine ? (
                     isRead ? (
-                      <span className="flex items-center gap-1 text-amber-50">
+                      <span className="flex items-center gap-1 text-white/90">
                         <EyeOutlined /> Đã xem
                       </span>
                     ) : (
-                      <span className="flex items-center gap-1 text-amber-50 opacity-80">
+                      <span className="flex items-center gap-1 text-white/70">
                         <EyeInvisibleOutlined /> Chưa xem
                       </span>
                     )
                   ) : (
                     !isRead && (
-                      <span className="flex items-center gap-1 text-emerald-700 font-semibold">
+                      <span className="flex items-center gap-1 text-[#10b981] font-semibold">
                         <EyeInvisibleOutlined /> Chưa đọc
                       </span>
                     )

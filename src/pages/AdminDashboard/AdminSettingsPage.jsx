@@ -9,20 +9,16 @@ const AdminSettingsPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="relative overflow-hidden rounded-2xl p-6 md:p-8 bg-gradient-to-br from-yellow-100 via-white to-white shadow-lg border border-yellow-200/50">
-        <div className="absolute -top-10 -right-12 w-48 h-48 rounded-full bg-yellow-300/30 blur-3xl" />
-        <div className="relative z-10">
-          <Title level={2} className="mb-2 text-gray-900">
-          Cài đặt hệ thống
-        </Title>
-          <Text className="text-base text-gray-700 font-medium">
+      <div className="relative w-full bg-[#C5A267] p-10 text-white shadow-md">
+        <div className="text-sm opacity-90 mb-2">DASHBOARD · ADMIN</div>
+        <h1 className="text-3xl font-bold mb-2">Cài đặt hệ thống</h1>
+        <p className="opacity-90">
           Quản lý brand, quy trình và thông báo của S+ Studio
-        </Text>
-        </div>
+        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card title="Brand identity" className="shadow-lg border border-gray-100 rounded-2xl">
+        <Card title="Brand identity" className="shadow-lg border border-slate-200">
           <Form
             layout="vertical"
             initialValues={{

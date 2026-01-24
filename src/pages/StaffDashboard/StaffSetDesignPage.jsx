@@ -183,8 +183,8 @@ const StaffSetDesignPage = () => {
   return (
     <div className="w-full px-8 py-6 space-y-6">
       {/* ===== HEADER DASHBOARD ===== */}
-      <div className="relative w-full rounded-3xl bg-gradient-to-r from-purple-600 via-indigo-500 to-blue-500 p-10 text-white shadow-lg">
-        <div className="text-sm opacity-80 mb-2">DASHBOARD · STAFF</div>
+      <div className="relative w-full bg-[#C5A267] p-10 text-white shadow-md">
+        <div className="text-sm opacity-90 mb-2">DASHBOARD · STAFF</div>
         <h1 className="text-3xl font-bold mb-2">Quản lý Set Design</h1>
         <p className="opacity-90">
           Quản lý thông tin và hình ảnh các Set Design trong studio
@@ -193,7 +193,7 @@ const StaffSetDesignPage = () => {
         <div className="absolute top-8 right-8">
           <button
             onClick={() => setAddOpen(true)}
-            className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-xl backdrop-blur transition"
+            className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-2 backdrop-blur transition"
           >
             <FiPlus /> Thêm Set Design
           </button>
@@ -202,9 +202,9 @@ const StaffSetDesignPage = () => {
 
       {/* ===== STAT CARDS ===== */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="rounded-2xl shadow">
+        <Card className="shadow-md border border-slate-200">
           <div className="flex items-center gap-4">
-            <FiLayers className="text-2xl text-purple-600" />
+            <FiLayers className="text-2xl text-[#C5A267]" />
             <div>
               <Text type="secondary">Tổng Set</Text>
               <div className="text-2xl font-bold">{total}</div>
@@ -212,9 +212,9 @@ const StaffSetDesignPage = () => {
           </div>
         </Card>
 
-        <Card className="rounded-2xl shadow">
+        <Card className="shadow-md border border-slate-200">
           <div className="flex items-center gap-4">
-            <FiImage className="text-2xl text-blue-600" />
+            <FiImage className="text-2xl text-[#A0826D]" />
             <div>
               <Text type="secondary">Miễn phí</Text>
               <div className="text-2xl font-bold">{totalFree}</div>
@@ -293,7 +293,7 @@ const StaffSetDesignPage = () => {
                   return (
                     <div
                       key={idx}
-                      className="relative w-24 h-24 rounded-2xl overflow-hidden border-2 border-purple-200 shadow"
+                      className="relative w-24 h-24 overflow-hidden border-2 border-slate-200 shadow-sm"
                     >
                       <img
                         src={url}
@@ -307,16 +307,16 @@ const StaffSetDesignPage = () => {
                             prev.filter((_, i) => i !== idx)
                           )
                         }
-                        className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center shadow hover:bg-red-700 transition-colors"
+                        className="absolute -top-2 -right-2 bg-red-600 text-white w-6 h-6 flex items-center justify-center shadow hover:bg-red-700 transition-colors"
                       >
                         ×
                       </button>
                     </div>
                   );
                 })}
-              <label className="w-24 h-24 flex items-center justify-center border-2 border-dashed border-purple-300 rounded-2xl cursor-pointer hover:border-purple-500 hover:bg-purple-50 transition-all">
+              <label className="w-24 h-24 flex items-center justify-center border-2 border-dashed border-slate-300 cursor-pointer hover:border-[#C5A267] hover:bg-[#FCFBFA] transition-all">
                 <div className="text-center">
-                  <FiImage className="text-2xl text-purple-400" />
+                  <FiImage className="text-2xl text-[#C5A267]" />
                   <div className="text-xs text-gray-500 mt-1">Thêm ảnh</div>
                 </div>
                 <input

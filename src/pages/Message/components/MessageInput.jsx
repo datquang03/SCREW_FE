@@ -109,20 +109,40 @@ const MessageInput = ({ conversation, currentUserId }) => {
   };
 
   return (
-    <form onSubmit={handleSend} className="p-4 border-t flex gap-3">
-      <button type="button" className="btn-icon">
+    <form onSubmit={handleSend} className="p-4 border-t border-slate-200 flex gap-3">
+      <button 
+        type="button" 
+        className="px-3 py-2 border border-slate-300 text-slate-600 hover:border-[#C5A267] hover:text-[#C5A267] transition"
+      >
         <PaperClipOutlined />
       </button>
       <input
         value={content}
         onChange={(e) => handleTyping(e.target.value)}
         placeholder="Nhập tin nhắn..."
-        className="flex-1 px-4 py-3 bg-gray-50 rounded-2xl outline-none focus:bg-white focus:border-amber-300 border"
+        className="flex-1 px-4 py-3 bg-[#FCFBFA] outline-none focus:bg-white focus:border-[#C5A267] border border-slate-200 text-[#0F172A]"
       />
       <button
         type="submit"
         disabled={!content.trim()}
-        className="btn-primary flex items-center gap-2"
+        className="px-6 py-3 flex items-center gap-2 font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+        style={{
+          backgroundColor: content.trim() ? '#A0826D' : '#e2e8f0',
+          color: content.trim() ? 'white' : '#64748b',
+          borderColor: content.trim() ? '#A0826D' : '#e2e8f0',
+        }}
+        onMouseEnter={(e) => {
+          if (content.trim()) {
+            e.currentTarget.style.backgroundColor = '#8B7355';
+            e.currentTarget.style.borderColor = '#8B7355';
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (content.trim()) {
+            e.currentTarget.style.backgroundColor = '#A0826D';
+            e.currentTarget.style.borderColor = '#A0826D';
+          }
+        }}
       >
         <SendOutlined /> Gửi
       </button>

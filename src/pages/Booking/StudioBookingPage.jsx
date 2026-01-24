@@ -140,86 +140,89 @@ const StudioBookingPage = () => {
 
   return (
     <>
-      <div className="max-w-6xl mx-auto px-4 pt-28 pb-10">
-        {/* Nút quay lại */}
-        {localStep > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="mb-8"
-          >
-            <Button
-              type="text"
-              size="large"
-              icon={<ArrowLeftOutlined />}
-              onClick={handleBack}
-            >
-              Quay lại
-            </Button>
-          </motion.div>
-        )}
-
-        <Steps current={localStep} items={steps} className="mb-12" />
-
-        <div ref={containerRef}>
-          <AnimatePresence mode="wait">
+      <div className="bg-[#FCFBFA] min-h-screen">
+        <div className="max-w-6xl mx-auto px-4 pt-28 pb-10">
+          {/* Nút quay lại */}
+          {localStep > 0 && (
             <motion.div
-              key={localStep}
-              initial={currentAnimation.initial}
-              animate={currentAnimation.animate}
-              exit={currentAnimation.exit}
-              transition={currentAnimation.transition}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="mb-8"
             >
-              {localStep === 0 && <BookingStudioInfo onNext={handleNext} />}
-
-              {localStep === 1 && <BookingSchedulePage onNext={handleNext} />}
-
-              {localStep === 2 && (
-                <BookingStudioDetails onNext={handleNext} onBack={handleBack} />
-              )}
-
-              {localStep === 3 && (
-                <BookingConfirmPage
-                  onBack={handleBack}
-                  onSuccess={(result) => {
-                    message.success(
-                      "Đặt phòng thành công! Chuyển sang thanh toán..."
-                    );
-                    setBookingResult(result); // lưu kết quả booking
-                    setLocalStep(4); // chuyển sang step thanh toán
-                  }}
-                />
-              )}
-
-              {localStep === 4 && (
-                <BookingPaymentPage
-                  bookingResult={bookingResult} // truyền dữ liệu booking sang step 5
-                  onBack={handleBack}
-                  onPaymentSuccess={() => {
-                    message.success("Thanh toán thành công!");
-                    setTimeout(
-                      () => navigate("/dashboard/customer/history"),
-                      2000
-                    );
-                  }}
-                />
-              )}
+              <Button
+                type="text"
+                size="large"
+                icon={<ArrowLeftOutlined />}
+                onClick={handleBack}
+                className="!text-[#0F172A] hover:!text-[#C5A267]"
+              >
+                Quay lại
+              </Button>
             </motion.div>
-          </AnimatePresence>
+          )}
+
+          <Steps current={localStep} items={steps} className="mb-12" />
+
+          <div ref={containerRef}>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={localStep}
+                initial={currentAnimation.initial}
+                animate={currentAnimation.animate}
+                exit={currentAnimation.exit}
+                transition={currentAnimation.transition}
+              >
+                {localStep === 0 && <BookingStudioInfo onNext={handleNext} />}
+
+                {localStep === 1 && <BookingSchedulePage onNext={handleNext} />}
+
+                {localStep === 2 && (
+                  <BookingStudioDetails onNext={handleNext} onBack={handleBack} />
+                )}
+
+                {localStep === 3 && (
+                  <BookingConfirmPage
+                    onBack={handleBack}
+                    onSuccess={(result) => {
+                      message.success(
+                        "Đặt phòng thành công! Chuyển sang thanh toán..."
+                      );
+                      setBookingResult(result); // lưu kết quả booking
+                      setLocalStep(4); // chuyển sang step thanh toán
+                    }}
+                  />
+                )}
+
+                {localStep === 4 && (
+                  <BookingPaymentPage
+                    bookingResult={bookingResult} // truyền dữ liệu booking sang step 5
+                    onBack={handleBack}
+                    onPaymentSuccess={() => {
+                      message.success("Thanh toán thành công!");
+                      setTimeout(
+                        () => navigate("/dashboard/customer/history"),
+                        2000
+                      );
+                    }}
+                  />
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
       </div>
 
       {/* Loading overlay */}
       {loading && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <Card className="max-w-md w-full mx-4 shadow-2xl">
+        <div className="fixed inset-0 bg-[#0F172A]/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <Card className="max-w-md w-full mx-4 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.3)] border-slate-100">
             <div className="flex flex-col items-center space-y-6">
               <div className="relative">
-                <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                <div className="w-16 h-16 border-4 border-[#C5A267]/20 border-t-[#C5A267] rounded-full animate-spin"></div>
               </div>
               <div className="text-center space-y-2">
-                <p className="text-xl font-semibold text-gray-900">Đang xử lý đặt phòng...</p>
-                <p className="text-sm text-gray-600">Vui lòng đợi trong giây lát</p>
+                <p className="text-xl font-semibold text-[#0F172A]">Đang xử lý đặt phòng...</p>
+                <p className="text-sm text-slate-600">Vui lòng đợi trong giây lát</p>
               </div>
               <div className="w-full space-y-2">
                 <Skeleton active paragraph={{ rows: 2 }} />

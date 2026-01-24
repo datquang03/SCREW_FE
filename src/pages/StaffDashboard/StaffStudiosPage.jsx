@@ -321,7 +321,7 @@ const StaffStudiosPage = () => {
               }}
             />
             {imageCount > 1 && (
-              <div className="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-white">
+              <div className="absolute -top-1 -right-1 bg-[#C5A267] text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-white">
                 {imageCount}
               </div>
             )}
@@ -357,7 +357,7 @@ const StaffStudiosPage = () => {
           {
             key: "view",
             label: (
-              <div className="flex items-center gap-2 text-blue-600 font-medium">
+              <div className="flex items-center gap-2 text-[#C5A267] font-medium">
                 <FiEye /> Xem chi tiết
               </div>
             ),
@@ -395,19 +395,16 @@ const StaffStudiosPage = () => {
   return (
     <div className="space-y-6 max-w-[1400px] mx-auto px-4 md:px-6">
       {/* Header */}
-      <div className="relative overflow-hidden rounded-2xl p-6 md:p-8 bg-gradient-to-br from-violet-100 via-purple-50 to-white shadow-lg border border-violet-200/50">
-        <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full bg-purple-300/30 blur-3xl" />
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-            <Title level={2} className="mb-2 text-gray-900">
-            Quản lý Studio
-          </Title>
-            <Text className="text-base text-gray-700 font-medium">
-            Quản lý thông tin và trạng thái các studio
-          </Text>
-        </div>
-        <button
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded shadow-lg hover:shadow-xl hover:scale-105 transition-all cursor-pointer font-semibold"
+      <div className="relative w-full bg-[#C5A267] p-10 text-white shadow-md">
+        <div className="text-sm opacity-90 mb-2">DASHBOARD · STAFF</div>
+        <h1 className="text-3xl font-bold mb-2">Quản lý Studio</h1>
+        <p className="opacity-90">
+          Quản lý thông tin và trạng thái các studio
+        </p>
+
+        <div className="absolute top-8 right-8">
+          <button
+            className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-2 backdrop-blur transition"
           onClick={() => setIsCreateModalOpen(true)}
         >
             <FiVideo /> Thêm Studio
@@ -416,7 +413,7 @@ const StaffStudiosPage = () => {
       </div>
 
       {/* Table */}
-      <Card className="rounded-2xl shadow-lg border border-gray-100">
+      <Card className="shadow-md border border-slate-200">
           <Table
           columns={studiosColumns}
           dataSource={studios.map((s) => ({ key: s._id, ...s }))}
@@ -574,7 +571,7 @@ const StaffStudiosPage = () => {
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-400"
+                    className="px-3 py-1 bg-[#A0826D] text-white hover:bg-[#8B7355]"
                     onClick={() => inputFileEditRef.current.click()}
               >
                     Chọn ảnh
@@ -597,7 +594,7 @@ const StaffStudiosPage = () => {
                         alt="Existing"
                         className="w-20 h-20 object-cover rounded border-2 border-blue-300"
                       />
-                      <div className="absolute bottom-0 left-0 right-0 bg-blue-500 text-white text-xs text-center py-0.5">
+                      <div className="absolute bottom-0 left-0 right-0 bg-[#C5A267] text-white text-xs text-center py-0.5">
                         Cũ
                       </div>
                       <button
@@ -733,11 +730,11 @@ const StaffStudiosPage = () => {
                   {detailStudio.area || 0} m²
                 </Text>
               </Card>
-              <Card className="text-center bg-amber-50 border-amber-200">
+              <Card className="text-center bg-[#FCFBFA] border-slate-200">
                 <Text type="secondary" className="block">
                   Tổng số ảnh
                 </Text>
-                <Text className="text-2xl font-bold text-amber-600">
+                <Text className="text-2xl font-bold text-[#C5A267]">
                   {detailStudio.images?.length || 0}
                 </Text>
               </Card>

@@ -125,24 +125,27 @@ const LoginPage = () => {
 
       <div
         ref={containerRef}
-        className="min-h-screen relative overflow-hidden bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 gradient-bg bg-[length:200%_200%] flex items-center justify-center p-4"
+        className="min-h-screen relative overflow-hidden bg-[#0F172A] gradient-bg bg-[length:200%_200%] flex items-center justify-center p-4"
       >
         {/* Floating Orbs */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-10 -left-10 w-72 h-72 bg-white opacity-10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute -bottom-20 -right-20 w-96 h-96 bg-yellow-300 opacity-10 rounded-full blur-3xl animate-pulse delay-700"></div>
+          <div className="absolute -top-10 -left-10 w-72 h-72 bg-[#C5A267] opacity-10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute -bottom-20 -right-20 w-96 h-96 bg-[#C5A267] opacity-10 rounded-full blur-3xl animate-pulse delay-700"></div>
         </div>
 
         {/* Form Card */}
         <div
           ref={formRef}
-          className="relative w-full max-w-md bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/20"
+          className="relative w-full max-w-md bg-white/95 backdrop-blur-xl shadow-[0_40px_80px_-15px_rgba(0,0,0,0.3)] p-8 border border-slate-100"
         >
           <div ref={titleRef} className="text-center mb-8">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <p className="text-[10px] uppercase tracking-[0.5em] text-[#C5A267] font-bold mb-4">
+              Welcome Back
+            </p>
+            <h1 className="text-4xl font-semibold text-[#0F172A]">
               Đăng Nhập
             </h1>
-            <p className="text-gray-600 mt-2">Chào mừng bạn trở lại</p>
+            <p className="text-slate-600 mt-2">Chào mừng bạn trở lại</p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
@@ -170,20 +173,20 @@ const LoginPage = () => {
                   type={field.type}
                   placeholder={field.placeholder}
                   disabled={loading}
-                  className={`w-full px-5 py-4 pr-12 rounded-2xl border-2 transition-all duration-300 outline-none text-gray-800 placeholder-gray-400 bg-gray-50/80 backdrop-blur-sm
+                  className={`w-full px-5 py-4 pr-12 border-2 transition-all duration-300 outline-none text-[#0F172A] placeholder-slate-400 bg-white
                     ${
                       errors[field.name]
                         ? "border-red-500 focus:border-red-600"
-                        : "border-gray-200 focus:border-purple-500"
+                        : "border-slate-200 focus:border-[#C5A267]"
                     }
-                    focus:ring-4 focus:ring-purple-500/20 group-hover:border-purple-400
+                    focus:ring-4 focus:ring-[#C5A267]/10 group-hover:border-[#C5A267]/50
                     ${loading ? "opacity-70 cursor-not-allowed" : ""}`}
                 />
                 {field.icon && (
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-purple-600 transition-colors"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-[#C5A267] transition-colors"
                   >
                     {field.icon}
                   </button>
@@ -200,12 +203,24 @@ const LoginPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className={`mt-6 w-full py-4 rounded-2xl font-bold text-white flex items-center justify-center gap-3 shadow-lg transition-all duration-300 cursor-pointer
-                ${
-                  loading
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 active:scale-95"
-                }`}
+              style={{
+                backgroundColor: loading ? '#94a3b8' : '#A0826D',
+                borderColor: loading ? '#94a3b8' : '#A0826D',
+              }}
+              onMouseEnter={(e) => {
+                if (!loading) {
+                  e.currentTarget.style.backgroundColor = '#8B7355';
+                  e.currentTarget.style.borderColor = '#8B7355';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!loading) {
+                  e.currentTarget.style.backgroundColor = '#A0826D';
+                  e.currentTarget.style.borderColor = '#A0826D';
+                }
+              }}
+              className={`mt-6 w-full py-4 font-bold text-white flex items-center justify-center gap-3 shadow-lg transition-all duration-300 cursor-pointer
+                ${loading ? "cursor-not-allowed" : "active:scale-95"}`}
             >
               {loading ? (
                 <>
@@ -237,10 +252,10 @@ const LoginPage = () => {
             {/* Phân cách OR */}
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300/70"></div>
+                <div className="w-full border-t border-slate-200"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white/80 text-gray-500 backdrop-blur-sm rounded-full">
+                <span className="px-4 bg-white text-slate-500 backdrop-blur-sm">
                   hoặc
                 </span>
               </div>
@@ -251,7 +266,7 @@ const LoginPage = () => {
               type="button"
               disabled={loading}
               onClick={handleGoogleLogin}
-              className={`w-full py-4 px-6 rounded-2xl font-medium text-gray-800 flex items-center justify-center gap-4 shadow-md transition-all duration-300 cursor-pointer border border-gray-300/80 bg-white hover:bg-gray-50 active:scale-[0.98] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-purple-300/50
+              className={`w-full py-4 px-6 font-medium text-[#0F172A] flex items-center justify-center gap-4 shadow-md transition-all duration-300 cursor-pointer border-2 border-slate-200 bg-white hover:bg-slate-50 hover:border-[#C5A267] active:scale-[0.98] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#C5A267]/20
                 ${loading ? "opacity-60 cursor-not-allowed" : ""}`}
             >
               <svg
@@ -284,15 +299,15 @@ const LoginPage = () => {
           <div className="mt-6 text-center space-y-3">
             <a
               href="/forgot-password"
-              className="block text-sm text-purple-600 hover:underline"
+              className="block text-sm text-[#C5A267] hover:underline font-semibold"
             >
               Quên mật khẩu?
             </a>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-slate-600">
               Chưa có tài khoản?{" "}
               <a
                 href="/register"
-                className="font-semibold text-purple-600 hover:underline"
+                className="font-semibold text-[#C5A267] hover:underline"
               >
                 Đăng ký ngay
               </a>

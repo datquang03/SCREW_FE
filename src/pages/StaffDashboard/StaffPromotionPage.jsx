@@ -378,22 +378,19 @@ const StaffPromotionPage = () => {
   return (
     <div className="p-4 lg:p-8 space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <Title level={3} className="mb-0">
-              Quản lý khuyến mãi
-            </Title>
-            <Text type="secondary">Tạo và theo dõi chương trình ưu đãi</Text>
-          </div>
-          <Button
-            type="primary"
-            size="large"
-            icon={<FiPlus />}
-            onClick={() => openEditModal()}
+      <div className="relative w-full bg-[#C5A267] p-10 text-white shadow-md">
+        <div className="text-sm opacity-90 mb-2">DASHBOARD · STAFF</div>
+        <h1 className="text-3xl font-bold mb-2">Quản lý khuyến mãi</h1>
+        <p className="opacity-90">
+          Tạo và theo dõi chương trình ưu đãi
+        </p>
+
+        <div className="absolute top-8 right-8">
+          <button
+            className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-2 backdrop-blur transition"
           >
             Tạo mã mới
-          </Button>
+          </button>
         </div>
       </div>
 
@@ -417,7 +414,7 @@ const StaffPromotionPage = () => {
           <Text type="secondary" className="text-xs uppercase">
             Tổng lượt dùng
           </Text>
-          <Title level={3} className="text-purple-600">
+          <Title level={3} className="text-[#C5A267]">
             {promotions.reduce((sum, p) => sum + (p.usageCount || 0), 0)}
           </Title>
         </Card>
@@ -647,7 +644,7 @@ const StaffPromotionPage = () => {
           {/* PHẦN 3: ĐIỀU KIỆN ÁP DỤNG */}
           <Card 
             title={<span className="text-base font-semibold">⚙️ Điều kiện áp dụng</span>} 
-            className="border-purple-200"
+            className="border-slate-200"
             size="small"
           >
             <div className="space-y-4">
@@ -759,7 +756,7 @@ const StaffPromotionPage = () => {
         {currentPromotion ? (
           <div className="space-y-8">
             <div className="text-center pb-6 border-b">
-              <Title level={3} className="text-blue-600 mb-2">
+              <Title level={3} className="text-[#C5A267] mb-2">
                 {currentPromotion.name || "Chưa đặt tên"}
               </Title>
               <Tag color="blue" size="large" className="text-lg px-4 py-1">

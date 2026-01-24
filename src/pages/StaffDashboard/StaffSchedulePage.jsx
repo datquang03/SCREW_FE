@@ -169,27 +169,27 @@ const StaffSchedulePage = () => {
 
     return (
       <div
-        className={`h-24 w-full px-2 py-2 border-2 rounded-xl flex flex-col items-center justify-between text-sm transition-all cursor-pointer hover:shadow-md ${
+        className={`h-24 w-full px-2 py-2 border-2 flex flex-col items-center justify-between text-sm transition-all cursor-pointer hover:shadow-md ${
           isSelected
-            ? "border-purple-500 bg-gradient-to-br from-purple-50 to-pink-50 shadow-lg ring-2 ring-purple-300"
-            : "border-gray-200 bg-white hover:border-purple-300"
-        } ${isToday ? "ring-2 ring-blue-500 ring-offset-2" : ""}`}
+            ? "border-[#C5A267] bg-[#FCFBFA] shadow-md ring-2 ring-[#C5A267]"
+            : "border-slate-200 bg-white hover:border-[#A0826D]"
+        } ${isToday ? "ring-2 ring-[#10b981] ring-offset-2" : ""}`}
       >
         <div className="flex w-full items-center justify-between">
           <span className={`font-bold text-base ${
-            isSelected ? "text-purple-700" : isToday ? "text-blue-600" : "text-gray-800"
+            isSelected ? "text-[#C5A267]" : isToday ? "text-[#10b981]" : "text-[#0F172A]"
           }`}>
             {date.date()}
           </span>
           {isToday && (
-            <Tag color="blue" className="!px-2 !py-0.5 !rounded-full !text-xs !font-semibold !border-blue-400">
+            <Tag color="green" className="!px-2 !py-0.5 !text-xs !font-semibold !border-[#10b981]">
               Hôm nay
             </Tag>
           )}
         </div>
         <div className="flex flex-col items-center gap-1 mt-1">
           <span className={`text-[10px] font-medium ${
-            isSelected ? "text-purple-600" : "text-gray-500"
+            isSelected ? "text-[#C5A267]" : "text-slate-500"
           }`}>
             Số lịch
           </span>
@@ -211,27 +211,18 @@ const StaffSchedulePage = () => {
     setModalVisible(true);
   };
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 py-8 px-4">
+    <div className="min-h-screen bg-[#FCFBFA] py-8 px-4">
       {/* Header */}
       <div className="max-w-7xl mx-auto mb-10">
-        <div className="relative bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-3xl p-10 text-white shadow-2xl text-center overflow-hidden border-4 border-white/20">
-          {/* Background decoration */}
-          <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -ml-24 -mb-24 blur-3xl"></div>
-
-          {/* Content */}
-          <div className="relative z-10">
-            <Title level={1} className="mb-4 !text-white drop-shadow-lg !text-4xl !font-bold">
-              Chào mừng quay lại, Staff!
-            </Title>
-            <Text className="text-2xl font-semibold !text-white drop-shadow-md">
-              Hôm nay bạn có{" "}
-              <span className="inline-block mx-3 px-8 py-3 bg-white/95 rounded-2xl border-4 border-white/70 text-5xl font-extrabold booking-count-3d shadow-2xl">
-                {todayBookings.length || 0}
-              </span>{" "}
-              <span className="!text-white">buổi đặt</span>
-            </Text>
+        <div className="relative bg-[#C5A267] p-10 text-white shadow-md text-center">
+          <div className="text-sm opacity-90 mb-2">DASHBOARD · STAFF</div>
+          <h1 className="text-4xl font-bold mb-2">Chào mừng quay lại, Staff!</h1>
+          <div className="text-2xl font-semibold">
+            Hôm nay bạn có{" "}
+            <span className="inline-block mx-3 px-8 py-3 bg-white/20 border-2 border-white/30 text-5xl font-extrabold">
+              {todayBookings.length || 0}
+            </span>{" "}
+            <span>buổi đặt</span>
           </div>
         </div>
       </div>
@@ -266,18 +257,18 @@ const StaffSchedulePage = () => {
         width={900}
         centered
         title={
-          <div className="flex items-center justify-between bg-gradient-to-r from-purple-50 to-pink-50 -m-6 mb-0 p-4 rounded-t-lg border-b-2 border-purple-200">
+          <div className="flex items-center justify-between bg-[#FCFBFA] -m-6 mb-0 p-4 border-b-2 border-slate-200">
             <div>
-              <div className="text-xs font-semibold text-purple-600 uppercase tracking-wide mb-1">
+              <div className="text-xs font-semibold text-[#C5A267] uppercase tracking-wide mb-1">
                 Ngày
               </div>
-              <div className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 text-transparent bg-clip-text">
+              <div className="text-2xl font-bold text-[#0F172A]">
                 {selectedDate.format("dddd, DD/MM/YYYY")}
               </div>
             </div>
             <Tag 
-              color="purple" 
-              className="!px-4 !py-2 !rounded-full !text-base !font-bold !border-2 !border-purple-400 !bg-gradient-to-r !from-purple-500 !to-pink-500 !text-white !shadow-lg"
+              color="default" 
+              className="!px-4 !py-2 !text-base !font-bold !border-2 !border-[#C5A267] !bg-[#C5A267] !text-white !shadow-md"
             >
               {selectedDateBookings.length} lịch
             </Tag>
@@ -314,7 +305,7 @@ const StaffSchedulePage = () => {
                     <div className="flex-1">
                       <div className="flex justify-between items-start">
                         <div>
-                          <div className="font-bold text-xl text-slate-900 mb-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-transparent bg-clip-text">
+                          <div className="font-bold text-xl text-[#0F172A] mb-1">
                             {vnStart.format("HH:mm")} → {vnEnd.format("HH:mm")}
                           </div>
                           <div className="text-sm font-medium text-gray-600 bg-gray-50 px-2 py-1 rounded-md inline-block">
@@ -357,30 +348,30 @@ const StaffSchedulePage = () => {
                   <Divider className="my-2" />
 
                   <div className="space-y-3 text-sm">
-                    <div className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-purple-50 p-2 rounded-lg border border-blue-200">
-                      <FiUser className="text-blue-600 text-lg" />
-                      <span className="font-bold text-gray-900 text-base">
+                    <div className="flex items-center gap-2 bg-[#FCFBFA] p-2 border border-slate-200">
+                      <FiUser className="text-[#C5A267] text-lg" />
+                      <span className="font-bold text-[#0F172A] text-base">
                         {customer.fullName || "Chưa có tên"}
                       </span>
                       {customer.isVerified && (
-                        <Tag color="cyan" icon={<FiCheckCircle />} className="!ml-auto !font-semibold !border-2 !border-cyan-400">
+                        <Tag color="green" icon={<FiCheckCircle />} className="!ml-auto !font-semibold !border-2 !border-[#10b981]">
                           ✓ Đã xác minh
                         </Tag>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-lg">
-                      <FiPhone className="text-indigo-600 text-base" />
-                      <span className="font-medium text-gray-800">{customer.phone || "Chưa có SĐT"}</span>
+                    <div className="flex items-center gap-2 bg-[#FCFBFA] p-2 border border-slate-200">
+                      <FiPhone className="text-[#C5A267] text-base" />
+                      <span className="font-medium text-[#0F172A]">{customer.phone || "Chưa có SĐT"}</span>
                     </div>
-                    <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-lg">
-                      <FiMail className="text-indigo-600 text-base" />
-                      <span className="truncate font-medium text-gray-800">
+                    <div className="flex items-center gap-2 bg-[#FCFBFA] p-2 border border-slate-200">
+                      <FiMail className="text-[#C5A267] text-base" />
+                      <span className="truncate font-medium text-[#0F172A]">
                         {customer.email || "Chưa có email"}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-lg">
-                      <FiShield className="text-indigo-600 text-base" />
-                      <Tag color="purple" className="!rounded-full !px-2 !py-1 !font-semibold !text-xs !border !border-purple-400">
+                    <div className="flex items-center gap-2 bg-[#FCFBFA] p-2 border border-slate-200">
+                      <FiShield className="text-[#C5A267] text-base" />
+                      <Tag color="default" className="!px-2 !py-1 !font-semibold !text-xs !border !border-slate-300 bg-slate-100">
                         {customer.role || "customer"}
                       </Tag>
                       <Tag 
@@ -393,8 +384,8 @@ const StaffSchedulePage = () => {
                         {customer.isActive ? "✓ Hoạt động" : "✗ Đã khóa"}
                       </Tag>
                     </div>
-                    <div className="flex items-start gap-2 bg-gradient-to-r from-amber-50 to-orange-50 p-2 rounded-lg border border-amber-200">
-                      <FiMapPin className="text-amber-600 text-base mt-0.5" />
+                    <div className="flex items-start gap-2 bg-[#FCFBFA] p-2 border border-slate-200">
+                      <FiMapPin className="text-[#C5A267] text-base mt-0.5" />
                       <div>
                         <div className="font-bold text-gray-900 text-base">
                           {booking.studioName}
@@ -404,9 +395,9 @@ const StaffSchedulePage = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 bg-gradient-to-r from-green-50 to-emerald-50 p-2 rounded-lg border border-green-200">
-                      <FiDollarSign className="text-green-600 text-lg" />
-                      <span className="font-bold text-green-700 text-lg">
+                    <div className="flex items-center gap-2 bg-[#10b981]/10 p-2 border border-[#10b981]/30">
+                      <FiDollarSign className="text-[#10b981] text-lg" />
+                      <span className="font-bold text-[#10b981] text-lg">
                         {booking.finalAmount?.toLocaleString("vi-VN")}₫
                       </span>
                     </div>

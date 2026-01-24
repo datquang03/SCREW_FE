@@ -124,21 +124,17 @@ const AdminProfilePage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="relative overflow-hidden rounded-2xl p-6 md:p-8 bg-gradient-to-br from-indigo-100 via-slate-50 to-white shadow-lg border border-indigo-200/50">
-        <div className="absolute -top-10 -right-10 w-44 h-44 rounded-full bg-indigo-300/30 blur-3xl" />
-        <div className="relative z-10">
-          <Title level={2} className="mb-2 text-gray-900">
-            Hồ sơ quản trị viên
-          </Title>
-          <Text className="text-base text-gray-700 font-medium">
-            Thông tin cá nhân và quản trị hệ thống S+ Studio
-          </Text>
-        </div>
+      <div className="relative w-full bg-[#C5A267] p-10 text-white shadow-md">
+        <div className="text-sm opacity-90 mb-2">DASHBOARD · ADMIN</div>
+        <h1 className="text-3xl font-bold mb-2">Hồ sơ quản trị viên</h1>
+        <p className="opacity-90">
+          Thông tin cá nhân và quản trị hệ thống S+ Studio
+        </p>
       </div>
       <Row gutter={24}>
         {/* LEFT COLUMN - AVATAR & INFO */}
         <Col xs={24} md={8}>
-          <Card className="text-center shadow-lg border border-gray-100 rounded-2xl">
+          <Card className="text-center shadow-lg border border-slate-200">
             <div className="relative inline-block">
               <Avatar
                 size={120}

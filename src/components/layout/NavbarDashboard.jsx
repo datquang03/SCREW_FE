@@ -45,9 +45,9 @@ import notificationSound from "../../assets/notification.mp3";
 
 const THEMES = {
   customer: {
-    bg: "bg-gradient-to-r from-amber-50 via-white to-white",
-    accent: "text-amber-600",
-    pill: "bg-amber-100 text-amber-700",
+    bg: "bg-gradient-to-r from-[#FCFBFA] via-white to-white",
+    accent: "text-[#A0826D]",
+    pill: "bg-[#FCFBFA] text-[#A0826D]",
   },
   staff: {
     bg: "bg-gradient-to-r from-emerald-50 via-white to-white",

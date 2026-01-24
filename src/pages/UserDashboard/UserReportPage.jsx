@@ -124,11 +124,12 @@ const UserReportPage = () => {
   return (
     <div className="space-y-6">
       {/* HEADER */}
-      <div className="overflow-hidden rounded-2xl p-8 bg-gradient-to-br from-blue-100 via-indigo-50 to-white shadow-lg border border-blue-200/50">
-        <Title level={2}>Báo cáo & phản hồi</Title>
-        <Text className="text-gray-700">
+      <div className="relative w-full bg-[#C5A267] p-10 text-white shadow-md">
+        <div className="text-sm opacity-90 mb-2">DASHBOARD · USER</div>
+        <h1 className="text-3xl font-bold mb-2">Báo cáo & phản hồi</h1>
+        <p className="opacity-90">
           Xem lại các báo cáo, phản hồi hoặc góp ý bạn đã gửi về dịch vụ của chúng tôi.
-        </Text>
+        </p>
       </div>
       {/* THỐNG KÊ */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">

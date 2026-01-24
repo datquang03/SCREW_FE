@@ -7,15 +7,15 @@ const formatTime = (date) =>
 
 // Skeleton cho conversation item
 const ConversationSkeleton = () => (
-  <div className="w-full p-4 rounded-2xl border border-gray-100 mb-2 animate-pulse">
+  <div className="w-full p-4 border border-slate-100 mb-2 animate-pulse">
     <div className="flex items-center gap-3">
-      <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0" />
+      <div className="w-10 h-10 bg-gray-200 flex-shrink-0" />
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-2">
-          <div className="h-4 bg-gray-200 rounded w-24" />
-          <div className="h-3 bg-gray-200 rounded w-12" />
+          <div className="h-4 bg-gray-200 w-24" />
+          <div className="h-3 bg-gray-200 w-12" />
         </div>
-        <div className="h-3 bg-gray-200 rounded w-full" />
+        <div className="h-3 bg-gray-200 w-full" />
       </div>
     </div>
   </div>
@@ -34,17 +34,17 @@ const MessageSidebar = ({ conversations, activeConversation, onSelect, loading }
   }, [conversations, search]);
 
   return (
-    <div className="bg-white/90 backdrop-blur rounded-3xl shadow-xl border border-gray-100 flex flex-col overflow-hidden">
-      <div className="p-5 border-b border-gray-100">
+    <div className="bg-white border border-slate-200 shadow-lg flex flex-col overflow-hidden">
+      <div className="p-5 border-b border-slate-200">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-lg shadow-amber-200/60 border border-white/60 flex items-center justify-center">
+          <div className="w-12 h-12 bg-[#C5A267] text-white shadow-md border-2 border-[#C5A267] flex items-center justify-center">
             <MessageOutlined className="text-xl" />
           </div>
           <div>
-            <p className="text-sm text-gray-500">Danh sách chat</p>
-            <p className="font-bold">
+            <p className="text-sm text-slate-600 uppercase tracking-wider">Danh sách chat</p>
+            <p className="font-bold text-[#0F172A]">
               {loading ? (
-                <span className="inline-block h-4 w-16 bg-gray-200 rounded animate-pulse" />
+                <span className="inline-block h-4 w-16 bg-gray-200 animate-pulse" />
               ) : (
                 `${conversations.length} cuộc trò chuyện`
               )}
@@ -54,13 +54,13 @@ const MessageSidebar = ({ conversations, activeConversation, onSelect, loading }
       </div>
 
       <div className="p-4">
-        <div className="flex items-center gap-3 bg-gray-50 px-4 py-2 rounded-2xl border">
-          <SearchOutlined className="text-gray-400" />
+        <div className="flex items-center gap-3 bg-[#FCFBFA] px-4 py-2 border border-slate-200 hover:border-[#C5A267] transition">
+          <SearchOutlined className="text-slate-400" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Tìm kiếm..."
-            className="flex-1 outline-none text-sm"
+            className="flex-1 outline-none text-sm bg-transparent text-[#0F172A]"
             disabled={loading}
           />
         </div>
@@ -88,12 +88,12 @@ const MessageSidebar = ({ conversations, activeConversation, onSelect, loading }
               <button
                 key={conv._id}
                 onClick={() => onSelect({ ...conv, _id: convId })}
-                className={`w-full text-left p-4 rounded-2xl transition mb-2 border ${
+                className={`w-full text-left p-4 transition mb-2 border ${
                   isActive
-                    ? "bg-amber-50 border-amber-200"
+                    ? "bg-[#FCFBFA] border-[#C5A267] border-2"
                     : unread > 0
-                    ? "bg-blue-50 border-blue-100 hover:bg-blue-100"
-                    : "border-gray-100 hover:bg-gray-50"
+                    ? "bg-[#FCFBFA] border-[#10b981] hover:bg-white"
+                    : "border-slate-100 hover:bg-[#FCFBFA] hover:border-[#A0826D]"
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -104,28 +104,28 @@ const MessageSidebar = ({ conversations, activeConversation, onSelect, loading }
                       className="w-10 h-10 rounded-full object-cover border"
                     />
                   ) : (
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 text-white font-bold flex-center">
+                    <div className="w-10 h-10 bg-[#C5A267] text-white font-bold flex items-center justify-center border-2 border-[#C5A267]">
                       {name[0]}
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <p className="font-semibold truncate">{name}</p>
+                      <p className="font-semibold truncate text-[#0F172A]">{name}</p>
                       {unread > 0 && (
-                        <span className="text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <span className="text-xs bg-[#10b981] text-white px-2 py-0.5 flex items-center gap-1 font-semibold">
                           <EyeOutlined className="text-[10px]" /> {unread}
                         </span>
                       )}
                     </div>
                     <p
                       className={`text-xs truncate ${
-                        unread > 0 ? "text-gray-700 font-semibold" : "text-gray-500"
+                        unread > 0 ? "text-[#0F172A] font-semibold" : "text-slate-500"
                       }`}
                     >
                       {lastMsg}
                     </p>
                   </div>
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-slate-400">
                     {formatTime(conv.lastMessage?.createdAt)}
                   </span>
                 </div>

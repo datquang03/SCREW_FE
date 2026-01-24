@@ -655,7 +655,7 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
           type="text"
           icon={<FiEye />}
           onClick={() => handleViewDetail(record._id || record.id)}
-          className="text-indigo-600 hover:bg-indigo-50"
+          className="text-[#C5A267] hover:bg-[#FCFBFA]"
         >
           Xem chi tiết
         </Button>
@@ -680,7 +680,6 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
         badge={`${
           customRequests.filter((r) => r.status === "pending").length
         } chờ xử lý`}
-        gradient="from-purple-600 via-indigo-500 to-blue-500"
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -784,7 +783,7 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
         }}
       >
         {selectedRequest && (
-          <div className="bg-gradient-to-br from-white via-purple-50 to-white p-6 md:p-8 rounded-3xl border border-purple-100 shadow-2xl detail-content">
+          <div className="bg-[#FCFBFA] p-6 md:p-8 border border-slate-200 shadow-2xl detail-content">
             <div className="flex justify-end">
               <button
                 className="w-10 h-10 rounded-full bg-white/80 border border-purple-100 shadow hover:shadow-md hover:bg-white transition"
@@ -834,10 +833,10 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
             {/* 3 Cột thông tin */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               {/* Thông tin khách */}
-              <Card className="rounded-2xl shadow-md border-purple-0 bg-gradient-to-br from-purple-50 to-white">
+              <Card className="shadow-md border-slate-200 bg-[#FCFBFA]">
                 <Title
                   level={5}
-                  className="flex items-center gap-2 text-purple-700 mb-4"
+                  className="flex items-center gap-2 text-[#C5A267] mb-4"
                 >
                   <FiUser /> Khách hàng
                 </Title>
@@ -846,54 +845,18 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
                     <Text strong>{selectedRequest.customerName}</Text>
                   </div>
                   <div className="flex items-center gap-2">
-                    <FiMail className="text-purple-500" />{" "}
+                    <FiMail className="text-[#C5A267]" />{" "}
                     {selectedRequest.email}
                   </div>
                   <div className="flex items-center gap-2">
-                    <FiPhone className="text-purple-500" />{" "}
+                    <FiPhone className="text-[#C5A267]" />{" "}
                     {selectedRequest.phoneNumber || "Chưa cung cấp"}
                   </div>
                 </div>
               </Card>
 
-              {/* Thời gian & AI */}
-              <Card className="rounded-2xl shadow-md border-0 bg-gradient-to-br from-blue-50 to-white">
-                <Title
-                  level={5}
-                  className="flex items-center gap-2 text-blue-700 mb-4"
-                >
-                  <FiClock /> Thời gian & AI
-                </Title>
-                <div className="space-y-3 text-sm">
-                  <div>
-                    <Text type="secondary">Gửi lúc</Text>
-                    <br />
-                    <Text strong>
-                      {dayjs(selectedRequest.createdAt).format(
-                        "DD/MM/YYYY HH:mm"
-                      )}
-                    </Text>
-                    <Text type="success" className="block text-xs">
-                      ({dayjs(selectedRequest.createdAt).fromNow()})
-                    </Text>
-                  </div>
-                  <div>
-                    <Text type="secondary">AI Model:</Text>{" "}
-                    <Tag color="purple">
-                      {selectedRequest.aiModel || "Gemini Flash"}
-                    </Tag>
-                  </div>
-                  <div>
-                    <Text type="secondary">Số lần thử:</Text>{" "}
-                    <Text strong>
-                      {selectedRequest.aiGenerationAttempts || 0}
-                    </Text>
-                  </div>
-                </div>
-              </Card>
-
               {/* Xử lý */}
-              <Card className="rounded-2xl shadow-md border-0 bg-gradient-to-br from-emerald-50 to-white">
+              <Card className="shadow-md border border-slate-200 bg-white">
                 <Title
                   level={5}
                   className="flex items-center gap-2 text-emerald-700 mb-4"
@@ -908,7 +871,7 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
                   <Text type="warning">Chưa có staff nhận</Text>
                 )}
                 {selectedRequest.convertedToDesignId && (
-                  <div className="mt-4 p-3 bg-green-100 rounded-lg text-center">
+                  <div className="mt-4 p-3 bg-[#10b981]/10 text-center border border-[#10b981]/20">
                     <FiCheckCircle className="text-2xl text-green-600 mx-auto mb-1" />
                     <Text strong className="text-green-700 block">
                       ĐÃ CHUYỂN THÀNH SẢN PHẨM
@@ -922,7 +885,7 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
             <Card
               title={
                 <span className="flex items-center gap-2 text-lg">
-                  <FiMessageSquare className="text-purple-600" /> Mô tả yêu cầu
+                  <FiMessageSquare className="text-[#C5A267]" /> Mô tả yêu cầu
                 </span>
               }
               className="mb-6 rounded-2xl"
@@ -952,7 +915,7 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
                           <img
                             src={imgUrl}
                             alt={`Ref ${i + 1}`}
-                            className="rounded-lg object-cover h-48 w-56 border-2 border-purple-200 hover:border-purple-500 hover:shadow-lg transition cursor-pointer"
+                            className="object-cover h-48 w-56 border-2 border-slate-200 hover:border-[#C5A267] hover:shadow-lg transition cursor-pointer"
                             onClick={() => {
                               // Open fullscreen preview using Image component preview
                               const image = new window.Image();
@@ -961,7 +924,7 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
                                 const modal = document.createElement('div');
                                 modal.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-[1000] cursor-pointer';
                                 modal.innerHTML = `
-                                  <img src="${imgUrl}" alt="Fullscreen" class="max-w-full max-h-full object-contain rounded-lg" />
+                                  <img src="${imgUrl}" alt="Fullscreen" class="max-w-full max-h-full object-contain" />
                                   <button class="absolute top-4 right-4 w-10 h-10 bg-white/20 hover:bg-white/40 rounded-full text-white text-xl transition flex items-center justify-center" onclick="this.closest('div').remove()">✕</button>
                                 `;
                                 modal.onclick = (e) => {
@@ -986,7 +949,7 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
                   <img
                     src={selectedRequest.generatedImage}
                     alt="AI Generated"
-                    className="rounded-xl shadow-2xl max-w-full mx-auto max-h-96"
+                    className="shadow-2xl max-w-full mx-auto max-h-96"
                   />
                 </div>
               </Card>
@@ -995,14 +958,14 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
             {/* Ngân sách */}
             {(selectedRequest.budgetRange?.min ||
               selectedRequest.budgetRange?.max) && (
-              <Card className="rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200 mb-6">
+              <Card className="bg-[#FCFBFA] border-slate-200 mb-6">
                 <Title
                   level={5}
-                  className="flex items-center gap-2 text-amber-700"
+                  className="flex items-center gap-2 text-[#C5A267]"
                 >
                   <FiDollarSign /> Ngân sách mong muốn
                 </Title>
-                <Text className="text-2xl font-bold text-amber-800">
+                <Text className="text-2xl font-bold text-[#C5A267]">
                   {selectedRequest.budgetRange.min
                     ? `${selectedRequest.budgetRange.min.toLocaleString(
                         "vi-VN"
@@ -1041,7 +1004,7 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
                       size="large"
                       type="primary"
                       icon={<FiCheckCircle />}
-                      className="bg-blue-600"
+                      className="bg-[#A0826D] hover:bg-[#8B7355] border-0"
                       onClick={() => handleStatusChange("processing")}
                       loading={loading}
                     >
@@ -1056,7 +1019,7 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
                       size="large"
                       type="default"
                       icon={<FiSend />}
-                      className="border-purple-600 text-purple-600 hover:bg-purple-50"
+                      className="border-[#C5A267] text-[#C5A267] hover:bg-[#FCFBFA]"
                       onClick={openMessageModal}
                     >
                       Soạn tin / Tạo set design
@@ -1102,7 +1065,7 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
         styles={{ body: { padding: 0, background: "transparent" } }}
       >
         <div className="bg-white rounded-3xl border border-purple-100 shadow-2xl overflow-hidden">
-          <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-purple-600 to-pink-500 text-white">
+          <div className="flex items-center justify-between px-6 py-4 bg-[#C5A267] text-white">
             <div>
               <p className="text-xs uppercase tracking-widest opacity-80">
                 Soạn tin nhắn
@@ -1133,7 +1096,7 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
                 <Button
                   icon={<FiPackage />}
                   onClick={() => setConvertModalOpen(true)}
-                  className="border-purple-500 text-purple-600"
+                  className="border-[#C5A267] text-[#C5A267]"
                 >
                   Tạo Set Design
                 </Button>
@@ -1147,7 +1110,7 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
                     loading={sendLoading}
                     onClick={() => handleSendMessage()}
                     disabled={!messageContent.trim()}
-                    className="bg-gradient-to-r from-purple-500 to-pink-500 border-none"
+                    className="bg-[#A0826D] hover:bg-[#8B7355] border-none"
                   >
                     Gửi tin nhắn
                   </Button>
@@ -1156,7 +1119,7 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
             </div>
 
             {/* Preview Set Design */}
-            <div className="p-6 bg-gradient-to-br from-purple-50 via-white to-amber-50 border-l border-purple-100 space-y-4">
+            <div className="p-6 bg-[#FCFBFA] border-l border-slate-200 space-y-4">
               <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
                   <FiPackage /> Chọn Set Design gửi kèm
@@ -1293,7 +1256,7 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
                       <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
                         <button
                           onClick={() => openUpdateModal(displayDesign)}
-                          className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center hover:bg-blue-600 shadow-md transition-colors"
+                          className="w-8 h-8 rounded-full bg-[#C5A267] text-white flex items-center justify-center hover:bg-[#A0826D] shadow-md transition-colors"
                           title="Sửa Set Design"
                         >
                           <FiEdit size={14} />
@@ -1427,7 +1390,7 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
         styles={{ body: { padding: 0, background: "transparent" } }}
       >
         <div className="bg-white rounded-3xl border border-amber-100 shadow-2xl overflow-hidden">
-          <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-amber-500 via-orange-400 to-pink-400 text-white">
+          <div className="flex items-center justify-between px-6 py-4 bg-[#C5A267] text-white">
             <div>
               <p className="text-xs uppercase tracking-widest opacity-80">
                 Tạo Set Design
@@ -1517,7 +1480,7 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
                     accept="image/*"
                     multiple
                     onChange={handleAdditionalImagesChange}
-                    className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
+                    className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-[#FCFBFA] file:text-[#C5A267] hover:file:bg-slate-100 cursor-pointer"
                   />
                   {convertForm.additionalPreview?.length > 0 && (
                     <div className="space-y-2">
@@ -1551,7 +1514,7 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
             </div>
 
             {/* Preview */}
-            <div className="p-6 bg-gradient-to-br from-amber-50 via-white to-purple-50 border-l border-amber-100 space-y-4">
+            <div className="p-6 bg-[#FCFBFA] border-l border-slate-200 space-y-4">
               <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
                 <FiPackage /> Xem trước
               </div>
@@ -1652,7 +1615,7 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
         styles={{ body: { padding: 0, background: "transparent" } }}
       >
         <div className="bg-white rounded-3xl border border-blue-100 shadow-2xl overflow-hidden">
-          <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-blue-500 via-indigo-400 to-purple-400 text-white">
+          <div className="flex items-center justify-between px-6 py-4 bg-[#C5A267] text-white">
             <div>
               <p className="text-xs uppercase tracking-widest opacity-80">
                 Cập nhật Set Design
@@ -1734,7 +1697,7 @@ Nếu bạn đồng ý, mình sẽ tiến hành tạo Set Design chi tiết ngay
             </div>
 
             {/* Preview */}
-            <div className="p-6 bg-gradient-to-br from-blue-50 via-white to-purple-50 border-l border-blue-100 space-y-4">
+            <div className="p-6 bg-[#FCFBFA] border-l border-slate-200 space-y-4">
               <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
                 <FiPackage /> Xem trước
               </div>

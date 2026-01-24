@@ -64,16 +64,12 @@ const AdminRevenuePage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="relative overflow-hidden rounded-2xl p-6 md:p-8 bg-gradient-to-br from-emerald-100 via-white to-white shadow-lg border border-emerald-200/50">
-        <div className="absolute -top-10 -right-12 w-52 h-52 rounded-full bg-emerald-300/25 blur-3xl" />
-        <div className="relative z-10">
-          <Title level={2} className="mb-2 text-gray-900">
-          Doanh thu & Tăng trưởng
-        </Title>
-          <Text className="text-base text-gray-700 font-medium">
+      <div className="relative w-full bg-[#C5A267] p-10 text-white shadow-md">
+        <div className="text-sm opacity-90 mb-2">DASHBOARD · ADMIN</div>
+        <h1 className="text-3xl font-bold mb-2">Doanh thu & Tăng trưởng</h1>
+        <p className="opacity-90">
           Theo dõi doanh thu, nguồn đặt và khách hàng giá trị cao
-        </Text>
-        </div>
+        </p>
       </div>
 
       <Row gutter={16}>

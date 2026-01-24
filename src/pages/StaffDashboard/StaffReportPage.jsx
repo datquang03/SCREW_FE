@@ -210,7 +210,7 @@ const StaffReportPage = () => {
           items.push({
             key: "process",
             label: (
-              <div className="flex items-center gap-2 text-blue-600 font-medium">
+              <div className="flex items-center gap-2 text-[#C5A267] font-medium">
                 <FiCheck /> Xử lý
               </div>
             ),
@@ -224,7 +224,7 @@ const StaffReportPage = () => {
             trigger={["click"]}
             placement="bottomRight"
           >
-            <button className="text-gray-500 hover:text-indigo-600 transition-colors p-2 rounded-full hover:bg-gray-100">
+            <button className="text-gray-500 hover:text-[#C5A267] transition-colors p-2 rounded-full hover:bg-gray-100">
               <FiMoreVertical size={20} />
             </button>
           </Dropdown>
@@ -236,13 +236,12 @@ const StaffReportPage = () => {
   return (
     <div className="space-y-6 p-4">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-8 text-white shadow-xl">
-        <Title level={2} className="mb-2 !text-white" style={{ color: "white" }}>
-          Quản lý báo cáo
-        </Title>
-        <Text className="text-white/90" style={{ color: "rgba(255, 255, 255, 0.9)" }}>
+      <div className="relative w-full bg-[#C5A267] p-10 text-white shadow-md">
+        <div className="text-sm opacity-90 mb-2">DASHBOARD · STAFF</div>
+        <h1 className="text-3xl font-bold mb-2">Quản lý báo cáo</h1>
+        <p className="opacity-90">
           Theo dõi và xử lý các báo cáo, khiếu nại từ người dùng
-        </Text>
+        </p>
       </div>
 
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">

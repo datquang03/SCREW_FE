@@ -268,11 +268,12 @@ const UserHistoryPage = () => {
   return (
     <div className="space-y-6">
       {/* ===================== HEADER ===================== */}
-      <div className="overflow-hidden rounded-2xl p-8 bg-gradient-to-br from-blue-100 via-indigo-50 to-white shadow-lg border border-blue-200/50">
-        <Title level={2}>Lịch sử thuê & giao dịch</Title>
-        <Text className="text-gray-700">
+      <div className="relative w-full bg-[#C5A267] p-10 text-white shadow-md">
+        <div className="text-sm opacity-90 mb-2">DASHBOARD · USER</div>
+        <h1 className="text-3xl font-bold mb-2">Lịch sử thuê & giao dịch</h1>
+        <p className="opacity-90">
           Xem lại toàn bộ lịch sử đặt studio & thanh toán của bạn.
-        </Text>
+        </p>
         </div>
 
       {/* ===================== THỐNG KÊ ===================== */}
@@ -318,7 +319,7 @@ const UserHistoryPage = () => {
           {!(transactionDetailLoading || !transactionDetail) && (
             <div className="space-y-6">
               {/* ===== HEADER ===== */}
-              <Card className="bg-gradient-to-r from-blue-50 to-white border-blue-100 shadow-md">
+              <Card className="border border-slate-200 bg-white shadow-md">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                   <div>
                     <div className="text-xs uppercase text-gray-500">Mã giao dịch</div>

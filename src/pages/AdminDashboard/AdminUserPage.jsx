@@ -217,21 +217,16 @@ const AdminUserPage = () => {
         />
       )}
 
-      <div className="relative overflow-hidden rounded-2xl border border-indigo-200/50 bg-gradient-to-br from-indigo-100 via-white to-white px-6 py-8 shadow-lg">
-        <div className="absolute -top-10 -right-12 h-48 w-48 rounded-full bg-indigo-200 blur-3xl" />
-        <div className="relative z-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <Title level={2} className="mb-1 text-gray-900">
-              Quản lý khách hàng
-            </Title>
-            <Text className="text-base text-gray-600">
-              Xem, quản lý và chăm sóc khách thuê tại S+ Studio
-            </Text>
-          </div>
-          <Button
-            type="primary"
-            icon={<FiUsers />}
-            className="rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 font-semibold shadow-lg"
+      <div className="relative w-full bg-[#C5A267] p-10 text-white shadow-md">
+        <div className="text-sm opacity-90 mb-2">DASHBOARD · ADMIN</div>
+        <h1 className="text-3xl font-bold mb-2">Quản lý khách hàng</h1>
+        <p className="opacity-90">
+          Xem, quản lý và chăm sóc khách thuê tại S+ Studio
+        </p>
+        
+        <div className="absolute top-8 right-8">
+          <button
+            className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-2 backdrop-blur transition"
             onClick={() => {
               Modal.info({
                 title: "Thêm khách hàng",
@@ -242,13 +237,13 @@ const AdminUserPage = () => {
               });
             }}
           >
-            Thêm khách hàng
-          </Button>
+            <FiUsers /> Thêm khách hàng
+          </button>
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Card className="rounded-2xl border border-white/50 bg-white shadow-lg">
+        <Card className="border border-slate-200 bg-white shadow-lg">
           <p className="text-sm uppercase tracking-widest text-gray-500">
             Tổng khách hàng
           </p>
@@ -256,7 +251,7 @@ const AdminUserPage = () => {
             {pagination.total?.toLocaleString() || 0}
           </p>
         </Card>
-        <Card className="rounded-2xl border border-white/50 bg-white shadow-lg">
+        <Card className="border border-slate-200 bg-white shadow-lg">
           <p className="text-sm uppercase tracking-widest text-gray-500">
             Khách hàng hoạt động
           </p>
@@ -271,7 +266,7 @@ const AdminUserPage = () => {
             %
           </p>
         </Card>
-        <Card className="rounded-2xl border border-white/50 bg-white shadow-lg">
+        <Card className="border border-slate-200 bg-white shadow-lg">
           <p className="text-sm uppercase tracking-widest text-gray-500">
             Khách hàng VIP
           </p>

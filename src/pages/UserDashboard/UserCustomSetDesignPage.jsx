@@ -233,16 +233,12 @@ const UserCustomSetDesignPage = () => {
           duration={toast.duration}
         />
       )}
-      <div className="relative overflow-hidden rounded-2xl p-6 md:p-8 bg-gradient-to-br from-blue-100 via-indigo-50 to-white shadow-lg border border-blue-200/50">
-        <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-blue-300/30 blur-2xl" />
-        <div className="relative z-10">
-          <Title level={2} className="mb-3 text-gray-900">
-            Yêu cầu Set Design của bạn
-          </Title>
-          <Text className="text-base text-gray-700 font-medium">
-            Theo dõi các yêu cầu custom set design đã gửi
-          </Text>
-        </div>
+      <div className="relative w-full bg-[#C5A267] p-10 text-white shadow-md">
+        <div className="text-sm opacity-90 mb-2">DASHBOARD · USER</div>
+        <h1 className="text-3xl font-bold mb-2">Yêu cầu Set Design của bạn</h1>
+        <p className="opacity-90">
+          Theo dõi các yêu cầu custom set design đã gửi
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

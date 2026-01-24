@@ -264,7 +264,7 @@ const AdminDashboardPage = () => {
 
       {/* User Distribution only */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
-        <div className="bg-white rounded-2xl shadow p-6">
+        <div className="bg-white shadow p-6 border border-slate-200">
           <h3 className="font-bold text-lg mb-2">Phân Bố Người Dùng</h3>
           <div className="space-y-2">
             <div className="flex items-center gap-2">

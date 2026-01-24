@@ -39,16 +39,12 @@ const UserStudiosPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="relative overflow-hidden rounded-2xl p-6 md:p-8 bg-gradient-to-br from-pink-100 via-rose-50 to-white shadow-lg border border-pink-200/50">
-        <div className="absolute -top-10 -left-10 w-40 h-40 rounded-full bg-pink-300/30 blur-2xl" />
-        <div className="relative z-10">
-          <Title level={2} className="mb-3 text-gray-900">
-          Studio yêu thích
-        </Title>
-          <Text className="text-base text-gray-700 font-medium">
+      <div className="relative w-full bg-[#C5A267] p-10 text-white shadow-md">
+        <div className="text-sm opacity-90 mb-2">DASHBOARD · USER</div>
+        <h1 className="text-3xl font-bold mb-2">Studio yêu thích</h1>
+        <p className="opacity-90">
           Danh sách các studio bạn đã đánh dấu yêu thích
-        </Text>
-        </div>
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -60,10 +56,9 @@ const UserStudiosPage = () => {
           >
             <Card
               hoverable
-              className="rounded-2xl overflow-hidden shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-300"
+              className="overflow-hidden shadow-lg border border-slate-200 hover:shadow-2xl transition-all duration-300"
               cover={
-                <div className="h-48 bg-gradient-to-br from-gray-800 via-gray-700 to-gray-900 flex items-center justify-center relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                <div className="h-48 bg-[#0F172A] flex items-center justify-center relative overflow-hidden">
                   <FiVideo className="text-6xl text-white/30 relative z-10" />
                 </div>
               }

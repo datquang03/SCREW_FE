@@ -299,7 +299,7 @@ const Navbar = () => {
                   `navbar-nav-link ${
                     scrolled
                       ? isActive
-                        ? "active text-amber-600"
+                        ? "active text-[#A0826D]"
                         : "text-gray-700 hover:text-gray-900"
                       : isActive
                       ? "active text-amber-300"
@@ -369,7 +369,7 @@ const Navbar = () => {
                   style={{ transformOrigin: "100% 50%" }}
                 >
                   <motion.div className="flex items-center gap-2 rounded-lg px-4 py-2.5 bg-white shadow-lg border border-gray-200">
-                    <SearchOutlined className="text-base text-amber-500" />
+                    <SearchOutlined className="text-base text-[#A0826D]" />
                     <input
                       ref={searchInputRef}
                       type="text"
@@ -555,7 +555,7 @@ const Navbar = () => {
                           setNotifOpen(false);
                           setAllNotificationsModalOpen(true);
                         }}
-                        className="w-full text-sm font-bold text-amber-600 hover:text-amber-700"
+                        className="w-full text-sm font-bold text-[#A0826D] hover:text-[#8B7355]"
                       >
                         Xem tất cả →
                       </Button>
@@ -647,14 +647,14 @@ const Navbar = () => {
             <div className="flex items-center gap-3">
               <Button
                 href="/login"
-                className="border border-amber-500/50 text-amber-600 font-bold text-sm px-5 py-2 rounded-lg hover:bg-amber-50 transition-all"
+                className="border border-[#A0826D]/50 text-[#A0826D] font-bold text-sm px-5 py-2 rounded-lg hover:bg-[#FCFBFA] transition-all"
               >
                 Đăng nhập
               </Button>
               <Button
                 type="primary"
                 href="/register"
-                className="bg-gradient-to-r from-amber-500 to-orange-500 border-none font-bold text-sm px-5 py-2 shadow-lg hover:shadow-lg hover:opacity-95 text-white"
+                className="bg-gradient-to-r from-[#A0826D] to-[#8B7355] border-none font-bold text-sm px-5 py-2 shadow-lg hover:shadow-lg hover:opacity-95 text-white"
               >
                 Đăng ký
               </Button>

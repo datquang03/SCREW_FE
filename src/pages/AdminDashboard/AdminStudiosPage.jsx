@@ -66,26 +66,20 @@ const AdminStudiosPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="relative overflow-hidden rounded-2xl p-6 md:p-8 bg-gradient-to-br from-cyan-100 via-blue-50 to-white shadow-lg border border-cyan-200/50">
-        <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-cyan-300/30 blur-2xl" />
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-            <Title level={2} className="mb-3 text-gray-900">
-            Hiệu suất studio
-          </Title>
-            <Text className="text-base text-gray-700 font-medium">
-            Theo dõi tình trạng, hiệu suất và doanh thu từng không gian
-          </Text>
-        </div>
-          <Button 
-            type="primary" 
-            size="large" 
-            icon={<FiVideo />} 
-            className="font-semibold shadow-lg"
+      <div className="relative w-full bg-[#C5A267] p-10 text-white shadow-md">
+        <div className="text-sm opacity-90 mb-2">DASHBOARD · ADMIN</div>
+        <h1 className="text-3xl font-bold mb-2">Hiệu suất studio</h1>
+        <p className="opacity-90">
+          Theo dõi tình trạng, hiệu suất và doanh thu từng không gian
+        </p>
+        
+        <div className="absolute top-8 right-8">
+          <button
+            className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-2 backdrop-blur transition"
             onClick={() => navigate("/dashboard/staff/studios")}
           >
-          Thêm studio mới
-        </Button>
+            <FiVideo /> Thêm studio mới
+          </button>
         </div>
       </div>
 

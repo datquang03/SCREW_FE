@@ -118,6 +118,7 @@ const SetDesignCard = ({ designInfo, isMine, messageContent }) => {
   const [detailDesign, setDetailDesign] = useState(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [paymentModalVisible, setPaymentModalVisible] = useState(false);
+  const [visibleOrders, setVisibleOrders] = useState(5);
   const [createdOrder, setCreatedOrder] = useState(null);
   const [creatingOrder, setCreatingOrder] = useState(false);
   const [selectedPaymentType, setSelectedPaymentType] = useState("full");
@@ -154,27 +155,26 @@ const SetDesignCard = ({ designInfo, isMine, messageContent }) => {
     <>
       <div className={`mt-3 ${isMine ? "text-right" : ""}`}>
         <Card
-          className={`cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02] ${
+          className={`cursor-pointer transition-all duration-300 hover:shadow-lg ${
             isMine
-              ? "bg-white border-2 border-purple-300 shadow-lg"
-              : "bg-gradient-to-br from-purple-50 via-white to-pink-50 border-2 border-purple-200 shadow-md"
+              ? "bg-white border-2 border-[#C5A267] shadow-md"
+              : "bg-white border-2 border-[#A0826D] shadow-md"
           }`}
           onClick={handleViewDetail}
           hoverable
           style={{
-            borderRadius: "16px",
             boxShadow: isMine
-              ? "0 8px 24px rgba(139, 92, 246, 0.25), 0 0 0 1px rgba(139, 92, 246, 0.1)"
-              : "0 4px 12px rgba(139, 92, 246, 0.15)",
+              ? "0 4px 12px rgba(197, 162, 103, 0.25)"
+              : "0 4px 12px rgba(160, 130, 109, 0.25)",
           }}
         >
           <div className="flex items-start gap-4">
-            {/* Icon với background gradient */}
+            {/* Icon với background */}
             <div
-              className={`p-4 rounded-2xl shadow-md flex-shrink-0 ${
+              className={`p-4 shadow-md flex-shrink-0 ${
                 isMine
-                  ? "bg-gradient-to-br from-purple-500 to-pink-500"
-                  : "bg-gradient-to-br from-purple-400 to-pink-400"
+                  ? "bg-[#C5A267]"
+                  : "bg-[#A0826D]"
               }`}
             >
               <FiPackage className="text-white" size={28} />
@@ -184,7 +184,7 @@ const SetDesignCard = ({ designInfo, isMine, messageContent }) => {
               {/* Header với tên */}
               <div className="flex items-start justify-between gap-2 mb-4">
                 <div className="flex-1">
-                  <Title level={5} className="!mb-0 !text-purple-700 font-bold">
+                  <Title level={5} className="!mb-0 !text-[#0F172A] font-bold">
                     {designInfo.name || "Set Design"}
                   </Title>
                 </div>
@@ -196,7 +196,20 @@ const SetDesignCard = ({ designInfo, isMine, messageContent }) => {
                 icon={<FiEye />}
                 size="small"
                 block
-                className="!bg-gradient-to-r !from-purple-500 !to-pink-500 !border-0 !hover:from-purple-600 !hover:to-pink-600 !shadow-md !font-medium"
+                className="!shadow-md !font-medium"
+                style={{
+                  backgroundColor: '#A0826D',
+                  borderColor: '#A0826D',
+                  color: 'white',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#8B7355';
+                  e.currentTarget.style.borderColor = '#8B7355';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#A0826D';
+                  e.currentTarget.style.borderColor = '#A0826D';
+                }}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleViewDetail();
@@ -215,14 +228,15 @@ const SetDesignCard = ({ designInfo, isMine, messageContent }) => {
         onCancel={() => {
           setDetailModalVisible(false);
           setDetailDesign(null);
+          setVisibleOrders(5);
         }}
         footer={null}
-        width={900}
+        width={1000}
         centered
         title={
           <div className="flex items-center gap-2">
-            <FiPackage className="text-purple-600" size={20} />
-            <span className="text-lg font-semibold">Chi tiết Set Design</span>
+            <FiPackage className="text-[#C5A267]" size={20} />
+            <span className="text-lg font-semibold text-[#0F172A]">Chi tiết Set Design</span>
           </div>
         }
       >
@@ -233,20 +247,24 @@ const SetDesignCard = ({ designInfo, isMine, messageContent }) => {
         ) : detailDesign?.setDesign ? (
           <div className="space-y-4">
             {/* Header với Status */}
-            <Card className="border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50">
+            <Card className="border-slate-100 bg-[#FCFBFA]">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <Title level={3} className="!mb-0 text-purple-700">
+                    <Title level={3} className="!mb-0 text-[#0F172A] !font-semibold">
                       {detailDesign.setDesign.name ||
                         designInfo.name ||
                         "Set Design"}
                     </Title>
                     <Tag
                       color={
-                        detailDesign.setDesign.isActive ? "green" : "orange"
+                        detailDesign.setDesign.isActive ? "success" : "warning"
                       }
-                      className="!px-3 !py-1 !rounded-full !font-medium"
+                      className="!px-3 !py-1 !font-medium border-0"
+                      style={{
+                        backgroundColor: detailDesign.setDesign.isActive ? '#10b981' : '#f59e0b',
+                        color: 'white'
+                      }}
                     >
                       {detailDesign.setDesign.isActive ? (
                         <>
@@ -271,20 +289,20 @@ const SetDesignCard = ({ designInfo, isMine, messageContent }) => {
             </Card>
 
             {/* Thông tin chính */}
-            <Card className="border-purple-200">
+            <Card className="border-slate-100">
               <Title
                 level={5}
-                className="text-purple-700 mb-4 flex items-center gap-2"
+                className="text-[#0F172A] mb-4 flex items-center gap-2 !font-semibold"
               >
-                <FiPackage /> Thông tin Set Design
+                <FiPackage className="text-[#C5A267]" /> Thông tin Set Design
               </Title>
 
               <div className="grid grid-cols-2 gap-4 mb-4">
-                <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                  <Text type="secondary" className="text-xs block mb-1">
+                <div className="p-4 bg-white border border-slate-200">
+                  <Text type="secondary" className="text-xs block mb-2 uppercase tracking-wider">
                     Giá
                   </Text>
-                  <Text strong className="text-xl text-green-600 font-bold">
+                  <Text strong className="text-2xl text-[#C5A267] font-semibold">
                     {detailDesign.setDesign.price
                       ? `${Number(detailDesign.setDesign.price).toLocaleString(
                           "vi-VN"
@@ -293,25 +311,28 @@ const SetDesignCard = ({ designInfo, isMine, messageContent }) => {
                   </Text>
                 </div>
 
-                <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                  <Text type="secondary" className="text-xs block mb-1">
+                <div className="p-4 bg-white border border-slate-200">
+                  <Text type="secondary" className="text-xs block mb-2 uppercase tracking-wider">
                     Danh mục
                   </Text>
-                  <Tag color="blue" className="!text-base !px-3 !py-1">
+                  <Tag 
+                    className="!text-sm !px-3 !py-1 !font-semibold border-0" 
+                    style={{ backgroundColor: '#C5A267', color: 'white' }}
+                  >
                     {detailDesign.setDesign.category || "Chưa có"}
                   </Tag>
                 </div>
               </div>
 
               {detailDesign.setDesign.description && (
-                <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                <div className="mb-4 p-4 bg-[#FCFBFA] border border-slate-100">
                   <Text
                     type="secondary"
-                    className="text-sm block mb-2 font-medium"
+                    className="text-sm block mb-2 font-semibold text-[#0F172A]"
                   >
                     Mô tả:
                   </Text>
-                  <Text className="text-base whitespace-pre-wrap">
+                  <Text className="text-base whitespace-pre-wrap text-slate-700">
                     {detailDesign.setDesign.description}
                   </Text>
                 </div>
@@ -322,7 +343,7 @@ const SetDesignCard = ({ designInfo, isMine, messageContent }) => {
                   <div className="mb-4">
                     <Text
                       type="secondary"
-                      className="text-sm block mb-2 font-medium"
+                      className="text-sm block mb-2 font-semibold text-[#0F172A]"
                     >
                       Tags:
                     </Text>
@@ -330,8 +351,12 @@ const SetDesignCard = ({ designInfo, isMine, messageContent }) => {
                       {detailDesign.setDesign.tags.map((tag, idx) => (
                         <Tag
                           key={idx}
-                          color="purple"
-                          className="!px-3 !py-1 !rounded-full !font-medium"
+                          className="!px-3 !py-1 !font-medium border"
+                          style={{ 
+                            backgroundColor: 'white', 
+                            borderColor: '#C5A267',
+                            color: '#C5A267'
+                          }}
                         >
                           {tag}
                         </Tag>
@@ -383,10 +408,10 @@ const SetDesignCard = ({ designInfo, isMine, messageContent }) => {
               {/* Hình ảnh */}
               {detailDesign.setDesign.images &&
                 detailDesign.setDesign.images.length > 0 && (
-                  <div className="mt-4 pt-4 border-t">
+                  <div className="mt-4 pt-4 border-t border-slate-100">
                     <Text
                       type="secondary"
-                      className="text-sm block mb-3 font-medium"
+                      className="text-sm block mb-3 font-semibold text-[#0F172A]"
                     >
                       Hình ảnh ({detailDesign.setDesign.images.length}):
                     </Text>
@@ -396,7 +421,7 @@ const SetDesignCard = ({ designInfo, isMine, messageContent }) => {
                           key={idx}
                           src={img}
                           alt={`Set Design ${idx + 1}`}
-                          className="rounded-lg object-cover w-full h-40 border-2 border-purple-200 hover:border-purple-400 transition"
+                          className="object-cover w-full h-40 border-2 border-slate-200 hover:border-[#C5A267] transition"
                         />
                       ))}
                     </div>
@@ -406,77 +431,112 @@ const SetDesignCard = ({ designInfo, isMine, messageContent }) => {
 
             {/* Thông tin Original Request */}
             {detailDesign.originalRequest && (
-              <Card className="border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50">
+              <Card className="border-slate-100 bg-white">
                 <Title
                   level={5}
-                  className="text-amber-700 mb-4 flex items-center gap-2"
+                  className="text-[#0F172A] mb-4 flex items-center gap-2 !font-semibold"
                 >
-                  <FiUser /> Thông tin yêu cầu gốc
+                  <FiUser className="text-[#C5A267]" /> Thông tin yêu cầu gốc
                 </Title>
 
-                <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Text type="secondary" className="text-xs block mb-1">
-                        <FiUser className="inline mr-1" />
-                        Khách hàng:
-                      </Text>
-                      <Text strong className="text-base">
-                        {detailDesign.originalRequest.customerName || "-"}
-                      </Text>
-                    </div>
-                    <div>
-                      <Text type="secondary" className="text-xs block mb-1">
-                        <FiMail className="inline mr-1" />
-                        Email:
-                      </Text>
-                      <Text className="text-base">
-                        {detailDesign.originalRequest.email || "-"}
-                      </Text>
-                    </div>
-                  </div>
-
-                  {detailDesign.originalRequest.phoneNumber && (
-                    <div>
-                      <Text type="secondary" className="text-xs block mb-1">
-                        <FiPhone className="inline mr-1" />
-                        Số điện thoại:
-                      </Text>
-                      <Text className="text-base">
-                        {detailDesign.originalRequest.phoneNumber}
-                      </Text>
+                <div className="space-y-4">
+                  {/* Customer Avatar & Info */}
+                  {detailDesign.originalRequest.customerAvatar && (
+                    <div className="flex items-center gap-3 p-3 bg-[#FCFBFA] border border-slate-100">
+                      <Avatar 
+                        size={48} 
+                        src={detailDesign.originalRequest.customerAvatar}
+                        className="border-2 border-[#C5A267]"
+                      >
+                        {detailDesign.originalRequest.customerName?.charAt(0).toUpperCase()}
+                      </Avatar>
+                      <div>
+                        <Text strong className="text-base block text-[#0F172A]">
+                          {detailDesign.originalRequest.customerName || "-"}
+                        </Text>
+                        <Text type="secondary" className="text-sm">
+                          {detailDesign.originalRequest.email || "-"}
+                        </Text>
+                      </div>
                     </div>
                   )}
 
+                  <div className="grid grid-cols-2 gap-4">
+                    {!detailDesign.originalRequest.customerAvatar && (
+                      <>
+                        <div>
+                          <Text type="secondary" className="text-xs block mb-1 uppercase tracking-wider">
+                            <FiUser className="inline mr-1" />
+                            Khách hàng:
+                          </Text>
+                          <Text strong className="text-base text-[#0F172A]">
+                            {detailDesign.originalRequest.customerName || "-"}
+                          </Text>
+                        </div>
+                        <div>
+                          <Text type="secondary" className="text-xs block mb-1 uppercase tracking-wider">
+                            <FiMail className="inline mr-1" />
+                            Email:
+                          </Text>
+                          <Text className="text-base text-[#0F172A]">
+                            {detailDesign.originalRequest.email || "-"}
+                          </Text>
+                        </div>
+                      </>
+                    )}
+                    {detailDesign.originalRequest.phoneNumber && (
+                      <div>
+                        <Text type="secondary" className="text-xs block mb-1 uppercase tracking-wider">
+                          <FiPhone className="inline mr-1" />
+                          Số điện thoại:
+                        </Text>
+                        <Text className="text-base text-[#0F172A]">
+                          {detailDesign.originalRequest.phoneNumber}
+                        </Text>
+                      </div>
+                    )}
+                    {detailDesign.originalRequest.estimatedPrice && (
+                      <div>
+                        <Text type="secondary" className="text-xs block mb-1 uppercase tracking-wider">
+                          <FiDollarSign className="inline mr-1" />
+                          Giá dự kiến:
+                        </Text>
+                        <Text className="text-base font-semibold text-[#C5A267]">
+                          {Number(detailDesign.originalRequest.estimatedPrice).toLocaleString("vi-VN")}₫
+                        </Text>
+                      </div>
+                    )}
+                  </div>
+
                   {detailDesign.originalRequest.originalDescription && (
-                    <div className="p-3 bg-white rounded-lg border border-amber-200">
+                    <div className="p-4 bg-white border border-slate-100">
                       <Text
                         type="secondary"
-                        className="text-xs block mb-2 font-medium"
+                        className="text-xs block mb-2 font-semibold text-[#0F172A] uppercase tracking-wider"
                       >
                         Mô tả yêu cầu gốc:
                       </Text>
-                      <Text className="text-sm whitespace-pre-wrap">
+                      <Text className="text-sm whitespace-pre-wrap text-slate-700">
                         {detailDesign.originalRequest.originalDescription}
                       </Text>
                     </div>
                   )}
 
                   {detailDesign.originalRequest.processedBy && (
-                    <div className="p-3 bg-white rounded-lg border border-amber-200">
+                    <div className="p-4 bg-white border border-slate-100">
                       <Text
                         type="secondary"
-                        className="text-xs block mb-2 font-medium"
+                        className="text-xs block mb-2 font-semibold text-[#0F172A] uppercase tracking-wider"
                       >
                         Xử lý bởi:
                       </Text>
                       <div className="flex items-center gap-2">
-                        <Avatar size="small" className="bg-purple-500">
+                        <Avatar size="small" className="bg-[#C5A267]">
                           {detailDesign.originalRequest.processedBy.email
                             ?.charAt(0)
                             .toUpperCase()}
                         </Avatar>
-                        <Text className="text-sm">
+                        <Text className="text-sm text-[#0F172A]">
                           {detailDesign.originalRequest.processedBy.email ||
                             "-"}
                         </Text>
@@ -484,13 +544,13 @@ const SetDesignCard = ({ designInfo, isMine, messageContent }) => {
                     </div>
                   )}
 
-                  <div className="grid grid-cols-2 gap-4 pt-3 border-t border-amber-200">
+                  <div className="grid grid-cols-2 gap-4 pt-3 border-t border-slate-100">
                     <div>
-                      <Text type="secondary" className="text-xs block mb-1">
+                      <Text type="secondary" className="text-xs block mb-1 uppercase tracking-wider">
                         <FiClock className="inline mr-1" />
                         Yêu cầu lúc:
                       </Text>
-                      <Text className="text-sm">
+                      <Text className="text-sm text-[#0F172A]">
                         {detailDesign.originalRequest.requestedAt
                           ? dayjs(
                               detailDesign.originalRequest.requestedAt
@@ -499,11 +559,11 @@ const SetDesignCard = ({ designInfo, isMine, messageContent }) => {
                       </Text>
                     </div>
                     <div>
-                      <Text type="secondary" className="text-xs block mb-1">
+                      <Text type="secondary" className="text-xs block mb-1 uppercase tracking-wider">
                         <FiCheckCircle className="inline mr-1" />
                         Chuyển đổi lúc:
                       </Text>
-                      <Text className="text-sm">
+                      <Text className="text-sm text-[#0F172A]">
                         {detailDesign.originalRequest.convertedAt
                           ? dayjs(
                               detailDesign.originalRequest.convertedAt
@@ -516,72 +576,239 @@ const SetDesignCard = ({ designInfo, isMine, messageContent }) => {
               </Card>
             )}
 
-            {/* Nút Xác nhận đặt - chỉ cho customer */}
-            {isCustomer && (
-              <div className="pt-4">
-                <Button
-                  type="primary"
-                  icon={<FiCheckCircle />}
-                  block
-                  size="large"
-                  className="!bg-gradient-to-r !from-purple-500 !to-pink-500 !border-none !h-12 !text-base !font-semibold !shadow-lg"
-                  loading={orderLoading || paymentLoading || creatingOrder}
-                  onClick={async () => {
-                    if (!detailDesign?.setDesign?._id) {
-                      message.error("Không tìm thấy thông tin Set Design");
-                      return;
-                    }
+            {/* Payment Info - Order History */}
+            {detailDesign.paymentInfo && detailDesign.paymentInfo.totalOrders > 0 && (
+              <Card className="border-slate-100 bg-white">
+                <Title
+                  level={5}
+                  className="text-[#0F172A] mb-4 flex items-center gap-2 !font-semibold"
+                >
+                  <FiShoppingCart className="text-[#C5A267]" /> Lịch sử đặt hàng
+                  <Tag className="!ml-2 border-0" style={{ backgroundColor: '#C5A267', color: 'white' }}>
+                    {detailDesign.paymentInfo.totalOrders} đơn
+                  </Tag>
+                </Title>
 
-                    try {
-                      setCreatingOrder(true);
-                      const hideCreate = message.loading(
-                        "Đang tạo đơn hàng...",
-                        0
-                      );
+                <div className="space-y-3 max-h-96 overflow-y-auto">
+                  {detailDesign.paymentInfo.orders?.slice(0, visibleOrders).map((order, idx) => (
+                    <div key={order.orderId} className="p-3 border border-slate-100 hover:border-[#C5A267] transition">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <Text className="text-xs text-slate-500 block mb-1">
+                            Mã đơn: <span className="font-semibold text-[#0F172A]">{order.orderCode}</span>
+                          </Text>
+                          <Text className="text-xs text-slate-500">
+                            {dayjs(order.createdAt).format("DD/MM/YYYY HH:mm")}
+                          </Text>
+                        </div>
+                        <div className="text-right">
+                          <Tag 
+                            className="!mb-1 border-0"
+                            style={{
+                              backgroundColor: order.status === 'confirmed' ? '#10b981' : 
+                                             order.status === 'cancelled' ? '#ef4444' : '#f59e0b',
+                              color: 'white'
+                            }}
+                          >
+                            {order.status === 'confirmed' ? 'Đã xác nhận' :
+                             order.status === 'cancelled' ? 'Đã hủy' : 'Chờ xử lý'}
+                          </Tag>
+                          <div>
+                            <Tag 
+                              className="border-0"
+                              style={{
+                                backgroundColor: order.paymentStatus === 'paid' ? '#10b981' : 
+                                               order.paymentStatus === 'failed' ? '#ef4444' : '#94a3b8',
+                                color: 'white'
+                              }}
+                            >
+                              {order.paymentStatus === 'paid' ? 'Đã thanh toán' :
+                               order.paymentStatus === 'failed' ? 'Thất bại' : 'Chưa thanh toán'}
+                            </Tag>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-center pt-2 border-t border-slate-100">
+                        <Text className="text-sm text-slate-600">
+                          Số lượng: <span className="font-semibold text-[#0F172A]">{order.quantity}</span>
+                        </Text>
+                        <Text className="text-base font-semibold text-[#C5A267]">
+                          {Number(order.totalAmount).toLocaleString("vi-VN")}₫
+                        </Text>
+                      </div>
+                      {order.paidAmount > 0 && order.paidAmount < order.totalAmount && (
+                        <div className="mt-2 pt-2 border-t border-slate-100">
+                          <Text className="text-xs text-slate-500">
+                            Đã thanh toán: <span className="font-semibold text-green-600">
+                              {Number(order.paidAmount).toLocaleString("vi-VN")}₫
+                            </span>
+                            {" "} / Còn lại: <span className="font-semibold text-orange-600">
+                              {Number(order.totalAmount - order.paidAmount).toLocaleString("vi-VN")}₫
+                            </span>
+                          </Text>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  {visibleOrders < detailDesign.paymentInfo.totalOrders && (
+                    <div className="text-center pt-3">
+                      <Button
+                        type="default"
+                        size="middle"
+                        onClick={() => setVisibleOrders(prev => prev + 5)}
+                        className="!font-semibold"
+                        style={{
+                          borderColor: '#A0826D',
+                          color: '#A0826D',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.borderColor = '#A0826D';
+                          e.target.style.color = 'white';
+                          e.target.style.backgroundColor = '#A0826D';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.borderColor = '#A0826D';
+                          e.target.style.color = '#A0826D';
+                          e.target.style.backgroundColor = 'transparent';
+                        }}
+                      >
+                        Xem thêm ({Math.min(detailDesign.paymentInfo.totalOrders - visibleOrders, 5)} đơn)
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            )}
 
-                      const orderResult = await dispatch(
-                        createOrderSetDesign({
-                          setDesignId: detailDesign.setDesign._id,
-                          quantity: 1,
-                        })
-                      ).unwrap();
+            {/* Nút Xác nhận đặt hoặc Về Dashboard - chỉ cho customer */}
+            {isCustomer && (() => {
+              // Kiểm tra xem có đơn hàng nào đã thanh toán và xác nhận chưa
+              const hasPaidAndConfirmedOrder = detailDesign.paymentInfo?.orders?.some(
+                order => order.status === 'confirmed' && order.paymentStatus === 'paid'
+              );
 
-                      hideCreate?.();
-                      setCreatingOrder(false);
+              if (hasPaidAndConfirmedOrder) {
+                // Hiển thị nút Về Dashboard
+                return (
+                  <div className="pt-4">
+                    <Button
+                      type="primary"
+                      icon={<FiCheckCircle />}
+                      block
+                      size="large"
+                      style={{
+                        backgroundColor: '#A0826D',
+                        borderColor: '#A0826D',
+                        height: '48px',
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        color: 'white',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = '#8B7355';
+                        e.currentTarget.style.borderColor = '#8B7355';
+                        e.currentTarget.style.color = 'white';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = '#A0826D';
+                        e.currentTarget.style.borderColor = '#A0826D';
+                        e.currentTarget.style.color = 'white';
+                      }}
+                      onClick={() => {
+                        navigate('/dashboard/customer/set-designs/bookings');
+                      }}
+                    >
+                      Về Dashboard
+                    </Button>
+                  </div>
+                );
+              }
 
-                      const orderId =
-                        orderResult?.orderId ||
-                        orderResult?._id ||
-                        orderResult?.order?._id ||
-                        orderResult?.data?._id ||
-                        orderResult?.data?.orderId ||
-                        orderResult?.data?.order?._id;
-
-                      if (!orderId) {
-                        throw new Error(
-                          "Không lấy được orderId, vui lòng thử lại."
-                        );
+              // Hiển thị nút Xác nhận đặt mặc định
+              return (
+                <div className="pt-4">
+                  <Button
+                    type="primary"
+                    icon={<FiCheckCircle />}
+                    block
+                    size="large"
+                    loading={orderLoading || paymentLoading || creatingOrder}
+                    style={{
+                      backgroundColor: '#A0826D',
+                      borderColor: '#A0826D',
+                      height: '48px',
+                      fontSize: '16px',
+                      fontWeight: '600',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!orderLoading && !paymentLoading && !creatingOrder) {
+                        e.currentTarget.style.backgroundColor = '#8B7355';
+                        e.currentTarget.style.borderColor = '#8B7355';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!orderLoading && !paymentLoading && !creatingOrder) {
+                        e.currentTarget.style.backgroundColor = '#A0826D';
+                        e.currentTarget.style.borderColor = '#A0826D';
+                      }
+                    }}
+                    onClick={async () => {
+                      if (!detailDesign?.setDesign?._id) {
+                        message.error("Không tìm thấy thông tin Set Design");
+                        return;
                       }
 
-                      setCreatedOrder({
-                        ...orderResult,
-                        orderId,
-                      });
-                      setPaymentModalVisible(true);
-                    } catch (error) {
-                      setCreatingOrder(false);
-                      message.destroy();
-                      message.error(
-                        error?.message ||
-                          "Tạo đơn hàng thất bại, vui lòng thử lại!"
-                      );
-                    }
-                  }}
-                >
-                  Xác nhận đặt
-                </Button>
-              </div>
-            )}
+                      try {
+                        setCreatingOrder(true);
+                        const hideCreate = message.loading(
+                          "Đang tạo đơn hàng...",
+                          0
+                        );
+
+                        const orderResult = await dispatch(
+                          createOrderSetDesign({
+                            setDesignId: detailDesign.setDesign._id,
+                            quantity: 1,
+                          })
+                        ).unwrap();
+
+                        hideCreate?.();
+                        setCreatingOrder(false);
+
+                        const orderId =
+                          orderResult?.orderId ||
+                          orderResult?._id ||
+                          orderResult?.order?._id ||
+                          orderResult?.data?._id ||
+                          orderResult?.data?.orderId ||
+                          orderResult?.data?.order?._id;
+
+                        if (!orderId) {
+                          throw new Error(
+                            "Không lấy được orderId, vui lòng thử lại."
+                          );
+                        }
+
+                        setCreatedOrder({
+                          ...orderResult,
+                          orderId,
+                        });
+                        setPaymentModalVisible(true);
+                      } catch (error) {
+                        setCreatingOrder(false);
+                        message.destroy();
+                        message.error(
+                          error?.message ||
+                            "Tạo đơn hàng thất bại, vui lòng thử lại!"
+                        );
+                      }
+                    }}
+                  >
+                    Xác nhận đặt
+                  </Button>
+                </div>
+              );
+            })()}
           </div>
         ) : (
           <div className="text-center py-8 text-gray-500">
@@ -594,8 +821,8 @@ const SetDesignCard = ({ designInfo, isMine, messageContent }) => {
       <Modal
         title={
           <div className="flex items-center gap-2">
-            <FiCreditCard className="text-purple-600" />
-            <span className="text-xl font-bold">
+            <FiCreditCard className="text-[#C5A267]" />
+            <span className="text-xl font-bold text-[#0F172A]">
               Chọn phương thức thanh toán
             </span>
           </div>
@@ -613,16 +840,16 @@ const SetDesignCard = ({ designInfo, isMine, messageContent }) => {
         <div className="space-y-6 py-4">
           {/* Thông tin Set Design */}
           {detailDesign?.setDesign && (
-            <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200">
+            <Card className="bg-[#FCFBFA] border-2 border-slate-100">
               <div className="flex items-center gap-4">
                 <div className="flex-1">
-                  <Text className="text-sm text-gray-600 block mb-1">
+                  <Text className="text-sm text-slate-600 block mb-1 uppercase tracking-wider">
                     Set Design
                   </Text>
-                  <Title level={4} className="!mb-2 !text-gray-900">
+                  <Title level={4} className="!mb-2 !text-[#0F172A] !font-semibold">
                     {detailDesign.setDesign.name}
                   </Title>
-                  <Text className="text-2xl font-bold text-purple-600">
+                  <Text className="text-2xl font-bold text-[#C5A267]">
                     {detailDesign.setDesign.price?.toLocaleString("vi-VN")}₫
                   </Text>
                 </div>
@@ -633,11 +860,11 @@ const SetDesignCard = ({ designInfo, isMine, messageContent }) => {
           {/* Chọn phương thức thanh toán */}
           <div>
             <div className="flex items-center justify-between mb-4 gap-3">
-              <Text className="text-base font-semibold text-gray-700 block">
+              <Text className="text-base font-semibold text-[#0F172A] block">
                 Chọn phương thức thanh toán:
               </Text>
               {createdOrder && (
-                <Tag color="purple" className="font-semibold">
+                <Tag className="font-semibold border-0" style={{ backgroundColor: '#C5A267', color: 'white' }}>
                   Mã đơn:{" "}
                   {createdOrder.orderCode ||
                     createdOrder.code ||
@@ -656,21 +883,21 @@ const SetDesignCard = ({ designInfo, isMine, messageContent }) => {
                   <Card
                     className={`border-2 transition-all cursor-pointer ${
                       selectedPaymentType === "full"
-                        ? "border-purple-500 bg-purple-50 shadow-lg"
-                        : "border-gray-200 hover:border-purple-300"
+                        ? "border-[#C5A267] bg-[#FCFBFA] shadow-lg"
+                        : "border-slate-200 hover:border-[#C5A267]/50"
                     }`}
                     onClick={() => setSelectedPaymentType("full")}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                        <div className="w-12 h-12 bg-green-100 flex items-center justify-center">
                           <FiCheckCircle className="text-green-600 text-xl" />
                         </div>
                         <div>
-                          <Text className="text-lg font-bold text-gray-900 block">
+                          <Text className="text-lg font-bold text-[#0F172A] block">
                             Thanh toán đầy đủ (100%)
                           </Text>
-                          <Text className="text-sm text-gray-600">
+                          <Text className="text-sm text-slate-600">
                             Thanh toán toàn bộ số tiền ngay
                           </Text>
                         </div>
@@ -690,21 +917,21 @@ const SetDesignCard = ({ designInfo, isMine, messageContent }) => {
                   <Card
                     className={`border-2 transition-all cursor-pointer ${
                       selectedPaymentType === "prepay_30"
-                        ? "border-purple-500 bg-purple-50 shadow-lg"
-                        : "border-gray-200 hover:border-purple-300"
+                        ? "border-[#C5A267] bg-[#FCFBFA] shadow-lg"
+                        : "border-slate-200 hover:border-[#C5A267]/50"
                     }`}
                     onClick={() => setSelectedPaymentType("prepay_30")}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                        <div className="w-12 h-12 bg-orange-100 flex items-center justify-center">
                           <FiPercent className="text-orange-600 text-xl" />
                         </div>
                         <div>
-                          <Text className="text-lg font-bold text-gray-900 block">
+                          <Text className="text-lg font-bold text-[#0F172A] block">
                             Thanh toán trước (30%)
                           </Text>
-                          <Text className="text-sm text-gray-600">
+                          <Text className="text-sm text-slate-600">
                             Thanh toán 30% trước, phần còn lại thanh toán sau
                           </Text>
                         </div>
@@ -734,6 +961,7 @@ const SetDesignCard = ({ designInfo, isMine, messageContent }) => {
                 setSelectedPaymentType("full");
               }}
               disabled={orderLoading || paymentLoading}
+              className="!h-12 !font-semibold border-2 border-slate-200 hover:!border-[#C5A267]"
             >
               Hủy
             </Button>
@@ -743,7 +971,24 @@ const SetDesignCard = ({ designInfo, isMine, messageContent }) => {
               block
               icon={<FiCheckCircle />}
               loading={orderLoading || paymentLoading}
-              className="!bg-gradient-to-r !from-purple-500 !to-pink-500 !border-none"
+              style={{
+                backgroundColor: '#A0826D',
+                borderColor: '#A0826D',
+                height: '48px',
+                fontWeight: '600',
+              }}
+              onMouseEnter={(e) => {
+                if (!orderLoading && !paymentLoading) {
+                  e.currentTarget.style.backgroundColor = '#8B7355';
+                  e.currentTarget.style.borderColor = '#8B7355';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!orderLoading && !paymentLoading) {
+                  e.currentTarget.style.backgroundColor = '#A0826D';
+                  e.currentTarget.style.borderColor = '#A0826D';
+                }
+              }}
               onClick={async () => {
                 if (!createdOrder?.orderId) {
                   message.error("Chưa có đơn hàng, vui lòng tạo đơn trước.");

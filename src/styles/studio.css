@@ -4,7 +4,7 @@
   --studio-ash: #1f2937;
   --studio-sand: #f6f3ea;
   --studio-gold: #f6ad37;
-  --studio-amber: #f59e0b;
+  --studio-amber: #A0826D;
   --studio-iris: #6366f1;
   --studio-sky: #38bdf8;
 }
@@ -211,7 +211,7 @@
 }
 
 .studio-floating-button {
-  background: linear-gradient(120deg, #f59e0b, #f97316, #ec4899);
+  background: linear-gradient(120deg, #A0826D, #8B7355);
   color: #0b0f1a;
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.08), 0 0 24px rgba(246, 173, 55, 0.45);
   border: 1px solid rgba(255, 255, 255, 0.18);

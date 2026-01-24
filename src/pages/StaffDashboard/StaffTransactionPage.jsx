@@ -205,7 +205,7 @@ const StaffTransactionPage = () => {
       dataIndex: "amount",
       key: "amount",
       render: (p) => (
-        <Text strong className="text-blue-600">
+        <Text strong className="text-[#C5A267]">
           {p.toLocaleString("vi-VN")}₫
         </Text>
       ),
@@ -301,42 +301,39 @@ const StaffTransactionPage = () => {
         />
       )}
 
-      {/* HEADER */}
-      <div className="relative overflow-hidden rounded-2xl border border-rose-200/60 bg-gradient-to-br from-rose-100 via-white to-white px-6 py-8 shadow-lg">
-        <div className="absolute -top-12 -right-12 h-48 w-48 rounded-full bg-rose-200 blur-3xl" />
-        <div className="relative z-10">
-          <Title level={2}>Quản lý giao dịch</Title>
-          <Text className="text-base text-gray-600">
-            Theo dõi thanh toán và xử lý giao dịch hết hạn
-          </Text>
-        </div>
+      <div className="relative w-full bg-[#C5A267] p-10 text-white shadow-md">
+        <div className="text-sm opacity-90 mb-2">DASHBOARD · STAFF</div>
+        <h1 className="text-3xl font-bold mb-2">Quản lý giao dịch</h1>
+        <p className="opacity-90">
+          Theo dõi thanh toán và xử lý giao dịch hết hạn
+        </p>
       </div>
 
       {/* SUMMARY - ĐÃ CÓ DOANH THU */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="rounded-2xl bg-white shadow-lg">
-          <p className="text-sm text-gray-500">Tổng giao dịch</p>
-          <p className="text-4xl font-extrabold text-purple-600">
+        <Card className="bg-white shadow-md border border-slate-200">
+          <p className="text-sm text-slate-500">Tổng giao dịch</p>
+          <p className="text-4xl font-extrabold text-[#C5A267]">
             {totalTransactions}
           </p>
         </Card>
-        <Card className="rounded-2xl bg-white shadow-lg border-l-4 border-green-500">
-          <p className="text-sm text-gray-500">Đã thanh toán</p>
-          <p className="text-3xl font-bold text-green-600">
+        <Card className="bg-white shadow-md border-l-4 border-[#10b981] border border-slate-200">
+          <p className="text-sm text-slate-500">Đã thanh toán</p>
+          <p className="text-3xl font-bold text-[#10b981]">
             {transactions.filter((t) => t.status === "paid").length}
           </p>
         </Card>
-        <Card className="rounded-2xl bg-white shadow-lg border-l-4 border-orange-500">
-          <p className="text-sm text-gray-500">Chờ thanh toán</p>
-          <p className="text-3xl font-bold text-orange-600">
+        <Card className="bg-white shadow-md border-l-4 border-[#f59e0b] border border-slate-200">
+          <p className="text-sm text-slate-500">Chờ thanh toán</p>
+          <p className="text-3xl font-bold text-[#f59e0b]">
             {
               transactions.filter((t) => getEffectiveStatus(t) === "pending")
                 .length
             }
           </p>
         </Card>
-        <Card className="rounded-2xl bg-white shadow-lg border-l-4 border-red-500">
-          <p className="text-sm text-gray-500">Hết hạn cần xử lý</p>
+        <Card className="bg-white shadow-md border-l-4 border-red-500 border border-slate-200">
+          <p className="text-sm text-slate-500">Hết hạn cần xử lý</p>
           <p className="text-3xl font-bold text-red-600 flex items-center gap-2">
             <FiAlertTriangle />
             {expiredTransactions.length}
@@ -345,7 +342,7 @@ const StaffTransactionPage = () => {
       </div>
 
       {/* DOANH THU RIÊNG - ĐẸP & RÕ RÀNG */}
-      <Card className="rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-xl">
+      <Card className="bg-[#0F172A] text-white shadow-md">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-gray-500">Tổng doanh thu thực tế</p>
@@ -473,21 +470,21 @@ const StaffTransactionPage = () => {
         footer={null}
         width={900}
         title={null}
-        className="rounded-2xl"
+        className=""
       >
         {currentTransaction ? (
           <div className="space-y-6">
             {/* HEADER */}
-            <div className="p-6 rounded-xl bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white shadow-lg">
+            <div className="p-6 bg-[#0F172A] text-white shadow-md">
               <h2 className="text-2xl font-bold mb-1">Chi tiết giao dịch</h2>
-              <p className="text-blue-100">
+              <p className="text-white/80">
                 Mã giao dịch: {currentTransaction.transactionId}
               </p>
             </div>
 
-            {/* GIAO DỊCH */}
-            <Card className="rounded-2xl border-blue-200 shadow-md">
-              <h3 className="text-lg font-semibold mb-4 text-blue-700">
+            {/* GIAO DịCH */}
+            <Card className="border-slate-200 shadow-md">
+              <h3 className="text-lg font-semibold mb-4 text-[#C5A267]">
                 Thông tin giao dịch
               </h3>
 
@@ -537,8 +534,8 @@ const StaffTransactionPage = () => {
             </Card>
 
             {/* BOOKING */}
-            <Card className="rounded-2xl border-purple-200 shadow-md">
-              <h3 className="text-lg font-semibold mb-4 text-purple-700">
+            <Card className="border-slate-200 shadow-md">
+              <h3 className="text-lg font-semibold mb-4 text-[#A0826D]">
                 Thông tin booking
               </h3>
 

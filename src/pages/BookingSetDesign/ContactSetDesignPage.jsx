@@ -116,7 +116,7 @@ const CustomSetDesignRequestPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-100 via-white to-gray-200 flex justify-center py-16 px-6 relative">
+    <div className="min-h-screen bg-[#FCFBFA] flex justify-center py-16 px-6 relative">
       {toast && (
         <ToastNotification
           type={toast.type}
@@ -131,7 +131,7 @@ const CustomSetDesignRequestPage = () => {
           initial={{ opacity: 0, y: 40, scale: 0.8 }}
           animate={{ opacity: 1, y: -200, scale: 1 }}
           transition={{ duration: 1.2, ease: "easeOut" }}
-          className="absolute top-1/2 left-1/2 text-indigo-600 text-7xl"
+          className="absolute top-1/2 left-1/2 text-[#C5A267] text-7xl"
         >
           <FiCheckCircle />
         </motion.div>
@@ -141,16 +141,20 @@ const CustomSetDesignRequestPage = () => {
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45 }}
-        className="w-full max-w-2xl bg-white shadow-2xl rounded-3xl p-10 border border-white/50 backdrop-blur"
+        className="w-full max-w-2xl bg-white shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] p-10 border border-slate-100 backdrop-blur"
       >
         {/* Title */}
-        <h1 className="text-3xl font-extrabold text-center mb-2 bg-gradient-to-r from-indigo-600 to-pink-500 bg-clip-text text-transparent">
-          Yêu Cầu Set Design Theo Mong Muốn
-        </h1>
-
-        <p className="text-center text-gray-600 mb-10">
-          Điền thông tin chi tiết để đội ngũ liên hệ với bạn
-        </p>
+        <div className="text-center mb-10">
+          <p className="text-[10px] uppercase tracking-[0.5em] text-[#C5A267] font-bold mb-4">
+            Custom Request
+          </p>
+          <h1 className="text-3xl font-semibold text-[#0F172A] mb-2">
+            Yêu Cầu Set Design Theo Mong Muốn
+          </h1>
+          <p className="text-slate-600">
+            Điền thông tin chi tiết để đội ngũ liên hệ với bạn
+          </p>
+        </div>
 
         <motion.div
           variants={shakeVariant}
@@ -247,7 +251,7 @@ const CustomSetDesignRequestPage = () => {
                 {previewUrls.map((url, index) => (
                   <div
                     key={index}
-                    className="relative group rounded-lg overflow-hidden border-2 border-gray-200"
+                    className="relative group overflow-hidden border-2 border-slate-200"
                   >
                     <img
                       src={url}
@@ -257,7 +261,7 @@ const CustomSetDesignRequestPage = () => {
                     <button
                       type="button"
                       onClick={() => handleRemoveImage(index)}
-                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                      className="absolute top-2 right-2 bg-red-500 text-white p-1.5 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
                     >
                       <FiX className="text-sm" />
                     </button>
@@ -274,14 +278,18 @@ const CustomSetDesignRequestPage = () => {
             onClick={handleSubmit}
             disabled={loading}
             whileTap={{ scale: 0.95 }}
-            className="w-full py-5 text-lg rounded-xl font-bold shadow-lg 
-            bg-gradient-to-r from-indigo-600 to-pink-500 hover:opacity-95 transition
-            disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-5 text-lg font-bold shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
+              backgroundColor: loading ? '#94a3b8' : '#A0826D',
               color: "#ffffff",
-              textShadow: "0 2px 4px rgba(0,0,0,0.3)",
               letterSpacing: "0.5px",
               fontWeight: "700",
+            }}
+            onMouseEnter={(e) => {
+              if (!loading) e.currentTarget.style.backgroundColor = '#8B7355';
+            }}
+            onMouseLeave={(e) => {
+              if (!loading) e.currentTarget.style.backgroundColor = '#A0826D';
             }}
           >
             {loading ? "Đang gửi..." : "Gửi yêu cầu"}

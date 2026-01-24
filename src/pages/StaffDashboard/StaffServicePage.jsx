@@ -230,7 +230,7 @@ const StaffServicePage = () => {
       dataIndex: "pricePerUse",
       key: "pricePerUse",
       render: (price) => (
-        <Text strong className="text-blue-600">
+        <Text strong className="text-[#C5A267]">
           {price?.toLocaleString("vi-VN")}₫
         </Text>
       ),
@@ -325,42 +325,36 @@ const StaffServicePage = () => {
         />
       )}
 
-      <div className="relative overflow-hidden rounded-2xl border border-rose-200/60 bg-gradient-to-br from-rose-100 via-white to-white px-6 py-8 shadow-lg">
-        <div className="absolute -top-12 -right-12 h-48 w-48 rounded-full bg-rose-200 blur-3xl" />
-        <div className="relative z-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-            <Title level={2} className="mb-1 text-gray-900">
-            Quản lý dịch vụ
-          </Title>
-            <Text className="text-base text-gray-600">
-              Theo dõi dịch vụ, giá bán và trạng thái hoạt động
-          </Text>
-        </div>
-        <Button
-          type="primary"
-            icon={<FiPlus />}
-          size="large"
-            className="rounded-2xl bg-gradient-to-r from-rose-500 to-purple-600 font-semibold shadow-lg"
+      <div className="relative w-full bg-[#C5A267] p-10 text-white shadow-md">
+        <div className="text-sm opacity-90 mb-2">DASHBOARD · STAFF</div>
+        <h1 className="text-3xl font-bold mb-2">Quản lý dịch vụ</h1>
+        <p className="opacity-90">
+          Theo dõi dịch vụ, giá bán và trạng thái hoạt động
+        </p>
+
+        <div className="absolute top-8 right-8">
+          <button
+            className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-2 backdrop-blur transition"
           onClick={() => setAddModalVisible(true)}
         >
           Thêm dịch vụ
-        </Button>
+        </button>
         </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Card className="rounded-2xl border border-white/50 bg-white shadow-lg">
-          <p className="text-sm uppercase tracking-wide text-gray-500">
+        <Card className="border border-slate-200 bg-white shadow-md">
+          <p className="text-sm uppercase tracking-wide text-slate-500">
             Tổng dịch vụ
           </p>
-          <p className="text-4xl font-extrabold text-purple-600">{total}</p>
-          <Text className="text-xs text-gray-500">Đang có trên hệ thống</Text>
+          <p className="text-4xl font-extrabold text-[#C5A267]">{total}</p>
+          <Text className="text-xs text-slate-500">Đang có trên hệ thống</Text>
         </Card>
-        <Card className="rounded-2xl border border-white/50 bg-white shadow-lg">
-          <p className="text-sm uppercase tracking-wide text-gray-500">
+        <Card className="border border-slate-200 bg-white shadow-md">
+          <p className="text-sm uppercase tracking-wide text-slate-500">
             Giá cao nhất
           </p>
-          <p className="text-3xl font-bold text-gray-900">
+          <p className="text-3xl font-bold text-[#0F172A]">
             {services.length
               ? `${Math.max(...services.map((s) => s.pricePerUse)).toLocaleString(
                   "vi-VN"
@@ -368,11 +362,11 @@ const StaffServicePage = () => {
               : "—"}
           </p>
         </Card>
-        <Card className="rounded-2xl border border-white/50 bg-white shadow-lg">
-          <p className="text-sm uppercase tracking-wide text-gray-500">
+        <Card className="border border-slate-200 bg-white shadow-md">
+          <p className="text-sm uppercase tracking-wide text-slate-500">
             Giá thấp nhất
           </p>
-          <p className="text-3xl font-bold text-gray-900">
+          <p className="text-3xl font-bold text-[#0F172A]">
             {services.length
               ? `${Math.min(...services.map((s) => s.pricePerUse)).toLocaleString(
                   "vi-VN"
@@ -385,9 +379,9 @@ const StaffServicePage = () => {
       <div className="flex flex-wrap items-center gap-3">
         <Input
           placeholder="Tìm tên dịch vụ..."
-          prefix={<FiSearch className="text-gray-400" />}
+          prefix={<FiSearch className="text-slate-400" />}
           allowClear
-          className="w-full rounded-2xl border border-gray-200 bg-white/70 shadow-inner sm:w-80"
+          className="w-full border border-slate-200 bg-[#FCFBFA] shadow-sm sm:w-80"
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
@@ -398,7 +392,7 @@ const StaffServicePage = () => {
         <Select
           placeholder="Sắp xếp"
           allowClear
-          className="w-full rounded-2xl sm:w-64"
+          className="w-full sm:w-64"
           value={sortOption || undefined}
           onChange={(val) => {
             setSortOption(val ?? "");
@@ -474,10 +468,10 @@ const StaffServicePage = () => {
         {currentService && (
           <div className="service-modal-content flex flex-col gap-6">
             <div className="text-center">
-              <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 text-white shadow-xl">
+              <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center bg-[#C5A267] text-white shadow-md">
                 <FiScissors className="text-3xl" />
               </div>
-              <Title level={3} className="m-0 text-gray-900">
+              <Title level={3} className="m-0 text-[#0F172A]">
                 {currentService.name}
               </Title>
               <Text type="secondary">ID: {currentService._id}</Text>
@@ -487,11 +481,11 @@ const StaffServicePage = () => {
               {infoItems.map((info, idx) => (
                 <div
                   key={idx}
-                  className={`flex items-start gap-3 rounded-2xl border border-indigo-100 bg-indigo-50/70 p-4 transition-all duration-200 hover:-translate-y-1 hover:bg-white ${
+                  className={`flex items-start gap-3 border border-slate-200 bg-[#FCFBFA] p-4 transition-all duration-200 hover:-translate-y-1 hover:bg-white ${
                     info.fullWidth ? "sm:col-span-2" : ""
                   }`}
                   >
-                  <span className="text-xl text-indigo-500">{info.icon}</span>
+                  <span className="text-xl text-[#C5A267]">{info.icon}</span>
                   <div className="flex-1">
                     <Text strong className="mb-1 block text-gray-700">
                         {info.label}
@@ -600,7 +594,7 @@ const StaffServicePage = () => {
       <Modal
         title={
           <Title level={4} className="mb-0 flex items-center gap-2">
-            <FiPlus className="text-purple-600" />
+            <FiPlus className="text-[#C5A267]" />
             Thêm dịch vụ mới
           </Title>
         }
@@ -674,7 +668,7 @@ const StaffServicePage = () => {
               <Button
                 type="primary"
                 size="large"
-                className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 font-medium"
+                className="bg-[#A0826D] hover:bg-[#8B7355] border-0 font-medium"
                 onClick={handleAdd}
               >
                 Thêm dịch vụ

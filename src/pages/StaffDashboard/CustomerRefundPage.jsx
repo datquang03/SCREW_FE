@@ -227,7 +227,7 @@ const CustomerRefundPage = () => {
             </div>
             {record.reason && (
               <Tooltip title={record.reason}>
-                <div className="mt-1 text-xs text-amber-600 truncate max-w-[200px] bg-amber-50 px-1 rounded inline-block">
+                <div className="mt-1 text-xs text-[#C5A267] truncate max-w-[200px] bg-[#FCFBFA] px-1 inline-block">
                   Lý do: {record.reason}
                 </div>
               </Tooltip>
@@ -298,17 +298,12 @@ const CustomerRefundPage = () => {
   return (
     <div className="space-y-6 p-4">
       {/* Header */}
-      <div className="bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl p-8 text-white shadow-xl">
-        <div className="flex justify-between items-center">
-          <div>
-            <Title level={2} className="mb-2 !text-white" style={{ color: "white" }}>
-              Quản lý hoàn tiền
-            </Title>
-            <Text className="!text-white" style={{ color: "white" }}>
-              Xử lý các yêu cầu hoàn tiền từ khách hàng
-            </Text>
-          </div>
-        </div>
+      <div className="relative w-full bg-[#C5A267] p-10 text-white shadow-md">
+        <div className="text-sm opacity-90 mb-2">DASHBOARD · STAFF</div>
+        <h1 className="text-3xl font-bold mb-2">Quản lý hoàn tiền</h1>
+        <p className="opacity-90">
+          Xử lý các yêu cầu hoàn tiền từ khách hàng
+        </p>
       </div>
 
       {/* Table */}
@@ -422,15 +417,15 @@ const CustomerRefundPage = () => {
             </div>
             
             {(selectedRefund.reason || selectedRefund.rejectReason) && (
-               <div className="bg-amber-50 p-4 rounded-xl border border-amber-100 text-sm">
+               <div className="bg-[#FCFBFA] p-4 border border-slate-200 text-sm">
                   {selectedRefund.reason && (
                     <div className="mb-2">
-                       <span className="font-semibold text-amber-800 block">Lý do yêu cầu:</span>
+                       <span className="font-semibold text-[#0F172A] block">Lý do yêu cầu:</span>
                        <span className="text-gray-700">{selectedRefund.reason}</span>
                     </div>
                   )}
                   {selectedRefund.rejectReason && (
-                     <div className="mt-2 pt-2 border-t border-amber-200">
+                     <div className="mt-2 pt-2 border-t border-slate-200">
                         <span className="font-semibold text-red-800 block">Lý do từ chối:</span>
                         <span className="text-red-700">{selectedRefund.rejectReason}</span>
                      </div>

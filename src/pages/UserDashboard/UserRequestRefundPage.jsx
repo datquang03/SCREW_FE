@@ -116,28 +116,20 @@ const UserRequestRefundPage = () => {
     },
     {
         title: "Lý do từ chối",
-        dataIndex: "rejectReason",
-        key: "rejectReason",
+        dataIndex: "rejectionReason",
+        key: "rejectionReason",
         render: (text) => text ? <span className="text-red-500">{text}</span> : "-"
     }
   ];
 
   return (
     <div className="space-y-6 p-4">
-      <div className="bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl p-8 text-white shadow-xl">
-        <Title
-          level={2}
-          className="mb-2 !text-white"
-          style={{ color: "white" }}
-        >
-          Lịch sử hoàn tiền
-        </Title>
-        <Text
-          className="text-white/90"
-          style={{ color: "rgba(255, 255, 255, 0.9)" }}
-        >
+      <div className="relative w-full bg-[#C5A267] p-10 text-white shadow-md">
+        <div className="text-sm opacity-90 mb-2">DASHBOARD · USER</div>
+        <h1 className="text-3xl font-bold mb-2">Lịch sử hoàn tiền</h1>
+        <p className="opacity-90">
           Theo dõi trạng thái các yêu cầu hoàn tiền của bạn
-        </Text>
+        </p>
       </div>
 
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">

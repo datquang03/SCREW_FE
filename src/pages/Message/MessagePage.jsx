@@ -297,28 +297,28 @@ const MessagePage = () => {
     loadingConversations && displayConversations.length === 0;
 
   return (
-    <div className="h-screen bg-slate-50">
+    <div className="h-screen bg-[#FCFBFA]">
       <div className="max-w-7xl mx-auto px-3 md:px-6 py-3 h-full flex flex-col">
         <div className="flex items-center justify-between mb-3">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-amber-600"
+            className="flex items-center gap-2 text-sm font-semibold text-[#0F172A] hover:text-[#C5A267] transition"
           >
             <LeftOutlined /> Quay về
           </button>
-          <p className="text-sm uppercase tracking-widest text-amber-600 font-bold">
+          <p className="text-sm uppercase tracking-widest text-[#C5A267] font-bold">
             Messages
           </p>
           <div />
         </div>
 
         {initialLoading ? (
-          <div className="flex items-center justify-center flex-1 min-h-0 bg-white rounded-3xl shadow-xl border border-gray-100">
+          <div className="flex items-center justify-center flex-1 min-h-0 bg-white border border-slate-200 shadow-lg">
             <div className="text-center">
               <Spin
                 size="large"
                 tip={
-                  <span className="text-amber-600 font-semibold text-base">
+                  <span className="text-[#C5A267] font-semibold text-base">
                     Đang tải tin nhắn...
                   </span>
                 }
@@ -345,7 +345,7 @@ const MessagePage = () => {
             </div>
 
             {/* Chat Area bên phải */}
-            <div className="flex-1 min-h-0 flex flex-col bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+            <div className="flex-1 min-h-0 flex flex-col bg-white border border-slate-200 shadow-lg overflow-hidden">
               {activeConversation ? (
                 <>
                   <MessageHeader conversation={activeConversation} />

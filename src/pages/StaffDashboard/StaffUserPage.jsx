@@ -217,21 +217,16 @@ const StaffUserPage = () => {
         />
       )}
 
-      <div className="relative overflow-hidden rounded-2xl border border-indigo-200/50 bg-gradient-to-br from-indigo-100 via-white to-white px-6 py-8 shadow-lg">
-        <div className="absolute -top-10 -right-12 h-48 w-48 rounded-full bg-indigo-200 blur-3xl" />
-        <div className="relative z-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <Title level={2} className="mb-1 text-gray-900">
-              Quản lý khách hàng
-            </Title>
-            <Text className="text-base text-gray-600">
-              Xem, quản lý và chăm sóc khách thuê tại S+ Studio
-            </Text>
-          </div>
-          <Button
-            type="primary"
-            icon={<FiUsers />}
-            className="rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 font-semibold shadow-lg"
+      <div className="relative w-full bg-[#C5A267] p-10 text-white shadow-md">
+        <div className="text-sm opacity-90 mb-2">DASHBOARD · STAFF</div>
+        <h1 className="text-3xl font-bold mb-2">Quản lý khách hàng</h1>
+        <p className="opacity-90">
+          Xem, quản lý và chăm sóc khách thuê tại S+ Studio
+        </p>
+
+        <div className="absolute top-8 right-8">
+          <button
+            className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-2 backdrop-blur transition"
             onClick={() => {
               Modal.info({
                 title: "Thêm khách hàng",
@@ -243,24 +238,24 @@ const StaffUserPage = () => {
             }}
           >
             Thêm khách hàng
-          </Button>
+          </button>
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Card className="rounded-2xl border border-white/50 bg-white shadow-lg">
-          <p className="text-sm uppercase tracking-widest text-gray-500">
+        <Card className="border border-slate-200 bg-white shadow-md">
+          <p className="text-sm uppercase tracking-widest text-slate-500">
             Tổng khách hàng
           </p>
-          <p className="text-3xl font-bold text-gray-900">
+          <p className="text-3xl font-bold text-[#0F172A]">
             {pagination.total?.toLocaleString() || 0}
           </p>
         </Card>
-        <Card className="rounded-2xl border border-white/50 bg-white shadow-lg">
-          <p className="text-sm uppercase tracking-widest text-gray-500">
+        <Card className="border border-slate-200 bg-white shadow-md">
+          <p className="text-sm uppercase tracking-widest text-slate-500">
             Khách hàng hoạt động
           </p>
-          <p className="text-3xl font-bold text-emerald-600">
+          <p className="text-3xl font-bold text-[#10b981]">
             {pagination.total
               ? (
                   (customers.filter((c) => c.isActive).length /
@@ -271,11 +266,11 @@ const StaffUserPage = () => {
             %
           </p>
         </Card>
-        <Card className="rounded-2xl border border-white/50 bg-white shadow-lg">
-          <p className="text-sm uppercase tracking-widest text-gray-500">
+        <Card className="border border-slate-200 bg-white shadow-md">
+          <p className="text-sm uppercase tracking-widest text-slate-500">
             Khách hàng VIP
           </p>
-          <p className="text-3xl font-bold text-purple-600">{vipCount || 0}</p>
+          <p className="text-3xl font-bold text-[#C5A267]">{vipCount || 0}</p>
         </Card>
       </div>
 
@@ -283,15 +278,15 @@ const StaffUserPage = () => {
         <Input
           placeholder="Tìm tên, email, SĐT..."
           allowClear
-          prefix={<FiSearch className="text-gray-400" />}
-          className="w-full rounded-2xl border border-gray-200 bg-white/70 shadow-inner sm:w-96"
+          prefix={<FiSearch className="text-slate-400" />}
+          className="w-full border border-slate-200 bg-[#FCFBFA] shadow-sm sm:w-96"
           onPressEnter={(e) => setSearch(e.target.value)}
           onChange={(e) => !e.target.value && setSearch("")}
         />
         <Select
           placeholder="Trạng thái"
           allowClear
-          className="w-full rounded-2xl sm:w-60"
+          className="w-full sm:w-60"
           onChange={(value) => setIsActive(value ?? "")}
         >
           <Option value="true">Hoạt động</Option>
@@ -300,7 +295,7 @@ const StaffUserPage = () => {
         <Select
           placeholder="Verified"
           allowClear
-          className="w-full rounded-2xl sm:w-60"
+          className="w-full sm:w-60"
           onChange={(value) => setIsVerified(value ?? "")}
         >
           <Option value="true">Đã xác thực</Option>
@@ -384,9 +379,9 @@ const StaffUserPage = () => {
               {infoItems.map((info, idx) => (
                 <div
                   key={idx}
-                  className="flex items-start gap-3 rounded-2xl border border-indigo-100 bg-indigo-50/70 p-4 transition-all duration-200 hover:-translate-y-1 hover:bg-white"
+                  className="flex items-start gap-3 border border-slate-200 bg-[#FCFBFA] p-4 transition-all duration-200 hover:-translate-y-1 hover:bg-white"
                 >
-                  <span className="text-xl text-indigo-500">{info.icon}</span>
+                  <span className="text-xl text-[#C5A267]">{info.icon}</span>
                   <div>
                     <Text strong className="text-gray-700">
                       {info.label}

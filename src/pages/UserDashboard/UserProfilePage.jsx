@@ -263,23 +263,18 @@ const UserProfilePage = () => {
         />
       )}
 
-      <div className="relative overflow-hidden rounded-2xl p-6 md:p-8 bg-gradient-to-br from-sky-100 via-blue-50 to-white shadow-lg border border-blue-200/50">
-        <div className="absolute -top-12 -left-8 w-48 h-48 rounded-full bg-sky-200/40 blur-3xl" />
-        <div className="absolute -bottom-16 -right-10 w-60 h-60 rounded-full bg-blue-300/30 blur-3xl" />
-        <div className="relative z-10">
-          <Title level={2} className="font-semibold mb-2 text-gray-900">
-            Hồ sơ của tôi
-          </Title>
-          <Text className="text-base text-gray-700 font-medium">
-            Quản lý thông tin cá nhân và bảo mật tài khoản của bạn
-          </Text>
-        </div>
+      <div className="relative w-full bg-[#C5A267] p-10 text-white shadow-md">
+        <div className="text-sm opacity-90 mb-2">DASHBOARD · USER</div>
+        <h1 className="text-3xl font-bold mb-2">Hồ sơ của tôi</h1>
+        <p className="opacity-90">
+          Quản lý thông tin cá nhân và bảo mật tài khoản của bạn
+        </p>
       </div>
 
       <Row gutter={24}>
         {/* LEFT CARD */}
         <Col xs={24} md={8}>
-          <Card className="text-center rounded-2xl p-5 shadow-lg border border-gray-100 bg-white">
+          <Card className="text-center p-5 shadow-lg border border-slate-200 bg-white">
             <div className="relative inline-block">
               <Avatar
                 key={`${getAvatarUrl(user?.avatar) || ""}-${
@@ -381,7 +376,7 @@ const UserProfilePage = () => {
                 Thông tin cá nhân
               </span>
             }
-            className="shadow-lg rounded-2xl border border-gray-100 bg-white"
+            className="shadow-lg border border-slate-200 bg-white"
             extra={
               <Button
                 type={editing ? "default" : "primary"}
@@ -432,7 +427,7 @@ const UserProfilePage = () => {
                 Bảo mật
               </span>
             }
-            className="mt-6 shadow-lg rounded-2xl border border-gray-100 bg-white"
+            className="mt-6 shadow-lg border border-slate-200 bg-white"
           >
             <div className="flex justify-between items-center">
               <div>

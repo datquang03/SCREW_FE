@@ -273,26 +273,20 @@ const AdminStaffPage = () => {
         />
       )}
 
-      <div className="relative overflow-hidden rounded-2xl border border-indigo-200/50 bg-gradient-to-br from-indigo-100 via-white to-white px-6 py-8 shadow-lg">
-        <div className="absolute -top-10 -right-12 h-48 w-48 rounded-full bg-indigo-200 blur-3xl" />
-        <div className="relative z-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <Title level={2} className="mb-1 text-gray-900">
-              Quản lý nhân viên
-            </Title>
-            <Text className="text-base text-gray-600">
-              Theo dõi nhân sự, phân ca và trạng thái hoạt động
-            </Text>
-          </div>
-          <Button
-            type="primary"
-            icon={<FiPlus />}
-            size="large"
-            className="rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 font-semibold shadow-lg"
+      <div className="relative w-full bg-[#C5A267] p-10 text-white shadow-md">
+        <div className="text-sm opacity-90 mb-2">DASHBOARD · ADMIN</div>
+        <h1 className="text-3xl font-bold mb-2">Quản lý nhân viên</h1>
+        <p className="opacity-90">
+          Theo dõi nhân sự, phân ca và trạng thái hoạt động
+        </p>
+        
+        <div className="absolute top-8 right-8">
+          <button
+            className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-2 backdrop-blur transition"
             onClick={() => setAddModalVisible(true)}
           >
-            Thêm nhân viên
-          </Button>
+            <FiPlus /> Thêm nhân viên
+          </button>
         </div>
       </div>
 

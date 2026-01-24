@@ -175,7 +175,7 @@ const StaffOrderPage = () => {
       },
       status === "pending" && {
         key: "confirm",
-        label: <span className="text-blue-600 font-medium">Xác nhận đơn</span>,
+        label: <span className="text-[#C5A267] font-medium">Xác nhận đơn</span>,
         onClick: () => handleAction(confirmBooking, _id),
       },
       // (status === "confirmed" || status === "checked_in") &&
@@ -193,7 +193,7 @@ const StaffOrderPage = () => {
         (hasCheckIn && !hasCheckOut)) && {
         key: "checkout",
         label: (
-          <div className="flex items-center gap-2 text-purple-600 font-medium">
+          <div className="flex items-center gap-2 text-[#C5A267] font-medium">
             <FiLogOut /> Check-out hoàn tất
           </div>
         ),
@@ -284,11 +284,11 @@ const StaffOrderPage = () => {
                   {/* Progress bar */}
                   <div className="relative w-full h-4 bg-gray-200 rounded-full overflow-hidden">
                     <div
-                      className="absolute top-0 left-0 h-full bg-gradient-to-r from-green-500 to-green-600 transition-all duration-300"
+                      className="absolute top-0 left-0 h-full bg-[#10b981] transition-all duration-300"
                       style={{ width: `${paymentInfo.paidPercentage}%` }}
                     />
                     <div
-                      className="absolute top-0 right-0 h-full bg-gradient-to-r from-orange-400 to-orange-500 transition-all duration-300"
+                      className="absolute top-0 right-0 h-full bg-[#f59e0b] transition-all duration-300"
                       style={{ width: `${paymentInfo.remainingPercentage}%` }}
                     />
                   </div>
@@ -372,20 +372,18 @@ const StaffOrderPage = () => {
   return (
     <div className="space-y-6 p-4">
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl p-8 text-white shadow-xl">
-        <div className="flex justify-between items-center">
-          <div>
-            <Title level={2} className="mb-2 text-white">
-              Quản lý đơn đặt chỗ
-            </Title>
-            <Text className="text-indigo-100">
-              Check-in, Check-out & theo dõi khách tại studio
-            </Text>
-          </div>
+      <div className="relative w-full bg-[#C5A267] p-10 text-white shadow-md">
+        <div className="text-sm opacity-90 mb-2">DASHBOARD · STAFF</div>
+        <h1 className="text-3xl font-bold mb-2">Quản lý đơn đặt chỗ</h1>
+        <p className="opacity-90">
+          Check-in, Check-out & theo dõi khách tại studio
+        </p>
+
+        <div className="absolute top-8 right-8">
           <Button
             type="primary"
             size="large"
-            className="bg-white text-indigo-600 font-bold"
+            className="bg-white text-[#C5A267] font-bold"
           >
             Tạo đơn nội bộ
           </Button>
@@ -422,7 +420,7 @@ const StaffOrderPage = () => {
         ) : (
           <div className="flex flex-col h-full bg-gray-50">
             {/* HEADER COMPACT */}
-            <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-5 text-white relative">
+            <div className="bg-[#0F172A] p-5 text-white relative">
               <div className="flex justify-between items-center z-10 relative">
                 <div>
                   <h2 className="text-xl font-extrabold m-0">
@@ -454,7 +452,7 @@ const StaffOrderPage = () => {
             <div className="p-5 space-y-4 max-h-[75vh] overflow-y-auto">
               {/* NO-SHOW ALERT */}
               {currentBooking.events?.some((e) => e.type === "NO_SHOW") && (
-                <div className="bg-red-50 border border-red-200 rounded-xl p-3 flex items-center gap-3">
+                <div className="bg-red-50 border border-red-200 p-3 flex items-center gap-3">
                   <FiUserX className="text-3xl text-red-600 flex-shrink-0" />
                   <div>
                     <h3 className="text-sm font-bold text-red-800 m-0">
@@ -476,7 +474,7 @@ const StaffOrderPage = () => {
                    {/* CUSTOMER */}
                    <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
                       <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-100">
-                         <FiUser className="text-blue-500" />
+                         <FiUser className="text-[#C5A267]" />
                          <span className="font-bold text-gray-700 text-sm">Thông tin khách hàng</span>
                       </div>
                       <div className="space-y-2">
@@ -492,7 +490,7 @@ const StaffOrderPage = () => {
                             )}
                             {currentBooking.customer?.email && (
                               <div className="flex items-center gap-2 text-sm text-gray-700 truncate" title={currentBooking.customer.email}>
-                                <FiMail className="text-blue-500" /> {currentBooking.customer.email}
+                                <FiMail className="text-[#C5A267]" /> {currentBooking.customer.email}
                               </div>
                             )}
                          </div>
@@ -500,26 +498,26 @@ const StaffOrderPage = () => {
                    </div>
 
                    {/* STUDIO */}
-                    <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-                      <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-100">
-                         <FiCalendar className="text-cyan-500" />
+                    <div className="bg-white p-4 shadow-sm border border-slate-200">
+                      <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-200">
+                         <FiCalendar className="text-[#C5A267]" />
                          <span className="font-bold text-gray-700 text-sm">Studio & Lịch đặt</span>
                       </div>
                       <div>
                           <div className="font-bold text-gray-900">{currentBooking.studio?.name}</div>
                           <div className="text-xs text-gray-500 mb-2 truncate">{currentBooking.studio?.location}</div>
                           
-                          <div className="bg-cyan-50 rounded-lg p-2 text-center border border-cyan-100">
-                             <div className="text-xl font-bold text-cyan-700">{currentBooking.schedule?.timeRange}</div>
+                          <div className="bg-[#FCFBFA] p-2 text-center border border-slate-200">
+                             <div className="text-xl font-bold text-[#C5A267]">{currentBooking.schedule?.timeRange}</div>
                              <div className="text-xs font-medium text-gray-600">{dayjs(currentBooking.schedule?.date).format("dddd, DD/MM/YYYY")}</div>
                           </div>
                       </div>
                    </div>
 
                    {/* EVENTS TIMELINE (Moved from Right Col to Left Col) */}
-                   <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-                    <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-100">
-                      <FiClock className="text-purple-500" />
+                   <div className="bg-white p-4 shadow-sm border border-slate-200">
+                    <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-200">
+                      <FiClock className="text-[#C5A267]" />
                       <span className="font-bold text-gray-700 text-sm">
                         Lịch sử sự kiện
                       </span>
@@ -532,7 +530,7 @@ const StaffOrderPage = () => {
                             <div
                               className={`absolute left-0 top-1 w-4 h-4 rounded-full border-2 bg-white z-10 ${
                                 event.type === "CHECK_IN"
-                                  ? "border-purple-500"
+                                  ? "border-[#C5A267]"
                                   : event.type === "CHECK_OUT"
                                   ? "border-green-500"
                                   : event.type === "NO_SHOW"
@@ -571,7 +569,7 @@ const StaffOrderPage = () => {
                 {/* RIGHT COL */}
                 <div className="space-y-4">
                   {/* FINANCE & PAYMENT SUMMARY */}
-                  <div className="bg-emerald-50/50 rounded-xl p-4 shadow-sm border border-emerald-100">
+                  <div className="bg-[#10b981]/5 p-4 shadow-sm border border-[#10b981]/20">
                     <div className="flex items-center gap-2 mb-3 pb-2 border-b border-emerald-100">
                       <span className="font-bold text-emerald-800 text-sm">
                         Tài chính & Thanh toán
@@ -654,7 +652,7 @@ const StaffOrderPage = () => {
 
                       {/* Payment Summary */}
                       {currentBooking.paymentSummary && (
-                        <div className="mt-3 pt-3 border-t border-dashed border-emerald-200 bg-white/60 p-2 rounded-lg">
+                        <div className="mt-3 pt-3 border-t border-dashed border-[#10b981]/30 bg-white/60 p-2">
                           <div className="flex justify-between items-center mb-1">
                             <span className="text-xs font-bold text-emerald-800">
                               Thanh toán (
@@ -697,7 +695,7 @@ const StaffOrderPage = () => {
                   {currentBooking.details && currentBooking.details.length > 0 && (
                     <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
                       <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-100">
-                        <FiBox className="text-amber-500" />
+                        <FiBox className="text-[#C5A267]" />
                         <span className="font-bold text-gray-700 text-sm">
                           Dịch vụ & Thiết bị
                         </span>
