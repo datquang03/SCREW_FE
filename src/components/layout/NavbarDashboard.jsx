@@ -335,12 +335,7 @@ const DashboardNavbar = ({ variant = "default", onMenuClick }) => {
     >
       <div className="flex items-center justify-between px-4 sm:px-6 lg:px-10 py-3">
         <div className="flex items-center gap-3">
-          <button
-            onClick={onMenuClick}
-            className="lg:hidden p-1 text-gray-600 hover:text-gray-900 transition-colors"
-          >
-            <FiMenu  size={24} />
-          </button>
+          
           <button onClick={() => navigate("/")} className="group cursor-pointer">
             <motion.img
               src={SPlusLogo}

@@ -13,6 +13,7 @@ import {
   Avatar,
   Descriptions,
   Dropdown,
+  Select,
 } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import dayjs from "dayjs";
@@ -27,11 +28,11 @@ import {
   FiMoreVertical,
 } from "react-icons/fi";
 import {
-  getCustomerRefunds,
   approveCustomerRefund,
   rejectCustomerRefund,
   confirmRefundPayment,
 } from "../../features/payment/paymentSlice";
+import { getAllRefunds } from "../../features/booking/bookingSlice";
 import DataTable from "../../components/dashboard/DataTable";
 
 const { Title, Text } = Typography;
@@ -39,16 +40,17 @@ const { TextArea } = Input;
 
 const CustomerRefundPage = () => {
   const dispatch = useDispatch();
-  const { refundsList, loading } = useSelector((state) => state.payment);
+  const { refunds, loading } = useSelector((state) => state.booking);
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [selectedRefund, setSelectedRefund] = useState(null);
   const [rejectReason, setRejectReason] = useState("");
   const [processingId, setProcessingId] = useState(null);
+  const [filterStatus, setFilterStatus] = useState("");
 
   useEffect(() => {
-    dispatch(getCustomerRefunds());
-  }, [dispatch]);
+    dispatch(getAllRefunds(filterStatus ? { status: filterStatus } : {}));
+  }, [dispatch, filterStatus]);
 
   const handleViewDetail = (refund) => {
     setSelectedRefund(refund);
@@ -78,7 +80,7 @@ const CustomerRefundPage = () => {
         try {
           await dispatch(approveCustomerRefund(refund._id)).unwrap();
           message.success("Đã duyệt yêu cầu hoàn tiền thành công!");
-          dispatch(getCustomerRefunds()); // Refresh list
+          dispatch(getAllRefunds()); // Refresh list
         } catch (error) {
           message.error(error.message || "Có lỗi xảy ra");
         } finally {
@@ -107,7 +109,7 @@ const CustomerRefundPage = () => {
       ).unwrap();
       message.success("Đã từ chối yêu cầu hoàn tiền!");
       setRejectModalOpen(false);
-      dispatch(getCustomerRefunds()); // Refresh list
+      dispatch(getAllRefunds()); // Refresh list
     } catch (error) {
       message.error(error.message || "Có lỗi xảy ra");
     } finally {
@@ -165,12 +167,14 @@ const CustomerRefundPage = () => {
               #{record._id?.slice(-6).toUpperCase()}
             </Text>
           </Space>
-          <Space size={4}>
-            <span className="text-xs text-gray-400">Booking:</span>
-            <Text code className="!text-xs">
-              #{record.bookingId?._id?.slice(-6).toUpperCase() || "--"}
-            </Text>
-          </Space>
+          {record.bookingId && (
+            <Space size={4}>
+              <span className="text-xs text-gray-400">Booking:</span>
+              <Text code className="!text-xs">
+                #{record.bookingId?._id?.slice(-6).toUpperCase()}
+              </Text>
+            </Space>
+          )}
         </div>
       ),
     },
@@ -191,7 +195,7 @@ const CustomerRefundPage = () => {
               className="truncate block text-sm"
               title={record.requestedBy?.fullName}
             >
-              {record.requestedBy?.fullName || "N/A"}
+              {record.requestedBy?.fullName || "Không có người dùng"}
             </Text>
             <Text
               type="secondary"
@@ -295,6 +299,12 @@ const CustomerRefundPage = () => {
     },
   ];
 
+  // Lọc dữ liệu theo trạng thái
+  const filteredRefunds = (refunds?.refunds || []).filter(r => {
+    if (!filterStatus) return true;
+    return r.status === filterStatus;
+  });
+
   return (
     <div className="space-y-6 p-4">
       {/* Header */}
@@ -306,11 +316,27 @@ const CustomerRefundPage = () => {
         </p>
       </div>
 
+      {/* Bộ lọc trạng thái */}
+      <div className="flex items-center gap-4 mb-4">
+        <span className="font-bold text-sm">Lọc trạng thái:</span>
+        <Select
+          value={filterStatus}
+          style={{ width: 180 }}
+          onChange={setFilterStatus}
+          options={[
+            { value: "", label: "Tất cả" },
+            { value: "PENDING_APPROVAL", label: "Chờ duyệt" },
+            { value: "APPROVED", label: "Đã duyệt" },
+            { value: "REJECTED", label: "Đã từ chối" },
+          ]}
+        />
+      </div>
+
       {/* Table */}
       <DataTable
         title="Danh sách yêu cầu hoàn tiền"
         columns={columns}
-        data={refundsList || []}
+        data={filteredRefunds}
         loading={loading}
         rowKey="_id"
         scroll={{ x: 1200 }}

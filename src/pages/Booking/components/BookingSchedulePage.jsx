@@ -50,10 +50,13 @@ const BookingSchedulePage = ({ onNext }) => {
   }, []);
 
   useEffect(() => {
-    if (studioId) {
-      dispatch(getStudioSchedule({ studioId }));
-    }
-  }, [studioId, dispatch]);
+    // Lấy toàn bộ lịch của tất cả studio
+    dispatch(getStudioSchedule({}));
+  }, [dispatch]);
+
+  useEffect(() => {
+    console.log('studioSchedule:', studioSchedule);
+  }, [studioSchedule]);
 
   useEffect(() => {
     setTimeRange([null, null]);

@@ -54,9 +54,6 @@ const StaffReportPage = () => {
 
   const handleViewDetail = (record) => {
     setSelectedReportId(record._id);
-    // If not full detail in list, fetch it
-    // dispatch(getReportById(record._id)); 
-    // Usually list item is enough, but if needed:
     dispatch(getReportById(record._id));
     setDetailModalOpen(true);
   };

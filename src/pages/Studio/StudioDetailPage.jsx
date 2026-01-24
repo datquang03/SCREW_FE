@@ -1,19 +1,17 @@
 import React, { Suspense, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
+import { FiAlertCircle } from "react-icons/fi";
+import { Modal, Form, Input, Select, Button, message } from "antd";
 
-import StudioHeader from "./components/StudioHeader";
 import StudioGallery from "./components/StudioGallery";
 import StudioInfo from "./components/StudioInfo";
 import StudioServices from "./components/StudioService";
-import StudioPricing from "./components/StudioPricing";
-import StudioContact from "./components/StudioContact";
 import StudioCommentList from "./components/StudioCommentList";
 import StudioBookingButton from "./components/StudioBookingButton";
-import StudioMap from "./components/StudioMap";
-import StudioAmenities from "./components/StudioAmenities";
 import { getComments } from "../../features/comment/commentSlice";
 import { getStudioById, getActiveStudios } from "../../features/studio/studioSlice";
+import { createReport } from "../../features/report/reportSlice";
 
 const SECTIONS = [
   { id: "info", label: "Thông tin" },
@@ -34,6 +32,9 @@ export default function StudioDetailPage({ studio }) {
   const [activeSection, setActiveSection] = useState("info");
   const [hasSeenPricing, setHasSeenPricing] = useState(false);
   const [relatedStudios, setRelatedStudios] = useState([]);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [reportTarget, setReportTarget] = useState(null);
+  const [reportForm] = Form.useForm();
 
   useEffect(() => {
     if (!studio && id) dispatch(getStudioById(id));
@@ -73,6 +74,28 @@ export default function StudioDetailPage({ studio }) {
 
   const scrollTo = (id) => {
     sectionRefs.current[id]?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleOpenReport = (comment) => {
+    setReportTarget(comment);
+    setReportModalOpen(true);
+    reportForm.resetFields();
+  };
+
+  const handleSubmitReport = async () => {
+    try {
+      const values = await reportForm.validateFields();
+      await dispatch(createReport({
+        targetType: "Comment",
+        targetId: reportTarget._id,
+        issueType: values.issueType,
+        description: values.description,
+      })).unwrap();
+      message.success("Đã gửi báo cáo thành công!");
+      setReportModalOpen(false);
+    } catch (err) {
+      message.error(err?.message || "Gửi báo cáo thất bại!");
+    }
   };
 
   if (loading && !safeStudio._id) {
@@ -178,8 +201,77 @@ export default function StudioDetailPage({ studio }) {
                   <p className="text-xs text-slate-400 uppercase tracking-widest">Chia sẻ cảm nhận của bạn</p>
                 </div>
                 <div className="space-y-10">
-                  {safeStudio._id && <StudioCommentList targetId={safeStudio._id} />}
+                  {safeStudio._id && (
+                    <StudioCommentList
+                      targetId={safeStudio._id}
+                      renderComment={(comment) => (
+                        <div className="relative group bg-white p-6 rounded-lg border border-slate-100 shadow-sm">
+                          {/* Nội dung bình luận */}
+                          <div className="flex items-center gap-3 mb-2">
+                            <Avatar src={comment.user?.avatar} size={32} />
+                            <span className="font-semibold text-slate-800">{comment.user?.fullName || comment.user?.username}</span>
+                            <span className="text-xs text-slate-400 ml-2">{dayjs(comment.createdAt).format("DD/MM/YYYY HH:mm")}</span>
+                            <span className="ml-auto">
+                              <Button
+                                type="text"
+                                icon={<FiAlertCircle className="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />}
+                                size="small"
+                                style={{ padding: 0, background: "none", border: "none" }}
+                                onClick={() => handleOpenReport(comment)}
+                                title="Báo cáo bình luận này"
+                              />
+                            </span>
+                          </div>
+                          <div className="text-base text-slate-700 mb-2">{comment.content}</div>
+                          {/* Nếu có đánh giá sao */}
+                          {comment.rating && (
+                            <div className="flex items-center gap-1 text-yellow-500">
+                              {Array.from({ length: comment.rating }).map((_, i) => (
+                                <span key={i}>★</span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    />
+                  )}
                 </div>
+                {/* Modal báo cáo */}
+                <Modal
+                  open={reportModalOpen}
+                  onCancel={() => setReportModalOpen(false)}
+                  footer={null}
+                  title="Báo cáo bình luận"
+                  centered
+                >
+                  <Form form={reportForm} layout="vertical" onFinish={handleSubmitReport}>
+                    <Form.Item
+                      label="Loại vấn đề"
+                      name="issueType"
+                      rules={[{ required: true, message: "Vui lòng chọn loại vấn đề" }]}
+                    >
+                      <Select
+                        options={[
+                          { value: "spam", label: "Spam" },
+                          { value: "abuse", label: "Lạm dụng/ngôn từ không phù hợp" },
+                          { value: "other", label: "Khác" },
+                        ]}
+                        placeholder="Chọn loại vấn đề"
+                      />
+                    </Form.Item>
+                    <Form.Item
+                      label="Mô tả chi tiết"
+                      name="description"
+                      rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
+                    >
+                      <Input.TextArea rows={4} placeholder="Nhập mô tả chi tiết về vấn đề..." />
+                    </Form.Item>
+                    <div className="flex justify-end gap-2">
+                      <Button onClick={() => setReportModalOpen(false)}>Hủy</Button>
+                      <Button type="primary" htmlType="submit">Gửi báo cáo</Button>
+                    </div>
+                  </Form>
+                </Modal>
               </section>
             </div>
 

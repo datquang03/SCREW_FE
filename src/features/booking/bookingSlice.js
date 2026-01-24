@@ -332,6 +332,24 @@ export const extendStudio = createAsyncThunk(
   }
 );
 
+// GET ALL REFUNDS
+export const getAllRefunds = createAsyncThunk(
+  "booking/getAllRefunds",
+  async (_, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+      const res = await axiosInstance.get("/refunds", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return res.data.data; // Trả về array refunds
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Không thể lấy danh sách hoàn tiền" }
+      );
+    }
+  }
+);
+
 // =========================================================
 // ================       INITIAL STATE     =================
 // =========================================================
@@ -351,6 +369,7 @@ const initialState = {
   myBookings: [],
   staffBookings: [],
   extensionOptions: null,
+  refunds: [],
 
   loading: false,
   error: null,
@@ -615,6 +634,20 @@ const bookingSlice = createSlice({
         );
       })
       .addCase(extendStudio.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // ================= GET ALL REFUNDS =================
+      .addCase(getAllRefunds.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getAllRefunds.fulfilled, (state, action) => {
+        state.loading = false;
+        state.refunds = action.payload;
+      })
+      .addCase(getAllRefunds.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
