@@ -102,6 +102,23 @@ export const login = createAsyncThunk(
   }
 );
 
+export const loginWithGoogle = createAsyncThunk(
+  "auth/loginWithGoogle",
+  async ({ token }, { rejectWithValue }) => {
+    try {
+      const res = await axiosInstance.post("/auth/login/google", { token });
+      const { user, accessToken, refreshToken } = res.data.data;
+      localStorage.setItem("refreshToken", refreshToken);
+      saveToStorage(user, accessToken);
+      return { user, accessToken, refreshToken };
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Đăng nhập Google thất bại" }
+      );
+    }
+  }
+);
+
 export const getCurrentUser = createAsyncThunk(
   "auth/getCurrentUser",
   async (_, { getState, rejectWithValue }) => {
@@ -279,6 +296,23 @@ const authSlice = createSlice({
         initSocket(a.payload.accessToken);
       })
       .addCase(login.rejected, (s, a) => {
+        s.loading = false;
+        s.error = a.payload;
+      })
+
+      /* LOGIN WITH GOOGLE */
+      .addCase(loginWithGoogle.pending, (s) => {
+        s.loading = true;
+        s.error = null;
+      })
+      .addCase(loginWithGoogle.fulfilled, (s, a) => {
+        s.loading = false;
+        s.user = { ...a.payload.user, verified: true };
+        s.token = a.payload.accessToken;
+        saveToStorage(s.user, s.token);
+        initSocket(a.payload.accessToken);
+      })
+      .addCase(loginWithGoogle.rejected, (s, a) => {
         s.loading = false;
         s.error = a.payload;
       })

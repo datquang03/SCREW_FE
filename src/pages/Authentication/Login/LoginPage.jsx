@@ -5,10 +5,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useDispatch, useSelector } from "react-redux";
-import { login, clearError } from "../../../features/auth/authSlice";
+import { login, clearError, loginWithGoogle } from "../../../features/auth/authSlice";
 import { useNavigate } from "react-router-dom";
 import { FiEye, FiEyeOff, FiLogIn } from "react-icons/fi";
 import ToastNotification from "../../../components/ToastNotification";
+import { GoogleLogin } from '@react-oauth/google';
 
 const schema = z.object({
   username: z
@@ -87,15 +88,20 @@ const LoginPage = () => {
     }
   };
 
-  // Xử lý đăng nhập Google (placeholder - bạn cần implement thực tế)
-  const handleGoogleLogin = () => {
-    // Ví dụ: dispatch(googleLogin());
-    // Hoặc dùng @react-oauth/google, Firebase, etc.
-    setToast({
-      type: "info",
-      message: "Chức năng đăng nhập Google đang được triển khai...",
-    });
-    // Sau khi implement thành công → navigate giống như login thường
+  // Xử lý đăng nhập Google
+  const handleGoogleLoginSuccess = async (credentialResponse) => {
+    if (!credentialResponse.credential) return;
+    dispatch(clearError());
+    try {
+      const result = await dispatch(loginWithGoogle({ token: credentialResponse.credential })).unwrap();
+      setToast({
+        type: "success",
+        message: result.message || "Đăng nhập Google thành công!",
+      });
+      setTimeout(() => navigate("/", { replace: true }), 1500);
+    } catch (err) {
+      setToast({ type: "error", message: err.message || "Đăng nhập Google thất bại" });
+    }
   };
 
   // Hiển thị lỗi backend
@@ -262,38 +268,17 @@ const LoginPage = () => {
             </div>
 
             {/* Nút Đăng nhập với Google */}
-            <button
-              type="button"
-              disabled={loading}
-              onClick={handleGoogleLogin}
-              className={`w-full py-4 px-6 font-medium text-[#0F172A] flex items-center justify-center gap-4 shadow-md transition-all duration-300 cursor-pointer border-2 border-slate-200 bg-white hover:bg-slate-50 hover:border-[#C5A267] active:scale-[0.98] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#C5A267]/20
-                ${loading ? "opacity-60 cursor-not-allowed" : ""}`}
-            >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.51h5.84c-.25 1.31-.98 2.42-2.07 3.16v2.63h3.35c1.96-1.81 3.09-4.47 3.09-7.8z"
-                  fill="#4285F4"
-                />
-                <path
-                  d="M12 23c2.97 0 5.46-1.01 7.28-2.73l-3.35-2.63c-1.01.68-2.29 1.08-3.93 1.08-3.02 0-5.58-2.04-6.49-4.79H.96v2.67C2.75 20.94 6.7 23 12 23z"
-                  fill="#34A853"
-                />
-                <path
-                  d="M5.51 14.21c-.23-.68-.36-1.41-.36-2.21s.13-1.53.36-2.21V7.34H.96C.35 8.85 0 10.39 0 12s.35 3.15.96 4.66l4.55-2.45z"
-                  fill="#FBBC05"
-                />
-                <path
-                  d="M12 4.98c1.64 0 3.11.56 4.27 1.66l3.19-3.19C17.46 1.01 14.97 0 12 0 6.7 0 2.75 2.06.96 5.34l4.55 2.45C6.42 5.02 8.98 4.98 12 4.98z"
-                  fill="#EA4335"
-                />
-              </svg>
-              Đăng nhập với Google
-            </button>
+            <div className="w-full flex justify-center">
+              <GoogleLogin
+                onSuccess={handleGoogleLoginSuccess}
+                onError={() => setToast({ type: "error", message: "Đăng nhập Google thất bại" })}
+                width="100%"
+                theme="outline"
+                size="large"
+                text="signin_with"
+                shape="rectangular"
+              />
+            </div>
           </form>
 
           <div className="mt-6 text-center space-y-3">

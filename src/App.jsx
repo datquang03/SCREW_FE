@@ -2,6 +2,7 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 import Homepage from "./pages/Homepage/Homepage";
 import AboutUsPage from "./pages/AboutUs/AboutUsPage";
@@ -246,9 +247,11 @@ const AppContent = () => {
 };
 
 const App = () => (
-  <BrowserRouter>
-    <AppContent />
-  </BrowserRouter>
+  <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
+  </GoogleOAuthProvider>
 );
 
 export default App;
