@@ -109,13 +109,13 @@ export default function StudioDetailPage({ studio }) {
   return (
     <div className="min-h-screen bg-[#F8F9FA] text-[#1A1A1A]">
       {/* LUXURY HERO SECTION */}
-      <div className="relative isolate overflow-hidden bg-[#0F172A] pt-24 pb-32">
+      <div className="relative isolate overflow-hidden bg-[#0F172A] pt-16 pb-20">
         {/* Cinematic background lighting */}
         <div className="absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_20%_20%,#1E293B_0%,transparent_50%),radial-gradient(circle_at_80%_0%,#334155_0%,transparent_40%)]" />
         <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#C5A267]/30 to-transparent" />
         
         <div className="max-w-7xl mx-auto px-6 relative z-10">
-          <div className="grid lg:grid-cols-12 gap-12 items-end">
+          <div className="grid lg:grid-cols-12 gap-8 items-end">
             <div className="lg:col-span-8 space-y-6">
               <p className="text-[10px] uppercase tracking-[0.5em] text-[#C5A267] font-bold">Studio Showcase</p>
               <h1 className="text-5xl md:text-7xl font-bold text-white leading-[1.1]">
@@ -162,12 +162,12 @@ export default function StudioDetailPage({ studio }) {
       </div>
 
       {/* MAIN CONTENT AREA */}
-      <div className="max-w-7xl mx-auto px-6 py-20">
+      <div className="max-w-7xl mx-auto px-6 py-12">
         <Suspense fallback={<div className="text-center py-20 font-serif italic text-slate-400">Đang khởi tạo không gian...</div>}>
-          <div className="grid lg:grid-cols-12 gap-16">
+          <div className="grid lg:grid-cols-12 gap-10">
             
             {/* LEFT CONTENT COLUMN */}
-            <div className="lg:col-span-8 space-y-24">
+            <div className="lg:col-span-8 space-y-16">
               
               {/* GALLERY */}
               <div id="gallery" className="bg-white p-2 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.03)] border border-gray-100 overflow-hidden">
@@ -176,11 +176,11 @@ export default function StudioDetailPage({ studio }) {
 
               {/* DETAILS SECTION */}
               <section id="info" ref={(el) => (sectionRefs.current.info = el)} className="scroll-mt-32">
-                <div className="flex items-center gap-4 mb-10">
+                <div className="flex items-center gap-4 mb-6">
                   <h3 className="text-2xl font-semibold text-slate-900">Thông tin chi tiết</h3>
                   <div className="h-px flex-1 bg-gradient-to-r from-slate-100 to-transparent"></div>
                 </div>
-                <div className="bg-white p-10 border border-gray-100 shadow-sm relative overflow-hidden group">
+                <div className="bg-white p-8 border border-gray-100 shadow-sm relative overflow-hidden group">
                   <div className="absolute top-0 left-0 w-1 h-full bg-[#C5A267] transform -translate-x-full group-hover:translate-x-0 transition-transform duration-500"></div>
                   <StudioInfo studio={safeStudio} />
                 </div>
@@ -188,19 +188,98 @@ export default function StudioDetailPage({ studio }) {
 
               {/* SERVICES SECTION */}
               <section id="services" ref={(el) => (sectionRefs.current.services = el)} className="scroll-mt-32">
-                <h3 className="text-[10px] uppercase tracking-[0.4em] font-bold text-slate-400 mb-10">Dịch vụ đặc quyền</h3>
+                <h3 className="text-[10px] uppercase tracking-[0.4em] font-bold text-slate-400 mb-6">Dịch vụ đặc quyền</h3>
                 <div className="grid md:grid-cols-2 gap-6">
                   <StudioServices services={safeStudio.services || []} />
                 </div>
               </section>
+              {/* AMENITIES SECTION */}
+              <section id="amenities" ref={(el) => (sectionRefs.current.amenities = el)} className="scroll-mt-32">
+                <div className="flex items-center gap-4 mb-6">
+                  <h3 className="text-2xl font-semibold text-slate-900">Tiện nghi & Trang thiết bị</h3>
+                  <div className="h-px flex-1 bg-gradient-to-r from-slate-100 to-transparent"></div>
+                </div>
+                <div className="bg-[#0F172A] p-8 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-[#C5A267]/10 rounded-full -mr-16 -mt-16"></div>
+                  <div className="grid md:grid-cols-3 gap-6 relative z-10">
+                    {[
+                      { icon: "🎥", title: "Camera chuyên nghiệp", desc: "4K/8K RAW" },
+                      { icon: "💡", title: "Hệ thống ánh sáng", desc: "LED & Softbox cao cấp" },
+                      { icon: "🎬", title: "Green Screen", desc: "Màn hình xanh 5x3m" },
+                      { icon: "🎙️", title: "Thiết bị âm thanh", desc: "Micro & Mixer chuyên nghiệp" },
+                      { icon: "💺", title: "Không gian thoải mái", desc: "Ghế sofa & Bàn làm việc" },
+                      { icon: "☕", title: "Tiện ích miễn phí", desc: "Wifi, Nước uống, Điều hòa" }
+                    ].map((item, idx) => (
+                      <div key={idx} className="bg-white/5 backdrop-blur-sm border border-white/10 p-5 hover:bg-white/10 transition-all group">
+                        <div className="text-4xl mb-3">{item.icon}</div>
+                        <h4 className="text-white font-bold text-sm mb-1 group-hover:text-[#C5A267] transition-colors">{item.title}</h4>
+                        <p className="text-slate-400 text-xs">{item.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
 
+              {/* LOCATION & CONTACT SECTION */}
+              <section id="location" ref={(el) => (sectionRefs.current.location = el)} className="scroll-mt-32">
+                <div className="flex items-center gap-4 mb-6">
+                  <h3 className="text-2xl font-semibold text-slate-900">Vị trí & Liên hệ</h3>
+                  <div className="h-px flex-1 bg-gradient-to-r from-slate-100 to-transparent"></div>
+                </div>
+                <div className="bg-white border border-gray-100 shadow-sm p-8">
+                  <div className="grid md:grid-cols-2 gap-8">
+                    <div>
+                      <h4 className="text-sm font-bold text-[#C5A267] uppercase tracking-widest mb-4">Địa chỉ</h4>
+                      <p className="text-slate-700 leading-relaxed mb-6">{safeStudio.location || "Phan Văn Trị, phường 5, Gò Vấp, TP.HCM"}</p>
+                      
+                      <h4 className="text-sm font-bold text-[#C5A267] uppercase tracking-widest mb-4 mt-6">Giờ mở cửa</h4>
+                      <div className="space-y-2 text-slate-700">
+                        <div className="flex justify-between border-b border-slate-100 pb-2">
+                          <span className="text-sm">Thứ 2 - Thứ 6</span>
+                          <span className="text-sm font-semibold">8:00 - 22:00</span>
+                        </div>
+                        <div className="flex justify-between border-b border-slate-100 pb-2">
+                          <span className="text-sm">Thứ 7 - Chủ nhật</span>
+                          <span className="text-sm font-semibold">9:00 - 23:00</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-[#C5A267] uppercase tracking-widest mb-4">Liên hệ nhanh</h4>
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-[#C5A267]/10 flex items-center justify-center text-[#C5A267]">
+                            📞
+                          </div>
+                          <div>
+                            <p className="text-xs text-slate-500 uppercase tracking-wider">Hotline</p>
+                            <p className="font-semibold text-slate-800">1900 xxxx</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-[#C5A267]/10 flex items-center justify-center text-[#C5A267]">
+                            ✉️
+                          </div>
+                          <div>
+                            <p className="text-xs text-slate-500 uppercase tracking-wider">Email</p>
+                            <p className="font-semibold text-slate-800">studio@scong.vn</p>
+                          </div>
+                        </div>
+                        <button className="w-full mt-6 bg-[#A0826D] hover:bg-[#8B7355] text-white py-3 font-bold text-xs uppercase tracking-wider transition-all">
+                          Gọi ngay để tư vấn
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
               {/* COMMENTS SECTION */}
               <section id="reviews" ref={(el) => (sectionRefs.current.reviews = el)} className="scroll-mt-32">
-                <div className="flex justify-between items-end mb-10 border-b border-slate-100 pb-8">
+                <div className="flex justify-between items-end mb-6 border-b border-slate-100 pb-4">
                   <h3 className="font-bold text-3xl text-slate-900">Bình luận & Đánh giá</h3>
                   <p className="text-xs text-slate-400 uppercase tracking-widest">Chia sẻ cảm nhận của bạn</p>
                 </div>
-                <div className="space-y-10">
+                <div className="space-y-6">
                   {safeStudio._id && (
                     <StudioCommentList
                       targetId={safeStudio._id}
@@ -277,18 +356,41 @@ export default function StudioDetailPage({ studio }) {
 
             {/* RIGHT STICKY SIDEBAR */}
             <div className="lg:col-span-4 relative">
-              <div className="sticky top-32 space-y-8">
+              <div className="sticky top-24 space-y-6">
                 
                 {/* BOOKING WIDGET */}
-                <div className="bg-white border border-gray-100 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] p-10 rounded-sm overflow-hidden relative">
+                <div className="bg-white border border-gray-100 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] p-8 rounded-sm overflow-hidden relative">
                   <div className="absolute top-0 right-0 w-24 h-24 bg-[#C5A267]/5 rounded-bl-full -mr-12 -mt-12"></div>
-                  <div className="mb-8">
+                  <div className="mb-6">
                     <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Giá thuê từ</p>
                     <p className="text-4xl font-semibold text-slate-900">
                       {safeStudio.basePricePerHour?.toLocaleString()}₫ <span className="text-sm text-[#C5A267]">/ giờ</span>
                     </p>
                   </div>
                   <StudioBookingButton studioId={safeStudio._id} />
+                </div>
+
+                {/* FEATURES HIGHLIGHT */}
+                <div className="bg-[#C5A267] p-6 text-white">
+                  <h4 className="text-[10px] uppercase tracking-[0.3em] font-bold mb-4 opacity-90">Tại sao chọn chúng tôi</h4>
+                  <ul className="space-y-3">
+                    <li className="flex items-start gap-3">
+                      <span className="text-[#0F172A] text-lg mt-0.5">✓</span>
+                      <span className="text-sm leading-relaxed">Trang thiết bị chuyên nghiệp, hiện đại nhất</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <span className="text-[#0F172A] text-lg mt-0.5">✓</span>
+                      <span className="text-sm leading-relaxed">Đội ngũ hỗ trợ kỹ thuật tận tâm 24/7</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <span className="text-[#0F172A] text-lg mt-0.5">✓</span>
+                      <span className="text-sm leading-relaxed">Giá cả minh bạch, không phát sinh</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <span className="text-[#0F172A] text-lg mt-0.5">✓</span>
+                      <span className="text-sm leading-relaxed">Hỗ trợ hủy & hoàn tiền linh hoạt</span>
+                    </li>
+                  </ul>
                 </div>
 
                 {/* RELATED STUDIOS */}

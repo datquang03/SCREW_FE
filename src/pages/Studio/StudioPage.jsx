@@ -59,7 +59,7 @@ const StudioPage = () => {
                 S+ Studio
               </span>
             </Title>
-            <Paragraph className="!text-base md:!text-lg text-slate-300 max-w-2xl leading-relaxed mb-6">
+            <Paragraph className="!text-base md:!text-lg !text-white max-w-2xl leading-relaxed mb-6">
               Nâng tầm sáng tạo với những gói dịch vụ cao cấp và ưu đãi độc
               quyền dành riêng cho cộng đồng nghệ sĩ đương đại.
             </Paragraph>
