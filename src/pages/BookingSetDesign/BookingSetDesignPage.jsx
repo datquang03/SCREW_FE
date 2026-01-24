@@ -13,10 +13,9 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import {
   getSetDesignById,
-  customSetDesignRequest,
 } from "../../features/setDesign/setDesignSlice";
-import { uploadImage } from "../../features/upload/uploadSlice";
 import { message } from "antd";
+import { createOrderSetDesign } from "../../features/setDesignPayment/setDesignPayment";
 
 const BookingSetDesignPage = () => {
   const { id } = useParams();
@@ -24,8 +23,6 @@ const BookingSetDesignPage = () => {
   const navigate = useNavigate();
 
   const { currentSetDesign, loading } = useSelector((state) => state.setDesign);
-  const { uploading } = useSelector((s) => s.upload || {});
-  const [localFile, setLocalFile] = useState(null);
 
   // FORM CUSTOM REQUEST
   const [form, setForm] = useState({
@@ -34,10 +31,23 @@ const BookingSetDesignPage = () => {
     phoneNumber: "",
     description: "",
   });
-  const [submitting, setSubmitting] = useState(false);
 
-  const updateField = (field, value) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
+  const handleBookSetDesign = async () => {
+    try {
+      const result = await dispatch(
+        createOrderSetDesign({
+          setDesignId: currentSetDesign._id,
+          customerName: form.customerName,
+          email: form.email,
+          phoneNumber: form.phoneNumber,
+          description: form.description,
+        })
+      ).unwrap();
+      message.success("Đặt set design thành công!");
+      navigate(`/set-design-order/detail/${result._id}`);
+    } catch (err) {
+      message.error(err?.message || "Đặt set design thất bại!");
+    }
   };
 
   useEffect(() => {
@@ -105,13 +115,27 @@ const BookingSetDesignPage = () => {
                 <div className="flex items-center gap-2">
                   <FiStar className="text-[#C5A267]" />
                   <span className="text-[#0F172A] font-semibold">
-                    {currentSetDesign.avgRating} / 5.0
+                    {currentSetDesign.avgRating || 0} / 5.0
                   </span>
                   <span className="text-slate-400">
-                    ({currentSetDesign.reviewCount} reviews)
+                    ({currentSetDesign.reviewCount || 0} reviews)
                   </span>
                 </div>
               </div>
+
+              {/* ẢNH SET DESIGN */}
+              {Array.isArray(currentSetDesign.images) && currentSetDesign.images.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                  {currentSetDesign.images.map((img, idx) => (
+                    <img
+                      key={idx}
+                      src={img}
+                      alt={`set-design-img-${idx}`}
+                      className="w-full h-32 object-cover rounded border"
+                    />
+                  ))}
+                </div>
+              )}
 
               <div className="mt-6">
                 <p className="text-slate-500 text-sm mb-2">Mô tả</p>
@@ -121,175 +145,13 @@ const BookingSetDesignPage = () => {
               </div>
             </motion.div>
 
-            {/* FORM CUSTOM REQUEST */}
-            <h2 className="text-xl font-semibold text-[#0F172A] mb-6">
-              Thông tin của bạn
-            </h2>
-
-            <div className="space-y-6">
-              {/* FULL NAME */}
-              <div className="flex items-center gap-3 bg-white p-4 border-2 border-slate-200 focus-within:border-[#C5A267] transition">
-                <FiUser className="text-[#C5A267] text-xl" />
-                <input
-                  type="text"
-                  placeholder="Họ và tên"
-                  value={form.customerName}
-                  onChange={(e) => updateField("customerName", e.target.value)}
-                  className="w-full bg-transparent outline-none text-[#0F172A] placeholder-slate-400"
-                />
-              </div>
-
-              {/* EMAIL */}
-              <div className="flex items-center gap-3 bg-white p-4 border-2 border-slate-200 focus-within:border-[#C5A267] transition">
-                <FiMail className="text-[#C5A267] text-xl" />
-                <input
-                  type="email"
-                  placeholder="Email"
-                  value={form.email}
-                  onChange={(e) => updateField("email", e.target.value)}
-                  className="w-full bg-transparent outline-none text-[#0F172A] placeholder-slate-400"
-                />
-              </div>
-
-              {/* PHONE */}
-              <div className="flex items-center gap-3 bg-white p-4 border-2 border-slate-200 focus-within:border-[#C5A267] transition">
-                <FiPhone className="text-[#C5A267] text-xl" />
-                <input
-                  type="text"
-                  placeholder="Số điện thoại"
-                  value={form.phoneNumber}
-                  onChange={(e) => updateField("phoneNumber", e.target.value)}
-                  className="w-full bg-transparent outline-none text-[#0F172A] placeholder-slate-400"
-                />
-              </div>
-
-              {/* DESCRIPTION */}
-              <div className="flex items-start gap-3 bg-white p-4 border-2 border-slate-200 focus-within:border-[#C5A267] transition">
-                <FiMessageSquare className="text-[#C5A267] text-xl mt-1" />
-                <textarea
-                  rows={4}
-                  placeholder="Mô tả yêu cầu set design mong muốn..."
-                  value={form.description}
-                  onChange={(e) => updateField("description", e.target.value)}
-                  className="w-full bg-transparent outline-none text-[#0F172A] resize-none placeholder-slate-400"
-                />
-              </div>
-
-              {/* UPLOAD IMAGES */}
-              <div className="bg-white p-4 border-2 border-dashed border-slate-200 hover:border-[#C5A267] transition">
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <p className="font-semibold text-[#0F172A]">
-                      Hình ảnh tham khảo
-                    </p>
-                    <p className="text-sm text-slate-500">
-                      Tải lên 1-5 ảnh (jpg, png). Ảnh sẽ gửi kèm yêu cầu.
-                    </p>
-                  </div>
-                  <label
-                    className="px-3 py-2 bg-[#A0826D] text-white text-sm cursor-pointer hover:bg-[#8B7355] transition"
-                    style={{ backgroundColor: '#A0826D' }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#8B7355'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#A0826D'}
-                  >
-                    Chọn ảnh
-                    <input
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setLocalFile(file);
-                        }
-                      }}
-                    />
-                  </label>
-                </div>
-
-                {uploading && (
-                  <p className="text-sm text-[#C5A267]">Đang tải ảnh...</p>
-                )}
-
-                {localFile && (
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 mt-3">
-                    <img
-                      src={URL.createObjectURL(localFile)}
-                      alt="upload"
-                      className="w-full h-24 object-cover border border-slate-200"
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* BUTTON SEND REQUEST */}
+            {/* BUTTON TO BOOK SET DESIGN */}
             <motion.button
-              className="w-full py-5 mt-10 text-white font-semibold text-lg shadow-lg transition-all"
-              style={{ backgroundColor: '#A0826D' }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#8B7355'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#A0826D'}
+              className="w-full py-4 mt-4 text-white font-medium text-lg shadow-md bg-[#C5A267] border-2 border-[#C5A267] hover:bg-[#b08d57] hover:border-[#b08d57] transition"
               whileTap={{ scale: 0.97 }}
-              disabled={submitting}
-              onClick={async () => {
-                if (
-                  !form.customerName ||
-                  !form.email ||
-                  !form.phoneNumber ||
-                  !form.description
-                ) {
-                  return message.error("Vui lòng nhập đầy đủ thông tin");
-                }
-                setSubmitting(true);
-                try {
-                  let uploaded = [];
-                  if (localFile) {
-                    const resUp = await dispatch(
-                      uploadImage(localFile)
-                    ).unwrap();
-                    const img =
-                      resUp?.image ||
-                      resUp?.url ||
-                      resUp?.secure_url ||
-                      resUp?.data?.image ||
-                      resUp;
-                    uploaded = img ? [img] : [];
-                  }
-                  const payload = {
-                    ...form,
-                    setDesignId: id,
-                    images: uploaded,
-                  };
-                  const res = await dispatch(
-                    customSetDesignRequest(payload)
-                  ).unwrap();
-                  message.success("Gửi yêu cầu thiết kế thành công");
-                  setForm({
-                    customerName: "",
-                    email: "",
-                    phoneNumber: "",
-                    description: "",
-                  });
-                  setLocalFile(null);
-                  navigate("/dashboard/customer/custom-request");
-                } catch (err) {
-                  message.error(err?.message || "Gửi yêu cầu thất bại");
-                } finally {
-                  setSubmitting(false);
-                }
-              }}
+              onClick={handleBookSetDesign}
             >
-              {submitting ? "Đang gửi..." : "Gửi yêu cầu thiết kế"}
-            </motion.button>
-
-            {/* BUTTON TO BOOK NORMAL SET DESIGN */}
-            <motion.button
-              className="w-full py-4 mt-4 text-[#0F172A] font-medium text-lg shadow-md bg-white border-2 border-slate-200 hover:border-[#C5A267] hover:bg-slate-50 transition"
-              whileTap={{ scale: 0.97 }}
-              onClick={() => navigate(`/set-design/${id}`)}
-            >
-              Quay lại trang gói chụp
+              Đặt ngay
             </motion.button>
           </>
         )}

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Card, Typography, Tag, Button, Modal, Descriptions, Divider, Spin, DatePicker, Form, Input } from "antd";
+import { Card, Typography, Tag, Button, Modal, Descriptions, Divider, Spin, DatePicker, Form, Input, Upload } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import dayjs from "dayjs";
 import {
@@ -11,6 +11,7 @@ import DataTable from "../../components/dashboard/DataTable";
 import { getAllMyBookings, getBookingById, extendStudioSchedule, cancelBooking, getExtendStatus } from "../../features/booking/bookingSlice";
 import { createRemainingPayment, refundPayment } from "../../features/payment/paymentSlice";
 import { getStudioById } from '../../features/studio/studioSlice';
+import { PlusOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 
@@ -169,25 +170,36 @@ const UserBookingsPage = () => {
   };
 
   const submitRefund = async () => {
-      try {
-          const values = await refundForm.validateFields();
-          setRefundLoading(true);
-          
-          await dispatch(refundPayment({
-             bookingId: currentBooking._id,
-             ...values
-          })).unwrap();
-          
-          Modal.success({ content: "Đã gửi yêu cầu hoàn tiền thành công!" });
-          setRefundModalOpen(false);
-          setDetailModalOpen(false);
-          refundForm.resetFields();
-      } catch (err) {
-          Modal.error({ content: err.message || "Gửi yêu cầu thất bại" });
-      } finally {
-          setRefundLoading(false);
+    try {
+      // Bỏ validateFields, lấy trực tiếp từ form
+      const values = refundForm.getFieldsValue();
+      console.log('REFUND FORM DATA:', values);
+      setRefundLoading(true);
+      const formData = new FormData();
+      formData.append("bankName", values.bankName);
+      formData.append("accountNumber", values.accountNumber);
+      formData.append("accountName", values.accountName);
+      if (values.reason) formData.append("reason", values.reason);
+      if (values.proofImages && values.proofImages.length > 0) {
+        for (let i = 0; i < values.proofImages.length; i++) {
+          const fileObj = values.proofImages[i].originFileObj || values.proofImages[i];
+          formData.append("proofImages", fileObj);
+        }
       }
-   };
+      await dispatch(refundPayment({
+        bookingId: currentBooking._id,
+        formData
+      })).unwrap();
+      Modal.success({ content: "Đã gửi yêu cầu hoàn tiền thành công!" });
+      setRefundModalOpen(false);
+      setDetailModalOpen(false);
+      refundForm.resetFields();
+    } catch (err) {
+      Modal.error({ content: err.message || "Gửi yêu cầu thất bại" });
+    } finally {
+      setRefundLoading(false);
+    }
+  };
 
    const handlePayRemaining = async () => {
     try {
@@ -748,46 +760,76 @@ const UserBookingsPage = () => {
 
       {/* Refund Modal */}
       <Modal
-         title="Yêu cầu hoàn tiền"
-         open={refundModalOpen}
-         onCancel={() => {
-            setRefundModalOpen(false);
-            refundForm.resetFields();
-         }}
-         footer={[
-            <Button key="cancel" onClick={() => setRefundModalOpen(false)}>Thoát</Button>,
-            <Button key="submit" type="primary" loading={refundLoading} onClick={submitRefund}>Đồng ý</Button>
-         ]}
+        title="Yêu cầu hoàn tiền"
+        open={refundModalOpen}
+        onCancel={() => {
+          setRefundModalOpen(false);
+          refundForm.resetFields();
+        }}
+        footer={null}
+        centered
+        width={500}
       >
-         <Form form={refundForm} layout="vertical">
-            <Form.Item
-               name="bankName"
-               label="Tên ngân hàng"
-               rules={[{ required: true, message: "Vui lòng nhập tên ngân hàng" }]}
+        <Form form={refundForm} layout="vertical" onFinish={submitRefund}>
+          <Form.Item
+            name="bankName"
+            label="Tên ngân hàng"
+            rules={[{ required: true, message: "Vui lòng nhập tên ngân hàng" }]}
+          >
+            <Input placeholder="Ví dụ: Vietcombank, Techcombank..." />
+          </Form.Item>
+          <Form.Item
+            name="accountNumber"
+            label="Số tài khoản"
+            rules={[{ required: true, message: "Vui lòng nhập số tài khoản" }]}
+          >
+            <Input placeholder="0123456789" />
+          </Form.Item>
+          <Form.Item
+            name="accountName"
+            label="Tên chủ tài khoản"
+            rules={[{ required: true, message: "Vui lòng nhập tên chủ tài khoản" }]}
+          >
+            <Input placeholder="NGUYEN VAN A" style={{ textTransform: 'uppercase'}} />
+          </Form.Item>
+          <Form.Item
+            name="reason"
+            label="Lý do (Tùy chọn)"
+          >
+            <Input.TextArea rows={3} placeholder="Lý do hoàn tiền..." />
+          </Form.Item>
+          <Form.Item
+            label="Ảnh minh chứng (nếu có)"
+            name="proofImages"
+            valuePropName="fileList"
+            getValueFromEvent={e => Array.isArray(e) ? e : e && e.fileList}
+          >
+            <Upload
+              listType="picture-card"
+              maxCount={5}
+              accept="image/*"
+              beforeUpload={() => false}
+              multiple
             >
-               <Input placeholder="Ví dụ: Vietcombank, Techcombank..." />
-            </Form.Item>
-            <Form.Item
-               name="accountNumber"
-               label="Số tài khoản"
-               rules={[{ required: true, message: "Vui lòng nhập số tài khoản" }]}
+              <div>
+                <PlusOutlined style={{ fontSize: 28, color: "#1890ff" }} />
+                <div style={{ marginTop: 8, fontSize: 14, color: "#666" }}>
+                  Upload ảnh
+                </div>
+              </div>
+            </Upload>
+          </Form.Item>
+          <div className="flex justify-end gap-2 mt-6">
+            <Button onClick={() => setRefundModalOpen(false)}>Hủy</Button>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={refundLoading}
             >
-               <Input placeholder="0123456789" />
-            </Form.Item>
-            <Form.Item
-               name="accountName"
-               label="Tên chủ tài khoản"
-               rules={[{ required: true, message: "Vui lòng nhập tên chủ tài khoản" }]}
-            >
-               <Input placeholder="NGUYEN VAN A" style={{ textTransform: 'uppercase'}} />
-            </Form.Item>
-            <Form.Item
-               name="reason"
-               label="Lý do (Tùy chọn)"
-            >
-               <Input.TextArea rows={3} placeholder="Lý do hoàn tiền..." />
-            </Form.Item>
-         </Form>
+              Gửi yêu cầu hoàn tiền
+            </Button>
+          </div>
+        </Form>
       </Modal>
     </div>
   );

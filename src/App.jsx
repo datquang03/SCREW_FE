@@ -65,6 +65,7 @@ import StaffReportPage from "./pages/StaffDashboard/StaffReportPage";
 import UserReportPage from "./pages/UserDashboard/UserReportPage";
 import SetDesignPage from "./pages/SetDesign/SetDesignPage";
 import AdminProfilePage from "./pages/AdminDashboard/AdminProfilePage";
+import BookingDetailPage from "./pages/BookingSetDesign/BookingDetailPage";
 const pageVariants = {
   initial: { opacity: 0, y: 10 },
   in: { opacity: 1, y: 0 },
@@ -120,6 +121,9 @@ const AppContent = () => {
                 path="/booking/set-design/:id"
                 element={<BookingSetDesignPage />}
               />
+              <Route path="/set-design-order/detail/:id" element={<BookingDetailPage />} />
+
+              {/* Payment callbacks */}
               <Route path="/payment/success" element={<PaymentSuccessPage />} />
               <Route path="/payment/cancel" element={<PaymentCancelPage />} />
               {/* Set Design payment callbacks */}

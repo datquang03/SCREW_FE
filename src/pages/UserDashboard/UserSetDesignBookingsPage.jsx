@@ -15,6 +15,7 @@ import dayjs from "dayjs";
 import {
   getMySetDesignOrder,
   getSetDesignOrderDetail,
+  createPaymentFull,
 } from "../../features/setDesignPayment/setDesignPayment";
 
 const { Title, Text } = Typography;
@@ -395,6 +396,32 @@ export default function UserSetDesignBookingsPage() {
                     ))}
                   </div>
                 </Card>
+              )}
+
+              {/* Nút thanh toán phần còn lại */}
+              {order.totalAmount > order.paidAmount && (
+                <div className="flex justify-end mt-6">
+                  <Button
+                    type="primary"
+                    size="large"
+                    className="rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 border-0 shadow-lg hover:shadow-xl"
+                    onClick={async () => {
+                      try {
+                        const result = await dispatch(createPaymentFull(order._id)).unwrap();
+                        Modal.success({ content: `Thanh toán phần còn lại (${(order.totalAmount - order.paidAmount).toLocaleString("vi-VN")}₫) thành công! Đang chuyển đến trang thanh toán...` });
+                        if (result && result.checkoutUrl) {
+                          setTimeout(() => {
+                            window.location.href = result.checkoutUrl;
+                          }, 1200);
+                        }
+                      } catch (err) {
+                        Modal.error({ content: err?.message || "Thanh toán thất bại!" });
+                      }
+                    }}
+                  >
+                    Thanh toán phần còn lại ({(order.totalAmount - order.paidAmount).toLocaleString("vi-VN")}₫)
+                  </Button>
+                </div>
               )}
             </div>
           );

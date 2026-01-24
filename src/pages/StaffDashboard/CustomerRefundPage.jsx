@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
   Table,
-  Card,
   Button,
   Input,
   Modal,
@@ -14,6 +13,8 @@ import {
   Descriptions,
   Dropdown,
   Select,
+  Form,
+  Upload,
 } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import dayjs from "dayjs";
@@ -34,6 +35,7 @@ import {
 } from "../../features/payment/paymentSlice";
 import { getAllRefunds } from "../../features/booking/bookingSlice";
 import DataTable from "../../components/dashboard/DataTable";
+import { PlusOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -47,6 +49,13 @@ const CustomerRefundPage = () => {
   const [rejectReason, setRejectReason] = useState("");
   const [processingId, setProcessingId] = useState(null);
   const [filterStatus, setFilterStatus] = useState("");
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [confirmForm] = Form.useForm();
+  const [confirmingRefund, setConfirmingRefund] = useState(null);
+
+  // State cho preview ảnh
+  const [previewVisible, setPreviewVisible] = useState(false);
+  const [previewImage, setPreviewImage] = useState("");
 
   useEffect(() => {
     dispatch(getAllRefunds(filterStatus ? { status: filterStatus } : {}));
@@ -80,7 +89,7 @@ const CustomerRefundPage = () => {
         try {
           await dispatch(approveCustomerRefund(refund._id)).unwrap();
           message.success("Đã duyệt yêu cầu hoàn tiền thành công!");
-          dispatch(getAllRefunds()); // Refresh list
+          dispatch(getAllRefunds());
         } catch (error) {
           message.error(error.message || "Có lỗi xảy ra");
         } finally {
@@ -109,12 +118,63 @@ const CustomerRefundPage = () => {
       ).unwrap();
       message.success("Đã từ chối yêu cầu hoàn tiền!");
       setRejectModalOpen(false);
-      dispatch(getAllRefunds()); // Refresh list
+      dispatch(getAllRefunds());
     } catch (error) {
       message.error(error.message || "Có lỗi xảy ra");
     } finally {
       setProcessingId(null);
     }
+  };
+
+  const handleConfirmPayment = (refund) => {
+    setConfirmingRefund(refund);
+    setConfirmModalOpen(true);
+    confirmForm.resetFields();
+  };
+
+  const handleSubmitConfirmPayment = async () => {
+    try {
+      const values = await confirmForm.validateFields();
+      setProcessingId(confirmingRefund._id);
+      // Lấy file từ Upload component
+      let proofImage = undefined;
+      if (values.proofImage && Array.isArray(values.proofImage) && values.proofImage.length > 0) {
+        // Nếu là Upload antd, lấy file gốc
+        const fileObj = values.proofImage[0].originFileObj || values.proofImage[0];
+        proofImage = fileObj;
+      }
+      // Tạo FormData đúng chuẩn
+      const formData = new FormData();
+      formData.append("transactionRef", values.transactionRef || "");
+      formData.append("note", values.note || "");
+      if (proofImage) formData.append("proofImage", proofImage);
+      await dispatch(
+        confirmRefundPayment({
+          refundId: confirmingRefund._id,
+          formData,
+        })
+      ).unwrap();
+      message.success("Đã xác nhận hoàn tiền thành công!");
+      setConfirmModalOpen(false);
+      dispatch(getAllRefunds());
+    } catch (err) {
+      message.error(err?.message || "Có lỗi xảy ra");
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  // Hàm xử lý preview ảnh
+  const handlePreview = async (file) => {
+    if (!file.url && !file.preview) {
+      file.preview = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file.originFileObj);
+        reader.onload = () => resolve(reader.result);
+      });
+    }
+    setPreviewImage(file.url || file.preview);
+    setPreviewVisible(true);
   };
 
   const getDropdownMenu = (record) => {
@@ -149,6 +209,19 @@ const CustomerRefundPage = () => {
           </div>
         ),
         onClick: () => handleRejectClick(record),
+      });
+    }
+
+    if (record.status === "APPROVED") {
+      items.push({ type: "divider" });
+      items.push({
+        key: "confirm",
+        label: (
+          <div className="flex items-center gap-2 text-blue-600 font-medium">
+            <FiCheck /> Xác nhận hoàn tiền
+          </div>
+        ),
+        onClick: () => handleConfirmPayment(record),
       });
     }
 
@@ -273,6 +346,10 @@ const CustomerRefundPage = () => {
             color = "warning";
             label = "Chờ duyệt";
             break;
+          case "COMPLETED":
+            color = "blue";
+            label = "Đã hoàn thành";
+            break;
           default:
             label = status;
         }
@@ -285,13 +362,37 @@ const CustomerRefundPage = () => {
       },
     },
     {
+      title: "Ảnh minh chứng",
+      dataIndex: "proofImages",
+      width: 120,
+      render: (proofImages) =>
+        proofImages && proofImages.length > 0 ? (
+          <div className="flex flex-wrap gap-1">
+            {proofImages.map((img, idx) => (
+              <img
+                key={idx}
+                src={img}
+                alt="proof"
+                className="w-10 h-10 object-cover rounded border cursor-pointer hover:shadow"
+                onClick={() => {
+                  setPreviewImage(img);
+                  setPreviewVisible(true);
+                }}
+              />
+            ))}
+          </div>
+        ) : (
+          <span className="text-gray-400 text-xs">Không có</span>
+        ),
+    },
+    {
       title: "Tác vụ",
       width: 100,
       align: "center",
       fixed: "right",
       render: (_, record) => (
-        <Dropdown menu={getDropdownMenu(record)} trigger={['click']} placement="bottomRight">
-           <button className="text-gray-500 hover:text-indigo-600 transition-colors p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+        <Dropdown menu={getDropdownMenu(record)} trigger={["click"]} placement="bottomRight">
+          <button className="text-gray-500 hover:text-indigo-600 transition-colors p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
             <FiMoreVertical size={20} />
           </button>
         </Dropdown>
@@ -299,8 +400,7 @@ const CustomerRefundPage = () => {
     },
   ];
 
-  // Lọc dữ liệu theo trạng thái
-  const filteredRefunds = (refunds?.refunds || []).filter(r => {
+  const filteredRefunds = (refunds?.refunds || []).filter((r) => {
     if (!filterStatus) return true;
     return r.status === filterStatus;
   });
@@ -311,9 +411,7 @@ const CustomerRefundPage = () => {
       <div className="relative w-full bg-[#C5A267] p-10 text-white shadow-md">
         <div className="text-sm opacity-90 mb-2">DASHBOARD · STAFF</div>
         <h1 className="text-3xl font-bold mb-2">Quản lý hoàn tiền</h1>
-        <p className="opacity-90">
-          Xử lý các yêu cầu hoàn tiền từ khách hàng
-        </p>
+        <p className="opacity-90">Xử lý các yêu cầu hoàn tiền từ khách hàng</p>
       </div>
 
       {/* Bộ lọc trạng thái */}
@@ -359,10 +457,7 @@ const CustomerRefundPage = () => {
       >
         <p className="mb-3 text-gray-600">
           Vui lòng nhập lý do từ chối hoàn tiền cho đơn hàng{" "}
-          <Text strong>
-             #{selectedRefund?._id?.slice(-6).toUpperCase()}
-          </Text>
-          :
+          <Text strong>#{selectedRefund?._id?.slice(-6).toUpperCase()}</Text>:
         </p>
         <TextArea
           rows={4}
@@ -421,49 +516,132 @@ const CustomerRefundPage = () => {
             </div>
 
             <div className="border border-gray-200 rounded-xl p-4">
-               <div className="flex items-center gap-2 mb-3 text-gray-800 font-semibold border-b pb-2">
-                  <FiCreditCard /> Thông tin thụ hưởng
-               </div>
-               <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                     <span className="text-gray-500">Ngân hàng:</span>
-                     <span className="font-medium">{selectedRefund.destinationBank?.bankName}</span>
-                  </div>
-                   <div className="flex justify-between">
-                     <span className="text-gray-500">Số tài khoản:</span>
-                     <span className="font-mono bg-gray-100 px-2 rounded text-emerald-700 font-bold">
-                        {selectedRefund.destinationBank?.accountNumber}
-                     </span>
-                  </div>
-                   <div className="flex justify-between">
-                     <span className="text-gray-500">Chủ tài khoản:</span>
-                     <span className="font-medium uppercase">{selectedRefund.destinationBank?.accountName}</span>
-                  </div>
-               </div>
+              <div className="flex items-center gap-2 mb-3 text-gray-800 font-semibold border-b pb-2">
+                <FiCreditCard /> Thông tin thụ hưởng
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Ngân hàng:</span>
+                  <span className="font-medium">{selectedRefund.destinationBank?.bankName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Số tài khoản:</span>
+                  <span className="font-mono bg-gray-100 px-2 rounded text-emerald-700 font-bold">
+                    {selectedRefund.destinationBank?.accountNumber}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Chủ tài khoản:</span>
+                  <span className="font-medium uppercase">{selectedRefund.destinationBank?.accountName}</span>
+                </div>
+              </div>
             </div>
-            
+
+            {selectedRefund.proofImages && selectedRefund.proofImages.length > 0 && (
+              <div className="border border-gray-200 rounded-xl p-4">
+                <div className="font-semibold mb-2">Ảnh minh chứng của khách hàng:</div>
+                <div className="flex flex-wrap gap-2">
+                  {selectedRefund.proofImages.map((img, idx) => (
+                    <img
+                      key={idx}
+                      src={img}
+                      alt="proof"
+                      className="w-20 h-20 object-cover rounded border cursor-pointer hover:shadow"
+                      onClick={() => {
+                        setPreviewImage(img);
+                        setPreviewVisible(true);
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
             {(selectedRefund.reason || selectedRefund.rejectReason) && (
-               <div className="bg-[#FCFBFA] p-4 border border-slate-200 text-sm">
-                  {selectedRefund.reason && (
-                    <div className="mb-2">
-                       <span className="font-semibold text-[#0F172A] block">Lý do yêu cầu:</span>
-                       <span className="text-gray-700">{selectedRefund.reason}</span>
-                    </div>
-                  )}
-                  {selectedRefund.rejectReason && (
-                     <div className="mt-2 pt-2 border-t border-slate-200">
-                        <span className="font-semibold text-red-800 block">Lý do từ chối:</span>
-                        <span className="text-red-700">{selectedRefund.rejectReason}</span>
-                     </div>
-                  )}
-               </div>
+              <div className="bg-[#FCFBFA] p-4 border border-slate-200 text-sm">
+                {selectedRefund.reason && (
+                  <div className="mb-2">
+                    <span className="font-semibold text-[#0F172A] block">Lý do yêu cầu:</span>
+                    <span className="text-gray-700">{selectedRefund.reason}</span>
+                  </div>
+                )}
+                {selectedRefund.rejectReason && (
+                  <div className="mt-2 pt-2 border-t border-slate-200">
+                    <span className="font-semibold text-red-800 block">Lý do từ chối:</span>
+                    <span className="text-red-700">{selectedRefund.rejectReason}</span>
+                  </div>
+                )}
+              </div>
             )}
 
             <div className="flex justify-end pt-2">
-                <Button onClick={() => setDetailModalOpen(false)}>Đóng</Button>
+              <Button onClick={() => setDetailModalOpen(false)}>Đóng</Button>
             </div>
           </div>
         )}
+      </Modal>
+
+      {/* Modal Xác nhận hoàn tiền - PHẦN ĐÃ SỬA */}
+      <Modal
+        open={confirmModalOpen}
+        onCancel={() => setConfirmModalOpen(false)}
+        footer={null}
+        title="Xác nhận hoàn tiền cho khách hàng"
+        centered
+        width={500}
+      >
+        <Form form={confirmForm} layout="vertical" onFinish={handleSubmitConfirmPayment}>
+          <Form.Item label="Mã giao dịch (transactionRef)" name="transactionRef">
+            <Input placeholder="Nhập mã giao dịch (nếu có)" />
+          </Form.Item>
+
+          <Form.Item label="Ghi chú (note)" name="note">
+            <Input placeholder="Nhập ghi chú (nếu có)" />
+          </Form.Item>
+
+          <Form.Item
+            label="Ảnh xác nhận chuyển khoản (proofImage)"
+            name="proofImage"
+            valuePropName="fileList"
+            getValueFromEvent={(e) => (Array.isArray(e) ? e : e && e.fileList)}
+          >
+            <Upload
+              listType="picture-card"
+              maxCount={1}
+              accept="image/*"
+              beforeUpload={() => false} // Ngăn upload tự động của antd
+              onPreview={handlePreview}
+            >
+              <div>
+                <PlusOutlined style={{ fontSize: 28, color: "#1890ff" }} />
+                <div style={{ marginTop: 8, fontSize: 14, color: "#666" }}>
+                  Upload ảnh
+                </div>
+              </div>
+            </Upload>
+          </Form.Item>
+
+          <div className="flex justify-end gap-2 mt-6">
+            <Button onClick={() => setConfirmModalOpen(false)}>Hủy</Button>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={processingId === (confirmingRefund && confirmingRefund._id)}
+            >
+              Xác nhận hoàn tiền
+            </Button>
+          </div>
+        </Form>
+      </Modal>
+
+      {/* Modal xem trước ảnh */}
+      <Modal
+        open={previewVisible}
+        title="Xem trước ảnh minh chứng"
+        footer={null}
+        onCancel={() => setPreviewVisible(false)}
+      >
+        <img alt="preview" style={{ width: "100%" }} src={previewImage} />
       </Modal>
     </div>
   );

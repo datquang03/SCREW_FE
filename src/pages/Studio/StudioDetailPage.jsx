@@ -128,7 +128,7 @@ export default function StudioDetailPage({ studio }) {
               <div className="flex flex-wrap gap-3 pt-4">
                 <button
                   onClick={() => window.location.href = `/booking/${safeStudio._id}`}
-                  className="bg-[#C5A267] hover:bg-[#B38F55] text-white px-10 py-4 text-[10px] font-bold uppercase tracking-[0.2em] transition-all duration-500 shadow-2xl shadow-[#C5A267]/20"
+                  className="bg-[#C5A267] hover:bg-[#B38F55] cursor-pointer text-white px-10 py-4 text-[10px] font-bold uppercase tracking-[0.2em] transition-all duration-500 shadow-2xl shadow-[#C5A267]/20"
                 >
                   Đặt lịch ngay
                 </button>
