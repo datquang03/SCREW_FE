@@ -37,7 +37,7 @@ const UserRequestRefundPage = () => {
         booking ? (
           <Text code>#{booking._id?.slice(-6).toUpperCase()}</Text>
         ) : (
-          "N/A"
+          "Set Design Id"
         ),
     },
     {
