@@ -7,6 +7,7 @@ import { FaRepeat } from "react-icons/fa6";
 import { AiOutlineAudit } from "react-icons/ai";
 import { GoBookmark } from "react-icons/go";
 import { TbFileReport } from "react-icons/tb";
+import { MdOutlinePreview } from "react-icons/md";
 
 
 const roleTextMap = {
@@ -55,12 +56,17 @@ const UserSidebar = ({ variant = "customer" }) => {
         path: "/dashboard/customer/refund-requests",
       },
       {
+        key: "/reviews",
+        icon: <MdOutlinePreview />,
+        label: "Đánh giá",
+        path: "/dashboard/customer/reviews",
+      },
+       {
         key: "/set-designs/bookings",
         icon: <GoBookmark />,
         label: "Lịch sử giao dịch Set Design",
         path: "/dashboard/customer/set-designs/bookings",
-      },
-
+      },  
       {
         key: "profile",
         icon: <FiUser />,

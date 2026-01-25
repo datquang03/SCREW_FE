@@ -65,12 +65,7 @@ export default function BookingStudioDetails({ onNext, onBack }) {
 
   const equipmentPrice = details.reduce((sum, item) => {
     const eq = availableEquipments.find((e) => e._id === item.equipmentId);
-    return (
-      sum +
-      (eq?.pricePerHour || item.pricePerHour || 0) *
-        duration *
-        (item.quantity || 1)
-    );
+    return sum + (eq?.pricePerHour || item.pricePerHour || 0) * (item.quantity || 1);
   }, 0);
 
   const servicePrice = details.reduce((sum, item) => {
@@ -317,7 +312,7 @@ export default function BookingStudioDetails({ onNext, onBack }) {
                         {(eq.pricePerHour / 1000)}K / GIỜ
                       </span>
                       <span className="text-sm font-bold text-[#C5A267]">
-                        {Math.round(eq.pricePerHour * duration).toLocaleString()}₫
+                        {(eq.pricePerHour).toLocaleString()}₫
                       </span>
                     </div>
                     {/* Progress tổng thiết bị */}
@@ -536,7 +531,7 @@ export default function BookingStudioDetails({ onNext, onBack }) {
                   Chi phí thuê
                 </span>
                 <span className="text-3xl font-semibold text-[#0F172A]">
-                  {(selectedEquipment.pricePerHour * duration).toLocaleString()}₫
+                  {(selectedEquipment.pricePerHour).toLocaleString()}₫
                 </span>
               </div>
               <Button

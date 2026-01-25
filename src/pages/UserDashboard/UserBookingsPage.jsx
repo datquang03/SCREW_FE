@@ -12,6 +12,7 @@ import { getAllMyBookings, getBookingById, extendStudioSchedule, cancelBooking, 
 import { createRemainingPayment, refundPayment } from "../../features/payment/paymentSlice";
 import { getStudioById } from '../../features/studio/studioSlice';
 import { PlusOutlined } from "@ant-design/icons";
+import { createReviews } from '../../features/reviews/reviewSlice';
 
 const { Title, Text } = Typography;
 
@@ -69,6 +70,10 @@ const UserBookingsPage = () => {
   const [refundLoading, setRefundLoading] = useState(false);
   const [refundForm] = Form.useForm();
 
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [reviewForm] = Form.useForm();
+  const [reviewLoading, setReviewLoading] = useState(false);
+
   useEffect(() => {
     dispatch(getAllMyBookings());
   }, [dispatch]);
@@ -84,7 +89,7 @@ const UserBookingsPage = () => {
     }
   }, [detailModalOpen, currentBooking?.studio?._id, dispatch]);
 
-  const handleViewDetail = async (bookingId) => {
+    const handleViewDetail = async (bookingId) => {
     try {
       setDetailLoading(true);
       await dispatch(getBookingById(bookingId)).unwrap();
@@ -218,6 +223,33 @@ const UserBookingsPage = () => {
       }
     } catch (err) {
        Modal.error({ content: err.message || "Không thể tạo thanh toán phần còn lại" });
+    }
+  };
+
+  // Thêm hàm mở modal review
+  const handleOpenReview = () => {
+    reviewForm.setFieldsValue({
+      targetType: 'Studio',
+      targetId: currentBooking?.studio?._id, // studioId
+      bookingId: currentBooking?._id, // bookingId
+      rating: 5,
+      content: '',
+    });
+    setReviewModalOpen(true);
+  };
+
+  const submitReview = async () => {
+    try {
+      const values = await reviewForm.validateFields();
+      setReviewLoading(true);
+      await dispatch(createReviews(values)).unwrap();
+      Modal.success({ content: 'Đã gửi đánh giá thành công!' });
+      setReviewModalOpen(false);
+      reviewForm.resetFields();
+    } catch (err) {
+      Modal.error({ content: err.message || 'Gửi đánh giá thất bại' });
+    } finally {
+      setReviewLoading(false);
     }
   };
 
@@ -519,6 +551,15 @@ const UserBookingsPage = () => {
                 >
                   Tạo phí trả còn lại
                 </Button>
+                {/* Nút tạo review nếu đã hoàn tất */}
+                {currentBooking.status === "completed" && (
+                  <Button
+                    type="primary"
+                    onClick={handleOpenReview}
+                  >
+                    Viết đánh giá
+                  </Button>
+                )}
               </div>
             </Card>
 
@@ -833,6 +874,53 @@ const UserBookingsPage = () => {
               loading={refundLoading}
             >
               Gửi yêu cầu hoàn tiền
+            </Button>
+          </div>
+        </Form>
+      </Modal>
+
+      {/* Review Modal */}
+      <Modal
+        title="Viết đánh giá cho studio"
+        open={reviewModalOpen}
+        onCancel={() => setReviewModalOpen(false)}
+        footer={null}
+        centered
+        width={500}
+      >
+        <Form
+          form={reviewForm}
+          layout="vertical"
+          onFinish={submitReview}
+          initialValues={{ rating: 5, content: '', targetType: 'Studio', targetId: currentBooking?.studio?._id, bookingId: currentBooking?._id }}
+        >
+          <Form.Item name="targetType" initialValue="Studio" hidden>
+            <Input disabled />
+          </Form.Item>
+          <Form.Item name="targetId" initialValue={currentBooking?.studio?._id} hidden>
+            <Input type="hidden" />
+          </Form.Item>
+          <Form.Item name="bookingId" initialValue={currentBooking?._id} hidden>
+            <Input type="hidden" />
+          </Form.Item>
+          <Form.Item
+            name="rating"
+            label="Đánh giá (1-5 sao)"
+            rules={[{ required: true, message: 'Vui lòng nhập số sao' }]}
+          >
+            <Input type="number" min={1} max={5} placeholder="Nhập số sao (1-5)" />
+          </Form.Item>
+          <Form.Item
+            name="content"
+            label="Nội dung đánh giá"
+            rules={[{ required: true, message: 'Vui lòng nhập nội dung' }]}
+          >
+            <Input.TextArea rows={4} placeholder="Nội dung đánh giá..." />
+          </Form.Item>
+          <div className="flex justify-end gap-2 mt-6">
+            <Button onClick={() => setReviewModalOpen(false)}>Hủy</Button>
+            <Button type="primary" htmlType="submit" loading={reviewLoading}>
+              Gửi đánh giá
             </Button>
           </div>
         </Form>

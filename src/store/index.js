@@ -22,6 +22,7 @@ import messageReducer from "../features/message/messageSlice";
 import uploadReducer from "../features/upload/uploadSlice";
 import searchReducer from "../features/search/searchSlice";
 import reportReducer from "../features/report/reportSlice";
+import reviewReducer from "../features/reviews/reviewSlice";
 
 const store = configureStore({
   reducer: {
@@ -47,6 +48,7 @@ const store = configureStore({
     upload: uploadReducer,
     search: searchReducer,
     report: reportReducer,
+    reviews: reviewReducer,
   },
 });
 

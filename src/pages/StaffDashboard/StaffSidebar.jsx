@@ -32,6 +32,7 @@ const StaffSidebar = () => {
       { key: "custom-request", icon: <RiCustomerService2Fill />, label: "Đơn yêu cầu Set tùy chọn", path: "/dashboard/staff/custom-request" },
       { key: "equipment", icon: <FiTool />, label: "Thiết bị", path: "/dashboard/staff/equipment" },
       { key: "service", icon: <MdMiscellaneousServices />, label: "Dịch vụ", path: "/dashboard/staff/service" },
+      { key: "reviews", icon: <MdMiscellaneousServices />, label: "Đánh giá", path: "/dashboard/staff/reviews" },
       { key: "promotion", icon: <MdOutlineDiscount />, label: "Mã giảm giá", path: "/dashboard/staff/promotion" },
       { key: "transaction", icon: <GiMoneyStack />, label: "Quản lý giao dịch", path: "/dashboard/staff/transaction" },
       { key: "refunds", icon: <RiRefund2Line />, label: "Yêu cầu hoàn tiền", path: "/dashboard/staff/refunds" },

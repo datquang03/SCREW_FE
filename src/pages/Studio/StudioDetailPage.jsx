@@ -150,9 +150,17 @@ export default function StudioDetailPage({ studio }) {
                     <span className="text-xs text-slate-400 uppercase tracking-widest">Giá từ</span>
                     <span className="text-sm font-bold text-[#C5A267]">{safeStudio.basePricePerHour?.toLocaleString()} đ <span className="text-[10px] font-normal text-slate-500">/ GIỜ</span></span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between border-b border-white/5 pb-4">
                     <span className="text-xs text-slate-400 uppercase tracking-widest">Sức chứa</span>
                     <span className="text-sm font-medium">{safeStudio.capacity || "Theo gói"} người</span>
+                  </div>
+                  <div className="flex justify-between items-center border-b border-white/5 pb-4">
+                    <span className="text-xs text-slate-400 uppercase tracking-widest">Đánh giá</span>
+                    <span className="flex items-center gap-2">
+                      <span className="text-yellow-400 font-bold text-lg">{safeStudio.avgRating?.toFixed(1) || 0}</span>
+                      <span className="text-yellow-400 text-base">★</span>
+                      <span className="text-xs text-slate-300 ml-2">({safeStudio.reviewCount || 0} đánh giá)</span>
+                    </span>
                   </div>
                 </div>
               </div>

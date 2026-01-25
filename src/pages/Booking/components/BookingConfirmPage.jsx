@@ -51,7 +51,7 @@ export default function BookingConfirmPage({ onBack, onSuccess }) {
 
   const roomPrice = (studio?.basePricePerHour || 0) * duration;
   const equipmentPrice = equipment.reduce(
-    (s, d) => s + (d.pricePerHour || 0) * duration * (d.quantity || 1),
+    (s, d) => s + (d.pricePerHour || 0) * (d.quantity || 1),
     0
   );
   const servicePrice = services.reduce(
@@ -305,7 +305,7 @@ export default function BookingConfirmPage({ onBack, onSuccess }) {
                         </td>
                         <td className="py-5 text-right text-xs font-bold text-slate-700">
                           {(item.detailType === "equipment"
-                            ? item.pricePerHour * duration * item.quantity
+                            ? item.pricePerHour * item.quantity
                             : item.pricePerUse * item.quantity
                           )?.toLocaleString()}₫
                         </td>

@@ -67,6 +67,8 @@ import UserReportPage from "./pages/UserDashboard/UserReportPage";
 import SetDesignPage from "./pages/SetDesign/SetDesignPage";
 import AdminProfilePage from "./pages/AdminDashboard/AdminProfilePage";
 import BookingDetailPage from "./pages/BookingSetDesign/BookingDetailPage";
+import UserReviewPage from "./pages/UserDashboard/UserReviewPage";
+import StaffReviewPage from "./pages/StaffDashboard/StaffReviewPage";
 const pageVariants = {
   initial: { opacity: 0, y: 10 },
   in: { opacity: 1, y: 0 },
@@ -167,6 +169,10 @@ const AppContent = () => {
                 element={<UserCustomSetDesignPage />}
               />
               <Route
+                path="reviews"
+                element={<UserReviewPage />}
+              />
+              <Route
                 path="set-designs/bookings"
                 element={<UserSetDesignBookingsPage />}
               />
@@ -209,6 +215,7 @@ const AppContent = () => {
               <Route path="schedule" element={<StaffSchedulePage />} />
               <Route path="studios" element={<StaffStudiosPage />} />
               <Route path="setdesign" element={<StaffSetDesignPage />} />
+              <Route path="reviews" element={<StaffReviewPage />} />
               <Route
                 path="custom-request"
                 element={<StaffCustomRequestPage />}
