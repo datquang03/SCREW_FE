@@ -614,9 +614,9 @@ const Navbar = () => {
                               setDropdownOpen(false);
                               let dashboardPath = "/dashboard";
                               if (user.role === "customer")
-                                dashboardPath = "/dashboard/customer";
+                                dashboardPath = "/dashboard/customer/bookings";
                               if (user.role === "staff")
-                                dashboardPath = "/dashboard/staff";
+                                dashboardPath = "/dashboard/staff/bookings";
                               if (user.role === "admin")
                                 dashboardPath = "/dashboard/admin";
                               navigate(dashboardPath);
