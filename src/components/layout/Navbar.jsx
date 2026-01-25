@@ -616,7 +616,7 @@ const Navbar = () => {
                               if (user.role === "customer")
                                 dashboardPath = "/dashboard/customer/bookings";
                               if (user.role === "staff")
-                                dashboardPath = "/dashboard/staff/bookings";
+                                dashboardPath = "/dashboard/staff/order";
                               if (user.role === "admin")
                                 dashboardPath = "/dashboard/admin";
                               navigate(dashboardPath);
