@@ -23,7 +23,6 @@ const StaffSidebar = () => {
 
   const menuItems = useMemo(
     () => [
-      { key: "dashboard", icon: <FiHome />, label: "Bảng điều khiển", path: "/dashboard/staff" },
       { key: "orders", icon: <FiShoppingBag />, label: "Quản lý đơn", path: "/dashboard/staff/order" },
       { key: "users", icon: <FaUsers />, label: "Quản lý người dùng", path: "/dashboard/staff/user" },
       { key: "schedule", icon: <FiCalendar />, label: "Lịch làm việc", path: "/dashboard/staff/schedule" },
