@@ -10,7 +10,7 @@ import {
 const ScheduleTable = ({
   value,
   onChange,
-  scheduleByDate = {},
+  scheduleByDate = {}, // chỉ nhận scheduleByDate
   disabledDate,
 }) => {
   const [currentMonth, setCurrentMonth] = React.useState(
@@ -79,35 +79,29 @@ const ScheduleTable = ({
     duration = 1;
   }
 
-  const renderDateCell = (date) => {
-    const key = date.format("YYYY-MM-DD");
-    // Lấy tất cả bookings của ngày này
-    const bookings = scheduleByDate[key] || [];
+  // Đảm bảo scheduleByDate là object, nếu null thì gán là {}
+  const safeScheduleByDate = scheduleByDate && typeof scheduleByDate === 'object' ? scheduleByDate : {};
+  console.log('scheduleByDate:', safeScheduleByDate);
 
-    // Kiểm tra nếu có booking kéo dài nhiều ngày (startTime, endTime khác ngày)
-    // => Ngày này nằm trong khoảng của bất kỳ booking nào thì cũng xem là booked
-    let isBooked = false;
+  const renderDateCell = (date) => {
+    // Lấy tất cả các slot booked mà ngày này nằm trong khoảng startTime - endTime
     let bookingsForThisDate = [];
-    // Duyệt toàn bộ scheduleByDate để tìm các booking kéo dài nhiều ngày
-    Object.keys(scheduleByDate).forEach((dateKey) => {
-      scheduleByDate[dateKey].forEach((b) => {
+    Object.entries(safeScheduleByDate).forEach(([dateKey, slotArr]) => {
+      slotArr.forEach((b) => {
         if (b.startTime && b.endTime) {
           const start = dayjs(b.startTime).startOf("day");
           const end = dayjs(b.endTime).startOf("day");
           if (
-            (date.isSame(start, "day") || date.isSame(end, "day") || (date.isAfter(start, "day") && date.isBefore(end, "day")))
+            date.isSame(start, "day") ||
+            date.isSame(end, "day") ||
+            (date.isAfter(start, "day") && date.isBefore(end, "day"))
           ) {
-            isBooked = true;
             bookingsForThisDate.push(b);
           }
         }
       });
     });
-    // Ngoài ra, nếu có bookings đúng ngày này thì cũng là booked
-    if (bookings.length > 0) {
-      isBooked = true;
-      bookingsForThisDate = bookingsForThisDate.concat(bookings);
-    }
+    const isBooked = bookingsForThisDate.length > 0;
 
     const isPast = date.isBefore(dayjs().startOf("day"), "day");
     const isToday = date.isSame(dayjs(), "day");
@@ -128,7 +122,7 @@ const ScheduleTable = ({
 
     return (
       <td
-        key={key}
+        key={date.format("YYYY-MM-DD")}
         onClick={() => handleDateClick(date)}
         className={`
           relative border-b border-gray-100 align-top transition-all duration-200

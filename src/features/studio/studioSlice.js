@@ -122,6 +122,23 @@ export const getStudioAvailability = createAsyncThunk(
   }
 );
 
+// === THÊM MỚI: Lấy schedule của một studio cụ thể ===
+export const getStudioScheduleById = createAsyncThunk(
+  "schedule/getStudioSchedule",
+  async (studioId, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+      const res = await axiosInstance.get(`/studios/${studioId}/schedule`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      return res.data.data; // giả sử backend trả { data: [...] } hoặc trực tiếp mảng
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Không thể lấy lịch của studio" }
+      );
+    }
+  }
+);
 // UPDATE
 export const updateStudio = createAsyncThunk(
   "studio/updateStudio",
@@ -336,6 +353,19 @@ const studioSlice = createSlice({
         };
       })
       .addCase(getStudioSchedule.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // STUDIO SCHEDULE BY ID
+      .addCase(getStudioScheduleById.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getStudioScheduleById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.studioSchedule = action.payload;
+      })
+      .addCase(getStudioScheduleById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

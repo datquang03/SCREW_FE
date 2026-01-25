@@ -110,6 +110,32 @@ export const refundPayment = createAsyncThunk(
   }
 );
 
+// Yêu cầu hoàn tiền Set Design Order
+export const requestRefundSetDesign = createAsyncThunk(
+  "payment/requestRefundSetDesign",
+  async ({ orderId, formData }, { rejectWithValue, getState }) => {
+    try {
+      const { token } = getState().auth;
+      const res = await axiosInstance.post(
+        `/set-design-orders/${orderId}/refund-request`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+            Accept: "application/json",
+          },
+        }
+      );
+      return res.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || { message: "Gửi yêu cầu hoàn tiền set design thất bại" }
+      );
+    }
+  }
+);
+
 // 6) Duyệt yêu cầu hoàn tiền (Approve Refund)
 export const approveRefund = createAsyncThunk(
   "payment/approveRefund",
@@ -392,6 +418,19 @@ const paymentSlice = createSlice({
         state.loading = false;
       })
       .addCase(refundPayment.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // requestRefundSetDesign
+      .addCase(requestRefundSetDesign.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(requestRefundSetDesign.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(requestRefundSetDesign.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
