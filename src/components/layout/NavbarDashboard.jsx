@@ -41,7 +41,6 @@ import {
 } from "../../features/notification/notificationSlice";
 import { getConversations } from "../../features/message/messageSlice";
 import SPlusLogo from "../../assets/S+Logo.png";
-import notificationSound from "../../assets/notification.mp3";
 
 const THEMES = {
   customer: {
@@ -132,7 +131,6 @@ const DashboardNavbar = ({ variant = "default", onMenuClick }) => {
     useState(false);
   const [visibleDropdownCount, setVisibleDropdownCount] = useState(4);
 
-  const notificationAudioRef = useRef(null);
   const previousUnreadCountRef = useRef(0);
   const dropdownPanelRef = useRef(null);
   const dropdownScrollRef = useRef(null);
@@ -140,13 +138,6 @@ const DashboardNavbar = ({ variant = "default", onMenuClick }) => {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
-  // Initialize audio
-  useEffect(() => {
-    if (notificationAudioRef.current) return;
-    notificationAudioRef.current = new Audio(notificationSound);
-    notificationAudioRef.current.volume = 0.5;
-  }, []);
 
   // Fetch notifications & conversations for counts
   useEffect(() => {
@@ -187,33 +178,6 @@ const DashboardNavbar = ({ variant = "default", onMenuClick }) => {
       ? unreadMessagesFromConvs
       : unreadMessagesFromMessages;
   const dropdownNotifications = notifications.slice(0, visibleDropdownCount);
-  const handleMessageClick = () => {
-    if (!user) return navigate("/login");
-    dispatch(getConversations());
-    navigate("/message");
-  };
-
-
-  // Play notification sound when new notification arrives
-  useEffect(() => {
-    if (!user || notificationsLoading) return;
-
-    const currentUnreadCount = unreadCount;
-    const previousUnreadCount = previousUnreadCountRef.current;
-
-    if (
-      currentUnreadCount > previousUnreadCount &&
-      previousUnreadCount >= 0
-    ) {
-      if (notificationAudioRef.current) {
-        notificationAudioRef.current.play().catch((err) => {
-          console.log("Could not play notification sound:", err);
-        });
-      }
-    }
-
-    previousUnreadCountRef.current = currentUnreadCount;
-  }, [unreadCount, notifications, user, notificationsLoading]);
 
   // Reset dropdown count when toggling
   useEffect(() => {
@@ -499,30 +463,6 @@ const DashboardNavbar = ({ variant = "default", onMenuClick }) => {
                   </motion.div>
                 )}
               </AnimatePresence>
-            </div>
-          )}
-
-          {user && (
-            <div className="relative">
-              <motion.button
-                type="button"
-                onClick={handleMessageClick}
-                initial={{ opacity: 1, scale: 1 }}
-                whileHover={{
-                  scale: 1.1,
-                  boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
-                }}
-                whileTap={{ scale: 0.92 }}
-                transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                className="relative flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-lg hover:shadow-xl transition-shadow duration-300"
-              >
-                <MessageOutlined className="text-lg text-gray-900" />
-                {unreadMessagesCount > 0 && (
-                  <span className="absolute -top-1 -right-1 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-bold leading-none text-white bg-green-500 rounded-full">
-                    {unreadMessagesCount > 9 ? "9+" : unreadMessagesCount}
-                  </span>
-                )}
-              </motion.button>
             </div>
           )}
 

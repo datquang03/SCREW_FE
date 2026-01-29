@@ -159,12 +159,29 @@ export default function EquipmentListPage() {
 
           {/* LISTING GRID */}
           {loading ? (
-            <Row gutter={[32, 48]}>
+            <Row gutter={[24, 32]} justify="start">
               {[...Array(6)].map((_, i) => (
-                <Col xs={24} sm={12} lg={8} key={i}>
-                  <div className="bg-white border border-slate-100 p-4 h-[260px] rounded-md">
-                    <Skeleton.Image style={{ width: '100%', height: 100, marginBottom: 16 }} active />
-                    <Skeleton active paragraph={{ rows: 3 }} title={false} />
+                <Col xs={24} sm={12} md={8} lg={6} key={i}>
+                  <div className="bg-white border border-slate-100 rounded-xl overflow-hidden flex flex-col h-full relative animate-pulse" style={{ minHeight: 370, boxShadow: '0 4px 24px 0 rgba(0,0,0,0.04)' }}>
+                    <div className="w-full h-40 bg-slate-100 flex items-center justify-center overflow-hidden">
+                      <div className="w-24 h-24 bg-slate-200 rounded" />
+                    </div>
+                    <div className="flex-1 flex flex-col justify-between p-5">
+                      <div>
+                        <div className="h-5 w-2/3 bg-slate-200 rounded mb-2" />
+                        <div className="h-3 w-1/2 bg-slate-100 rounded mb-4" />
+                        <div className="h-3 w-1/3 bg-slate-100 rounded mb-2" />
+                        <div className="h-3 w-1/4 bg-slate-100 rounded mb-2" />
+                        <div className="h-3 w-1/2 bg-slate-100 rounded mb-2" />
+                      </div>
+                      <div className="flex items-end justify-between mt-8">
+                        <div>
+                          <div className="h-3 w-16 bg-slate-100 rounded mb-2" />
+                          <div className="h-6 w-24 bg-slate-200 rounded" />
+                        </div>
+                        <div className="h-8 w-8 bg-slate-200 rounded-full" />
+                      </div>
+                    </div>
                   </div>
                 </Col>
               ))}

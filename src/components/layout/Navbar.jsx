@@ -22,7 +22,6 @@ import {
 import { getConversations } from "../../features/message/messageSlice";
 import { createSearch } from "../../features/search/searchSlice";
 import SPlusLogo from "../../assets/S+Logo.png";
-import notificationSound from "../../assets/notification.mp3";
 import { NAV_LINKS } from "../../constants/navigation";
 import { useScrollEffect } from "../../hooks/useScrollEffect";
 
@@ -39,7 +38,6 @@ const Navbar = () => {
   const headerRef = useRef(null);
   const searchContainerRef = useRef(null);
   const searchInputRef = useRef(null);
-  const notificationAudioRef = useRef(null);
   const previousUnreadCountRef = useRef(0);
   const dropdownPanelRef = useRef(null);
   const dropdownScrollRef = useRef(null);
@@ -60,13 +58,6 @@ const Navbar = () => {
     setDropdownOpen(false);
     navigate("/login", { replace: true });
   };
-
-  // Initialize audio
-  useEffect(() => {
-    if (notificationAudioRef.current) return;
-    notificationAudioRef.current = new Audio(notificationSound);
-    notificationAudioRef.current.volume = 0.5; // Set volume to 50%
-  }, []);
 
   // Fetch notifications & conversations from Redux
   useEffect(() => {
@@ -106,22 +97,14 @@ const Navbar = () => {
       : unreadMessagesFromMessages;
   const dropdownNotifications = notifications.slice(0, visibleDropdownCount);
 
-  // Play notification sound when new notification arrives
+  // Update previous count
   useEffect(() => {
     if (!user || notificationsLoading) return;
 
     const currentUnreadCount = unreadCount;
     const previousUnreadCount = previousUnreadCountRef.current;
 
-    // Play sound if there's a new unread notification (unread count increased)
-    if (currentUnreadCount > previousUnreadCount && previousUnreadCount >= 0) {
-      if (notificationAudioRef.current) {
-        notificationAudioRef.current.play().catch((err) => {
-          // Handle autoplay restrictions
-          console.log("Could not play notification sound:", err);
-        });
-      }
-    }
+    // Không còn phát âm thanh ở đây
 
     // Update previous count
     previousUnreadCountRef.current = currentUnreadCount;
@@ -315,28 +298,6 @@ const Navbar = () => {
 
         {/* ===== RIGHT ACTIONS ===== */}
         <div className="flex items-center gap-3">
-          {/* MESSAGE */}
-          {user && (
-            <div className="relative">
-              <motion.button
-                type="button"
-                onClick={handleMessageClick}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.92 }}
-                className={`navbar-action-btn ${
-                  scrolled ? "scrolled-light" : ""
-                } ${scrolled ? "text-gray-900" : "text-white/80"}`}
-              >
-                <MessageOutlined className="text-lg" />
-                {unreadMessagesCount > 0 && (
-                  <span className="navbar-badge">
-                    {unreadMessagesCount > 9 ? "9+" : unreadMessagesCount}
-                  </span>
-                )}
-              </motion.button>
-            </div>
-          )}
-
           {/* SEARCH */}
           <div ref={searchContainerRef} className="relative flex items-center">
             <AnimatePresence mode="wait">
