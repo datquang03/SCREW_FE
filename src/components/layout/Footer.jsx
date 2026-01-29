@@ -7,6 +7,7 @@ const { Title, Text, Link } = Typography;
 const footerLinks = [
   { label: "Trang chủ", href: "/" },
   { label: "Studio", href: "/studio" },
+  { label: "Thiết bị", href: "/equipment" },
   { label: "Về chúng tôi", href: "/about" },
   { label: "Liên hệ", href: "/contact" },
 ];
@@ -23,7 +24,7 @@ const Footer = () => (
       <div className="footer-grid">
         {/* Brand Section */}
         <div>
-          <h3 className="footer-section-title">S+ Studio</h3>
+          <h3 className="footer-section-title">S Cộng Studio</h3>
           <p className="footer-section-text">
             Không gian sáng tạo chuyên nghiệp tại TP.HCM. Chúng tôi đồng hành cùng các nhãn hàng và nhà sáng tạo trong mọi dự án hình ảnh chất lượng cao.
           </p>
@@ -64,41 +65,24 @@ const Footer = () => (
               <div className="footer-contact-icon">
                 <FiMapPin />
               </div>
-              <span>123 Nguyễn Trãi, Quận 5, TP.HCM</span>
+              <span>Số 1 Trương Đình Hợi, Phường 18, Quận 4, Thành phố Hồ Chí Minh, Việt Nam</span>
             </div>
             <div className="footer-contact-item">
               <div className="footer-contact-icon">
                 <FiPhone />
               </div>
-              <span>0902 888 999</span>
+              <span>093 375 31 10</span>
             </div>
             <div className="footer-contact-item">
               <div className="footer-contact-icon">
                 <FiMail />
               </div>
-              <span>booking@splusstudio.vn</span>
+              <span>binhson1982@gmail.com</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Bottom Section */}
-      <div className="footer-bottom">
-        <p className="footer-copyright">
-          © {new Date().getFullYear()} S+ Studio. All rights reserved.
-        </p>
-        <div className="footer-links-bottom">
-          <a href="#" className="footer-link-bottom">
-            Privacy Policy
-          </a>
-          <a href="#" className="footer-link-bottom">
-            Terms of Service
-          </a>
-          <a href="#" className="footer-link-bottom">
-            Contact Us
-          </a>
-        </div>
-      </div>
     </div>
   </footer>
 );

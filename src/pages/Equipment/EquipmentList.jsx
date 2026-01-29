@@ -162,8 +162,9 @@ export default function EquipmentListPage() {
             <Row gutter={[32, 48]}>
               {[...Array(6)].map((_, i) => (
                 <Col xs={24} sm={12} lg={8} key={i}>
-                  <div className="bg-white border border-slate-100 p-4 h-[500px]">
-                    <Skeleton active paragraph={{ rows: 6 }} />
+                  <div className="bg-white border border-slate-100 p-4 h-[260px] rounded-md">
+                    <Skeleton.Image style={{ width: '100%', height: 100, marginBottom: 16 }} active />
+                    <Skeleton active paragraph={{ rows: 3 }} title={false} />
                   </div>
                 </Col>
               ))}
@@ -178,14 +179,26 @@ export default function EquipmentListPage() {
             />
           ) : (
             <>
-              <Row gutter={[32, 64]}>
+              <Row gutter={[24, 32]} justify="start">
                 {visibleEquipments.map((equip, index) => {
                   const stockPercent = getStockPercent(
                     equip.availableQty,
                     equip.totalQty
                   );
+                  let status = '';
+                  let statusColor = '';
+                  if (equip.availableQty === 0) {
+                    status = 'Hết hàng';
+                    statusColor = 'red';
+                  } else if (equip.availableQty <= 2) {
+                    status = 'Sắp hết';
+                    statusColor = 'orange';
+                  } else {
+                    status = 'Sẵn sàng';
+                    statusColor = 'green';
+                  }
                   return (
-                    <Col xs={24} sm={12} lg={8} key={equip._id}>
+                    <Col xs={24} sm={12} md={8} lg={6} key={equip._id}>
                       <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -200,33 +213,40 @@ export default function EquipmentListPage() {
                             setSelectedEquipment(equip);
                             setIsModalOpen(true);
                           }}
-                          className="group cursor-pointer bg-white border border-slate-100 transition-all duration-700 hover:shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] rounded-sm overflow-hidden"
+                          className="group cursor-pointer bg-white border border-slate-100 transition-all duration-700 hover:shadow-xl rounded-xl overflow-hidden flex flex-col h-full relative"
+                          style={{ minHeight: 370, boxShadow: '0 4px 24px 0 rgba(0,0,0,0.04)' }}
                         >
-                          <div className="aspect-[4/5] overflow-hidden transition-all duration-1000">
+                          <div className="w-full h-40 bg-slate-50 flex items-center justify-center overflow-hidden">
                             <img
                               src={equip.image}
                               alt={equip.name}
-                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
+                              className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700"
+                              style={{ maxHeight: 160, objectFit: 'cover' }}
                             />
                           </div>
-                          <div className="p-8 space-y-6">
-                            <div className="space-y-2">
-                              <h3 className="font-semibold text-2xl text-[#0F172A] leading-tight group-hover:text-[#C5A267] transition-colors">
+                          <div className="absolute left-4 top-4 z-10">
+                            <span className={`px-3 py-1 text-xs font-bold rounded-full bg-${statusColor}-100 text-${statusColor}-600 uppercase tracking-widest shadow-sm`}>
+                              {status}
+                            </span>
+                          </div>
+                          <div className="flex-1 flex flex-col justify-between p-5">
+                            <div>
+                              <h3 className="font-bold text-lg text-[#0F172A] mb-1 group-hover:text-[#C5A267] transition-colors">
                                 {equip.name}
                               </h3>
-                              <p className="text-xs text-slate-400 font-light line-clamp-2 leading-relaxed h-10">
+                              <p className="text-sm text-slate-400 font-light line-clamp-2 mb-3 min-h-[32px]">
                                 {equip.description}
                               </p>
-                            </div>
-
-                            <div className="space-y-4">
-                              <div className="flex justify-between items-center">
-                                <span className="text-[9px] uppercase tracking-widest font-bold text-slate-300">
-                                  Tính khả dụng
-                                </span>
-                                <span className="text-[9px] font-bold text-[#C5A267] uppercase tracking-widest">
-                                  {equip.availableQty} Sẵn sàng
-                                </span>
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Tình trạng</span>
+                                <span className={`text-[11px] font-bold uppercase tracking-widest text-${statusColor}-600`}>{equip.availableQty} Sẵn sàng</span>
+                              </div>
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="text-[10px] font-bold text-slate-400 border border-slate-100 px-2 py-0.5 rounded">Tổng: {equip.totalQty}</span>
+                                <span className="text-[10px] font-bold text-blue-400 border border-slate-100 px-2 py-0.5 rounded">Dùng: {equip.inUseQty}</span>
+                                {equip.maintenanceQty > 0 && (
+                                  <span className="text-[10px] font-bold text-rose-400 border border-rose-100 px-2 py-0.5 rounded">Bảo trì: {equip.maintenanceQty}</span>
+                                )}
                               </div>
                               <Progress
                                 percent={stockPercent}
@@ -234,35 +254,13 @@ export default function EquipmentListPage() {
                                 strokeColor="#C5A267"
                                 trailColor="#F8F9FA"
                                 size={[null, 2]}
-                                className="m-0"
+                                className="m-0 mb-2"
                               />
-                              <div className="flex flex-wrap gap-2 pt-2 opacity-60 group-hover:opacity-100 transition-opacity">
-                                <span className="text-[8px] uppercase tracking-widest font-bold border border-slate-100 px-2 py-1">
-                                  TỔNG: {equip.totalQty}
-                                </span>
-                                <span className="text-[8px] uppercase tracking-widest font-bold border border-slate-100 px-2 py-1 text-blue-400">
-                                  DÙNG: {equip.inUseQty}
-                                </span>
-                                {equip.maintenanceQty > 0 && (
-                                  <span className="text-[8px] uppercase tracking-widest font-bold border border-rose-50 px-2 py-1 text-rose-300">
-                                    BẢO TRÌ: {equip.maintenanceQty}
-                                  </span>
-                                )}
+                              <div className="flex items-center justify-between mt-2">
+                                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Chi phí niêm yết</span>
+                                <span className="text-base font-bold text-[#0F172A]">{formatPrice(equip.pricePerHour)}</span>
+                                <span className="text-[11px] text-[#C5A267] font-bold">/ giờ</span>
                               </div>
-                            </div>
-
-                            <div className="pt-6 border-t border-slate-50 flex justify-between items-end">
-                              <div>
-                                <p className="text-[9px] uppercase tracking-widest text-slate-300 font-bold mb-1">
-                                  Chi phí niêm yết
-                                </p>
-                                <span className="text-xl font-light text-[#0F172A]">
-                                  {formatPrice(equip.pricePerHour)}
-                                </span>
-                              </div>
-                              <span className="text-[10px] text-[#C5A267]">
-                                / giờ
-                              </span>
                             </div>
                           </div>
                         </div>
@@ -296,84 +294,58 @@ export default function EquipmentListPage() {
         open={isModalOpen}
         onCancel={() => setIsModalOpen(false)}
         footer={null}
-        width={1000}
+        width={900}
         centered
         className="executive-modal"
+        bodyStyle={{ borderRadius: 32, padding: 0, background: '#fff' }}
+        style={{ borderRadius: 32, overflow: 'hidden', background: 'transparent' }}
       >
         {selectedEquipment && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 p-6">
-            <div className="aspect-[4/5] overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-0" style={{ borderRadius: 32, overflow: 'hidden' }}>
+            {/* Ảnh lớn bên trái */}
+            <div className="bg-[#181A1B] flex items-center justify-center" style={{ borderTopLeftRadius: 32, borderBottomLeftRadius: 32, minHeight: 420 }}>
               <img
                 src={selectedEquipment.image}
                 alt={selectedEquipment.name}
-                className="w-full h-full object-cover"
+                className="object-contain w-full h-full max-h-[420px]"
+                style={{ borderTopLeftRadius: 32, borderBottomLeftRadius: 32, background: '#181A1B' }}
               />
             </div>
-            <div className="flex flex-col justify-center space-y-10">
+            {/* Nội dung bên phải */}
+            <div className="flex flex-col justify-between p-10 bg-white" style={{ borderTopRightRadius: 32, borderBottomRightRadius: 32, minHeight: 420 }}>
               <div>
-                <p className="text-[10px] uppercase tracking-[0.4em] text-[#C5A267] font-bold mb-4">
-                  Thông số thiết bị
-                </p>
-                <Title
-                  level={2}
-                  className="!text-4xl !font-semibold !text-[#0F172A] !m-0"
-                >
-                  {selectedEquipment.name}
-                </Title>
-              </div>
-
-              <Paragraph className="text-slate-400 text-sm font-light leading-relaxed">
-                {selectedEquipment.description}
-              </Paragraph>
-
-              <div className="space-y-6">
-                <div className="flex items-center gap-4">
-                  <LayoutOutlined className="text-[#C5A267]" />
-                  <span className="text-[10px] uppercase tracking-widest font-bold text-slate-400">
-                    Dữ liệu kho vận
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 gap-y-6">
-                  <div>
-                    <span className="text-[9px] uppercase tracking-widest text-slate-300 block mb-1">
-                      Tổng thiết bị
-                    </span>
-                    <span className="text-sm font-bold text-[#0F172A]">
-                      {selectedEquipment.totalQty}
-                    </span>
+                <p className="text-[12px] uppercase tracking-[0.3em] text-[#C5A267] font-bold mb-4">Thông số thiết bị</p>
+                <h2 className="text-3xl font-extrabold text-[#0F172A] mb-2">{selectedEquipment.name}</h2>
+                <p className="text-base text-slate-500 mb-6 leading-relaxed">{selectedEquipment.description}</p>
+                <div className="mb-6">
+                  <div className="flex items-center gap-3 mb-2">
+                    <LayoutOutlined className="text-[#C5A267] text-lg" />
+                    <span className="text-xs uppercase tracking-widest font-bold text-slate-400">Dữ liệu kho vận</span>
                   </div>
-                  <div>
-                    <span className="text-[9px] uppercase tracking-widest text-[#C5A267] block mb-1">
-                      Đang sẵn sàng
-                    </span>
-                    <span className="text-sm font-bold text-[#C5A267]">
-                      {selectedEquipment.availableQty}
-                    </span>
+                  <div className="flex gap-8 mb-2">
+                    <div>
+                      <span className="text-xs uppercase tracking-widest text-slate-300 block mb-1">Tổng thiết bị</span>
+                      <span className="text-xl font-bold text-[#0F172A]">{selectedEquipment.totalQty}</span>
+                    </div>
+                    <div>
+                      <span className="text-xs uppercase tracking-widest text-[#C5A267] block mb-1">Đang sẵn sàng</span>
+                      <span className="text-xl font-bold text-[#C5A267]">{selectedEquipment.availableQty}</span>
+                    </div>
                   </div>
+                  <Progress
+                    percent={getStockPercent(selectedEquipment.availableQty, selectedEquipment.totalQty)}
+                    showInfo={false}
+                    strokeColor="#C5A267"
+                    size={[null, 2]}
+                    className="mb-2"
+                  />
                 </div>
-                <Progress
-                  percent={getStockPercent(
-                    selectedEquipment.availableQty,
-                    selectedEquipment.totalQty
-                  )}
-                  showInfo={false}
-                  strokeColor="#C5A267"
-                  size={[null, 2]}
-                />
               </div>
-
-              <div className="pt-10 border-t border-slate-100 flex justify-between items-end">
+              <div className="flex items-end justify-between mt-8">
                 <div>
-                  <span className="text-[10px] uppercase tracking-widest text-slate-400 font-bold block mb-2">
-                    Giá thuê đặc quyền
-                  </span>
-                  <Title
-                    level={1}
-                    className="!text-[#0F172A] !m-0 !font-light !text-4xl"
-                  >
-                    {formatPrice(selectedEquipment.pricePerHour)}{" "}
-                    <span className="text-sm text-[#C5A267]">/ giờ</span>
-                  </Title>
+                  <span className="text-xs uppercase tracking-widest text-slate-400 font-bold block mb-2">Giá thuê đặc quyền</span>
+                  <span className="text-3xl font-extrabold text-[#0F172A]">{formatPrice(selectedEquipment.pricePerHour)}</span>
+                  <span className="text-base text-[#C5A267] font-bold ml-2">/ giờ</span>
                 </div>
               </div>
             </div>
