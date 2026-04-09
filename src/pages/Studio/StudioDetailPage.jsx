@@ -15,6 +15,7 @@ import {
   getActiveStudios,
 } from "../../features/studio/studioSlice";
 import { createReport } from "../../features/report/reportSlice";
+import SkeletonStudioCard from "../../components/skeletons/SkeletonStudioCard";
 
 const SECTIONS = [
   { id: "info", label: "Thông tin" },
@@ -107,10 +108,14 @@ export default function StudioDetailPage({ studio }) {
     }
   };
 
-  if (loading && !safeStudio._id) {
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0F172A] text-[#C5A267] font-semibold tracking-widest uppercase text-xs">
-        Đang khởi tạo không gian chuyên gia...
+      <div className="max-w-7xl mx-auto px-4 py-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+          {[...Array(6)].map((_, i) => (
+            <SkeletonStudioCard key={i} />
+          ))}
+        </div>
       </div>
     );
   }
@@ -138,46 +143,25 @@ export default function StudioDetailPage({ studio }) {
                   {safeStudio.name?.split(" ").slice(-1) || ""}
                 </span>
               </h1>
-              <p className="text-slate-400 max-w-xl text-lg font-light leading-relaxed">
+              <p className="text-slate-400 max-w-xl text-lg font-light leading-relaxed whitespace-pre-line">
                 {safeStudio.description ||
                   "Không gian làm việc đẳng cấp dành cho giới chuyên gia, kết hợp hoàn mỹ giữa công nghệ hiện đại và thẩm mỹ sang trọng."}
               </p>
-              <div className="flex flex-wrap gap-3 pt-4">
-                <button
-                  onClick={() =>
-                    (window.location.href = `/booking/${safeStudio._id}`)
-                  }
-                  className="bg-[#C5A267] hover:bg-[#B38F55] cursor-pointer text-white px-10 py-4 text-[10px] font-bold uppercase tracking-[0.2em] transition-all duration-500 shadow-2xl shadow-[#C5A267]/20"
-                >
-                  Đặt lịch ngay
-                </button>
-              </div>
             </div>
 
             {/* QUICK OVERVIEW GLASS CARD */}
             <div className="lg:col-span-4">
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-sm">
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-sm ">
                 <h2 className="text-[10px] uppercase tracking-[0.3em] text-[#C5A267] font-bold mb-8 flex items-center gap-3">
                   <div className="h-px w-6 bg-[#C5A267]"></div> Tổng quan nhanh
                 </h2>
-                <div className="space-y-6 text-white">
-                  <div className="flex justify-between border-b border-white/5 pb-4">
+                <div className="space-y-6 text-white mt-8">
+                  <div className="grid grid-cols-2 border-b border-white/5 pb-4">
                     <span className="text-xs text-slate-400 uppercase tracking-widest">
                       Địa chỉ
                     </span>
-                    <span className="text-sm font-medium">
+                    <span className="text-sm font-medium text-right break-words max-w-[220px]">
                       {safeStudio.location || "TP. Hồ Chí Minh"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between border-b border-white/5 pb-4">
-                    <span className="text-xs text-slate-400 uppercase tracking-widest">
-                      Giá từ
-                    </span>
-                    <span className="text-sm font-bold text-[#C5A267]">
-                      {safeStudio.basePricePerHour?.toLocaleString()} đ{" "}
-                      <span className="text-[10px] font-normal text-slate-500">
-                        / GIỜ
-                      </span>
                     </span>
                   </div>
                   <div className="flex justify-between border-b border-white/5 pb-4">
@@ -186,20 +170,6 @@ export default function StudioDetailPage({ studio }) {
                     </span>
                     <span className="text-sm font-medium">
                       {safeStudio.capacity || "Theo gói"} người
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center border-b border-white/5 pb-4">
-                    <span className="text-xs text-slate-400 uppercase tracking-widest">
-                      Đánh giá
-                    </span>
-                    <span className="flex items-center gap-2">
-                      <span className="text-yellow-400 font-bold text-lg">
-                        {safeStudio.avgRating?.toFixed(1) || 0}
-                      </span>
-                      <span className="text-yellow-400 text-base">★</span>
-                      <span className="text-xs text-slate-300 ml-2">
-                        ({safeStudio.reviewCount || 0} đánh giá)
-                      </span>
                     </span>
                   </div>
                 </div>
@@ -229,99 +199,6 @@ export default function StudioDetailPage({ studio }) {
                 <StudioGallery images={safeStudio.images || []} />
               </div>
 
-              {/* DETAILS SECTION */}
-              <section
-                id="info"
-                ref={(el) => (sectionRefs.current.info = el)}
-                className="scroll-mt-32"
-              >
-                <div className="flex items-center gap-4 mb-6">
-                  <h3 className="text-2xl font-semibold text-slate-900">
-                    Thông tin chi tiết
-                  </h3>
-                  <div className="h-px flex-1 bg-gradient-to-r from-slate-100 to-transparent"></div>
-                </div>
-                <div className="bg-white p-8 border border-gray-100 shadow-sm relative overflow-hidden group">
-                  <div className="absolute top-0 left-0 w-1 h-full bg-[#C5A267] transform -translate-x-full group-hover:translate-x-0 transition-transform duration-500"></div>
-                  <StudioInfo studio={safeStudio} />
-                </div>
-              </section>
-
-              {/* SERVICES SECTION */}
-              <section
-                id="services"
-                ref={(el) => (sectionRefs.current.services = el)}
-                className="scroll-mt-32"
-              >
-                <h3 className="text-[10px] uppercase tracking-[0.4em] font-bold text-slate-400 mb-6">
-                  Dịch vụ đặc quyền
-                </h3>
-                <div className="grid md:grid-cols-2 gap-6">
-                  <StudioServices services={safeStudio.services || []} />
-                </div>
-              </section>
-              {/* AMENITIES SECTION */}
-              <section
-                id="amenities"
-                ref={(el) => (sectionRefs.current.amenities = el)}
-                className="scroll-mt-32"
-              >
-                <div className="flex items-center gap-4 mb-6">
-                  <h3 className="text-2xl font-semibold text-slate-900">
-                    Tiện nghi & Trang thiết bị
-                  </h3>
-                  <div className="h-px flex-1 bg-gradient-to-r from-slate-100 to-transparent"></div>
-                </div>
-                <div className="bg-[#0F172A] p-8 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-[#C5A267]/10 rounded-full -mr-16 -mt-16"></div>
-                  <div className="grid md:grid-cols-3 gap-6 relative z-10">
-                    {[
-                      {
-                        icon: "🎥",
-                        title: "Camera chuyên nghiệp",
-                        desc: "4K/8K RAW",
-                      },
-                      {
-                        icon: "💡",
-                        title: "Hệ thống ánh sáng",
-                        desc: "LED & Softbox cao cấp",
-                      },
-                      {
-                        icon: "🎬",
-                        title: "Green Screen",
-                        desc: "Màn hình xanh 5x3m",
-                      },
-                      {
-                        icon: "🎙️",
-                        title: "Thiết bị âm thanh",
-                        desc: "Micro & Mixer chuyên nghiệp",
-                      },
-                      {
-                        icon: "💺",
-                        title: "Không gian thoải mái",
-                        desc: "Ghế sofa & Bàn làm việc",
-                      },
-                      {
-                        icon: "☕",
-                        title: "Tiện ích miễn phí",
-                        desc: "Wifi, Nước uống, Điều hòa",
-                      },
-                    ].map((item, idx) => (
-                      <div
-                        key={idx}
-                        className="bg-white/5 backdrop-blur-sm border border-white/10 p-5 hover:bg-white/10 transition-all group"
-                      >
-                        <div className="text-4xl mb-3">{item.icon}</div>
-                        <h4 className="text-white font-bold text-sm mb-1 group-hover:text-[#C5A267] transition-colors">
-                          {item.title}
-                        </h4>
-                        <p className="text-slate-400 text-xs">{item.desc}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </section>
-
               {/* LOCATION & CONTACT SECTION */}
               <section
                 id="location"
@@ -350,15 +227,9 @@ export default function StudioDetailPage({ studio }) {
                       </h4>
                       <div className="space-y-2 text-slate-700">
                         <div className="flex justify-between border-b border-slate-100 pb-2">
-                          <span className="text-sm">Thứ 2 - Thứ 6</span>
+                          <span className="text-sm">Thứ 2 - Chủ nhật</span>
                           <span className="text-sm font-semibold">
-                            8:00 - 22:00
-                          </span>
-                        </div>
-                        <div className="flex justify-between border-b border-slate-100 pb-2">
-                          <span className="text-sm">Thứ 7 - Chủ nhật</span>
-                          <span className="text-sm font-semibold">
-                            9:00 - 23:00
+                            6:00 - 24:00
                           </span>
                         </div>
                       </div>
@@ -377,7 +248,7 @@ export default function StudioDetailPage({ studio }) {
                               Hotline
                             </p>
                             <p className="font-semibold text-slate-800">
-                              093 375 31 10
+                              093 375 31 10 (Mr Hải)
                             </p>
                           </div>
                         </div>
@@ -532,11 +403,11 @@ export default function StudioDetailPage({ studio }) {
                 <div className="bg-white border border-gray-100 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] p-8 rounded-sm overflow-hidden relative">
                   <div className="absolute top-0 right-0 w-24 h-24 bg-[#C5A267]/5 rounded-bl-full -mr-12 -mt-12"></div>
                   <div className="mb-6">
-                    <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">
+                    <p className="text-[20px] uppercase tracking-widest text-slate-400 font-bold mb-1 underline bg-[#FFF7E6] px-2 py-1 rounded inline-block shadow-sm">
                       Giá thuê từ
                     </p>
                     <p className="text-4xl font-semibold text-slate-900">
-                      {safeStudio.basePricePerHour?.toLocaleString()}₫{" "}
+                      {safeStudio.basePricePerHour?.toLocaleString()} đồng{" "}
                       <span className="text-sm text-[#C5A267]">/ giờ</span>
                     </p>
                   </div>
@@ -545,7 +416,7 @@ export default function StudioDetailPage({ studio }) {
 
                 {/* FEATURES HIGHLIGHT */}
                 <div className="bg-[#C5A267] p-6 text-white">
-                  <h4 className="text-[10px] uppercase tracking-[0.3em] font-bold mb-4 opacity-90">
+                  <h4 className="text-[10px] uppercase tracking-[0.3em] font-bold mb-8 opacity-90">
                     Tại sao chọn chúng tôi
                   </h4>
                   <ul className="space-y-3">
@@ -579,7 +450,7 @@ export default function StudioDetailPage({ studio }) {
                 {/* RELATED STUDIOS */}
                 {relatedStudios.length > 0 && (
                   <div className="pt-8 border-t border-slate-100">
-                    <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-slate-400 mb-6 uppercase">
+                    <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-slate-400 mb-6 ">
                       Studio liên quan
                     </h3>
                     <div className="space-y-6">
@@ -618,16 +489,6 @@ export default function StudioDetailPage({ studio }) {
             </div>
           </div>
         </Suspense>
-      </div>
-
-      {/* REFINED MOBILE CTA */}
-      <div className="fixed bottom-0 left-0 right-0 lg:hidden bg-white/95 backdrop-blur-xl border-t border-slate-100 px-6 py-6 z-50">
-        <button
-          onClick={() => (window.location.href = `/booking/${safeStudio._id}`)}
-          className="w-full h-16 bg-[#0F172A] text-white font-bold text-[10px] uppercase tracking-[0.3em] shadow-2xl active:scale-95 transition-all"
-        >
-          Đặt lịch ngay
-        </button>
       </div>
     </div>
   );

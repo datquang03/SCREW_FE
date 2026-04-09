@@ -1,6 +1,16 @@
 import React from "react";
 import { Typography } from "antd";
-import { FiFacebook, FiInstagram, FiYoutube, FiMapPin, FiPhone, FiMail } from "react-icons/fi";
+import {
+  FiFacebook,
+  FiInstagram,
+  FiYoutube,
+  FiMapPin,
+  FiPhone,
+  FiMail,
+} from "react-icons/fi";
+import { FaSquareThreads } from "react-icons/fa6";
+import { AiFillTikTok } from "react-icons/ai";
+
 
 const { Title, Text, Link } = Typography;
 
@@ -13,9 +23,9 @@ const footerLinks = [
 ];
 
 const social = [
-  { icon: <FiFacebook />, href: "#" },
-  { icon: <FiInstagram />, href: "#" },
-  { icon: <FiYoutube />, href: "#" },
+  { icon: <FiFacebook />, href: "https://www.facebook.com/S.CongStudio" },
+  { icon: <FiInstagram />, href: "https://www.instagram.com/studioscong.rental" },
+  { icon: <FaSquareThreads />, href: "https://www.threads.com/@studioscong.rental" },
 ];
 
 const Footer = () => (
@@ -26,7 +36,9 @@ const Footer = () => (
         <div>
           <h3 className="footer-section-title">S Cộng Studio</h3>
           <p className="footer-section-text">
-            Không gian sáng tạo chuyên nghiệp tại TP.HCM. Chúng tôi đồng hành cùng các nhãn hàng và nhà sáng tạo trong mọi dự án hình ảnh chất lượng cao.
+            Không gian sáng tạo chuyên nghiệp tại TP.HCM. Chúng tôi đồng hành
+            cùng các nhãn hàng và nhà sáng tạo trong mọi dự án hình ảnh chất
+            lượng cao.
           </p>
           <div className="footer-social">
             {social.map((item, index) => (
@@ -65,7 +77,10 @@ const Footer = () => (
               <div className="footer-contact-icon">
                 <FiMapPin />
               </div>
-              <span>Số 1 Trương Đình Hợi, Phường 18, Quận 4, Thành phố Hồ Chí Minh, Việt Nam</span>
+              <span>
+                1 Trương Đình Hợi, Phường 18, Quận 4 , TP.HCM, Ho Chi Minh City,
+                Vietnam, 700000
+              </span>
             </div>
             <div className="footer-contact-item">
               <div className="footer-contact-icon">
@@ -77,12 +92,11 @@ const Footer = () => (
               <div className="footer-contact-icon">
                 <FiMail />
               </div>
-              <span>binhson1982@gmail.com</span>
+              <span>studioscong.rental@gmail.com</span>
             </div>
           </div>
         </div>
       </div>
-
     </div>
   </footer>
 );

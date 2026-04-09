@@ -3,35 +3,41 @@ import React, { useState, useRef, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { Typography, Skeleton, Empty } from "antd";
-import { FiStar, FiChevronLeft, FiChevronRight } from "react-icons/fi";
-import { getActiveSetDesigns, getSetDesignById } from "../../../features/setDesign/setDesignSlice";
+import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import {
+  getActiveSetDesigns,
+  getSetDesignById,
+} from "../../../features/setDesign/setDesignSlice";
 
-const { Title, Paragraph, Text } = Typography;
+const { Title, Paragraph } = Typography;
 
 const SetDesignSection = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   const setDesigns = useSelector((state) => state.setDesign.activeSetDesigns);
   const loading = useSelector((state) => state.setDesign.loading);
 
   const [current, setCurrent] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
-  const [direction, setDirection] = useState('next');
+  const [direction, setDirection] = useState("next");
+
   const timeoutRef = useRef(null);
 
-  const filteredSetDesigns = setDesigns.filter(item => !item.isConvertedFromCustomRequest);
+  const filteredSetDesigns = setDesigns.filter(
+    (item) => !item.isConvertedFromCustomRequest
+  );
 
-  // Load initial data
+  // Load data
   useEffect(() => {
     dispatch(getActiveSetDesigns());
   }, [dispatch]);
 
-  // Auto-slide effect
+  // Auto slide
   useEffect(() => {
     if (!isHovering && filteredSetDesigns.length > 1) {
       timeoutRef.current = setTimeout(() => {
-        setDirection('next');
+        setDirection("next");
         setCurrent((prev) => (prev + 1) % filteredSetDesigns.length);
       }, 5000);
     }
@@ -39,19 +45,31 @@ const SetDesignSection = () => {
   }, [current, isHovering, filteredSetDesigns.length]);
 
   const handlePrev = () => {
-    setDirection('prev');
-    setCurrent((prev) => (prev - 1 + filteredSetDesigns.length) % filteredSetDesigns.length);
+    setDirection("prev");
+    setCurrent(
+      (prev) =>
+        (prev - 1 + filteredSetDesigns.length) % filteredSetDesigns.length
+    );
   };
-  
+
   const handleNext = () => {
-    setDirection('next');
+    setDirection("next");
     setCurrent((prev) => (prev + 1) % filteredSetDesigns.length);
   };
 
-  // Navigate to detail page
   const goToDetail = (id) => {
     dispatch(getSetDesignById(id));
     navigate(`/set-design/${id}`);
+  };
+
+  // current design
+  const currentDesign = filteredSetDesigns[current];
+
+  // Hàm click toàn bộ card
+  const handleCardClick = () => {
+    if (currentDesign?._id) {
+      goToDetail(currentDesign._id);
+    }
   };
 
   if (loading && filteredSetDesigns.length === 0) {
@@ -59,7 +77,10 @@ const SetDesignSection = () => {
       <div className="w-full bg-white py-12">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-10">
           <div className="text-center mb-10">
-            <Title level={2} className="text-3xl md:text-5xl font-semibold text-[#0F172A]">
+            <Title
+              level={2}
+              className="text-3xl md:text-5xl font-semibold text-[#0F172A]"
+            >
               Set Design Nổi Bật
             </Title>
           </div>
@@ -73,7 +94,10 @@ const SetDesignSection = () => {
     return (
       <div className="w-full bg-white py-12">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-10 text-center">
-          <Title level={2} className="text-3xl md:text-5xl font-semibold text-[#0F172A] mb-8">
+          <Title
+            level={2}
+            className="text-3xl md:text-5xl font-semibold text-[#0F172A] mb-8"
+          >
             Set Design Nổi Bật
           </Title>
           <Empty description="Chưa có Set Design nào" />
@@ -85,125 +109,144 @@ const SetDesignSection = () => {
   return (
     <div className="relative w-full bg-white py-12">
       <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-10">
+        {/* HEADER */}
         <div className="text-center mb-10 space-y-3">
-          <Title level={2} className="text-3xl md:text-5xl font-semibold text-[#0F172A] mb-0">
+          <Title
+            level={2}
+            className="text-3xl md:text-5xl font-semibold text-[#0F172A] mb-0"
+          >
             Set Design Nổi Bật
           </Title>
           <Paragraph className="text-slate-600 text-lg max-w-2xl mx-auto">
-            Bộ sưu tập thiết kế được curated kỹ lưỡng phục vụ mọi nhu cầu chụp ảnh chuyên nghiệp
+            Bộ sưu tập thiết kế được curated kỹ lưỡng phục vụ mọi nhu cầu chụp
+            ảnh chuyên nghiệp
           </Paragraph>
         </div>
 
         {/* Carousel Container */}
-        <div 
-          className="relative overflow-hidden" 
-          onMouseEnter={() => setIsHovering(true)} 
+        <div
+          className="relative overflow-hidden"
+          onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
         >
-          <div className="grid md:grid-cols-2 gap-0 items-stretch bg-white overflow-hidden border border-slate-100 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] hover:border-[#C5A267] transition-all duration-300">
-            {/* Image with slide animation */}
-            <div className="relative overflow-hidden h-80 md:h-full min-h-80 bg-slate-200">
+          <div
+            className="grid md:grid-cols-2 h-[460px] bg-white overflow-hidden border border-slate-100 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] hover:border-[#C5A267] transition-all duration-300 rounded-3xl cursor-pointer"
+            onClick={handleCardClick}
+          >
+            {/* IMAGE */}
+            <div className="relative overflow-hidden h-full bg-slate-200">
               <img
                 key={current}
-                src={filteredSetDesigns[current]?.images?.[0] || "https://images.unsplash.com/photo-1618776148559-309e0b8775d3?auto=format&fit=crop&w=1000&q=80"}
-                alt={filteredSetDesigns[current]?.name}
-                className={`w-full h-full object-cover animate-${direction === 'next' ? 'slideInRight' : 'slideInLeft'}`}
-                loading="lazy"
-                style={{
-                  animation: `${direction === 'next' ? 'slideInRight' : 'slideInLeft'} 0.6s ease-out`
-                }}
+                src={
+                  currentDesign?.images?.[0] ||
+                  "https://images.unsplash.com/photo-1618776148559-309e0b8775d3?auto=format&fit=crop&w=1000&q=80"
+                }
+                alt={currentDesign?.name}
+                className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
             </div>
 
-            {/* Content with fade animation */}
-            <div 
+            {/* CONTENT */}
+            <div
               key={`content-${current}`}
-              className="p-5 md:p-8 flex flex-col justify-between space-y-6 bg-white relative"
-              style={{
-                animation: 'fadeIn 0.6s ease-out'
-              }}
+              className="p-6 md:p-8 flex flex-col justify-between h-full"
+              onClick={(e) => e.stopPropagation()}
             >
-              {/* Star Rating - Top Right */}
-              <div className="absolute top-6 right-6 flex items-center gap-2 bg-[#0F172A] px-4 py-2 border border-[#C5A267]">
-                <FiStar className="text-white" size={20} />
-                <Text strong className="text-white text-base">
-                  {filteredSetDesigns[current]?.averageRating > 0 ? filteredSetDesigns[current]?.averageRating.toFixed(1) : "5.0"}
-                </Text>
-              </div>
-
-              <div className="space-y-4 pt-8">
-                <div className="space-y-2">
-                  <div className="inline-block px-3 py-1 bg-white border border-slate-200 text-slate-700 text-xs font-semibold uppercase tracking-[0.2em]">
-                    {filteredSetDesigns[current]?.category === "wedding" ? "Tiệc cưới" :
-                     filteredSetDesigns[current]?.category === "corporate" ? "Doanh nghiệp" :
-                     filteredSetDesigns[current]?.category === "birthday" ? "Sinh nhật" :
-                     filteredSetDesigns[current]?.category === "other" ? "Khác" : filteredSetDesigns[current]?.category || "Danh mục"}
-                  </div>
-                  <Title level={2} className="text-2xl md:text-4xl font-semibold text-[#0F172A] mb-0 leading-tight pr-20">
-                    {filteredSetDesigns[current]?.name}
-                  </Title>
+              <div className="space-y-4 pt-4">
+                {/* CATEGORY */}
+                <div className="inline-block px-3 py-1 bg-white border border-slate-200 text-slate-700 text-xs font-semibold uppercase tracking-[0.2em]">
+                  {currentDesign?.category === "wedding"
+                    ? "Tiệc cưới"
+                    : currentDesign?.category === "corporate"
+                    ? "Doanh nghiệp"
+                    : currentDesign?.category === "birthday"
+                    ? "Sinh nhật"
+                    : currentDesign?.category === "portrait"
+                    ? "Chân dung"
+                    : currentDesign?.category === "event"
+                    ? "Sự kiện"
+                    : currentDesign?.category === "other"
+                    ? "Khác"
+                    : currentDesign?.category || "Danh mục"}
                 </div>
 
-                <Paragraph className="text-slate-600 text-base leading-relaxed">
-                  {filteredSetDesigns[current]?.description || "Bộ thiết kế được thiết kế chuyên nghiệp, phù hợp với mọi nhu cầu chụp ảnh từ studio đến ngoại cảnh."}
+                {/* TITLE */}
+                <Title
+                  level={2}
+                  className="text-2xl md:text-4xl font-semibold text-[#0F172A] leading-tight line-clamp-2 min-h-[72px]"
+                >
+                  {currentDesign?.name}
+                </Title>
+
+                {/* DESCRIPTION */}
+                <Paragraph className="text-slate-600 text-base leading-relaxed whitespace-pre-line line-clamp-6 min-h-[72px]">
+                  {currentDesign?.description ||
+                    "Bộ thiết kế được thiết kế chuyên nghiệp, phù hợp với mọi nhu cầu chụp ảnh từ studio đến ngoại cảnh."}
                 </Paragraph>
               </div>
 
-              {/* Buttons with simple hover effects */}
-              <div className="flex gap-3 relative z-10">
+              {/* BUTTON */}
+              <div className="flex gap-3 mt-4">
                 <button
-                  onClick={() => goToDetail(filteredSetDesigns[current]?._id)}
-                  className="flex-1 px-6 py-3 bg-[#C5A267] text-white font-semibold uppercase tracking-[0.2em] border-none outline-none transition-all duration-300 hover:!bg-[#0F172A] hover:!text-white"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    goToDetail(currentDesign?._id);
+                  }}
+                  className="flex-1 px-6 py-3 bg-[#C5A267] text-white font-semibold uppercase tracking-[0.2em]  
+                             transition-all duration-300 rounded-lg shadow-md hover:scale-105 cursor-pointer text-sm flex items-center justify-center gap-2"
                 >
                   Xem chi tiết
-                </button>
-                <button
-                  onClick={() => navigate(`/booking/set-design/${filteredSetDesigns[current]?._id}`)}
-                  className="flex-1 px-6 py-3 bg-white text-[#0F172A] border border-[#0F172A] font-semibold uppercase tracking-[0.2em] outline-none transition-all duration-300 hover:!bg-[#0F172A] hover:!text-white"
-                >
-                  Đặt ngay
                 </button>
               </div>
             </div>
           </div>
 
-          {/* Navigation Arrows */}
+          {/* ARROWS */}
           {filteredSetDesigns.length > 1 && (
             <>
               <button
-                onClick={handlePrev}
-                className="absolute left-4 top-1/2 -translate-y-1/2 bg-[#0F172A]/80 hover:bg-[#C5A267] text-white p-3 border border-[#C5A267] transition-all duration-300 z-20"
-                aria-label="Previous slide"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePrev();
+                }}
+                className="absolute left-6 top-1/2 -translate-y-1/2 bg-white cursor-pointer
+                           text-[#0F172A] hover:text-white hover:bg-[#C5A267] p-4 rounded-full shadow-xl border border-slate-200 
+                           hover:border-transparent transition-all z-30"
               >
-                <FiChevronLeft size={24} />
+                <FiChevronLeft size={28} />
               </button>
+
               <button
-                onClick={handleNext}
-                className="absolute right-4 top-1/2 -translate-y-1/2 bg-[#0F172A]/80 hover:bg-[#C5A267] text-white p-3 border border-[#C5A267] transition-all duration-300 z-20"
-                aria-label="Next slide"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleNext();
+                }}
+                className="absolute right-6 top-1/2 -translate-y-1/2 bg-white cursor-pointer
+                           text-[#0F172A] hover:text-white hover:bg-[#C5A267] p-4 rounded-full shadow-xl border border-slate-200 
+                           hover:border-transparent transition-all z-30"
               >
-                <FiChevronRight size={24} />
+                <FiChevronRight size={28} />
               </button>
             </>
           )}
 
-          {/* Indicators */}
+          {/* DOTS */}
           {filteredSetDesigns.length > 1 && (
-            <div className="flex justify-center gap-2 mt-6">
+            <div className="flex justify-center gap-2 mt-8">
               {filteredSetDesigns.map((_, index) => (
                 <button
                   key={index}
-                  onClick={() => {
-                    setDirection(index > current ? 'next' : 'prev');
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDirection(index > current ? "next" : "prev");
                     setCurrent(index);
                   }}
-                  className={`w-3 h-3 transition-all duration-300 ${
-                    index === current 
-                      ? 'bg-[#C5A267] w-8' 
-                      : 'bg-gray-400 hover:bg-[#A0826D]'
+                  className={`h-2.5 rounded-full transition-all duration-300 ${
+                    index === current
+                      ? "bg-[#C5A267] w-10"
+                      : "bg-slate-300 hover:bg-slate-400 w-2.5"
                   }`}
-                  aria-label={`Go to slide ${index + 1}`}
                 />
               ))}
             </div>
@@ -211,38 +254,26 @@ const SetDesignSection = () => {
         </div>
       </div>
 
-      {/* CSS Animations */}
+      {/* ANIMATION */}
       <style jsx>{`
-        @keyframes slideInRight {
+        @keyframes slideInFromRight {
           from {
-            transform: translateX(100%);
             opacity: 0;
+            transform: translateX(80px);
           }
           to {
-            transform: translateX(0);
             opacity: 1;
+            transform: translateX(0);
           }
         }
-        
-        @keyframes slideInLeft {
+        @keyframes slideInFromLeft {
           from {
-            transform: translateX(-100%);
             opacity: 0;
+            transform: translateX(-80px);
           }
           to {
+            opacity: 1;
             transform: translateX(0);
-            opacity: 1;
-          }
-        }
-        
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
           }
         }
       `}</style>

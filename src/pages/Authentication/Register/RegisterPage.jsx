@@ -303,7 +303,7 @@ const RegisterPage = () => {
                   e.currentTarget.style.borderColor = '#A0826D';
                 }
               }}
-              className={`mt-6 w-full py-4 font-bold text-white flex items-center justify-center gap-3 shadow-lg transition-all duration-300
+              className={`mt-6 w-full py-4 font-bold text-white flex items-center justify-center gap-3 shadow-lg transition-all duration-300 
                 ${loading ? "cursor-not-allowed" : "active:scale-95"}`}
             >
               {loading ? (
@@ -331,7 +331,7 @@ const RegisterPage = () => {
             </button>
           </form>
 
-          <p className="text-center mt-6 text-sm text-slate-600">
+          <p className="text-center mt-10 text-sm text-slate-600">
             Đã có tài khoản?{" "}
             <a
               href="/login"

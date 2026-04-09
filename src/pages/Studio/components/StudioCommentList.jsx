@@ -119,13 +119,6 @@ const StudioCommentList = ({ targetId }) => {
 
   return (
     <div className="relative bg-[#FCFBFA] border border-slate-200 shadow-lg p-8 mt-10">
-      <div className="mb-6">
-        <h2 className="text-3xl font-extrabold text-[#0F172A] mb-2">
-          Bình luận & Đánh giá
-        </h2>
-        <p className="text-slate-600">Chia sẻ cảm nhận của bạn</p>
-      </div>
-
       {/* Input */}
       {!user ? (
         <div className="mb-8 flex flex-col items-center justify-center bg-white border border-red-200 rounded-lg p-6 text-center">

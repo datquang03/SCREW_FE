@@ -2,7 +2,7 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { GoogleOAuthProvider } from '@react-oauth/google';
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 import Homepage from "./pages/Homepage/Homepage";
 import AboutUsPage from "./pages/AboutUs/AboutUsPage";
@@ -124,7 +124,10 @@ const AppContent = () => {
                 path="/booking/set-design/:id"
                 element={<BookingSetDesignPage />}
               />
-              <Route path="/set-design-order/detail/:id" element={<BookingDetailPage />} />
+              <Route
+                path="/set-design-order/detail/:id"
+                element={<BookingDetailPage />}
+              />
 
               {/* Payment callbacks */}
               <Route path="/payment/success" element={<PaymentSuccessPage />} />
@@ -168,10 +171,7 @@ const AppContent = () => {
                 path="custom-requests"
                 element={<UserCustomSetDesignPage />}
               />
-              <Route
-                path="reviews"
-                element={<UserReviewPage />}
-              />
+              <Route path="reviews" element={<UserReviewPage />} />
               <Route
                 path="set-designs/bookings"
                 element={<UserSetDesignBookingsPage />}

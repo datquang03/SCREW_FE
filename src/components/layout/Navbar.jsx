@@ -612,19 +612,12 @@ const Navbar = () => {
               >
                 Đăng nhập
               </Button>
-              <Button
-                type="primary"
-                href="/register"
-                className="bg-gradient-to-r from-[#A0826D] to-[#8B7355] border-none font-bold text-sm px-5 py-2 shadow-lg hover:shadow-lg hover:opacity-95 text-white"
-              >
-                Đăng ký
-              </Button>
             </div>
           )}
 
 
         </div>
-      </div>
+      </div>  
 
       {/* ===== ALL NOTIFICATIONS MODAL ===== */}
       <Modal

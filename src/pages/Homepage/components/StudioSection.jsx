@@ -1,24 +1,21 @@
-// src/pages/Homepage/sections/StudioSection.jsx
 import React, { useEffect, useState } from "react";
-import { Card, Typography, Button, Spin } from "antd";
+import { Button } from "antd";
 import {
-  FiStar,
   FiArrowRight,
-  FiMapPin,
   FiUsers,
   FiChevronLeft,
   FiChevronRight,
-  FiShoppingCart,
+  FiMaximize,
 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { getActiveStudios } from "../../../features/studio/studioSlice";
 import Section from "../../../components/common/Section";
-
-const { Text } = Typography;
+import SkeletonStudioCard from "../../../components/skeletons/SkeletonStudioCard";
 
 const StudioSection = () => {
   const dispatch = useDispatch();
   const { studios, loading } = useSelector((state) => state.studio);
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
 
@@ -30,7 +27,6 @@ const StudioSection = () => {
   };
 
   const [itemsPerView, setItemsPerView] = useState(getItemsPerView());
-  const totalSlides = Math.ceil(studios.length / itemsPerView);
 
   useEffect(() => {
     const handleResize = () => setItemsPerView(getItemsPerView());
@@ -43,38 +39,36 @@ const StudioSection = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    if (studios.length <= itemsPerView) return;
+    if (!studios || studios.length <= itemsPerView) return;
+
     const interval = setInterval(() => {
       if (!isHovering) {
-        setCurrentIndex((prev) => (prev + 1) % totalSlides);
+        setCurrentIndex((prev) => (prev + 1) % studios.length);
       }
     }, 5000);
+
     return () => clearInterval(interval);
-  }, [isHovering, studios.length, itemsPerView, totalSlides]);
+  }, [isHovering, studios, itemsPerView]);
 
-  const goPrev = () =>
-    setCurrentIndex((prev) => (prev - 1 + totalSlides) % totalSlides);
-  const goNext = () => setCurrentIndex((prev) => (prev + 1) % totalSlides);
+  const goPrev = () => {
+    setCurrentIndex((prev) => (prev - 1 + studios.length) % studios.length);
+  };
 
-  const extendedStudios =
-    studios.length > 0
-      ? [
-          ...studios.slice(-itemsPerView),
-          ...studios,
-          ...studios.slice(0, itemsPerView),
-        ]
-      : [];
+  const goNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % studios.length);
+  };
 
-  const offset = itemsPerView;
-  const translateX = -(currentIndex + offset) * (100 / itemsPerView);
+  const translateX = -currentIndex * (100 / itemsPerView);
 
   if (loading) {
     return (
-      <Section title="Studio Nổi Bật">
-        <div className="flex justify-center items-center py-32">
-          <Spin size="large" />
+      <div className="max-w-7xl mx-auto px-4 py-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) => (
+            <SkeletonStudioCard key={i} />
+          ))}
         </div>
-      </Section>
+      </div>
     );
   }
 
@@ -85,84 +79,76 @@ const StudioSection = () => {
       className="py-24 bg-white"
     >
       <div className="relative max-w-7xl mx-auto px-4">
-        <p className="text-xs font-semibold text-[#C5A267] uppercase tracking-[0.3em] text-center mb-6">STUDIO NỔI BẬT</p>
         <div
           className="relative overflow-hidden"
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
         >
-          <div className="px-6 py-6">
+          <div className="px-8 py-8">
             <div
-              className="flex transition-transform duration-500 ease-out"
+              className="flex transition-transform duration-700 ease-out"
               style={{ transform: `translateX(${translateX}%)` }}
             >
-              {extendedStudios.map((studio, index) => (
+              {studios.map((studio) => (
                 <div
-                  key={`${studio._id}-${index}`}
-                  className="flex-shrink-0 flex flex-col"
-                  style={{ width: `${100 / itemsPerView}%`, minWidth: 340, maxWidth: 340, marginRight: 24 }}
+                  key={studio._id}
+                  className="flex-shrink-0 px-3"
+                  style={{
+                    width: `${100 / itemsPerView}%`,
+                    minWidth: itemsPerView === 1 ? 320 : 340,
+                  }}
                 >
                   <div
-                    className="h-full border border-slate-100 bg-white shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1.5 hover:border-[#C5A267] group flex flex-col cursor-pointer"
-                    onClick={() => (window.location.href = `/studio/${studio._id}`)}
+                    className="group h-full border border-slate-100 bg-white shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-2 hover:border-[#C5A267] flex flex-col cursor-pointer rounded-3xl overflow-hidden"
+                    onClick={() =>
+                      (window.location.href = `/studio/${studio._id}`)
+                    }
                   >
                     {/* IMAGE */}
-                    <div className="relative w-full h-40 overflow-hidden mb-4 flex-shrink-0">
-                      {studio.images?.[0] ? (
-                        <img
-                          src={studio.images[0]}
-                          alt={studio.name}
-                          className="w-full h-full object-cover transition-all duration-500"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-[#FCFBFA] flex items-center justify-center font-semibold text-[#C5A267]">
-                          {studio.name}
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      <div className="absolute top-3 left-3 bg-[#0F172A] px-3 py-1 flex items-center gap-1.5 shadow">
-                        <FiStar className="text-[#C5A267]" size={14} />
-                        <span className="text-sm font-semibold text-white">
-                          {studio.rating?.toFixed(1) || "5.0"}
-                        </span>
-                      </div>
+                    <div className="relative w-full h-40 overflow-hidden">
+                      <img
+                        src={studio.images?.[0]}
+                        alt={studio.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                      />
                     </div>
-                    {/* BODY */}
-                    <div className="flex-1 flex flex-col justify-between px-6 py-2">
-                      <span className="inline-flex w-fit px-3 py-1 bg-white border border-[#C5A267] text-xs font-semibold text-[#C5A267] uppercase tracking-[0.2em] mb-2">
-                        Studio nổi bật
-                      </span>
-                      <h3 className="text-lg font-semibold text-[#0F172A] line-clamp-2 mb-2 min-h-[48px] flex items-center">
-                        {studio.name}
+
+                    {/* CONTENT */}
+                    <div className="flex-1 px-6 pt-6 pb-4">
+                      {/* NAME */}
+                      <h3 className="mb-2 leading-tight">
+                        <span className="studio-name">{studio.name}</span>
                       </h3>
-                      <p className="text-sm text-slate-600 line-clamp-2 mb-2 min-h-[40px] flex items-center">
-                        {studio.description?.length > 80 ? studio.description.slice(0, 80) + '...' : studio.description}
+
+                      <p className="text-sm text-slate-600 mb-4 line-clamp-2">
+                        {studio.description?.slice(0, 85)}...
                       </p>
-                      <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600 mb-2 min-h-[24px]">
+
+                      {/* 🔥 BADGE XỊN */}
+                      <div className="flex flex-wrap gap-2">
                         {studio.capacity && (
-                          <span className="inline-block bg-[#FCFBFA] text-slate-700 px-2 py-0.5 border border-slate-200 font-semibold">
-                            <FiUsers className="inline-block mr-1" size={14} />
+                          <span className="pill pill-users">
+                            <FiUsers />
                             {studio.capacity} người
                           </span>
                         )}
-                        <span className="inline-block bg-[#FCFBFA] text-[#C5A267] px-2 py-0.5 border border-[#C5A267] font-semibold">
-                          {studio.basePricePerHour?.toLocaleString()}đ/giờ
-                        </span>
+
+                        {studio.area && (
+                          <span className="pill pill-area">
+                            <FiMaximize />
+                            {studio.area} m²
+                          </span>
+                        )}
                       </div>
                     </div>
-                    {/* PRICE + CTA */}
-                    <div className="px-6 pb-6 flex flex-col gap-2">
-                      <div className="text-xs text-slate-500 uppercase tracking-[0.2em]">Giá từ</div>
-                      <div className="text-2xl font-semibold text-[#C5A267] mb-1">
-                        {studio.basePricePerHour?.toLocaleString("vi-VN")}₫
-                        <span className="text-sm text-slate-500 ml-1">/ giờ</span>
-                      </div>
+
+                    {/* BUTTON */}
+                    <div className="px-6 pb-6">
                       <a
                         href={`/studio/${studio._id}`}
-                        className="w-full h-12 bg-[#0F172A] hover:bg-[#C5A267] text-[#C5A267] hover:text-[#0F172A] border-none font-semibold text-base flex items-center justify-center gap-2 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] transition-all py-2 px-4 uppercase tracking-[0.2em]"
-                        style={{ marginTop: 'auto' }}
+                        className="w-full h-12 bg-[#0F172A] text-[#C5A267] hover:bg-[#C5A267] hover:text-[#0F172A] flex items-center justify-center rounded-full font-semibold transition-all"
                       >
-                        <FiShoppingCart size={16} /> Đặt ngay
+                        Xem chi tiết
                       </a>
                     </div>
                   </div>
@@ -171,39 +157,215 @@ const StudioSection = () => {
             </div>
           </div>
 
+          {/* NAV */}
           {studios.length > itemsPerView && (
             <>
               <button
                 onClick={goPrev}
-                className="absolute left-5 top-1/2 -translate-y-1/2 bg-[#0F172A] p-4 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)]"
+                className="absolute left-6 top-1/2 -translate-y-1/2 bg-white shadow-lg p-4 rounded-full"
               >
-                <FiChevronLeft size={30} className="text-[#C5A267]" />
+                <FiChevronLeft size={28} />
               </button>
+
               <button
                 onClick={goNext}
-                className="absolute right-5 top-1/2 -translate-y-1/2 bg-[#0F172A] p-4 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)]"
+                className="absolute right-6 top-1/2 -translate-y-1/2 bg-white shadow-lg p-4 rounded-full"
               >
-                <FiChevronRight size={30} className="text-[#C5A267]" />
+                <FiChevronRight size={28} />
               </button>
             </>
           )}
         </div>
 
-        <div className="text-center mt-10">
+        <div className="text-center mt-12">
           <Button
             type="primary"
             size="large"
             href="/studio"
             icon={<FiArrowRight size={22} />}
-            style={{ backgroundColor: '#A0826D', borderColor: '#A0826D', color: 'white' }}
-            className="px-14 py-7 font-semibold text-lg uppercase tracking-[0.2em] shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)]"
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#8B7355'; e.currentTarget.style.borderColor = '#8B7355'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#A0826D'; e.currentTarget.style.borderColor = '#A0826D'; }}
+            style={{
+              backgroundColor: "#A0826D",
+              borderColor: "#A0826D",
+              height: "52px",
+            }}
           >
             Xem tất cả Studio
           </Button>
         </div>
       </div>
+
+      {/* STYLE */}
+      <style>
+        {`
+/* 💎 NAME 14 MÀU */
+.studio-name {
+  font-size: 22px;
+  font-weight: 900;
+  background: linear-gradient(
+    90deg,
+    #ff0000,
+    #ff7f00,
+    #ffff00,
+    #7fff00,
+    #00ff00,
+    #00ff7f,
+    #00ffff,
+    #007fff,
+    #0000ff,
+    #7f00ff,
+    #ff00ff,
+    #ff007f,
+    #ff4d4d,
+    #ffa500
+  );
+  background-size: 400% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  animation: rainbowMove 6s linear infinite;
+  transition: all 0.4s ease;
+  display: inline-block;
+}
+
+/* ✨ HOVER = PHÓNG TO + GLOW */
+.group:hover .studio-name {
+  transform: scale(1.1);
+  letter-spacing: 0.6px;
+  filter: drop-shadow(0 0 6px rgba(255, 200, 100, 0.6));
+}
+
+/* 🌈 ANIMATION */
+@keyframes rainbowMove {
+  0% {
+    background-position: 0% center;
+  }
+  100% {
+    background-position: 400% center;
+  }
+}
+
+/* 📱 RESPONSIVE */
+@media (max-width: 640px) {
+  .studio-name {
+    font-size: 18px;
+  }
+
+  .group:hover .studio-name {
+    font-size: 20px;
+  }
+}
+`}
+      </style>
+      <style>
+        {`
+/* 💎 NAME XỊN SÒ */
+.studio-name {
+  font-size: 28px;
+  font-weight: 900;
+  background: linear-gradient(90deg, #0F172A, #1E293B);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transition: all 0.4s ease;
+  display: inline-block;
+}
+
+/* ✨ HOVER NAME */
+.group:hover .studio-name {
+  font-size: 32px;
+  font-weight: 900;
+  background: linear-gradient(
+    90deg,
+    #ff0000,
+    #ff7f00,
+    #ffff00,
+    #7fff00,
+    #00ff00,
+    #00ff7f,
+    #00ffff,
+    #007fff,
+    #0000ff,
+    #7f00ff,
+    #ff00ff,
+    #ff007f,
+    #ff4d4d,
+    #ffa500
+  );
+  background-size: 400% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  animation: rainbowMove 6s linear infinite;
+  transition: all 0.4s ease;
+  display: inline-block;
+}
+
+/* 🌟 SHINE EFFECT */
+@keyframes shine {
+  to {
+    background-position: 200% center;
+  }
+}
+
+/* 🔥 PILL BASE */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  backdrop-filter: blur(6px);
+  transition: all 0.35s ease;
+}
+
+/* 👥 USERS */
+.pill-users {
+  background: rgba(59, 130, 246, 0.12);
+  color: #2563eb;
+}
+
+/* 📐 AREA */
+.pill-area {
+  background: rgba(139, 92, 246, 0.12);
+  color: #7c3aed;
+}
+
+/* 🚀 HOVER CHUNG */
+.group:hover .pill {
+  transform: translateY(-3px) scale(1.08);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+/* 💙 USERS HOVER */
+.group:hover .pill-users {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  color: white;
+}
+
+/* 💜 AREA HOVER */
+.group:hover .pill-area {
+  background: linear-gradient(135deg, #7c3aed, #a78bfa);
+  color: white;
+}
+
+/* 📱 RESPONSIVE FIX */
+@media (max-width: 640px) {
+  .studio-name {
+    font-size: 18px;
+  }
+
+  .group:hover .studio-name {
+    font-size: 20px;
+  }
+
+  .pill {
+    font-size: 11px;
+    padding: 5px 10px;
+  }
+}
+`}
+      </style>
     </Section>
   );
 };

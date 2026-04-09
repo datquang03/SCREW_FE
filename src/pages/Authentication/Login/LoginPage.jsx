@@ -5,11 +5,15 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useDispatch, useSelector } from "react-redux";
-import { login, clearError, loginWithGoogle } from "../../../features/auth/authSlice";
+import {
+  login,
+  clearError,
+  loginWithGoogle,
+} from "../../../features/auth/authSlice";
 import { useNavigate } from "react-router-dom";
 import { FiEye, FiEyeOff, FiLogIn } from "react-icons/fi";
 import ToastNotification from "../../../components/ToastNotification";
-import { GoogleLogin } from '@react-oauth/google';
+import { GoogleLogin } from "@react-oauth/google";
 
 const schema = z.object({
   username: z
@@ -93,14 +97,19 @@ const LoginPage = () => {
     if (!credentialResponse.credential) return;
     dispatch(clearError());
     try {
-      const result = await dispatch(loginWithGoogle({ idToken: credentialResponse.credential })).unwrap();
+      const result = await dispatch(
+        loginWithGoogle({ idToken: credentialResponse.credential })
+      ).unwrap();
       setToast({
         type: "success",
         message: result.message || "Đăng nhập Google thành công!",
       });
       setTimeout(() => navigate("/", { replace: true }), 1500);
     } catch (err) {
-      setToast({ type: "error", message: err.message || "Đăng nhập Google thất bại" });
+      setToast({
+        type: "error",
+        message: err.message || "Đăng nhập Google thất bại",
+      });
     }
   };
 
@@ -148,9 +157,7 @@ const LoginPage = () => {
             <p className="text-[10px] uppercase tracking-[0.5em] text-[#C5A267] font-bold mb-4">
               Welcome Back
             </p>
-            <h1 className="text-4xl font-semibold text-[#0F172A]">
-              Đăng Nhập
-            </h1>
+            <h1 className="text-4xl font-semibold text-[#0F172A]">Đăng Nhập</h1>
             <p className="text-slate-600 mt-2">Chào mừng bạn trở lại</p>
           </div>
 
@@ -210,19 +217,19 @@ const LoginPage = () => {
               type="submit"
               disabled={loading}
               style={{
-                backgroundColor: loading ? '#94a3b8' : '#A0826D',
-                borderColor: loading ? '#94a3b8' : '#A0826D',
+                backgroundColor: loading ? "#94a3b8" : "#A0826D",
+                borderColor: loading ? "#94a3b8" : "#A0826D",
               }}
               onMouseEnter={(e) => {
                 if (!loading) {
-                  e.currentTarget.style.backgroundColor = '#8B7355';
-                  e.currentTarget.style.borderColor = '#8B7355';
+                  e.currentTarget.style.backgroundColor = "#8B7355";
+                  e.currentTarget.style.borderColor = "#8B7355";
                 }
               }}
               onMouseLeave={(e) => {
                 if (!loading) {
-                  e.currentTarget.style.backgroundColor = '#A0826D';
-                  e.currentTarget.style.borderColor = '#A0826D';
+                  e.currentTarget.style.backgroundColor = "#A0826D";
+                  e.currentTarget.style.borderColor = "#A0826D";
                 }
               }}
               className={`mt-6 w-full py-4 font-bold text-white flex items-center justify-center gap-3 shadow-lg transition-all duration-300 cursor-pointer
@@ -271,7 +278,12 @@ const LoginPage = () => {
             <div className="w-full flex justify-center">
               <GoogleLogin
                 onSuccess={handleGoogleLoginSuccess}
-                onError={() => setToast({ type: "error", message: "Đăng nhập Google thất bại" })}
+                onError={() =>
+                  setToast({
+                    type: "error",
+                    message: "Đăng nhập Google thất bại",
+                  })
+                }
                 width="100%"
                 theme="outline"
                 size="large"
@@ -280,7 +292,6 @@ const LoginPage = () => {
               />
             </div>
           </form>
-
           <div className="mt-6 text-center space-y-3">
             <a
               href="/forgot-password"
@@ -288,15 +299,15 @@ const LoginPage = () => {
             >
               Quên mật khẩu?
             </a>
-            <p className="text-sm text-slate-600">
+            <div className="text-sm text-slate-500">
               Chưa có tài khoản?{" "}
               <a
                 href="/register"
-                className="font-semibold text-[#C5A267] hover:underline"
+                className="text-[#C5A267] font-semibold hover:underline"
               >
                 Đăng ký ngay
               </a>
-            </p>
+            </div>
           </div>
         </div>
       </div>

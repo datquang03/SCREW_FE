@@ -11,6 +11,8 @@ import WhyChooseUsSection from "./components/WhyChooseUsSection";
 import GallerySection from "./components/GallerySection";
 import SetDesignSection from "./components/SetDesignSection";
 import PromotionSection from "./components/PromotionSection";
+import MapSection from "./components/MapSection";
+import GuestSection from "./components/GuestSection";
 
 const Homepage = () => {
   return (
@@ -43,6 +45,8 @@ const Homepage = () => {
       <main className="relative container mx-auto px-4 md:px-6 lg:px-10 py-8 md:py-10 lg:py-12 space-y-10 lg:space-y-12">
         <IntroSection />
         <PromotionSection />
+        <MapSection />
+        <GuestSection />
         <StudioSection />
         <SetDesignSection />
         <WhyChooseUsSection />
